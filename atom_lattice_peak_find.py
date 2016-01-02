@@ -2623,6 +2623,7 @@ class Atom_Lattice():
             figname=self.save_path + self.tag + "_zone" + str(zone_index) + "_" + figname)
         
         if save_signal:
+            save_signal_figname = figname[:-4]
             line_profile_dict = {
                     'position':(
                         line_profile_data_list[:,0]*data_scale).tolist(),
@@ -2630,12 +2631,12 @@ class Atom_Lattice():
                         line_profile_data_list[:,1]*data_scale).tolist()}
 
             json_filename = self.save_path + self.tag + "_zone" +\
-                    str(zone_index) + "_distance_difference_line_profile.json"
+                    str(zone_index) + "_" + save_signal_figname + "_line_profile.json"
             with open(json_filename,'w') as fp:
                 json.dump(line_profile_dict, fp)
 
             sig_name = self.save_path + self.tag + "_zone" +\
-                    str(zone_index) + "_distance_difference.hdf5"
+                    str(zone_index) + "_" + save_signal_figname + ".hdf5"
             self.save_map_from_datalist(
                 data_map,
                 data_scale,
