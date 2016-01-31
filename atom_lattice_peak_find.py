@@ -15,7 +15,7 @@ import glob
 import math
 import json
 from skimage.feature import peak_local_max
-from hyperspy.model import Model2D
+from hyperspy.models import model2D
 from scipy.stats import linregress
 import h5py
 
