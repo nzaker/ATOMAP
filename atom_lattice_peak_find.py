@@ -1,5 +1,5 @@
 import sys; sys.dont_write_bytecode = True
-import hyperspy.hspy as hspy
+import hyperspy.api as hs
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
@@ -15,7 +15,6 @@ import glob
 import math
 import json
 from skimage.feature import peak_local_max
-from hyperspy.models import model2D
 from scipy.stats import linregress
 import h5py
 
@@ -719,13 +718,13 @@ def find_atom_position_between_atom_rows(
 def _get_centre_value_from_gaussian_model(data, max_sigma=None, index=None):
     data = data - data.min()
     data = data/data.max()
-    gaussian = hspy.components.Gaussian(
+    gaussian = hs.model.components.Gaussian(
             A=0.5,
             centre=len(data)/2)
     if max_sigma:
         gaussian.sigma.bmax = max_sigma
-    signal = hspy.signals.Spectrum(data)
-    m = hspy.create_model(signal)
+    signal = hs.signals.Spectrum(data)
+    m = signal.create_model()
     m.append(gaussian)
     m.fit(fitter='mpfit', bounded=True)
     if False:
@@ -915,7 +914,7 @@ def _rebin_data_using_histogram_and_peakfinding(x_pos, z_pos):
 def _find_peak_position_using_histogram(
         data_list, peakgroup=3, amp_thresh=3, debug_plot=False):
     hist = np.histogram(data_list, 1000)
-    s = hspy.signals.Signal(hist[0])
+    s = hs.signals.Signal(hist[0])
     s.axes_manager[-1].scale = hist[1][1] - hist[1][0]
     peak_data = s.find_peaks1D_ohaver(peakgroup=peakgroup, amp_thresh=amp_thresh)
     peak_positions = peak_data[0]['position']+hist[1][0]
@@ -1111,8 +1110,7 @@ class Atom_Position():
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
-
-        g = hspy.components2d.Gaussian2D(
+        g = hs.model.components.Gaussian2Drot(
                 centre_x=0.0,
                 centre_y=0.0,
                 sigma_x=self.sigma_x,
@@ -1121,11 +1119,11 @@ class Atom_Position():
                 A=data_slice_max)
 
 
-        s = hspy.signals.Image(data)
+        s = hs.signals.Image(data)
         s.axes_manager[0].offset = -delta_d
         s.axes_manager[1].offset = -delta_d
-        s = hspy.utils.stack([s]*2)
-        m = Model2D(s)
+        s = hs.stack([s]*2)
+        m = s.create_model()
         m.append(g)
         m.fit()
 
@@ -1888,7 +1886,7 @@ class Atom_Lattice():
         hist_scale = direction_distance_intensity_hist[1][1]-\
                 direction_distance_intensity_hist[1][0]
 
-        s_direction_distance = hspy.signals.Image(
+        s_direction_distance = hs.signals.Image(
                 direction_distance_intensity_hist[0])
         s_direction_distance.axes_manager[0].offset = -bins[0]/2
         s_direction_distance.axes_manager[1].offset = -bins[1]/2
@@ -2409,7 +2407,7 @@ class Atom_Lattice():
             dtype='float32',
             signal_name="datalist_map.hdf5"):
         """data_list : numpy array, 4D"""
-        im = hspy.signals.Image(data_list[2])
+        im = hs.signals.Image(data_list[2])
         x_scale = data_list[0][1][0] - data_list[0][0][0]
         y_scale = data_list[1][0][1] - data_list[1][0][0]
         im.axes_manager[0].scale = x_scale*data_scale
@@ -2843,7 +2841,7 @@ def make_denoised_stem_signal(signal, invert_signal=False):
     temp_signal = signal.deepcopy()
     average_background_data = gaussian_filter(temp_signal.data, 30, mode='nearest')
     background_subtracted = signal.deepcopy().data - average_background_data
-    signal_denoised = hspy.signals.Signal(background_subtracted-background_subtracted.min())
+    signal_denoised = hs.signals.Signal(background_subtracted-background_subtracted.min())
 
     signal_denoised.decomposition()
     signal_denoised = signal_denoised.get_decomposition_model(22)
@@ -2853,14 +2851,14 @@ def make_denoised_stem_signal(signal, invert_signal=False):
     else:
         signal_den
     signal_denoised = s_abf_modified2/s_abf_modified2.max()
-    s_abf_pca = hspy.signals.Image(s_abf_data_normalized)
+    s_abf_pca = hs.signals.Image(s_abf_data_normalized)
 
 def do_pca_on_signal(signal, pca_components=22):
     signal.change_dtype('float64')
-    temp_signal = hspy.signals.Signal(signal.data)
+    temp_signal = hs.signals.Signal(signal.data)
     temp_signal.decomposition()
     temp_signal = temp_signal.get_decomposition_model(pca_components)
-    temp_signal = hspy.signals.Image(temp_signal.data)
+    temp_signal = hs.signals.Image(temp_signal.data)
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
     return(temp_signal)
@@ -2871,7 +2869,7 @@ def subtract_average_background(signal, gaussian_blur=30):
     average_background_data = gaussian_filter(
             temp_signal.data, gaussian_blur, mode='nearest')
     background_subtracted = signal.deepcopy().data - average_background_data
-    temp_signal = hspy.signals.Signal(background_subtracted-background_subtracted.min())
+    temp_signal = hs.signals.Signal(background_subtracted-background_subtracted.min())
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
     return(temp_signal)
@@ -2883,7 +2881,7 @@ def normalize_signal(signal, invert_signal=False):
     else:
         temp_signal_data = temp_signal.data
     temp_signal_data = temp_signal_data/temp_signal_data.max()
-    temp_signal = hspy.signals.Image(temp_signal_data)
+    temp_signal = hs.signals.Image(temp_signal_data)
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
     return(temp_signal)
@@ -2896,7 +2894,7 @@ def run_peak_finding_process_for_single_dataset(
         invert_abf_signal=True):
     plt.ioff()
     ################
-    s_abf = hspy.load(s_abf_filename)
+    s_abf = hs.load(s_abf_filename)
     s_abf.change_dtype('float64')
     s_abf_modified = subtract_average_background(s_abf)
     s_abf_modified = do_pca_on_signal(s_abf_modified)
@@ -2906,7 +2904,7 @@ def run_peak_finding_process_for_single_dataset(
         s_abf.data = 1./s_abf.data
     
     ################
-    s_adf = hspy.load(s_adf_filename)
+    s_adf = hs.load(s_adf_filename)
     s_adf.change_dtype('float64')
     s_adf_modified = subtract_average_background(s_adf)
     s_adf_modified = do_pca_on_signal(s_adf_modified)
@@ -3045,7 +3043,7 @@ def run_process_for_adf_image(
         filter_signal=True):
     plt.ioff()
     ################
-    s_adf = hspy.load(s_adf_filename)
+    s_adf = hs.load(s_adf_filename)
     s_adf_modified = s_adf.deepcopy()
     if filter_signal:
         s_adf_modified = subtract_average_background(s_adf_modified)
