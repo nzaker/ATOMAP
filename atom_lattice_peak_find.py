@@ -1056,6 +1056,7 @@ class Atom_Position():
         self.sigma_x = 1.0
         self.sigma_y = 1.0
         self.rotation = 0.01
+        self.amplitude_gaussian = None
 
     def get_pixel_position(self):
         return((self.pixel_x, self.pixel_y))
@@ -1064,6 +1065,97 @@ class Atom_Position():
         x_distance = self.pixel_x - atom.pixel_x
         y_distance = self.pixel_y - atom.pixel_y
         return((x_distance, y_distance))
+
+    #todo clean up code and split into subfunctions
+    def fit_2d_gaussian_with_mask_centre_locked(
+            self,
+            image_data,
+            percent_distance_to_nearest_neighbor=0.40,
+            debug_plot=False):
+        """ If the Gaussian is centered outside the masked area,
+        this function returns False"""
+        plt.ioff()
+        closest_neighbor = 100000000000000000
+        for neighbor_atom in self.nearest_neighbor_list:
+            distance = self.get_pixel_distance_from_another_atom(neighbor_atom)
+            if distance < closest_neighbor:
+                closest_neighbor = distance
+        
+        delta_d = closest_neighbor*percent_distance_to_nearest_neighbor
+        x0 = self.pixel_x - delta_d
+        x1 = self.pixel_x + delta_d
+        y0 = self.pixel_y - delta_d
+        y1 = self.pixel_y + delta_d
+        
+        if x0 < 0.0:
+            x0 = 0
+        if y0 < 0.0:
+            y0 = 0
+        if x1 > image_data.shape[1]:
+            x1 = image_data.shape[1]
+        if y1 > image_data.shape[0]:
+            x1 = image_data.shape[0]
+        
+        data_slice = copy.deepcopy(image_data[y0:y1,x0:x1])
+        data_slice_max = data_slice.max()
+        data = data_slice
+
+        mask = _make_circular_mask(
+                delta_d, 
+                delta_d, 
+                data.shape[0],
+                data.shape[1], 
+                closest_neighbor*percent_distance_to_nearest_neighbor)    
+        data = copy.deepcopy(data)
+        mask = np.invert(mask)
+        data[mask] = 0
+        g = hs.model.components.Gaussian2D(
+                centre_x=0.0,
+                centre_y=0.0,
+                sigma_x=self.sigma_x,
+                sigma_y=self.sigma_y,
+                rotation=self.rotation,
+                A=data_slice_max)
+
+        s = hs.signals.Image(data)
+        s.axes_manager[0].offset = -delta_d
+        s.axes_manager[1].offset = -delta_d
+        s = hs.stack([s]*2)
+        m = s.create_model()
+        m.append(g)
+        g.centre_x.free = False
+        g.centre_y.free = False
+        g.rotation.free = False
+        m.fit()
+
+        m.fit()
+
+        if debug_plot:
+            X,Y = np.meshgrid(
+                    np.arange(-delta_d,delta_d,1),
+                    np.arange(-delta_d,delta_d,1))
+            s_m = g.function(X,Y)
+
+            fig, axarr = plt.subplots(3,2)
+            ax0 = axarr[0][0]
+            ax1 = axarr[0][1]
+            ax2 = axarr[1][0]
+            ax3 = axarr[1][1]
+            ax4 = axarr[2][0]
+            ax5 = axarr[2][1]
+
+            ax0.imshow(data)
+            ax1.imshow(s_m)
+            ax2.plot(data.sum(0))
+            ax2.plot(s_m.sum(0))
+            ax3.plot(data.sum(1))
+            ax3.plot(s_m.sum(1))
+
+            fig.tight_layout()
+            fig.savefig("debug_plot_2d_gaussian_" + str(np.random.randint(1000,10000)) + ".jpg", dpi=400)
+            plt.close('all')
+
+        return(g)
 
     #todo clean up code and split into subfunctions
     def fit_2d_gaussian_with_mask(
@@ -1110,7 +1202,7 @@ class Atom_Position():
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
-        g = hs.model.components.Gaussian2Drot(
+        g = hs.model.components.Gaussian2D(
                 centre_x=0.0,
                 centre_y=0.0,
                 sigma_x=self.sigma_x,
@@ -1665,6 +1757,21 @@ class Atom_Lattice():
         self.save_path = "./"
         self.pixel_size = 1.0
         self.plot_color = 'blue'
+
+    @property
+    def atom_positions(self):
+        x_pos, y_pos = [], []
+        for atom in self.atom_list:
+            x_pos.append(atom.pixel_x)
+            y_pos.append(atom.pixel_y)
+        return([x_pos, y_pos])
+
+    @property
+    def atom_amplitude_gaussian2d(self):
+        amplitude = [] 
+        for atom in self.atom_list:
+            amplitude.append(atom.amplitude_gaussian)
+        return(amplitude)
 
     def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
         atom_position_list = self._get_atom_position_list()
@@ -2399,6 +2506,21 @@ class Atom_Lattice():
         fig.tight_layout()
         fig.savefig(self.save_path + "atom_row_distance_list.jpg")
 
+    def get_atom_column_amplitude_gaussian2d(
+            self,
+            image=None,
+            percent_distance_to_nearest_neighbor=0.40):
+        if image == None:
+            image = self.original_adf_image
+
+        for atom in self.atom_list:
+            percent_distance = percent_distance_to_nearest_neighbor
+            for i in range(10):
+                g = atom.fit_2d_gaussian_with_mask_centre_locked(
+                        image,
+                        percent_distance_to_nearest_neighbor=percent_distance)
+                atom.amplitude_gaussian = g.A.value
+    
     def save_map_from_datalist(
             self, 
             data_list,
