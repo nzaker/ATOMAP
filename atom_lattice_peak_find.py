@@ -1057,6 +1057,12 @@ class Atom_Position():
         self.sigma_y = 1.0
         self.rotation = 0.01
         self.amplitude_gaussian = None
+        self.amplitude_max_intensity = None
+
+    @property
+    def sigma_average(self):
+        sigma = (abs(self.sigma_x)+abs(self.sigma_y))*0.5
+        return(sigma)
 
     def get_pixel_position(self):
         return((self.pixel_x, self.pixel_y))
@@ -1065,6 +1071,41 @@ class Atom_Position():
         x_distance = self.pixel_x - atom.pixel_x
         y_distance = self.pixel_y - atom.pixel_y
         return((x_distance, y_distance))
+
+    #todo clean up code and split into subfunctions
+    def calculate_max_intensity(
+            self,
+            image_data,
+            percent_distance_to_nearest_neighbor=0.40):
+        """ If the Gaussian is centered outside the masked area,
+        this function returns False"""
+        plt.ioff()
+        closest_neighbor = 100000000000000000
+        for neighbor_atom in self.nearest_neighbor_list:
+            distance = self.get_pixel_distance_from_another_atom(neighbor_atom)
+            if distance < closest_neighbor:
+                closest_neighbor = distance
+        
+        delta_d = closest_neighbor*percent_distance_to_nearest_neighbor
+        x0 = self.pixel_x - delta_d
+        x1 = self.pixel_x + delta_d
+        y0 = self.pixel_y - delta_d
+        y1 = self.pixel_y + delta_d
+        
+        if x0 < 0.0:
+            x0 = 0
+        if y0 < 0.0:
+            y0 = 0
+        if x1 > image_data.shape[1]:
+            x1 = image_data.shape[1]
+        if y1 > image_data.shape[0]:
+            x1 = image_data.shape[0]
+        
+        data_slice = copy.deepcopy(image_data[y0:y1,x0:x1])
+        data_slice_max = data_slice.max()
+        self.amplitude_max_intensity = data_slice_max
+        
+        return(data_slice_max)
 
     #todo clean up code and split into subfunctions
     def fit_2d_gaussian_with_mask_centre_locked(
@@ -1154,6 +1195,10 @@ class Atom_Position():
             fig.tight_layout()
             fig.savefig("debug_plot_2d_gaussian_" + str(np.random.randint(1000,10000)) + ".jpg", dpi=400)
             plt.close('all')
+
+        self.amplitude_gaussian = g.A.value
+        self.sigma_x = g.sigma_x.value
+        self.sigma_y = g.sigma_y.value
 
         return(g)
 
@@ -1767,10 +1812,37 @@ class Atom_Lattice():
         return([x_pos, y_pos])
 
     @property
+    def sigma_x(self):
+        sigma_x = []
+        for atom in self.atom_list:
+            sigma_x.append(abs(atom.sigma_x))
+        return(sigma_x)
+
+    @property
+    def sigma_y(self):
+        sigma_y = []
+        for atom in self.atom_list:
+            sigma_y.append(abs(atom.sigma_y))
+        return(sigma_y)
+
+    @property
+    def sigma_average(self):
+        sigma = np.array(self.sigma_x)+np.array(self.sigma_y)
+        sigma *= 0.5
+        return(sigma)
+
+    @property
     def atom_amplitude_gaussian2d(self):
         amplitude = [] 
         for atom in self.atom_list:
             amplitude.append(atom.amplitude_gaussian)
+        return(amplitude)
+
+    @property
+    def atom_amplitude_max_intensity(self):
+        amplitude = [] 
+        for atom in self.atom_list:
+            amplitude.append(atom.amplitude_max_intensity)
         return(amplitude)
 
     def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
@@ -2512,15 +2584,131 @@ class Atom_Lattice():
             percent_distance_to_nearest_neighbor=0.40):
         if image == None:
             image = self.original_adf_image
-
+        
+        percent_distance = percent_distance_to_nearest_neighbor
+        atom_amplitude_list = []
         for atom in self.atom_list:
-            percent_distance = percent_distance_to_nearest_neighbor
-            for i in range(10):
-                g = atom.fit_2d_gaussian_with_mask_centre_locked(
-                        image,
-                        percent_distance_to_nearest_neighbor=percent_distance)
-                atom.amplitude_gaussian = g.A.value
+            g = atom.fit_2d_gaussian_with_mask_centre_locked(
+                    image,
+                    percent_distance_to_nearest_neighbor=percent_distance)
+            atom_amplitude_list.append(g.A.value)
+        return(atom_amplitude_list)
+
+    def get_atom_column_amplitude_max_intensity(
+            self,
+            image=None,
+            percent_distance_to_nearest_neighbor=0.40):
+        if image == None:
+            image = self.original_adf_image
+
+        percent_distance = percent_distance_to_nearest_neighbor
+        atom_max_intensity_list = []
+        for atom in self.atom_list:
+            atom_max = atom.calculate_max_intensity(
+                    image,
+                    percent_distance_to_nearest_neighbor=percent_distance)
+            atom_max_intensity_list.append(atom_max)
+        return(atom_max_intensity_list)
     
+    def get_atom_list_atom_amplitude_gauss2d_range(
+            self,
+            amplitude_range):
+        atom_list = []
+        for atom in self.atom_list:
+            if atom.amplitude_gaussian > amplitude_range[0]:
+                if atom.amplitude_gaussian < amplitude_range[1]:
+                    atom_list.append(atom)
+        return(atom_list)
+
+    def get_atom_list_atom_sigma_range(
+            self,
+            sigma_range):
+        atom_list = []
+        for atom in self.atom_list:
+            if atom.sigma_average > sigma_range[0]:
+                if atom.sigma_average < sigma_range[1]:
+                    atom_list.append(atom)
+        return(atom_list)
+
+    def plot_atom_column_hist_sigma_maps(
+            self,
+            bins=10,
+            markersize=1,
+            figname="atom_sigma_hist_gauss2d_map.jpg"):
+        counts, bin_sizes = np.histogram(self.sigma_average, bins=bins)
+        fig, axarr = plt.subplots(1, len(bin_sizes), figsize=(5*len(bin_sizes),5))
+        ax_hist = axarr[0] 
+        ax_hist.hist(self.sigma_average, bins=bins)
+        for index, ax in enumerate(axarr[1:]):
+            ax.imshow(self.original_adf_image)
+            atom_list = self.get_atom_list_atom_sigma_range(
+                    (bin_sizes[index],bin_sizes[index+1]))
+            for atom in atom_list:
+                ax.plot(atom.pixel_x, atom.pixel_y, 'o', markersize=markersize)
+            ax.set_ylim(0, self.adf_image.shape[0])
+            ax.set_xlim(0, self.adf_image.shape[1])
+        fig.tight_layout()
+        fig.savefig(figname)
+
+    def plot_atom_column_hist_amplitude_gauss2d_maps(
+            self,
+            bins=10,
+            markersize=1,
+            figname="atom_amplitude_gauss2d_hist_map.jpg"):
+        counts, bin_sizes = np.histogram(self.atom_amplitude_gaussian2d, bins=bins)
+        fig, axarr = plt.subplots(1, len(bin_sizes), figsize=(5*len(bin_sizes),5))
+        ax_hist = axarr[0] 
+        ax_hist.hist(self.atom_amplitude_gaussian2d, bins=bins)
+        for index, ax in enumerate(axarr[1:]):
+            ax.imshow(self.original_adf_image)
+            atom_list = self.get_atom_list_atom_amplitude_gauss2d_range(
+                    (bin_sizes[index],bin_sizes[index+1]))
+            for atom in atom_list:
+                ax.plot(atom.pixel_x, atom.pixel_y, 'o', markersize=markersize)
+            ax.set_ylim(0, self.adf_image.shape[0])
+            ax.set_xlim(0, self.adf_image.shape[1])
+        fig.tight_layout()
+        fig.savefig(figname)
+
+    def plot_atom_column_histogram_sigma(
+            self, 
+            bins=20, 
+            figname="atom_amplitude_sigma_histogram.png"):
+        fig, ax = plt.subplots()
+        ax.hist(
+                self.sigma_average,
+                bins=bins)
+        ax.set_xlabel("Intensity bins")
+        ax.set_ylabel("Amount")
+        ax.set_title("Atom sigma average histogram, Gaussian2D")
+        fig.savefig(figname, dpi=300)
+
+    def plot_atom_column_histogram_amplitude_gauss2d(
+            self, 
+            bins=20, 
+            figname="atom_amplitude_gauss2d_histogram.png"):
+        fig, ax = plt.subplots()
+        ax.hist(
+                self.atom_amplitude_gaussian2d,
+                bins=bins)
+        ax.set_xlabel("Intensity bins")
+        ax.set_ylabel("Amount")
+        ax.set_title("Atom amplitude histogram, Gaussian2D")
+        fig.savefig(figname, dpi=300)
+
+    def plot_atom_column_histogram_max_intensity(
+            self, 
+            bins=20, 
+            figname="atom_amplitude_max_intensity_histogram.png"):
+        fig, ax = plt.subplots()
+        ax.hist(
+                self.atom_amplitude_max_intensity,
+                bins=bins)
+        ax.set_xlabel("Intensity bins")
+        ax.set_ylabel("Amount")
+        ax.set_title("Atom amplitude histogram, max intensity")
+        fig.savefig(figname, dpi=300)
+
     def save_map_from_datalist(
             self, 
             data_list,
