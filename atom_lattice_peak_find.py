@@ -1072,7 +1072,65 @@ class Atom_Position():
         y_distance = self.pixel_y - atom.pixel_y
         return((x_distance, y_distance))
 
-    #todo clean up code and split into subfunctions
+    def get_image_slice_around_atom(
+            self,
+            image_data,
+            slice_size):
+        x0 = self.pixel_x - slice_size/2
+        x1 = self.pixel_x + slice_size/2
+        y0 = self.pixel_y - slice_size/2
+        y1 = self.pixel_y + slice_size/2
+        
+        if x0 < 0.0:
+            x0 = 0
+        if y0 < 0.0:
+            y0 = 0
+        if x1 > image_data.shape[1]:
+            x1 = image_data.shape[1]
+        if y1 > image_data.shape[0]:
+            x1 = image_data.shape[0]
+        
+        data_slice = copy.deepcopy(image_data[y0:y1,x0:x1])
+        return(data_slice)
+
+    def _plot_gaussian2d_debug(
+            self,
+            slice_radius,
+            gaussian,
+            data_slice):
+
+            X,Y = np.meshgrid(
+                    np.arange(-slice_radius,slice_radius,1),
+                    np.arange(-slice_radius,slice_radius,1))
+            s_m = gaussian.function(X,Y)
+
+            fig, axarr = plt.subplots(2,2)
+            ax0 = axarr[0][0]
+            ax1 = axarr[0][1]
+            ax2 = axarr[1][0]
+            ax3 = axarr[1][1]
+
+            ax0.imshow(data_slice, interpolation="nearest")
+            ax1.imshow(s_m, interpolation="nearest")
+            ax2.plot(data_slice.sum(0))
+            ax2.plot(s_m.sum(0))
+            ax3.plot(data_slice.sum(1))
+            ax3.plot(s_m.sum(1))
+
+            fig.tight_layout()
+            fig.savefig(
+                "debug_plot_2d_gaussian_" +
+                str(np.random.randint(1000,10000)) + ".jpg", dpi=400)
+            plt.close('all')
+    
+    def get_closest_neighbor(self):
+        closest_neighbor = 100000000000000000
+        for neighbor_atom in self.nearest_neighbor_list:
+            distance = self.get_pixel_distance_from_another_atom(neighbor_atom)
+            if distance < closest_neighbor:
+                closest_neighbor = distance
+        return(closest_neighbor)
+
     def calculate_max_intensity(
             self,
             image_data,
@@ -1080,70 +1138,37 @@ class Atom_Position():
         """ If the Gaussian is centered outside the masked area,
         this function returns False"""
         plt.ioff()
-        closest_neighbor = 100000000000000000
-        for neighbor_atom in self.nearest_neighbor_list:
-            distance = self.get_pixel_distance_from_another_atom(neighbor_atom)
-            if distance < closest_neighbor:
-                closest_neighbor = distance
+        closest_neighbor = self.get_closest_neighbor()
         
-        delta_d = closest_neighbor*percent_distance_to_nearest_neighbor
-        x0 = self.pixel_x - delta_d
-        x1 = self.pixel_x + delta_d
-        y0 = self.pixel_y - delta_d
-        y1 = self.pixel_y + delta_d
-        
-        if x0 < 0.0:
-            x0 = 0
-        if y0 < 0.0:
-            y0 = 0
-        if x1 > image_data.shape[1]:
-            x1 = image_data.shape[1]
-        if y1 > image_data.shape[0]:
-            x1 = image_data.shape[0]
-        
-        data_slice = copy.deepcopy(image_data[y0:y1,x0:x1])
+        slice_size = closest_neighbor*percent_distance_to_nearest_neighbor*2
+        data_slice = self.get_image_slice_around_atom(image_data, slice_size)
+
         data_slice_max = data_slice.max()
         self.amplitude_max_intensity = data_slice_max
         
         return(data_slice_max)
-
-    #todo clean up code and split into subfunctions
+    
     def fit_2d_gaussian_with_mask_centre_locked(
             self,
             image_data,
+            rotation_enabled=False,
             percent_distance_to_nearest_neighbor=0.40,
             debug_plot=False):
         """ If the Gaussian is centered outside the masked area,
         this function returns False"""
         plt.ioff()
-        closest_neighbor = 100000000000000000
-        for neighbor_atom in self.nearest_neighbor_list:
-            distance = self.get_pixel_distance_from_another_atom(neighbor_atom)
-            if distance < closest_neighbor:
-                closest_neighbor = distance
+        closest_neighbor = self.get_closest_neighbor()
         
-        delta_d = closest_neighbor*percent_distance_to_nearest_neighbor
-        x0 = self.pixel_x - delta_d
-        x1 = self.pixel_x + delta_d
-        y0 = self.pixel_y - delta_d
-        y1 = self.pixel_y + delta_d
-        
-        if x0 < 0.0:
-            x0 = 0
-        if y0 < 0.0:
-            y0 = 0
-        if x1 > image_data.shape[1]:
-            x1 = image_data.shape[1]
-        if y1 > image_data.shape[0]:
-            x1 = image_data.shape[0]
-        
-        data_slice = copy.deepcopy(image_data[y0:y1,x0:x1])
+        slice_size = closest_neighbor*percent_distance_to_nearest_neighbor*2
+        data_slice = self.get_image_slice_around_atom(image_data, slice_size)
+        slice_radius = slice_size/2
+
         data_slice_max = data_slice.max()
         data = data_slice
 
         mask = _make_circular_mask(
-                delta_d, 
-                delta_d, 
+                slice_radius,
+                slice_radius,
                 data.shape[0],
                 data.shape[1], 
                 closest_neighbor*percent_distance_to_nearest_neighbor)    
@@ -1159,8 +1184,8 @@ class Atom_Position():
                 A=data_slice_max)
 
         s = hs.signals.Image(data)
-        s.axes_manager[0].offset = -delta_d
-        s.axes_manager[1].offset = -delta_d
+        s.axes_manager[0].offset = -slice_radius
+        s.axes_manager[1].offset = -slice_radius
         s = hs.stack([s]*2)
         m = s.create_model()
         m.append(g)
@@ -1169,40 +1194,21 @@ class Atom_Position():
         g.rotation.free = False
         m.fit()
 
-        m.fit()
+        if rotation_enabled:
+            g.rotation.free = True
+            m.fit()
 
         if debug_plot:
-            X,Y = np.meshgrid(
-                    np.arange(-delta_d,delta_d,1),
-                    np.arange(-delta_d,delta_d,1))
-            s_m = g.function(X,Y)
-
-            fig, axarr = plt.subplots(3,2)
-            ax0 = axarr[0][0]
-            ax1 = axarr[0][1]
-            ax2 = axarr[1][0]
-            ax3 = axarr[1][1]
-            ax4 = axarr[2][0]
-            ax5 = axarr[2][1]
-
-            ax0.imshow(data)
-            ax1.imshow(s_m)
-            ax2.plot(data.sum(0))
-            ax2.plot(s_m.sum(0))
-            ax3.plot(data.sum(1))
-            ax3.plot(s_m.sum(1))
-
-            fig.tight_layout()
-            fig.savefig("debug_plot_2d_gaussian_" + str(np.random.randint(1000,10000)) + ".jpg", dpi=400)
-            plt.close('all')
+            self._plot_gaussian2d_debug(
+                    slice_radius,
+                    g,
+                    data)
 
         self.amplitude_gaussian = g.A.value
         self.sigma_x = g.sigma_x.value
         self.sigma_y = g.sigma_y.value
-
         return(g)
 
-    #todo clean up code and split into subfunctions
     def fit_2d_gaussian_with_mask(
             self,
             image_data,
@@ -1212,35 +1218,19 @@ class Atom_Position():
         """ If the Gaussian is centered outside the masked area,
         this function returns False"""
         plt.ioff()
-        closest_neighbor = 100000000000000000
-        for neighbor_atom in self.nearest_neighbor_list:
-            distance = self.get_pixel_distance_from_another_atom(neighbor_atom)
-            if distance < closest_neighbor:
-                closest_neighbor = distance
+        closest_neighbor = self.get_closest_neighbor()
+
+        slice_size = closest_neighbor*percent_distance_to_nearest_neighbor*2
+        data_slice = self.get_image_slice_around_atom(image_data, slice_size)
+        slice_radius = slice_size/2
         
-        delta_d = closest_neighbor*percent_distance_to_nearest_neighbor
-        x0 = self.pixel_x - delta_d
-        x1 = self.pixel_x + delta_d
-        y0 = self.pixel_y - delta_d
-        y1 = self.pixel_y + delta_d
-        
-        if x0 < 0.0:
-            x0 = 0
-        if y0 < 0.0:
-            y0 = 0
-        if x1 > image_data.shape[1]:
-            x1 = image_data.shape[1]
-        if y1 > image_data.shape[0]:
-            x1 = image_data.shape[0]
-        
-        data_slice = copy.deepcopy(image_data[y0:y1,x0:x1])
         data_slice -= data_slice.min()
         data_slice_max = data_slice.max()
         data = data_slice
 
         mask = _make_circular_mask(
-                delta_d, 
-                delta_d, 
+                slice_radius,
+                slice_radius,
                 data.shape[0],
                 data.shape[1], 
                 closest_neighbor*percent_distance_to_nearest_neighbor)    
@@ -1255,10 +1245,9 @@ class Atom_Position():
                 rotation=self.rotation,
                 A=data_slice_max)
 
-
         s = hs.signals.Image(data)
-        s.axes_manager[0].offset = -delta_d
-        s.axes_manager[1].offset = -delta_d
+        s.axes_manager[0].offset = -slice_radius
+        s.axes_manager[1].offset = -slice_radius
         s = hs.stack([s]*2)
         m = s.create_model()
         m.append(g)
@@ -1266,38 +1255,18 @@ class Atom_Position():
 
         if rotation_enabled:
             g.rotation.free = True
-        
-        m.fit()
+            m.fit()
 
         if debug_plot:
-            X,Y = np.meshgrid(
-                    np.arange(-delta_d,delta_d,1),
-                    np.arange(-delta_d,delta_d,1))
-            s_m = g.function(X,Y)
-
-            fig, axarr = plt.subplots(3,2)
-            ax0 = axarr[0][0]
-            ax1 = axarr[0][1]
-            ax2 = axarr[1][0]
-            ax3 = axarr[1][1]
-            ax4 = axarr[2][0]
-            ax5 = axarr[2][1]
-
-            ax0.imshow(data)
-            ax1.imshow(s_m)
-            ax2.plot(data.sum(0))
-            ax2.plot(s_m.sum(0))
-            ax3.plot(data.sum(1))
-            ax3.plot(s_m.sum(1))
-
-            fig.tight_layout()
-            fig.savefig("debug_plot_2d_gaussian_" + str(np.random.randint(1000,10000)) + ".jpg", dpi=400)
-            plt.close('all')
+            self._plot_gaussian2d_debug(
+                    slice_radius,
+                    g,
+                    data)
 
         # If the Gaussian centre is located outside the masked region,
         # return False
         dislocation = math.hypot(g.centre_x.value, g.centre_y.value)
-        if dislocation > delta_d:
+        if dislocation > slice_radius:
             return(False)
         else:
             g.centre_x.value += self.pixel_x
@@ -1845,6 +1814,20 @@ class Atom_Lattice():
             amplitude.append(atom.amplitude_max_intensity)
         return(amplitude)
 
+    @property
+    def rotation(self):
+        rotation = [] 
+        for atom in self.atom_list:
+            rotation.append(atom.rotation)
+        return(rotation)
+
+    @property
+    def ellipticity(self):
+        ellipticity = [] 
+        for atom in self.atom_list:
+            ellipticity.append(atom.ellipticity)
+        return(ellipticity)
+
     def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
         atom_position_list = self._get_atom_position_list()
         nearest_neighbor_data = sp.spatial.cKDTree(
@@ -2295,7 +2278,7 @@ class Atom_Lattice():
         if atom_list == None:
             atom_list = self.atom_list
         fig, ax = plt.subplots(figsize=figsize)
-        cax = ax.imshow(image)
+        cax = ax.imshow(image, interpolation='nearest')
         if self.plot_clim:
             cax.set_clim(self.plot_clim[0], self.plot_clim[1])
         for atom_index, atom in enumerate(atom_list):
@@ -2709,6 +2692,27 @@ class Atom_Lattice():
         ax.set_title("Atom amplitude histogram, max intensity")
         fig.savefig(figname, dpi=300)
 
+    def plot_amplitude_sigma_scatter(
+            self,
+            figname="sigma_amplitude_scatter.png"):
+        fig, ax = plt.subplots(figsize=(5,5))
+        ax.scatter(self.sigma_average, self.atom_amplitude_gaussian2d)
+        ax.set_xlabel("Average sigma")
+        ax.set_ylabel("Amplitude")
+        ax.set_title("Sigma and amplitude scatter")
+        fig.savefig(figname, dpi=300)
+
+    def plot_amplitude_sigma_hist2d(
+            self,
+            bins=30,
+            figname="sigma_amplitude_hist2d.png"):
+        fig, ax = plt.subplots(figsize=(5,5))
+        ax.hist2d(self.sigma_average, self.atom_amplitude_gaussian2d, bins=bins)
+        ax.set_xlabel("Average sigma")
+        ax.set_ylabel("Amplitude")
+        ax.set_title("Sigma and amplitude hist2d")
+        fig.savefig(figname, dpi=300)
+
     def save_map_from_datalist(
             self, 
             data_list,
@@ -3114,10 +3118,6 @@ def refine_atom_lattice(
         total_number_of_refinements += refinement_config[1]
 
     before_image = refinement_config_list[-1][0]
-    atom_lattice.plot_atom_list_on_stem_data(
-            atom_lattice.atom_list, 
-            image=before_image,
-            figname=tag+"_atom_refine0.jpg")
     atom_lattice.find_nearest_neighbors()
 
     current_counts = 1
@@ -3133,17 +3133,13 @@ def refine_atom_lattice(
                         rotation_enabled=True,
                         percent_distance_to_nearest_neighbor=\
                         percent_distance_to_nearest_neighbor)
+                
             elif refinement_type == 'center_of_mass':
                 atom_lattice.refine_atom_positions_using_center_of_mass(
                         image, 
                         percent_distance_to_nearest_neighbor=\
                         percent_distance_to_nearest_neighbor)
             current_counts += 1
-
-    atom_lattice.plot_atom_list_on_stem_data(
-            atom_lattice.atom_list, 
-            image=image,
-            figname=tag+"_atom_refine1.jpg")
 
 # DENNE ER UFERDIG
 def make_denoised_stem_signal(signal, invert_signal=False):
@@ -3347,7 +3343,82 @@ def run_peak_finding_process_for_single_dataset(
     plt.ion()
     return(material_structure)
 
-def run_process_for_adf_image(
+def run_process_for_adf_image_a_cation(
+        s_adf_filename,
+        peak_separation=0.30,
+        filter_signal=True):
+    plt.ioff()
+    ################
+    s_adf = hs.load(s_adf_filename)
+    s_adf_modified = s_adf.deepcopy()
+    if filter_signal:
+        s_adf_modified = subtract_average_background(s_adf_modified)
+        s_adf_modified = do_pca_on_signal(s_adf_modified)
+    peak_separation1 = peak_separation/s_adf.axes_manager[0].scale
+    atom_position_list_pca = get_peak2d_skimage(
+            s_adf_modified, 
+            separation=peak_separation1)[0]
+
+    #################################
+    path_name = s_adf_filename
+    path_name = path_name[0:path_name.rfind(".")]
+    if not os.path.exists(path_name):
+        os.makedirs(path_name)
+    #########################################
+
+    material_structure = Material_Structure()
+    material_structure.original_filename = s_adf_filename
+    material_structure.path_name = path_name
+    material_structure.adf_image = np.rot90(np.fliplr(s_adf.data))
+
+    a_atom_lattice = Atom_Lattice(
+            atom_position_list_pca, 
+            np.rot90(np.fliplr(s_adf_modified.data)))
+
+    a_atom_lattice.save_path = "./" + path_name + "/"
+    a_atom_lattice.path_name = path_name
+    a_atom_lattice.plot_color = 'blue'
+    a_atom_lattice.tag = 'a'
+    a_atom_lattice.pixel_size = s_adf.axes_manager[0].scale
+    a_atom_lattice.original_adf_image = np.rot90(np.fliplr(s_adf.data))
+    material_structure.atom_lattice_list.append(a_atom_lattice)
+
+    for atom in a_atom_lattice.atom_list:
+        atom.sigma_x = 0.05/a_atom_lattice.pixel_size
+        atom.sigma_y = 0.05/a_atom_lattice.pixel_size
+
+    a_atom_lattice.plot_atom_list_on_stem_data(
+            figname=a_atom_lattice.tag+"_atom_refine0_initial.jpg")
+
+    print("Refining a atom lattice")
+    refine_atom_lattice(
+            a_atom_lattice, 
+            [
+                (a_atom_lattice.adf_image, 1, 'center_of_mass')],
+            0.50)
+    refine_atom_lattice(
+            a_atom_lattice, 
+            [
+                (a_atom_lattice.original_adf_image, 1, 'center_of_mass')],
+            0.50)
+    a_atom_lattice.plot_atom_list_on_stem_data(
+            figname=a_atom_lattice.tag+"_atom_refine1_com.jpg")
+    refine_atom_lattice(
+            a_atom_lattice, 
+            [
+                (a_atom_lattice.original_adf_image, 1, 'gaussian')],
+            0.50)
+    a_atom_lattice.plot_atom_list_on_stem_data(
+            figname=a_atom_lattice.tag+"_atom_refine2_gaussian.jpg")
+    save_material_structure(
+            material_structure, 
+            filename=a_atom_lattice.save_path + "material_structure.hdf5")
+    plt.close('all')
+    construct_zone_axes_from_atom_lattice(a_atom_lattice)
+
+    return(material_structure)
+
+def run_process_for_adf_image_a_b_cation(
         s_adf_filename,
         peak_separation=0.13,
         filter_signal=True):
