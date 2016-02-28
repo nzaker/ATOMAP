@@ -358,14 +358,23 @@ def plot_image_map_line_profile_using_interface_row(
     atom_list : list of Atom_Position instances
     extra_marker_list : two arrays of x and y [[x_values], [y_values]]
     """
-    fig, axarr = plt.subplots(2, 1, figsize=(10,20))
-    fig = plt.figure(figsize=(10,20))
-    gs = GridSpec(105,95)
+    number_of_line_profiles = len(line_profile_data_list)
+    
+    figsize = (10, 18+2*number_of_line_profiles)
+
+    fig = plt.figure(figsize=figsize)
+    gs = GridSpec(95+10*number_of_line_profiles,95)
 
     image_ax = fig.add_subplot(gs[0:45,:])
     distance_ax = fig.add_subplot(gs[45:90,:])
     colorbar_ax = fig.add_subplot(gs[90:95,:])
-    line_profile_ax = fig.add_subplot(gs[95:,:])
+    
+    line_profile_ax_list = []
+    for i in range(number_of_line_profiles):
+        gs_y_start = 95+10*i
+        line_profile_ax = fig.add_subplot(
+                gs[gs_y_start:gs_y_start+10,:])
+        line_profile_ax_list.append(line_profile_ax)
     
     image_y_lim = (0,image_data.shape[0]*data_scale)
     image_x_lim = (0,image_data.shape[1]*data_scale)
@@ -417,12 +426,14 @@ def plot_image_map_line_profile_using_interface_row(
     distance_cax = distance_ax.images[0]
     distance_ax.plot(atom_row_x*data_scale, atom_row_y*data_scale, color='red', lw=2)
 
-    _make_subplot_line_profile(
-        line_profile_ax,
-        line_profile_data_list[:,0],
-        line_profile_data_list[:,1],
-        prune_outer_values=line_profile_prune_outer_values,
-        scale=data_scale)
+    for line_profile_ax, line_profile_data in zip(
+            line_profile_ax_list, line_profile_data_list):
+        _make_subplot_line_profile(
+            line_profile_ax,
+            line_profile_data[:,0],
+            line_profile_data[:,1],
+            prune_outer_values=line_profile_prune_outer_values,
+            scale=data_scale)
 
     fig.tight_layout()
     fig.colorbar(distance_cax, cax=colorbar_ax, orientation='horizontal')
@@ -1024,7 +1035,7 @@ def calculate_and_plot_oxygen_100_position_report(
     plot_image_map_line_profile_using_interface_row(
         image,
         heatmap_data_list,
-        line_profile_data_list,
+        [line_profile_data_list],
         atom_row,
         data_scale=data_scale,
         clim=clim,
@@ -2738,6 +2749,7 @@ class Atom_Lattice():
             self, 
             zone_vector_list=None,
             interface_row=None,
+            line_profiles_to_plot=[],
             data_scale=None,
             atom_list_as_zero=None,
             invert_line_profile=False,
@@ -2749,6 +2761,7 @@ class Atom_Lattice():
             self.plot_distance_difference_map_and_line_profile_for_zone_vector(
                 zone_vector,
                 interface_row=interface_row,
+                line_profiles_to_plot=line_profiles_to_plot,
                 data_scale=data_scale,
                 atom_list_as_zero=atom_list_as_zero,
                 invert_line_profile=invert_line_profile,
@@ -2759,12 +2772,15 @@ class Atom_Lattice():
             self, 
             zone_vector,
             interface_row=None,
+            line_profiles_to_plot=[],
             data_scale=None,
             atom_list_as_zero=None,
             invert_line_profile=False,
             figname="distance_difference_and_lineprofile.jpg",
             save_datafiles=False):
-
+    
+        line_profiles_to_plot = copy.deepcopy(line_profiles_to_plot)
+    
         if data_scale == None:
             data_scale = self.pixel_size
         else:
@@ -2783,13 +2799,18 @@ class Atom_Lattice():
         # Get line profile data
         data_list = np.array(data_list)
         data_for_line_profile = np.swapaxes(np.array(data_list),0,1)
-        line_profile_data_list = find_atom_position_1d_from_distance_list_and_atom_row(
-            data_for_line_profile,
-            interface_row,
-            rebin_data=True)
-        line_profile_data_list = np.array(line_profile_data_list)
-        if invert_line_profile == True:
-            line_profile_data_list[:,0] *= -1
+        line_profiles_to_plot.insert(0,data_for_line_profile)
+
+        line_profile_data_list = []
+        for data_for_line_profile in line_profiles_to_plot:
+            line_profile_data = find_atom_position_1d_from_distance_list_and_atom_row(
+                data_for_line_profile,
+                interface_row,
+                rebin_data=True)
+            line_profile_data = np.array(line_profile_data)
+            if invert_line_profile == True:
+                line_profile_data[:,0] *= -1
+            line_profile_data_list.append(line_profile_data)
 
         data_list = self.get_distance_difference_map_for_zone_vector(
             zone_vector,
@@ -2816,9 +2837,9 @@ class Atom_Lattice():
         if save_datafiles:
             line_profile_dict = {
                     'position':(
-                        line_profile_data_list[:,0]*data_scale).tolist(),
+                        line_profile_data_list[0][:,0]*data_scale).tolist(),
                     'oxygen_position_difference':(
-                        line_profile_data_list[:,1]*data_scale).tolist()}
+                        line_profile_data_list[0][:,1]*data_scale).tolist()}
 
             json_filename = self.save_path + self.tag + "_zone" +\
                     str(zone_index) + "_distance_difference_line_profile.json"
@@ -2924,7 +2945,7 @@ class Atom_Lattice():
         plot_image_map_line_profile_using_interface_row(
             self.original_adf_image,
             data_map,
-            line_profile_data_list,
+            [line_profile_data_list],
             interface_row,
             data_scale=data_scale,
             clim=clim,
@@ -3083,6 +3104,56 @@ class Material_Structure():
             atom_lattice.plot_distance_difference_map_for_all_zone_vectors(
                     atom_list_as_zero=atom_list_as_zero)
 
+    def plot_parameter_line_profiles(
+            self,
+            interface_row,
+            parameter_name_list,
+            atom_lattice_list=None,
+            zone_vector_number_list=None):
+        if zone_vector_number_list == None:
+            zone_vector_number_list = range(7)
+        if atom_lattice_list == None:
+            atom_lattice_list = self.atom_lattice_list
+
+        number_of_subplots = len(zone_vector_number_list)*len(atom_lattice_list)
+
+        figsize = (10,number_of_subplots*2)
+        fig = plt.figure(figsize=figsize)
+
+        gs = GridSpec(10*number_of_subplots,10)
+
+        line_profile_gs_size = 10
+        line_profile_index = 0
+        for atom_lattice in self.atom_lattice_list:
+            for zone_vector_number in zone_vector_number_list:
+                zone_vector = atom_lattice.zones_axis_average_distances[zone_vector_number]
+                data_list = atom_lattice.get_distance_difference_data_list_for_zone_vector(
+                    zone_vector)
+                data_list = np.swapaxes(np.array(data_list),0,1)
+
+                line_profile_data = find_atom_position_1d_from_distance_list_and_atom_row(
+                    data_list,
+                    interface_row,
+                    rebin_data=True)
+                line_profile_data = np.array(line_profile_data)
+    
+                ax = fig.add_subplot(
+                        gs[
+                            line_profile_index*line_profile_gs_size:
+                            (line_profile_index+1)*line_profile_gs_size,:])
+
+                _make_subplot_line_profile(
+                    ax,
+                    line_profile_data[:,0],
+                    line_profile_data[:,1],
+#                    prune_outer_values=line_profile_prune_outer_values,
+                    scale=atom_lattice.pixel_size)
+
+                line_profile_index += 1
+
+        fig.tight_layout()
+        fig.savefig("material_structure_parameter_plot.png", dpi=300)
+    
 def run_peak_finding_process_for_all_datasets(refinement_interations=2):
     dm3_adf_filename_list = glob.glob("*ADF*.dm3")    
     dm3_adf_filename_list.sort()
