@@ -1052,6 +1052,12 @@ def calculate_and_plot_oxygen_100_position_report(
     with open(json_filename,'w') as fp:
         json.dump(line_profile_dict, fp)
 
+class Zone_Axis():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.name = str((x,y))
+
 class Atom_Position():
     def __init__(self, x, y):
         self.pixel_x = x
