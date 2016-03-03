@@ -2680,11 +2680,14 @@ class Atom_Lattice():
     def plot_atom_column_histogram_amplitude_gauss2d(
             self, 
             bins=20, 
+            xlim=None,
             figname="atom_amplitude_gauss2d_histogram.png"):
         fig, ax = plt.subplots()
         ax.hist(
                 self.atom_amplitude_gaussian2d,
                 bins=bins)
+        if not (xlim == None):
+            ax.set_xlim(xlim[0], xlim[1])
         ax.set_xlabel("Intensity bins")
         ax.set_ylabel("Amount")
         ax.set_title("Atom amplitude histogram, Gaussian2D")
@@ -3103,21 +3106,52 @@ class Material_Structure():
         for atom_lattice in atom_lattice_list:
             atom_lattice.plot_distance_difference_map_for_all_zone_vectors(
                     atom_list_as_zero=atom_list_as_zero)
+    
+    def _make_line_profile_subplot_from_three_parameter_data(
+            self,
+            ax,
+            data_list,
+            interface_row,
+            scale=1.0,
+            invert_line_profiles=False):
+
+        line_profile_data = find_atom_position_1d_from_distance_list_and_atom_row(
+            data_list,
+            interface_row,
+            rebin_data=True)
+
+        line_profile_data = np.array(line_profile_data)
+
+        position = line_profile_data[:,0]
+        data = line_profile_data[:,1]
+        if invert_line_profiles:
+            position = position*-1
+
+        _make_subplot_line_profile(
+            ax,
+            position,
+            data,
+            scale=scale)
 
     def plot_parameter_line_profiles(
             self,
             interface_row,
-            parameter_name_list,
+            parameter_list=[],
             atom_lattice_list=None,
-            zone_vector_number_list=None):
+            zone_vector_number_list=None,
+            x_lim=False,
+            zone_vector_name_list=None,
+            extra_line_marker_list=[],
+            invert_line_profiles=False):
         if zone_vector_number_list == None:
             zone_vector_number_list = range(7)
         if atom_lattice_list == None:
             atom_lattice_list = self.atom_lattice_list
 
-        number_of_subplots = len(zone_vector_number_list)*len(atom_lattice_list)
+        number_of_subplots = len(zone_vector_number_list)*len(atom_lattice_list) +\
+                             len(parameter_list)
 
-        figsize = (10,number_of_subplots*2)
+        figsize = (15,number_of_subplots*3)
         fig = plt.figure(figsize=figsize)
 
         gs = GridSpec(10*number_of_subplots,10)
@@ -3131,28 +3165,70 @@ class Material_Structure():
                     zone_vector)
                 data_list = np.swapaxes(np.array(data_list),0,1)
 
-                line_profile_data = find_atom_position_1d_from_distance_list_and_atom_row(
-                    data_list,
-                    interface_row,
-                    rebin_data=True)
-                line_profile_data = np.array(line_profile_data)
-    
                 ax = fig.add_subplot(
                         gs[
                             line_profile_index*line_profile_gs_size:
                             (line_profile_index+1)*line_profile_gs_size,:])
 
-                _make_subplot_line_profile(
-                    ax,
-                    line_profile_data[:,0],
-                    line_profile_data[:,1],
-#                    prune_outer_values=line_profile_prune_outer_values,
-                    scale=atom_lattice.pixel_size)
+                self._make_line_profile_subplot_from_three_parameter_data(
+                        ax,
+                        data_list,
+                        interface_row,
+                        scale=atom_lattice.pixel_size,
+                        invert_line_profiles=invert_line_profiles)
+
+                if zone_vector_name_list == None:
+                    ylabel = atom_lattice.tag + ", " + str(zone_vector) + "\n" \
+                         "Pposition deviation, [nm]"
+                else:
+                    zone_vector_name = str(zone_vector_name_list[zone_vector_number])
+                    ylabel = atom_lattice.tag + ", " + zone_vector_name + \
+                         "\nPosition deviation, [nm]"
+                ax.set_ylabel(ylabel)
 
                 line_profile_index += 1
 
+        for parameter in parameter_list:
+            xpos = parameter[0]
+            ypos = parameter[1]
+            zpos = parameter[2]
+            data_list = np.swapaxes(np.array([xpos, ypos, zpos]),0,1)
+
+            ax = fig.add_subplot(
+                    gs[
+                        line_profile_index*line_profile_gs_size:
+                        (line_profile_index+1)*line_profile_gs_size,:])
+
+            self._make_line_profile_subplot_from_three_parameter_data(
+                    ax,
+                    data_list,
+                    interface_row,
+                    scale=atom_lattice.pixel_size,
+                    invert_line_profiles=invert_line_profiles)
+
+            line_profile_index += 1
+                         
+        if x_lim == False:
+            x_min = 100000000000
+            x_max = -10000000000 
+            for ax in fig.axes:
+                ax_xlim = ax.get_xlim()
+                if ax_xlim[0] < x_min:
+                    x_min = ax_xlim[0]
+                if ax_xlim[1] > x_max:
+                    x_max = ax_xlim[1]
+            for ax in fig.axes:
+                ax.set_xlim(x_min, x_max)
+        else:
+            for ax in fig.axes:
+                ax.set_xlim(x_lim[0], x_lim[1])
+
+        for extra_line_marker in extra_line_marker_list:
+            for ax in fig.axes:
+                ax.axvline(extra_line_marker, color='red')
+        
         fig.tight_layout()
-        fig.savefig("material_structure_parameter_plot.png", dpi=300)
+        fig.savefig("material_structure_parameter_plot.png", dpi=100)
     
 def run_peak_finding_process_for_all_datasets(refinement_interations=2):
     dm3_adf_filename_list = glob.glob("*ADF*.dm3")    
