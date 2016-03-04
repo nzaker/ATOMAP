@@ -29,7 +29,12 @@ def save_material_structure(self, filename=None):
         subgroup_name = atom_lattice.tag + "_atom_lattice"
         modified_image_data = atom_lattice.adf_image
         original_image_data = atom_lattice.original_adf_image
+
+        # Atom position data
         atom_positions = np.array(atom_lattice._get_atom_position_list())
+        sigma_x = np.array(atom_lattice.sigma_x)
+        sigma_y = np.array(atom_lattice.sigma_y)
+        rotation = np.array(atom_lattice.rotation)
 
         h5f.create_dataset(
                 subgroup_name + "/modified_image_data",
@@ -41,9 +46,25 @@ def save_material_structure(self, filename=None):
                 data=original_image_data,
                 chunks=True,
                 compression='gzip')
+
         h5f.create_dataset(
                 subgroup_name + "/atom_positions",
                 data=atom_positions,
+                chunks=True,
+                compression='gzip')
+        h5f.create_dataset(
+                subgroup_name + "/sigma_x",
+                data=sigma_x,
+                chunks=True,
+                compression='gzip')
+        h5f.create_dataset(
+                subgroup_name + "/sigma_y",
+                data=sigma_y,
+                chunks=True,
+                compression='gzip')
+        h5f.create_dataset(
+                subgroup_name + "/rotation",
+                data=rotation,
                 chunks=True,
                 compression='gzip')
         
@@ -52,6 +73,9 @@ def save_material_structure(self, filename=None):
         h5f[subgroup_name].attrs['path_name'] = atom_lattice.path_name
         h5f[subgroup_name].attrs['save_path'] = atom_lattice.save_path
         h5f[subgroup_name].attrs['plot_color'] = atom_lattice.plot_color
+
+        zone_axis_names = atom_lattice.zones_axis_average_distances_names
+        h5f[subgroup_name].attrs['zone_axis_names'] = zone_axis_names
 
     h5f.create_dataset(
         "image_data0",
@@ -77,6 +101,19 @@ def load_material_structure_from_hdf5(filename, construct_zone_axes=True):
                 modified_image_data)
             atom_lattice.original_adf_image = original_image_data
 
+            if 'sigma_x' in atom_lattice_set.keys():
+                sigma_x_array = atom_lattice_set['sigma_x'][:]
+                for atom, sigma_x in zip(atom_lattice.atom_list, sigma_x_array):
+                    atom.sigma_x = sigma_x
+            if 'sigma_y' in atom_lattice_set.keys():
+                sigma_y_array = atom_lattice_set['sigma_y'][:]
+                for atom, sigma_y in zip(atom_lattice.atom_list, sigma_y_array):
+                    atom.sigma_y = sigma_y
+            if 'rotation' in atom_lattice_set.keys():
+                rotation_array = atom_lattice_set['rotation'][:]
+                for atom, rotation in zip(atom_lattice.atom_list, rotation_array):
+                    atom.rotation = rotation
+
             atom_lattice.pixel_size = atom_lattice_set.attrs['pixel_size']
             atom_lattice.tag = atom_lattice_set.attrs['tag']
             atom_lattice.path_name = atom_lattice_set.attrs['path_name']
@@ -85,15 +122,17 @@ def load_material_structure_from_hdf5(filename, construct_zone_axes=True):
 
             material_structure.atom_lattice_list.append(atom_lattice)
 
+            if construct_zone_axes:
+                construct_zone_axes_from_atom_lattice(atom_lattice)
+
+            zone_axis_names = atom_lattice_set.attrs['zone_axis_names']
+            atom_lattice.zones_axis_average_distances_names = zone_axis_names
+
         if group_name == 'image_data0':
             material_structure.adf_image = h5f[group_name][:]
 
     material_structure.path_name = h5f.attrs['path_name']
-
     h5f.close()
-
-    if construct_zone_axes:
-        material_structure.construct_zone_axes_for_atom_lattices()
     return(material_structure)
 
 # Move to Atom_Lattice class
@@ -107,6 +146,33 @@ def _to_dict(self):
             }
     modified_image_data = self.adf_image
     original_image_data = self.original_adf_image
+
+def _make_line_profile_subplot_from_three_parameter_data(
+        ax,
+        data_list,
+        interface_row,
+        scale_x=1.0,
+        scale_y=1.0,
+        invert_line_profiles=False):
+
+    line_profile_data = find_atom_position_1d_from_distance_list_and_atom_row(
+        data_list,
+        interface_row,
+        rebin_data=True)
+
+    line_profile_data = np.array(line_profile_data)
+
+    position = line_profile_data[:,0]
+    data = line_profile_data[:,1]
+    if invert_line_profiles:
+        position = position*-1
+
+    _make_subplot_line_profile(
+        ax,
+        position,
+        data,
+        scale_x=scale_x,
+        scale_y=scale_y)
 
 # Remove atom from image using 2d gaussian model
 def remove_atoms_from_image_using_2d_gaussian(
@@ -433,7 +499,8 @@ def plot_image_map_line_profile_using_interface_row(
             line_profile_data[:,0],
             line_profile_data[:,1],
             prune_outer_values=line_profile_prune_outer_values,
-            scale=data_scale)
+            scale_x=data_scale,
+            scale_y=data_scale)
 
     fig.tight_layout()
     fig.colorbar(distance_cax, cax=colorbar_ax, orientation='horizontal')
@@ -444,12 +511,13 @@ def _make_subplot_line_profile(
         ax,
         x_list,
         y_list,
-        scale=1.,
+        scale_x=1.,
+        scale_y=1.,
         x_lim=None,
         prune_outer_values=False,
         y_lim=None):
-    x_data_list = x_list*scale
-    y_data_list = y_list*scale
+    x_data_list = x_list*scale_x
+    y_data_list = y_list*scale_y
     if not (prune_outer_values == False):
         x_data_list = x_data_list[prune_outer_values:-prune_outer_values]
         y_data_list = y_data_list[prune_outer_values:-prune_outer_values]
@@ -1052,11 +1120,56 @@ def calculate_and_plot_oxygen_100_position_report(
     with open(json_filename,'w') as fp:
         json.dump(line_profile_dict, fp)
 
-class Zone_Axis():
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.name = str((x,y))
+# Parameter list in the form of [position, data]
+def plot_line_profiles_from_parameter_input(
+        parameter_list,
+        parameter_name_list=None,
+        invert_line_profiles=False,
+        extra_line_marker_list=[],
+        x_lim=False,
+        figname="line_profile_list.png"):
+    figsize = (15,len(parameter_list)*3)
+    fig = plt.figure(figsize=figsize)
+
+    gs = GridSpec(10*len(parameter_list),10)
+    line_profile_gs_size = 10
+    for index, parameter in enumerate(parameter_list):
+        ax = fig.add_subplot(
+                gs[
+                    index*line_profile_gs_size:
+                    (index+1)*line_profile_gs_size,:])
+        position = parameter[0]
+        if invert_line_profiles:
+            position = position*-1
+        _make_subplot_line_profile(
+                ax,
+                position,
+                parameter[1],
+                scale_x=1.,
+                scale_y=1.)
+        if not (parameter_name_list == None):
+            ax.set_ylabel(parameter_name_list[index])
+
+    if x_lim == False:
+        x_min = 100000000000
+        x_max = -10000000000 
+        for ax in fig.axes:
+            ax_xlim = ax.get_xlim()
+            if ax_xlim[0] < x_min:
+                x_min = ax_xlim[0]
+            if ax_xlim[1] > x_max:
+                x_max = ax_xlim[1]
+        for ax in fig.axes:
+            ax.set_xlim(x_min, x_max)
+    else:
+        for ax in fig.axes:
+            ax.set_xlim(x_lim[0], x_lim[1])
+
+    for extra_line_marker in extra_line_marker_list:
+        for ax in fig.axes:
+            ax.axvline(extra_line_marker, color='red')
+    fig.tight_layout()
+    fig.savefig(figname, dpi=100)
 
 class Atom_Position():
     def __init__(self, x, y):
@@ -1073,13 +1186,44 @@ class Atom_Position():
         self.sigma_x = 1.0
         self.sigma_y = 1.0
         self.rotation = 0.01
-        self.amplitude_gaussian = None
-        self.amplitude_max_intensity = None
+        self.amplitude_gaussian = 1.0
+        self.amplitude_max_intensity = 1.0
+
+    @property
+    def sigma_x(self):
+        return(self.sigma_x)
+
+    @sigma_x.setter
+    def sigma_x(self, new_sigma_x):
+        self.sigma_x = abs(sigma_x)
+
+    @property
+    def sigma_y(self):
+        return(self.sigma_y)
+
+    @sigma_y.setter
+    def sigma_y(self, new_sigma_y):
+        self.sigma_y = abs(sigma_y)
 
     @property
     def sigma_average(self):
         sigma = (abs(self.sigma_x)+abs(self.sigma_y))*0.5
         return(sigma)
+
+    @property
+    def rotation(self):
+        return(self.rotation)
+
+    @rotation.setter
+    def rotation(self, new_rotation):
+        self.rotation = new_rotation % 2*math.pi
+
+    @property
+    def ellipticity(self):
+        if self.sigma_x > self.sigma_y:
+            return(self.sigma_x/self.sigma_y)
+        else:
+            return(self.sigma_y/self.sigma_x)
 
     def get_pixel_position(self):
         return((self.pixel_x, self.pixel_y))
@@ -1168,7 +1312,7 @@ class Atom_Position():
     def fit_2d_gaussian_with_mask_centre_locked(
             self,
             image_data,
-            rotation_enabled=False,
+            rotation_enabled=True,
             percent_distance_to_nearest_neighbor=0.40,
             debug_plot=False):
         """ If the Gaussian is centered outside the masked area,
@@ -1208,12 +1352,11 @@ class Atom_Position():
         m.append(g)
         g.centre_x.free = False
         g.centre_y.free = False
-        g.rotation.free = False
-        m.fit()
-
         if rotation_enabled:
             g.rotation.free = True
-            m.fit()
+        else:
+            g.rotation.free = False
+        m.fit()
 
         if debug_plot:
             self._plot_gaussian2d_debug(
@@ -1222,14 +1365,12 @@ class Atom_Position():
                     data)
 
         self.amplitude_gaussian = g.A.value
-        self.sigma_x = g.sigma_x.value
-        self.sigma_y = g.sigma_y.value
         return(g)
 
     def fit_2d_gaussian_with_mask(
             self,
             image_data,
-            rotation_enabled=False,
+            rotation_enabled=True,
             percent_distance_to_nearest_neighbor=0.40,
             debug_plot=False):
         """ If the Gaussian is centered outside the masked area,
@@ -1262,6 +1403,11 @@ class Atom_Position():
                 rotation=self.rotation,
                 A=data_slice_max)
 
+        if rotation_enabled:
+            g.rotation.free = True
+        else:
+            g.rotation.free = False
+
         s = hs.signals.Image(data)
         s.axes_manager[0].offset = -slice_radius
         s.axes_manager[1].offset = -slice_radius
@@ -1269,10 +1415,6 @@ class Atom_Position():
         m = s.create_model()
         m.append(g)
         m.fit()
-
-        if rotation_enabled:
-            g.rotation.free = True
-            m.fit()
 
         if debug_plot:
             self._plot_gaussian2d_debug(
@@ -1293,7 +1435,7 @@ class Atom_Position():
     def refine_position_using_2d_gaussian(
             self, 
             image_data, 
-            rotation_enabled=False,
+            rotation_enabled=True,
             percent_distance_to_nearest_neighbor=0.40,
             debug_plot=False):
 
@@ -1334,10 +1476,6 @@ class Atom_Position():
         self.rotation = new_rotation
         self.sigma_x = new_sigma_x
         self.sigma_y = new_sigma_y
-        if self.sigma_x > self.sigma_y:
-            self.ellipticity = self.sigma_x/self.sigma_y
-        else:
-            self.ellipticity = self.sigma_y/self.sigma_x
 
     def find_center_position_with_center_of_mass_using_mask(
             self,
@@ -1779,6 +1917,7 @@ class Atom_Lattice():
             atom = Atom_Position(atom_position[0], atom_position[1])
             self.atom_list.append(atom)
         self.zones_axis_average_distances = None
+        self.zones_axis_average_distances_names = []
         self.atom_row_list = []
         self.adf_image = adf_image
         self.original_adf_image = None
@@ -1791,11 +1930,21 @@ class Atom_Lattice():
 
     @property
     def atom_positions(self):
-        x_pos, y_pos = [], []
+        return([self.x_position, self.y_position])
+
+    @property
+    def x_position(self):
+        x_pos = []
         for atom in self.atom_list:
             x_pos.append(atom.pixel_x)
+        return(x_pos)
+
+    @property
+    def y_position(self):
+        y_pos = []
+        for atom in self.atom_list:
             y_pos.append(atom.pixel_y)
-        return([x_pos, y_pos])
+        return(y_pos)
 
     @property
     def sigma_x(self):
@@ -1845,6 +1994,40 @@ class Atom_Lattice():
             ellipticity.append(atom.ellipticity)
         return(ellipticity)
 
+    def get_property_and_positions(self, property_list):
+        data_list = np.array(
+                [self.x_position,
+                self.y_position,
+                property_list])
+        data_list = np.swapaxes(data_list,0,1)
+        return(data_list)
+
+    def get_property_and_positions_atom_row_projection(
+            self,
+            interface_row,
+            property_list,
+            x_position=None,
+            y_position=None,
+            scale_x=1.0,
+            scale_y=1.0):
+        if x_position == None:
+            x_position = self.x_position
+        if y_position == None:
+            y_position = self.y_position
+        data_list = np.array(
+                [x_position,
+                y_position,
+                property_list])
+        data_list = np.swapaxes(data_list,0,1)
+        line_profile_data = find_atom_position_1d_from_distance_list_and_atom_row(
+            data_list,
+            interface_row,
+            rebin_data=True)
+        line_profile_data = np.array(line_profile_data)
+        position = line_profile_data[:,0]*scale_x
+        data = line_profile_data[:,1]*scale_y
+        return(np.array([position, data]))
+
     def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
         atom_position_list = self._get_atom_position_list()
         nearest_neighbor_data = sp.spatial.cKDTree(
@@ -1876,7 +2059,6 @@ class Atom_Lattice():
             y_rot_list.append(elli_vector[1])
 
         return(x_pos_list, y_pos_list, x_rot_list, y_rot_list)
-    
 
     def get_atom_row_slice_between_two_rows(self, atom_row1, atom_row2, zone_vector):
         atom_row_start_index = None
@@ -2103,6 +2285,9 @@ class Atom_Lattice():
                 distance_percent=0.5)
 
         self.zones_axis_average_distances = new_zone_vector_list
+
+        for new_zone_vector in new_zone_vector_list:
+            self.zones_axis_average_distances_names.append(str(new_zone_vector))
 
     def _refine_zone_vector_positions(
             self, 
@@ -2586,13 +2771,10 @@ class Atom_Lattice():
             image = self.original_adf_image
         
         percent_distance = percent_distance_to_nearest_neighbor
-        atom_amplitude_list = []
         for atom in self.atom_list:
-            g = atom.fit_2d_gaussian_with_mask_centre_locked(
+            atom.fit_2d_gaussian_with_mask_centre_locked(
                     image,
                     percent_distance_to_nearest_neighbor=percent_distance)
-            atom_amplitude_list.append(g.A.value)
-        return(atom_amplitude_list)
 
     def get_atom_column_amplitude_max_intensity(
             self,
@@ -2602,13 +2784,10 @@ class Atom_Lattice():
             image = self.original_adf_image
 
         percent_distance = percent_distance_to_nearest_neighbor
-        atom_max_intensity_list = []
         for atom in self.atom_list:
-            atom_max = atom.calculate_max_intensity(
+            atom.calculate_max_intensity(
                     image,
                     percent_distance_to_nearest_neighbor=percent_distance)
-            atom_max_intensity_list.append(atom_max)
-        return(atom_max_intensity_list)
     
     def get_atom_list_atom_amplitude_gauss2d_range(
             self,
@@ -3047,6 +3226,97 @@ class Atom_Lattice():
         fig.tight_layout()
         fig.savefig(self.save_path + self.tag + "_" + figname)
 
+    def plot_parameter_line_profiles(
+            self,
+            interface_row,
+            parameter_list=[],
+            parameter_name_list=None,
+            zone_vector_number_list=None,
+            x_lim=False,
+            extra_line_marker_list=[],
+            invert_line_profiles=False,
+            figname=None):
+        if zone_vector_number_list == None:
+            zone_vector_number_list = range(7)
+
+        number_of_subplots = len(zone_vector_number_list) + len(parameter_list)
+
+        figsize = (15,number_of_subplots*3)
+        fig = plt.figure(figsize=figsize)
+
+        gs = GridSpec(10*number_of_subplots,10)
+
+        line_profile_gs_size = 10
+        line_profile_index = 0
+        for zone_vector_number in zone_vector_number_list:
+            zone_vector = self.zones_axis_average_distances[zone_vector_number]
+            data_list = self.get_distance_difference_data_list_for_zone_vector(
+                zone_vector)
+            data_list = np.swapaxes(np.array(data_list),0,1)
+
+            ax = fig.add_subplot(
+                    gs[
+                        line_profile_index*line_profile_gs_size:
+                        (line_profile_index+1)*line_profile_gs_size,:])
+
+            _make_line_profile_subplot_from_three_parameter_data(
+                    ax,
+                    data_list,
+                    interface_row,
+                    scale_x=self.pixel_size,
+                    scale_y=self.pixel_size,
+                    invert_line_profiles=invert_line_profiles)
+
+            zone_vector_name = self.zones_axis_average_distances_names[zone_vector_number]
+            ylabel = self.tag + ", " + zone_vector_name + \
+                 "\nPosition deviation, [nm]"
+            ax.set_ylabel(ylabel)
+
+            line_profile_index += 1
+
+        for index, parameter in enumerate(parameter_list):
+            data_list = self.get_property_and_positions(parameter)
+            
+            ax = fig.add_subplot(
+                    gs[
+                        line_profile_index*line_profile_gs_size:
+                        (line_profile_index+1)*line_profile_gs_size,:])
+
+            _make_line_profile_subplot_from_three_parameter_data(
+                    ax,
+                    data_list,
+                    interface_row,
+                    scale_x=self.pixel_size,
+                    invert_line_profiles=invert_line_profiles)
+
+            if not (parameter_name_list == None):
+                ax.set_ylabel(parameter_name_list[index])
+
+            line_profile_index += 1
+                         
+        if x_lim == False:
+            x_min = 100000000000
+            x_max = -10000000000 
+            for ax in fig.axes:
+                ax_xlim = ax.get_xlim()
+                if ax_xlim[0] < x_min:
+                    x_min = ax_xlim[0]
+                if ax_xlim[1] > x_max:
+                    x_max = ax_xlim[1]
+            for ax in fig.axes:
+                ax.set_xlim(x_min, x_max)
+        else:
+            for ax in fig.axes:
+                ax.set_xlim(x_lim[0], x_lim[1])
+
+        for extra_line_marker in extra_line_marker_list:
+            for ax in fig.axes:
+                ax.axvline(extra_line_marker, color='red')
+        
+        fig.tight_layout()
+        if figname == None:
+            figname = self.save_path + self.tag + "_lattice_line_profiles.jpg"
+        fig.savefig(figname, dpi=100)
 
 # Rename to Atom_Lattice
 class Material_Structure():
@@ -3113,128 +3383,7 @@ class Material_Structure():
             atom_lattice.plot_distance_difference_map_for_all_zone_vectors(
                     atom_list_as_zero=atom_list_as_zero)
     
-    def _make_line_profile_subplot_from_three_parameter_data(
-            self,
-            ax,
-            data_list,
-            interface_row,
-            scale=1.0,
-            invert_line_profiles=False):
 
-        line_profile_data = find_atom_position_1d_from_distance_list_and_atom_row(
-            data_list,
-            interface_row,
-            rebin_data=True)
-
-        line_profile_data = np.array(line_profile_data)
-
-        position = line_profile_data[:,0]
-        data = line_profile_data[:,1]
-        if invert_line_profiles:
-            position = position*-1
-
-        _make_subplot_line_profile(
-            ax,
-            position,
-            data,
-            scale=scale)
-
-    def plot_parameter_line_profiles(
-            self,
-            interface_row,
-            parameter_list=[],
-            atom_lattice_list=None,
-            zone_vector_number_list=None,
-            x_lim=False,
-            zone_vector_name_list=None,
-            extra_line_marker_list=[],
-            invert_line_profiles=False):
-        if zone_vector_number_list == None:
-            zone_vector_number_list = range(7)
-        if atom_lattice_list == None:
-            atom_lattice_list = self.atom_lattice_list
-
-        number_of_subplots = len(zone_vector_number_list)*len(atom_lattice_list) +\
-                             len(parameter_list)
-
-        figsize = (15,number_of_subplots*3)
-        fig = plt.figure(figsize=figsize)
-
-        gs = GridSpec(10*number_of_subplots,10)
-
-        line_profile_gs_size = 10
-        line_profile_index = 0
-        for atom_lattice in self.atom_lattice_list:
-            for zone_vector_number in zone_vector_number_list:
-                zone_vector = atom_lattice.zones_axis_average_distances[zone_vector_number]
-                data_list = atom_lattice.get_distance_difference_data_list_for_zone_vector(
-                    zone_vector)
-                data_list = np.swapaxes(np.array(data_list),0,1)
-
-                ax = fig.add_subplot(
-                        gs[
-                            line_profile_index*line_profile_gs_size:
-                            (line_profile_index+1)*line_profile_gs_size,:])
-
-                self._make_line_profile_subplot_from_three_parameter_data(
-                        ax,
-                        data_list,
-                        interface_row,
-                        scale=atom_lattice.pixel_size,
-                        invert_line_profiles=invert_line_profiles)
-
-                if zone_vector_name_list == None:
-                    ylabel = atom_lattice.tag + ", " + str(zone_vector) + "\n" \
-                         "Pposition deviation, [nm]"
-                else:
-                    zone_vector_name = str(zone_vector_name_list[zone_vector_number])
-                    ylabel = atom_lattice.tag + ", " + zone_vector_name + \
-                         "\nPosition deviation, [nm]"
-                ax.set_ylabel(ylabel)
-
-                line_profile_index += 1
-
-        for parameter in parameter_list:
-            xpos = parameter[0]
-            ypos = parameter[1]
-            zpos = parameter[2]
-            data_list = np.swapaxes(np.array([xpos, ypos, zpos]),0,1)
-
-            ax = fig.add_subplot(
-                    gs[
-                        line_profile_index*line_profile_gs_size:
-                        (line_profile_index+1)*line_profile_gs_size,:])
-
-            self._make_line_profile_subplot_from_three_parameter_data(
-                    ax,
-                    data_list,
-                    interface_row,
-                    scale=atom_lattice.pixel_size,
-                    invert_line_profiles=invert_line_profiles)
-
-            line_profile_index += 1
-                         
-        if x_lim == False:
-            x_min = 100000000000
-            x_max = -10000000000 
-            for ax in fig.axes:
-                ax_xlim = ax.get_xlim()
-                if ax_xlim[0] < x_min:
-                    x_min = ax_xlim[0]
-                if ax_xlim[1] > x_max:
-                    x_max = ax_xlim[1]
-            for ax in fig.axes:
-                ax.set_xlim(x_min, x_max)
-        else:
-            for ax in fig.axes:
-                ax.set_xlim(x_lim[0], x_lim[1])
-
-        for extra_line_marker in extra_line_marker_list:
-            for ax in fig.axes:
-                ax.axvline(extra_line_marker, color='red')
-        
-        fig.tight_layout()
-        fig.savefig("material_structure_parameter_plot.png", dpi=100)
     
 def run_peak_finding_process_for_all_datasets(refinement_interations=2):
     dm3_adf_filename_list = glob.glob("*ADF*.dm3")    
