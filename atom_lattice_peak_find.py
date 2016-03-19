@@ -115,23 +115,24 @@ def load_material_structure_from_hdf5(filename, construct_zone_axes=True):
                     atom.rotation = rotation
 
             atom_lattice.pixel_size = atom_lattice_set.attrs['pixel_size']
-            atom_lattice.tag = atom_lattice_set.attrs['tag']
-            atom_lattice.path_name = atom_lattice_set.attrs['path_name']
-            atom_lattice.save_path = atom_lattice_set.attrs['save_path']
-            atom_lattice.plot_color = atom_lattice_set.attrs['plot_color']
+            atom_lattice.tag = atom_lattice_set.attrs['tag'].decode()
+            atom_lattice.path_name = atom_lattice_set.attrs['path_name'].decode()
+            atom_lattice.save_path = atom_lattice_set.attrs['save_path'].decode()
+            atom_lattice.plot_color = atom_lattice_set.attrs['plot_color'].decode()
 
             material_structure.atom_lattice_list.append(atom_lattice)
 
             if construct_zone_axes:
                 construct_zone_axes_from_atom_lattice(atom_lattice)
 
-            zone_axis_names = atom_lattice_set.attrs['zone_axis_names']
-            atom_lattice.zones_axis_average_distances_names = zone_axis_names
+            if 'zone_axis_names' in atom_lattice_set.keys():
+                zone_axis_names = atom_lattice_set.attrs['zone_axis_names']
+                atom_lattice.zones_axis_average_distances_names = zone_axis_names
 
         if group_name == 'image_data0':
             material_structure.adf_image = h5f[group_name][:]
 
-    material_structure.path_name = h5f.attrs['path_name']
+    material_structure.path_name = h5f.attrs['path_name'].decode()
     h5f.close()
     return(material_structure)
 
@@ -1191,19 +1192,19 @@ class Atom_Position():
 
     @property
     def sigma_x(self):
-        return(self.sigma_x)
+        return(self.__sigma_x)
 
     @sigma_x.setter
     def sigma_x(self, new_sigma_x):
-        self.sigma_x = abs(sigma_x)
+        self.__sigma_x = abs(new_sigma_x)
 
     @property
     def sigma_y(self):
-        return(self.sigma_y)
+        return(self.__sigma_y)
 
     @sigma_y.setter
     def sigma_y(self, new_sigma_y):
-        self.sigma_y = abs(sigma_y)
+        self.__sigma_y = abs(new_sigma_y)
 
     @property
     def sigma_average(self):
@@ -1212,11 +1213,11 @@ class Atom_Position():
 
     @property
     def rotation(self):
-        return(self.rotation)
+        return(self.__rotation)
 
     @rotation.setter
     def rotation(self, new_rotation):
-        self.rotation = new_rotation % 2*math.pi
+        self.__rotation = new_rotation % 2*math.pi
 
     @property
     def ellipticity(self):
@@ -2160,7 +2161,8 @@ class Atom_Lattice():
                     temp_atom_row_list.append(atom_row)
             self.atom_rows_by_zone_vector[zone_vector] = temp_atom_row_list
             
-        for index, (zone_vector, atom_row_list) in enumerate(self.atom_rows_by_zone_vector.iteritems()):
+        for index, (zone_vector, atom_row_list) in enumerate(
+                self.atom_rows_by_zone_vector.items()):
             length = 100000000
             orthogonal_vector = (length*zone_vector[1], -length*zone_vector[0])
         
@@ -2213,6 +2215,17 @@ class Atom_Lattice():
 #        fig, ax = plt.subplots()
 #        ax.hist(self.nearest_neighbor_distances, bins=100)
 #        fig.savefig("histogram.png")
+
+    def get_nearest_neighbor_directions(self):
+        x_pos_distances = []
+        y_pos_distances = []
+        for atom in self.atom_list:
+            for neighbor_atom in atom.nearest_neighbor_list:
+                distance = atom.get_pixel_difference(neighbor_atom)
+                if not ((distance[0] == 0) and (distance[1] == 0)):
+                    x_pos_distances.append(distance[0])
+                    y_pos_distances.append(distance[1])
+        return(np.array([x_pos_distances, y_pos_distances]))
                 
     def _make_nearest_neighbor_direction_distance_statistics(
             self, 
@@ -3404,7 +3417,8 @@ def run_peak_finding_process_for_all_datasets(refinement_interations=2):
 def construct_zone_axes_from_atom_lattice(atom_lattice):
     tag = atom_lattice.tag
     atom_lattice.find_nearest_neighbors(nearest_neighbors=15)
-    atom_lattice._make_nearest_neighbor_direction_distance_statistics(debug_figname=tag+"_cat_nn.png")
+    atom_lattice._make_nearest_neighbor_direction_distance_statistics(
+            debug_figname=tag+"_cat_nn.png")
     atom_lattice._generate_all_atom_row_list()
     atom_lattice._sort_atom_rows_by_zone_vector()
     atom_lattice.plot_all_atom_rows(fignameprefix=tag+"_atom_row")
