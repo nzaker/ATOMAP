@@ -74,8 +74,13 @@ def save_material_structure(self, filename=None):
         h5f[subgroup_name].attrs['save_path'] = atom_lattice.save_path
         h5f[subgroup_name].attrs['plot_color'] = atom_lattice.plot_color
 
+        # HDF5 does not supporting saving a list of strings, so converting
+        # them to bytes
         zone_axis_names = atom_lattice.zones_axis_average_distances_names
-        h5f[subgroup_name].attrs['zone_axis_names'] = zone_axis_names
+        zone_axis_names_byte = []
+        for zone_axis_name in zone_axis_names:
+            zone_axis_names_byte.append(zone_axis_name.encode())
+        h5f[subgroup_name].attrs['zone_axis_names_byte'] = zone_axis_names_byte
 
     h5f.create_dataset(
         "image_data0",
@@ -125,8 +130,11 @@ def load_material_structure_from_hdf5(filename, construct_zone_axes=True):
             if construct_zone_axes:
                 construct_zone_axes_from_atom_lattice(atom_lattice)
 
-            if 'zone_axis_names' in atom_lattice_set.keys():
-                zone_axis_names = atom_lattice_set.attrs['zone_axis_names']
+            if 'zone_axis_names_byte' in atom_lattice_set.keys():
+                zone_axis_names_byte = atom_lattice_set.attrs['zone_axis_names_byte']
+                zone_axis_names = []
+                for zone_axis_name_byte in zone_axis_names_byte:
+                    zone_axis_names.append(zone_axis_name_byte.decode())
                 atom_lattice.zones_axis_average_distances_names = zone_axis_names
 
         if group_name == 'image_data0':
