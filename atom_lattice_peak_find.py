@@ -222,7 +222,7 @@ def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list):
             pivot='middle')
     ax.set_xlim(min(x_pos_list), max(x_pos_list))
     ax.set_ylim(min(y_pos_list), max(y_pos_list))
-    fig.savefig("vector_field.png", dpi=400)
+    fig.savefig("vector_field.png", dpi=200)
 
 ##### DENNE SKAL FLYTTES ETTERHVERT
 def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
@@ -2493,8 +2493,8 @@ class Atom_Lattice():
             image=None,
             plot_atom_numbers=False, 
             fontsize=12,
-            figsize=(20,20),
-            figdpi=300,
+            figsize=(10,10),
+            figdpi=200,
             figname="atom_plot.jpg"):
         if image == None:
             image = self.original_adf_image
@@ -2705,7 +2705,7 @@ class Atom_Lattice():
         rot_ax.set_ylim(min(y_pos_list), max(y_pos_list))
         figname=self.save_path + self.tag + "_rotation"
         fig.tight_layout()
-        fig.savefig(figname + ".png", dpi=300)
+        fig.savefig(figname + ".png", dpi=200)
 
     def plot_ellipticity_rotation(self, interface_row=None, clim=None, figname=''):
         x_pos_list, y_pos_list, x_rot_list, y_rot_list = [], [], [], []
@@ -2881,7 +2881,7 @@ class Atom_Lattice():
         ax.set_xlabel("Intensity bins")
         ax.set_ylabel("Amount")
         ax.set_title("Atom sigma average histogram, Gaussian2D")
-        fig.savefig(figname, dpi=300)
+        fig.savefig(figname, dpi=200)
 
     def plot_atom_column_histogram_amplitude_gauss2d(
             self, 
@@ -2897,7 +2897,7 @@ class Atom_Lattice():
         ax.set_xlabel("Intensity bins")
         ax.set_ylabel("Amount")
         ax.set_title("Atom amplitude histogram, Gaussian2D")
-        fig.savefig(figname, dpi=300)
+        fig.savefig(figname, dpi=200)
 
     def plot_atom_column_histogram_max_intensity(
             self, 
@@ -2910,7 +2910,7 @@ class Atom_Lattice():
         ax.set_xlabel("Intensity bins")
         ax.set_ylabel("Amount")
         ax.set_title("Atom amplitude histogram, max intensity")
-        fig.savefig(figname, dpi=300)
+        fig.savefig(figname, dpi=200)
 
     def plot_amplitude_sigma_scatter(
             self,
@@ -2920,7 +2920,7 @@ class Atom_Lattice():
         ax.set_xlabel("Average sigma")
         ax.set_ylabel("Amplitude")
         ax.set_title("Sigma and amplitude scatter")
-        fig.savefig(figname, dpi=300)
+        fig.savefig(figname, dpi=200)
 
     def plot_amplitude_sigma_hist2d(
             self,
@@ -2931,7 +2931,7 @@ class Atom_Lattice():
         ax.set_xlabel("Average sigma")
         ax.set_ylabel("Amplitude")
         ax.set_title("Sigma and amplitude hist2d")
-        fig.savefig(figname, dpi=300)
+        fig.savefig(figname, dpi=200)
 
     def save_map_from_datalist(
             self, 
