@@ -120,10 +120,19 @@ def load_material_structure_from_hdf5(filename, construct_zone_axes=True):
                     atom.rotation = rotation
 
             atom_lattice.pixel_size = atom_lattice_set.attrs['pixel_size']
-            atom_lattice.tag = atom_lattice_set.attrs['tag'].decode()
-            atom_lattice.path_name = atom_lattice_set.attrs['path_name'].decode()
-            atom_lattice.save_path = atom_lattice_set.attrs['save_path'].decode()
-            atom_lattice.plot_color = atom_lattice_set.attrs['plot_color'].decode()
+            atom_lattice.tag = atom_lattice_set.attrs['tag']
+            atom_lattice.path_name = atom_lattice_set.attrs['path_name']
+            atom_lattice.save_path = atom_lattice_set.attrs['save_path']
+            atom_lattice.plot_color = atom_lattice_set.attrs['plot_color']
+
+            if type(atom_lattice.tag) == bytes:
+                atom_lattice.tag = atom_lattice.tag.decode()
+            if type(atom_lattice.path_name) == bytes:
+                atom_lattice.path_name = atom_lattice.path_name.decode()
+            if type(atom_lattice.save_path) == bytes:
+                atom_lattice.save_path = atom_lattice.save_path.decode()
+            if type(atom_lattice.plot_color) == bytes:
+                atom_lattice.plot_color = atom_lattice.plot_color.decode()
 
             material_structure.atom_lattice_list.append(atom_lattice)
 
@@ -140,7 +149,9 @@ def load_material_structure_from_hdf5(filename, construct_zone_axes=True):
         if group_name == 'image_data0':
             material_structure.adf_image = h5f[group_name][:]
 
-    material_structure.path_name = h5f.attrs['path_name'].decode()
+    material_structure.path_name = h5f.attrs['path_name']
+    if type(material_structure.path_name) == bytes:
+        material_structure.path_name = material_structure.path_name.decode()
     h5f.close()
     return(material_structure)
 
