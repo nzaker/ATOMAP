@@ -2344,8 +2344,8 @@ class Atom_Lattice():
             center_of_mass = ndimage.measurements.center_of_mass(
                     circular_mask*histogram[0]) 
 
-            new_x_pos = round(center_of_mass[0]*scale+offset,2)
-            new_y_pos = round(center_of_mass[1]*scale+offset,2)
+            new_x_pos = float(format(center_of_mass[0]*scale+offset,'.2f'))
+            new_y_pos = float(format(center_of_mass[1]*scale+offset,'.2f'))
             new_zone_vector_list.append((new_x_pos, new_y_pos))
         return(new_zone_vector_list)
 
