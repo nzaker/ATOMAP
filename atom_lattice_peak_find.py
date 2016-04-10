@@ -2039,8 +2039,8 @@ class Atom_Lattice():
             property_list,
             x_position=None,
             y_position=None,
-            scale_x=1.0,
-            scale_y=1.0):
+            scale_xy=1.0,
+            scale_z=1.0):
         if x_position == None:
             x_position = self.x_position
         if y_position == None:
@@ -2055,8 +2055,8 @@ class Atom_Lattice():
             interface_row,
             rebin_data=True)
         line_profile_data = np.array(line_profile_data)
-        position = line_profile_data[:,0]*scale_x
-        data = line_profile_data[:,1]*scale_y
+        position = line_profile_data[:,0]*scale_xy
+        data = line_profile_data[:,1]*scale_z
         return(np.array([position, data]))
 
     def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
