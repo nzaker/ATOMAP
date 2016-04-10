@@ -343,6 +343,17 @@ def calculate_angle(v1, v2):
 
 def _get_interpolated2d_from_unregular_data(
         data, new_x_lim=None, new_y_lim=None, upscale=4):
+    """
+    Parameters
+    ----------
+    data : numpy array
+        Data to be interpolated. Needs to be the shape (number of atoms, 3).
+        Where the 3 data points are in the order 
+        (x-position, y-position, variable).
+        To generate this from a list of x-position, y-position and variable
+        values:
+        data_input = np.array([xpos, ypos, var]).swapaxes(0,1)
+    """
     data = np.array(data)
     x = data[:,0]
     y = data[:,1]
