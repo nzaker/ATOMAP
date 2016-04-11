@@ -3476,6 +3476,11 @@ def refine_atom_lattice(
             if refinement_type == 'gaussian':
                 atom_lattice.refine_atom_positions_using_2d_gaussian(
                         image,
+                        rotation_enabled=False,
+                        percent_distance_to_nearest_neighbor=\
+                        percent_distance_to_nearest_neighbor)
+                atom_lattice.refine_atom_positions_using_2d_gaussian(
+                        image,
                         rotation_enabled=True,
                         percent_distance_to_nearest_neighbor=\
                         percent_distance_to_nearest_neighbor)
