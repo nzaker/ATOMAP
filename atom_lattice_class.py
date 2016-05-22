@@ -1,24 +1,6 @@
-import sys; sys.dont_write_bytecode = True
-import hyperspy.api as hs
 import matplotlib.pyplot as plt
-import numpy as np
-import scipy as sp
-from scipy.ndimage.filters import gaussian_filter
-import math
-import operator
-import copy
-from scipy import ndimage
-from scipy import interpolate
-from matplotlib.gridspec import GridSpec
-import os
-import glob
-import math
-import json
-from skimage.feature import peak_local_max
-from scipy.stats import linregress
 import h5py
-
-from atomap_plotting import *
+import numpy as np
 
 # Rename to Atom_Lattice
 class Material_Structure():
@@ -46,19 +28,6 @@ class Material_Structure():
         ax.set_xlim(0, self.adf_image.shape[1])
         fig.tight_layout()
         fig.savefig(figname)
-
-# To be removed
-#    def plot_all_atom_lattices_abf(self, markersize=1, figname="all_atom_lattice_abf.jpg"):
-#        plt.ioff()
-#        fig, ax = plt.subplots(figsize=(10,10))
-#        cax = ax.imshow(self.abf_image)
-#        for atom_lattice in self.atom_lattice_list:
-#            color = atom_lattice.plot_color
-#            for atom in atom_lattice.atom_list:
-#                ax.plot(atom.pixel_x, atom.pixel_y, 'o', markersize=markersize, color=color)
-#        ax.set_ylim(0, self.abf_image.shape[0])
-#        ax.set_xlim(0, self.abf_image.shape[1])
-#        fig.savefig(figname)
 
     def plot_atom_distance_maps_for_zone_vectors_and_lattices(
             self,
