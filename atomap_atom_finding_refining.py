@@ -1,3 +1,25 @@
+import sys; sys.dont_write_bytecode = True
+import hyperspy.api as hs
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy as sp
+from scipy.ndimage.filters import gaussian_filter
+import math
+import operator
+import copy
+from scipy import ndimage
+from scipy import interpolate
+from matplotlib.gridspec import GridSpec
+import os
+import glob
+import math
+import json
+from skimage.feature import peak_local_max
+from scipy.stats import linregress
+import h5py
+
+from atomap_plotting import *
+
 def construct_zone_axes_from_atom_lattice(atom_lattice):
     tag = atom_lattice.tag
     atom_lattice.find_nearest_neighbors(nearest_neighbors=15)
