@@ -1,24 +1,25 @@
-import sys; sys.dont_write_bytecode = True
-import hyperspy.api as hs
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
-from scipy.ndimage.filters import gaussian_filter
+import matplotlib.pyplot as plt
 import math
-import operator
-import copy
 from scipy import ndimage
-from scipy import interpolate
+import hyperspy.api as hs
+import copy
 from matplotlib.gridspec import GridSpec
-import os
-import glob
-import math
-import json
-from skimage.feature import peak_local_max
-from scipy.stats import linregress
-import h5py
 
-from atomap_plotting import *    
+from atomap_tools import \
+        find_atom_position_1d_from_distance_list_and_atom_row \
+        _get_interpolated2d_from_unregular_data \
+        get_peak2d_skimage \
+        _get_clim_from_data \
+        find_atom_position_1d_from_distance_list_and_atom_row
+
+from atomap_plotting import \
+        plot_zone_vector_and_atom_distance_map \
+        plot_image_map_line_profile_using_interface_row \
+        _make_line_profile_subplot_from_three_parameter_data
+
+from atom_position_class import Atom_Position
 
 # Rename to Sub_Lattice
 class Atom_Lattice():
@@ -130,7 +131,8 @@ class Atom_Lattice():
                 y_position,
                 property_list])
         data_list = np.swapaxes(data_list,0,1)
-        line_profile_data = find_atom_position_1d_from_distance_list_and_atom_row(
+        line_profile_data = \
+                find_atom_position_1d_from_distance_list_and_atom_row(
             data_list,
             interface_row,
             rebin_data=True)
@@ -426,7 +428,7 @@ class Atom_Lattice():
         for zone_vector in zone_vector_list:
             zone_vector_x = (zone_vector[0]-offset)/scale
             zone_vector_y = (zone_vector[1]-offset)/scale
-            circular_mask = _make_circular_mask(
+            circular_mask = self._make_circular_mask(
                     zone_vector_x,
                     zone_vector_y,
                     histogram[0].shape[0], 
