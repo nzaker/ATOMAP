@@ -85,3 +85,74 @@ class Material_Structure():
             atom_lattice.plot_distance_difference_map_for_all_zone_vectors(
                     atom_list_as_zero=atom_list_as_zero)
  
+    def save_material_structure(self, filename=None):
+        if filename == None:
+            path = self.path_name
+            filename = path + "/" + "material_structure.hdf5"
+
+        h5f = h5py.File(filename, 'w')
+        for atom_lattice in self.atom_lattice_list:
+            subgroup_name = atom_lattice.tag + "_atom_lattice"
+            modified_image_data = atom_lattice.adf_image
+            original_image_data = atom_lattice.original_adf_image
+
+            # Atom position data
+            atom_positions = np.array(atom_lattice._get_atom_position_list())
+            sigma_x = np.array(atom_lattice.sigma_x)
+            sigma_y = np.array(atom_lattice.sigma_y)
+            rotation = np.array(atom_lattice.rotation)
+
+            h5f.create_dataset(
+                    subgroup_name + "/modified_image_data",
+                    data=modified_image_data,
+                    chunks=True,
+                    compression='gzip')
+            h5f.create_dataset(
+                    subgroup_name + "/original_image_data",
+                    data=original_image_data,
+                    chunks=True,
+                    compression='gzip')
+
+            h5f.create_dataset(
+                    subgroup_name + "/atom_positions",
+                    data=atom_positions,
+                    chunks=True,
+                    compression='gzip')
+            h5f.create_dataset(
+                    subgroup_name + "/sigma_x",
+                    data=sigma_x,
+                    chunks=True,
+                    compression='gzip')
+            h5f.create_dataset(
+                    subgroup_name + "/sigma_y",
+                    data=sigma_y,
+                    chunks=True,
+                    compression='gzip')
+            h5f.create_dataset(
+                    subgroup_name + "/rotation",
+                    data=rotation,
+                    chunks=True,
+                    compression='gzip')
+            
+            h5f[subgroup_name].attrs['pixel_size'] = atom_lattice.pixel_size
+            h5f[subgroup_name].attrs['tag'] = atom_lattice.tag
+            h5f[subgroup_name].attrs['path_name'] = atom_lattice.path_name
+            h5f[subgroup_name].attrs['save_path'] = atom_lattice.save_path
+            h5f[subgroup_name].attrs['plot_color'] = atom_lattice.plot_color
+
+            # HDF5 does not supporting saving a list of strings, so converting
+            # them to bytes
+            zone_axis_names = atom_lattice.zones_axis_average_distances_names
+            zone_axis_names_byte = []
+            for zone_axis_name in zone_axis_names:
+                zone_axis_names_byte.append(zone_axis_name.encode())
+            h5f[subgroup_name].attrs['zone_axis_names_byte'] = zone_axis_names_byte
+
+        h5f.create_dataset(
+            "image_data0",
+            data=self.adf_image,
+            chunks=True,
+            compression='gzip')
+        h5f.attrs['path_name'] = self.path_name
+
+        h5f.close()
