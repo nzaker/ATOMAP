@@ -1,25 +1,11 @@
-import sys; sys.dont_write_bytecode = True
-import hyperspy.api as hs
-import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
-from scipy.ndimage.filters import gaussian_filter
-import math
-import operator
-import copy
-from scipy import ndimage
-from scipy import interpolate
+import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
-import os
-import glob
-import math
-import json
-from skimage.feature import peak_local_max
-from scipy.stats import linregress
-import h5py
 
-from atomap_plotting import *
-
+from atomap_tools import\
+        _get_clim_from_data\
+        find_atom_position_1d_from_distance_list_and_atom_row\
+        _get_interpolated2d_from_regular_data\
 
 # Bytte navn etterhvert
 def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list):
@@ -168,11 +154,19 @@ def plot_image_map_line_profile_using_interface_row(
             else:
                 atom_row_x = np.array(atom_row.get_x_position_list())
                 atom_row_y = np.array(atom_row.get_y_position_list())
-            image_ax.plot(atom_row_x*data_scale, atom_row_y*data_scale, color='red', lw=2)
+            image_ax.plot(
+                    atom_row_x*data_scale, 
+                    atom_row_y*data_scale, 
+                    color='red', 
+                    lw=2)
     
     atom_row_x = np.array(interface_row.get_x_position_list())
     atom_row_y = np.array(interface_row.get_y_position_list())
-    image_ax.plot(atom_row_x*data_scale, atom_row_y*data_scale, color='blue', lw=2)
+    image_ax.plot(
+            atom_row_x*data_scale, 
+            atom_row_y*data_scale, 
+            color='blue', 
+            lw=2)
 
     _make_subplot_map_from_unregular_grid(
         distance_ax,
@@ -184,7 +178,11 @@ def plot_image_map_line_profile_using_interface_row(
         extra_marker_list=extra_marker_list,
         vector_to_plot=vector_to_plot)
     distance_cax = distance_ax.images[0]
-    distance_ax.plot(atom_row_x*data_scale, atom_row_y*data_scale, color='red', lw=2)
+    distance_ax.plot(
+            atom_row_x*data_scale, 
+            atom_row_y*data_scale, 
+            color='red', 
+            lw=2)
 
     for line_profile_ax, line_profile_data in zip(
             line_profile_ax_list, line_profile_data_list):
@@ -197,7 +195,10 @@ def plot_image_map_line_profile_using_interface_row(
             scale_y=data_scale)
 
     fig.tight_layout()
-    fig.colorbar(distance_cax, cax=colorbar_ax, orientation='horizontal')
+    fig.colorbar(
+            distance_cax, 
+            cax=colorbar_ax, 
+            orientation='horizontal')
     fig.savefig(figname)
     plt.close(fig)
 
@@ -213,8 +214,10 @@ def _make_subplot_line_profile(
     x_data_list = x_list*scale_x
     y_data_list = y_list*scale_y
     if not (prune_outer_values == False):
-        x_data_list = x_data_list[prune_outer_values:-prune_outer_values]
-        y_data_list = y_data_list[prune_outer_values:-prune_outer_values]
+        x_data_list = x_data_list[
+                prune_outer_values:-prune_outer_values]
+        y_data_list = y_data_list[
+                prune_outer_values:-prune_outer_values]
     ax.plot(x_data_list, y_data_list)
     ax.grid()
     if x_lim == None:
@@ -264,7 +267,10 @@ def _make_subplot_map_from_unregular_grid(
             y.append(atom.pixel_y*distance_data_scale)
         ax.scatter(x, y) 
     if extra_marker_list:
-        ax.scatter(extra_marker_list[0], extra_marker_list[1], color='red')
+        ax.scatter(
+                extra_marker_list[0], 
+                extra_marker_list[1], 
+                color='red')
     if clim:
         cax.set_clim(clim[0], clim[1])
 
@@ -354,7 +360,8 @@ def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_rows(
         parallel_zone_vector, 
         orthogonal_zone_vector)
 
-    atom_position_list = np.array(atom_lattice._get_atom_position_list())
+    atom_position_list = np.array(
+            atom_lattice._get_atom_position_list())
     data[0].extend(atom_position_list[:,0])
     data[1].extend(atom_position_list[:,1])
     data[2].extend(np.zeros(len(atom_position_list[:,0])))
@@ -362,12 +369,16 @@ def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_rows(
     interpolate_x_lim = (0, image.shape[1])
     interpolate_y_lim = (0, image.shape[0])
     new_data = _get_interpolated2d_from_unregular_data(
-        data, new_x_lim=interpolate_x_lim, new_y_lim=interpolate_y_lim, upscale=4)
+        data, 
+        new_x_lim=interpolate_x_lim, 
+        new_y_lim=interpolate_y_lim, 
+        upscale=4)
     
     if not clim:
         clim = _get_clim_from_data(data[:,2], sigma=2)
     
-    atom_row_list = atom_lattice.atom_rows_by_zone_vector[parallel_zone_vector]
+    atom_row_list = atom_lattice.atom_rows_by_zone_vector[
+            parallel_zone_vector]
     plot_zone_vector_and_atom_distance_map(
             image,
             new_data,
@@ -428,4 +439,3 @@ def plot_line_profiles_from_parameter_input(
             ax.axvline(extra_line_marker, color='red')
     fig.tight_layout()
     fig.savefig(figname, dpi=100)
-
