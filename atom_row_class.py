@@ -1,24 +1,10 @@
-import sys; sys.dont_write_bytecode = True
-import hyperspy.api as hs
-import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
-from scipy.ndimage.filters import gaussian_filter
-import math
 import operator
 import copy
-from scipy import ndimage
-from scipy import interpolate
-from matplotlib.gridspec import GridSpec
-import os
-import glob
 import math
-import json
-from skimage.feature import peak_local_max
 from scipy.stats import linregress
-import h5py
-
-from atomap_plotting import *
+from scipy import interpolate
+import matplotlib.pyplot as plt
 
 class Atom_Row():
     def __init__(self, atom_list, zone_vector, atom_lattice):
@@ -29,7 +15,8 @@ class Atom_Row():
         self.end_atom = None
         self._find_start_atom()
         self._find_end_atom()
-        self.sort_atoms_by_distance_to_point(self.start_atom.get_pixel_position())
+        self.sort_atoms_by_distance_to_point(
+                self.start_atom.get_pixel_position())
 
         self.atom_distance_list = self.get_atom_distance_list()
         self._link_atom_to_atom_row()
@@ -70,7 +57,8 @@ class Atom_Row():
         
     def sort_atoms_by_distance_to_point(self, point=(0,0)):
         self.atom_list.sort(
-                key=operator.methodcaller('pixel_distance_from_point', point))
+                key=operator.methodcaller(
+                    'pixel_distance_from_point', point))
 
     def get_slice_between_two_atoms(self, atom1, atom2):
         if not(atom1 in self.atom_list) and not(atom2 in self.atom_list):
@@ -156,7 +144,8 @@ class Atom_Row():
         y_pos_list = data[:,1]
         z_pos_list = data[:,2]
         new_data_list = []
-        for index, (x_pos,y_pos,z_pos) in enumerate(zip(x_pos_list,y_pos_list,z_pos_list)):
+        for index, (x_pos,y_pos,z_pos) in enumerate(
+                zip(x_pos_list,y_pos_list,z_pos_list)):
             if not (index == 0):
                 previous_x_pos = x_pos_list[index-1]
                 previous_y_pos = y_pos_list[index-1]
@@ -174,7 +163,10 @@ class Atom_Row():
             if atom ==  check_atom:
                 return(atom_index)
 
-    def get_closest_position_to_point(self, point_position, extend_line=False):
+    def get_closest_position_to_point(
+            self, 
+            point_position, 
+            extend_line=False):
         x_pos = self.get_x_position_list()
         y_pos = self.get_y_position_list()
 
@@ -195,7 +187,9 @@ class Atom_Row():
             pos_list1.insert(0, start_1)    
 
             reg_results = linregress(pos_list0[-4:], pos_list1[-4:])
-            delta_0 = np.mean((np.array(pos_list0[-3:])-np.array(pos_list0[-4:-1]).mean()))*40
+            delta_0 = np.mean((
+                        np.array(pos_list0[-3:])-\
+                        np.array(pos_list0[-4:-1]).mean()))*40
             delta_1 = reg_results[0]*delta_0
             end_0 = delta_0 + pos_list0[-1]
             end_1 = delta_1 + pos_list1[-1]
@@ -206,13 +200,8 @@ class Atom_Row():
             pos_list0,
             pos_list1)
 
-#        fig, ax = plt.subplots()
-#        ax.scatter(x_pos, y_pos)
-#        ax.plot(pos_list0, pos_list1)
-#        fig.savefig(str(np.random.randint(1000,20000)) + ".png")
-#        plt.close(fig)
-
-        new_pos_list0 = np.linspace(pos_list0[0], pos_list0[-1], len(pos_list0)*100)
+        new_pos_list0 = np.linspace(
+                pos_list0[0], pos_list0[-1], len(pos_list0)*100)
         new_pos_list1 = f(new_pos_list0)
 
         if (max(x_pos)-min(x_pos)) > (max(y_pos)-min(y_pos)):
@@ -267,24 +256,35 @@ class Atom_Row():
 
         point0 = (new_x[closest_index], new_y[closest_index])
         if closest_index == (len(new_x) - 1):
-            point1 = (-1*new_x[closest_index-1], -1*new_y[closest_index-1])
+            point1 = (
+                    -1*new_x[closest_index-1],
+                    -1*new_y[closest_index-1])
         else:
             point1 = (new_x[closest_index+1], new_y[closest_index+1])
 
         vector0 = (point1[0]-point0[0], point1[1]-point0[1])
-        vector1 = (point_position[0]-point0[0], point_position[1]-point0[1])
+        vector1 = (
+                point_position[0]-point0[0],
+                point_position[1]-point0[1])
 
         direction = np.cross(vector0, vector1)
     
         if plot_debug:
             plt.ioff()
             fig, ax = plt.subplots()
-            ax.plot(self.get_x_position_list(), self.get_y_position_list())
+            ax.plot(
+                    self.get_x_position_list(), 
+                    self.get_y_position_list())
             ax.plot(new_x, new_y)
-            ax.plot([point_position[0], point0[0]], [point_position[1], point0[1]])
+            ax.plot(
+                    [point_position[0], point0[0]],
+                    [point_position[1], point0[1]])
             ax.set_xlim(0,1000)
             ax.set_ylim(0,1000)
-            ax.text(0.2,0.2, str(closest_distance*math.copysign(1, direction)))
+            ax.text(
+                    0.2,
+                    0.2, 
+                    str(closest_distance*math.copysign(1, direction)))
             fig.savefig(str(np.random.randint(1000,20000)) + ".png")
             plt.close()
         
@@ -306,4 +306,3 @@ class Atom_Row():
 
     def plot_atom_distance(self, figname="atom_distance.png"):
         fig, ax = plt.subplots(figsize=(10,10))
- 
