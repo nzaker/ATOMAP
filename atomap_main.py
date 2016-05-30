@@ -1,32 +1,32 @@
-import sys; sys.dont_write_bytecode = True
-import hyperspy.api as hs
-import matplotlib.pyplot as plt
-import numpy as np
-import scipy as sp
-from scipy.ndimage.filters import gaussian_filter
-import math
-import operator
-import copy
-from scipy import ndimage
-from scipy import interpolate
-from matplotlib.gridspec import GridSpec
 import os
 import glob
-import math
-import json
-from skimage.feature import peak_local_max
-from scipy.stats import linregress
-import h5py
+import matplotlib.pyplot as plt
+import hyperspy.api as hs
+import numpy as np
+from atomap_atom_finding_refining import\
+        subtract_average_background\
+        do_pca_on_signal\
+        refine_atom_lattice\
+        construct_zones_axes_from_atom_lattice
 
-from atomap_plotting import *
+from atomap_tools import\
+        get_peak2d_skimage\
+        remove_atoms_from_image_using_2d_gaussian
 
-def run_peak_finding_process_for_all_datasets(refinement_interations=2):
+from atom_lattice_class import Material_Structure
+from sub_lattice_class import Atom_Lattice
+
+def run_peak_finding_process_for_all_datasets(
+        refinement_interations=2):
     dm3_adf_filename_list = glob.glob("*ADF*.dm3")    
     dm3_adf_filename_list.sort()
     dataset_list = []
     total_datasets = len(dm3_adf_filename_list)+1
     for index, dm3_adf_filename in enumerate(dm3_adf_filename_list):
-        print("Dataset "+str(index+1)+"/"+str(total_datasets)+": " + dm3_adf_filename)
+        print(
+                "Dataset "+str(index+1)+\
+                "/"+str(total_datasets)+\
+                ": " + dm3_adf_filename)
         dm3_abf_filename = dm3_adf_filename.replace("ADF", "ABF")
         dataset = run_peak_finding_process_for_single_dataset(
                 dm3_adf_filename,
@@ -81,7 +81,8 @@ def run_peak_finding_process_for_single_dataset(
     material_structure.inverted_abf_image = np.rot90(np.fliplr(normalized_abf_data))
 
     a_atom_lattice = Atom_Lattice(
-            atom_position_list_pca, np.rot90(np.fliplr(s_adf_modified.data)))
+            atom_position_list_pca, 
+            np.rot90(np.fliplr(s_adf_modified.data)))
 
     a_atom_lattice.save_path = "./" + path_name + "/"
     a_atom_lattice.path_name = path_name
@@ -110,7 +111,9 @@ def run_peak_finding_process_for_single_dataset(
     b_atom_list = a_atom_lattice.find_missing_atoms_from_zone_vector(
             zone_vector_100, new_atom_tag='B')
 
-    b_atom_lattice = Atom_Lattice(b_atom_list, np.rot90(np.fliplr(s_adf_modified.data)))
+    b_atom_lattice = Atom_Lattice(
+            b_atom_list, 
+            np.rot90(np.fliplr(s_adf_modified.data)))
     b_atom_lattice.save_path = "./" + path_name + "/"
     b_atom_lattice.path_name = path_name
     b_atom_lattice.plot_color = 'green'
@@ -129,7 +132,8 @@ def run_peak_finding_process_for_single_dataset(
         a_atom_lattice,
         percent_distance_to_nearest_neighbor=0.35)
 
-    b_atom_lattice.original_adf_image_atoms_removed = image_atoms_removed
+    b_atom_lattice.original_adf_image_atoms_removed =\
+            image_atoms_removed
     b_atom_lattice.adf_image = image_atoms_removed
 
     print("Refining b atom lattice")
@@ -146,7 +150,8 @@ def run_peak_finding_process_for_single_dataset(
     o_atom_list = b_atom_lattice.find_missing_atoms_from_zone_vector(
             zone_vector_110, new_atom_tag='O')
 
-    o_atom_lattice = Atom_Lattice(o_atom_list, np.rot90(np.fliplr(s_abf_modified.data)))
+    o_atom_lattice = Atom_Lattice(
+            o_atom_list, np.rot90(np.fliplr(s_abf_modified.data)))
     o_atom_lattice.save_path = "./" + path_name + "/"
     o_atom_lattice.path_name = path_name
     o_atom_lattice.plot_color = 'red'
@@ -242,7 +247,10 @@ def run_process_for_adf_image_a_cation(
     refine_atom_lattice(
             a_atom_lattice, 
             [
-                (a_atom_lattice.original_adf_image, 1, 'center_of_mass')],
+                (
+                    a_atom_lattice.original_adf_image,
+                    1, 
+                    'center_of_mass')],
             0.50)
     a_atom_lattice.plot_atom_list_on_stem_data(
             figname=a_atom_lattice.tag+"_atom_refine1_com.jpg")
@@ -255,7 +263,8 @@ def run_process_for_adf_image_a_cation(
             figname=a_atom_lattice.tag+"_atom_refine2_gaussian.jpg")
     save_material_structure(
             material_structure, 
-            filename=a_atom_lattice.save_path + "material_structure.hdf5")
+            filename=a_atom_lattice.save_path +\
+                    "material_structure.hdf5")
     plt.close('all')
     construct_zone_axes_from_atom_lattice(a_atom_lattice)
 
@@ -307,7 +316,8 @@ def run_process_for_adf_image_a_b_cation(
 
     save_material_structure(
             material_structure, 
-            filename=a_atom_lattice.save_path + "material_structure_no_refinement.hdf5")
+            filename=a_atom_lattice.save_path +\
+                    "material_structure_no_refinement.hdf5")
     print("Refining a atom lattice")
     refine_atom_lattice(
             a_atom_lattice, 
@@ -317,11 +327,15 @@ def run_process_for_adf_image_a_b_cation(
     refine_atom_lattice(
             a_atom_lattice, 
             [
-                (a_atom_lattice.original_adf_image, 1, 'center_of_mass')],
+                (
+                    a_atom_lattice.original_adf_image, 
+                    1, 
+                    'center_of_mass')],
             0.30)
     save_material_structure(
             material_structure, 
-            filename=a_atom_lattice.save_path + "material_structure_center_of_mass.hdf5")
+            filename=a_atom_lattice.save_path +\
+                    "material_structure_center_of_mass.hdf5")
     refine_atom_lattice(
             a_atom_lattice, 
             [
@@ -329,7 +343,8 @@ def run_process_for_adf_image_a_b_cation(
             0.30)
     save_material_structure(
             material_structure, 
-            filename=a_atom_lattice.save_path + "material_structure_2d_model.hdf5")
+            filename=a_atom_lattice.save_path +\
+                    "material_structure_2d_model.hdf5")
     plt.close('all')
     construct_zone_axes_from_atom_lattice(a_atom_lattice)
 
