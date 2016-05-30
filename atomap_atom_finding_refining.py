@@ -1,24 +1,5 @@
-import sys; sys.dont_write_bytecode = True
-import hyperspy.api as hs
-import matplotlib.pyplot as plt
-import numpy as np
-import scipy as sp
 from scipy.ndimage.filters import gaussian_filter
-import math
-import operator
-import copy
-from scipy import ndimage
-from scipy import interpolate
-from matplotlib.gridspec import GridSpec
-import os
-import glob
-import math
-import json
-from skimage.feature import peak_local_max
-from scipy.stats import linregress
-import h5py
-
-from atomap_plotting import *
+import hyperspy.api as hs
 
 def construct_zone_axes_from_atom_lattice(atom_lattice):
     tag = atom_lattice.tag
@@ -48,7 +29,9 @@ def refine_atom_lattice(
         number_of_refinements = refinement_config[1]
         refinement_type = refinement_config[2]
         for index in range(1,number_of_refinements+1):
-            print(str(current_counts) + "/" + str(total_number_of_refinements))
+            print(
+                    str(current_counts) + "/" + str(
+                        total_number_of_refinements))
             if refinement_type == 'gaussian':
                 atom_lattice.refine_atom_positions_using_2d_gaussian(
                         image,
@@ -60,7 +43,6 @@ def refine_atom_lattice(
                         rotation_enabled=True,
                         percent_distance_to_nearest_neighbor=\
                         percent_distance_to_nearest_neighbor)
-                
             elif refinement_type == 'center_of_mass':
                 atom_lattice.refine_atom_positions_using_center_of_mass(
                         image, 
@@ -72,8 +54,10 @@ def refine_atom_lattice(
 def make_denoised_stem_signal(signal, invert_signal=False):
     signal.change_dtype('float64')
     temp_signal = signal.deepcopy()
-    average_background_data = gaussian_filter(temp_signal.data, 30, mode='nearest')
-    background_subtracted = signal.deepcopy().data - average_background_data
+    average_background_data = gaussian_filter(
+            temp_signal.data, 30, mode='nearest')
+    background_subtracted = signal.deepcopy().data -\
+            average_background_data
     signal_denoised = hs.signals.Signal(background_subtracted-background_subtracted.min())
 
     signal_denoised.decomposition()
@@ -101,8 +85,10 @@ def subtract_average_background(signal, gaussian_blur=30):
     temp_signal = signal.deepcopy()
     average_background_data = gaussian_filter(
             temp_signal.data, gaussian_blur, mode='nearest')
-    background_subtracted = signal.deepcopy().data - average_background_data
-    temp_signal = hs.signals.Signal(background_subtracted-background_subtracted.min())
+    background_subtracted = signal.deepcopy().data -\
+            average_background_data
+    temp_signal = hs.signals.Signal(
+            background_subtracted-background_subtracted.min())
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
     return(temp_signal)
@@ -118,4 +104,3 @@ def normalize_signal(signal, invert_signal=False):
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
     return(temp_signal)
-
