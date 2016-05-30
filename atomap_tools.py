@@ -1,24 +1,12 @@
-import sys; sys.dont_write_bytecode = True
-import hyperspy.api as hs
-import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
-from scipy.ndimage.filters import gaussian_filter
 import math
-import operator
 import copy
-from scipy import ndimage
 from scipy import interpolate
-from matplotlib.gridspec import GridSpec
-import os
-import glob
-import math
-import json
-from skimage.feature import peak_local_max
-from scipy.stats import linregress
-import h5py
+from scipy import ndimage
+import matplotlib.pyplot as plt
+import hyperspy.api as hs
 
-from atomap_plotting import *
+from atom_position_class import Atom_Position
 
 #From Vidars HyperSpy repository
 def _line_profile_coordinates(src, dst, linewidth=1):
@@ -75,7 +63,8 @@ def remove_atoms_from_image_using_2d_gaussian(
         image, atom_lattice,
         percent_distance_to_nearest_neighbor=0.40):
     model_image = np.zeros(image.shape)
-    X,Y = np.meshgrid(np.arange(model_image.shape[1]), np.arange(model_image.shape[0]))
+    X,Y = np.meshgrid(np.arange(
+        model_image.shape[1]), np.arange(model_image.shape[0]))
     for atom in atom_lattice.atom_list:
         percent_distance = percent_distance_to_nearest_neighbor
         for i in range(10):
@@ -93,8 +82,6 @@ def remove_atoms_from_image_using_2d_gaussian(
                 break
     subtracted_image = copy.deepcopy(image) - model_image
     return(subtracted_image)
-
-
 
 ##### DENNE SKAL FLYTTES ETTERHVERT
 def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
@@ -191,7 +178,7 @@ def get_peak2d_skimage(image, separation):
         peaks[indices] = peak_local_max(
                 z, 
                 min_distance=separation)
-    return peaks
+    return(peaks)
 
 def dotproduct(v1, v2):
     return sum((a*b) for a, b in zip(v1, v2))
@@ -208,11 +195,11 @@ def _get_interpolated2d_from_unregular_data(
     Parameters
     ----------
     data : numpy array
-        Data to be interpolated. Needs to be the shape (number of atoms, 3).
-        Where the 3 data points are in the order 
+        Data to be interpolated. Needs to be the shape 
+        (number of atoms, 3). Where the 3 data points are in the order 
         (x-position, y-position, variable).
-        To generate this from a list of x-position, y-position and variable
-        values:
+        To generate this from a list of x-position, y-position 
+        and variable values:
         data_input = np.array([xpos, ypos, var]).swapaxes(0,1)
     """
     data = np.array(data)
@@ -236,8 +223,6 @@ def _get_interpolated2d_from_unregular_data(
             fill_value=0.0).astype('float32')
     return(new_x, new_y, new_z)
 
-
-
 def get_slice_between_two_atoms(image, atom0, atom1, width):
     start_point = atom0.get_pixel_position()
     end_point = atom1.get_pixel_position()
@@ -257,10 +242,17 @@ def get_slice_between_four_atoms(image, start_atoms, end_atoms, width):
     output_slice = get_arbitrary_slice(image, start_point, end_point, width)
     return(output_slice)
 
-def get_arbitrary_slice(image, start_point, end_point, width, debug_figname=None):
-    slice_bounds = _line_profile_coordinates(start_point[::-1], end_point[::-1], linewidth=width)
+def get_arbitrary_slice(
+        image, 
+        start_point, 
+        end_point, 
+        width, 
+        debug_figname=None):
+    slice_bounds = _line_profile_coordinates(
+            start_point[::-1], end_point[::-1], linewidth=width)
 
-    output_slice = ndimage.map_coordinates(np.transpose(image), slice_bounds)
+    output_slice = ndimage.map_coordinates(
+            np.transpose(image), slice_bounds)
 
     if debug_figname:
         fig, axarr = plt.subplots(1,2)
@@ -273,7 +265,11 @@ def get_arbitrary_slice(image, start_point, end_point, width, debug_figname=None
         line2_y = [slice_bounds[1][0][-1],slice_bounds[1][-1][-1]]
 
         ax0.imshow(image)
-        ax0.plot([start_point[0],end_point[0]],[start_point[1],end_point[1]])
+        ax0.plot([
+                    start_point[0],
+                    end_point[0]],
+                    [start_point[1],
+                    end_point[1]])
         ax0.plot(line1_x, line1_y)
         ax0.plot(line2_x, line2_y)
         ax1.imshow(np.rot90(np.fliplr(output_slice)))
@@ -294,8 +290,12 @@ def get_point_between_four_atoms(atom_list):
     atom2 = atom_list[2]
     atom3 = atom_list[3]
     
-    x_pos = (atom0.pixel_x + atom1.pixel_x + atom2.pixel_x + atom3.pixel_x)*0.25
-    y_pos = (atom0.pixel_y + atom1.pixel_y + atom2.pixel_y + atom3.pixel_y)*0.25
+    x_pos = (
+            atom0.pixel_x + atom1.pixel_x +\
+            atom2.pixel_x + atom3.pixel_x)*0.25
+    y_pos = (
+            atom0.pixel_y + atom1.pixel_y +\
+            atom2.pixel_y + atom3.pixel_y)*0.25
     return((x_pos, y_pos))
 
 def get_point_between_two_atoms(atom_list):
@@ -316,8 +316,10 @@ def find_atom_position_between_atom_rows(
     start_atoms_found = False
     start_atom0 = atom_row0.start_atom
     while not start_atoms_found:
-        orthogonal_atom0 = start_atom0.get_next_atom_in_zone_vector(orthogonal_zone_vector)
-        orthogonal_atom1 = start_atom0.get_previous_atom_in_zone_vector(orthogonal_zone_vector)
+        orthogonal_atom0 = start_atom0.get_next_atom_in_zone_vector(
+                orthogonal_zone_vector)
+        orthogonal_atom1 = start_atom0.get_previous_atom_in_zone_vector(
+                orthogonal_zone_vector)
         if orthogonal_atom0 in atom_row1.atom_list:
             start_atoms_found = True
             start_atom1 = orthogonal_atom0
@@ -325,14 +327,16 @@ def find_atom_position_between_atom_rows(
             start_atoms_found = True
             start_atom1 = orthogonal_atom1
         else:
-            start_atom0 = start_atom0.get_next_atom_in_atom_row(atom_row0)
+            start_atom0 = start_atom0.get_next_atom_in_atom_row(
+                    atom_row0)
     
     slice_list = []
     
     is_next_atom0 = True
     is_next_atom1 = True
 
-    atom_distance = start_atom0.get_pixel_distance_from_another_atom(start_atom1)
+    atom_distance = start_atom0.get_pixel_distance_from_another_atom(
+            start_atom1)
     integration_width = atom_distance*integration_width_percent
 
     end_atom0 = start_atom0.get_next_atom_in_atom_row(atom_row0)
@@ -375,17 +379,26 @@ def find_atom_position_between_atom_rows(
     max_oxygen_sigma = max_oxygen_sigma_percent*atom_distance
     centre_value_list = [] 
     for slice_index, summed_slice in enumerate(summed_slices):
-        centre_value = _get_centre_value_from_gaussian_model(summed_slice, max_sigma=max_oxygen_sigma, index=slice_index)
+        centre_value = _get_centre_value_from_gaussian_model(
+                summed_slice, max_sigma=max_oxygen_sigma,
+                index=slice_index)
         centre_value_list.append(float(centre_value)/len(summed_slice))
 
     atom_list = []
-    for line_segment, centre_value in zip(line_segment_list, centre_value_list):
+    for line_segment, centre_value in zip(
+            line_segment_list, centre_value_list):
         end_point = line_segment[1]
         start_point = line_segment[0]
 
-        line_segment_vector = (end_point[0]-start_point[0], end_point[1]-start_point[1])
-        atom_vector = (line_segment_vector[0]*centre_value, line_segment_vector[1]*centre_value)
-        atom_position = (start_point[0] + atom_vector[0], start_point[1] + atom_vector[1])
+        line_segment_vector = (
+                end_point[0]-start_point[0], 
+                end_point[1]-start_point[1])
+        atom_vector = (
+                line_segment_vector[0]*centre_value,
+                line_segment_vector[1]*centre_value)
+        atom_position = (
+                start_point[0] + atom_vector[0], 
+                start_point[1] + atom_vector[1])
 
         atom = Atom_Position(atom_position[0], atom_position[1])
         
@@ -425,7 +438,8 @@ def _calculate_distance_between_atoms(atom_list):
 
             new_x_pos = (x_pos + previous_x_pos)*0.5
             new_y_pos = (y_pos + previous_y_pos)*0.5
-            z_pos = atom.get_pixel_distance_from_another_atom(previous_atom)
+            z_pos = atom.get_pixel_distance_from_another_atom(
+                    previous_atom)
 
             new_x_pos_list.append(new_x_pos)
             new_y_pos_list.append(new_y_pos)
@@ -438,7 +452,8 @@ def _calculate_net_distance_change_between_atoms(atom_list):
     y_pos_list = data[1]
     z_pos_list = data[2]
     new_x_pos_list, new_y_pos_list, new_z_pos_list = [], [], []
-    for index, (x_pos,y_pos,z_pos) in enumerate(zip(x_pos_list,y_pos_list,z_pos_list)):
+    for index, (x_pos,y_pos,z_pos) in enumerate(
+            zip(x_pos_list,y_pos_list,z_pos_list)):
         if not (index == 0):
             previous_x_pos = x_pos_list[index-1]
             previous_y_pos = y_pos_list[index-1]
@@ -458,7 +473,8 @@ def _calculate_net_distance_change_between_3d_positions(data_list):
     y_pos_list = data_list[1] 
     z_pos_list = data_list[2]
     new_x_pos_list, new_y_pos_list, new_z_pos_list = [], [], []
-    for index, (x_pos, y_pos, z_pos) in enumerate(zip(x_pos_list, y_pos_list, z_pos_list)):
+    for index, (x_pos, y_pos, z_pos) in enumerate(
+            zip(x_pos_list, y_pos_list, z_pos_list)):
         if not (index == 0):
             previous_x_pos = x_pos_list[index-1]
             previous_y_pos = y_pos_list[index-1]
@@ -483,7 +499,8 @@ def find_atom_positions_for_an_atom_row(
         atom_row0, 
         atom_row1, 
         orthogonal_zone_vector)
-    position_data = _calculate_net_distance_change_between_atoms(atom_list)
+    position_data = _calculate_net_distance_change_between_atoms(
+            atom_list)
     return(position_data)
 
 def find_atom_positions_for_all_atom_rows(
@@ -491,7 +508,8 @@ def find_atom_positions_for_all_atom_rows(
         atom_lattice,
         parallel_zone_vector, 
         orthogonal_zone_vector):
-    atom_row_list = atom_lattice.atom_rows_by_zone_vector[parallel_zone_vector]
+    atom_row_list = atom_lattice.atom_rows_by_zone_vector[
+            parallel_zone_vector]
     x_pos_list, y_pos_list, z_pos_list = [], [], []
     for atom_row_index, atom_row in enumerate(atom_row_list):
         if not (atom_row_index == 0):
@@ -507,7 +525,11 @@ def find_atom_positions_for_all_atom_rows(
             z_pos_list.extend(position_data[2])
     return([x_pos_list, y_pos_list, z_pos_list])
 
-def _get_clim_from_data(data, sigma=4, ignore_zeros=False, ignore_edges=False):
+def _get_clim_from_data(
+        data, 
+        sigma=4, 
+        ignore_zeros=False, 
+        ignore_edges=False):
     if ignore_edges:
         x_lim = int(data.shape[0]*0.05)
         y_lim = int(data.shape[1]*0.05)
@@ -567,7 +589,8 @@ def find_atom_position_1d_from_distance_list_and_atom_row(
 def _rebin_data_using_histogram_and_peakfinding(x_pos, z_pos):
     peak_position_list = _find_peak_position_using_histogram(
             x_pos, peakgroup=3, amp_thresh=1)
-    average_distance = _get_average_distance_between_points(peak_position_list)
+    average_distance = _get_average_distance_between_points(
+            peak_position_list)
     
     x_pos_mask_array = np.ma.array(x_pos)
     z_pos_mask_array = np.ma.array(z_pos)
@@ -578,7 +601,8 @@ def _rebin_data_using_histogram_and_peakfinding(x_pos, z_pos):
         x_pos_mask_array.mask = mask_data.mask
         z_pos_mask_array.mask = mask_data.mask
         temp_x_list, temp_z_list = [], []
-        for temp_x, temp_z in zip(mask_data.mask*x_pos, mask_data.mask*z_pos):
+        for temp_x, temp_z in zip(
+                mask_data.mask*x_pos, mask_data.mask*z_pos):
             if not (temp_x == 0):
                 temp_x_list.append(temp_x)
             if not (temp_z == 0):
@@ -590,11 +614,15 @@ def _rebin_data_using_histogram_and_peakfinding(x_pos, z_pos):
     return(new_data_list)
 
 def _find_peak_position_using_histogram(
-        data_list, peakgroup=3, amp_thresh=3, debug_plot=False):
+        data_list, 
+        peakgroup=3, 
+        amp_thresh=3, 
+        debug_plot=False):
     hist = np.histogram(data_list, 1000)
     s = hs.signals.Signal(hist[0])
     s.axes_manager[-1].scale = hist[1][1] - hist[1][0]
-    peak_data = s.find_peaks1D_ohaver(peakgroup=peakgroup, amp_thresh=amp_thresh)
+    peak_data = s.find_peaks1D_ohaver(
+            peakgroup=peakgroup, amp_thresh=amp_thresh)
     peak_positions = peak_data[0]['position']+hist[1][0]
     peak_positions.sort()
     if debug_plot:
@@ -609,7 +637,8 @@ def _get_average_distance_between_points(peak_position_list):
     distance_between_peak_list = []
     for peak_index, peak_position in enumerate(peak_position_list):
         if not (peak_index == 0):
-            temp_distance = peak_position - peak_position_list[peak_index-1]
+            temp_distance = peak_position - peak_position_list[
+                    peak_index-1]
             distance_between_peak_list.append(temp_distance)
     average_distance = np.array(distance_between_peak_list).mean()
     return(average_distance)
