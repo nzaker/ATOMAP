@@ -1,24 +1,10 @@
-import sys; sys.dont_write_bytecode = True
+import copy
+import numpy as np
 import hyperspy.api as hs
 import matplotlib.pyplot as plt
-import numpy as np
-import scipy as sp
-from scipy.ndimage.filters import gaussian_filter
-import math
-import operator
-import copy
+from atomap_tools import _make_circular_mask
 from scipy import ndimage
-from scipy import interpolate
-from matplotlib.gridspec import GridSpec
-import os
-import glob
 import math
-import json
-from skimage.feature import peak_local_max
-from scipy.stats import linregress
-import h5py
-
-from atomap_plotting import *
 
 class Atom_Position():
     def __init__(self, x, y):
@@ -136,7 +122,8 @@ class Atom_Position():
     def get_closest_neighbor(self):
         closest_neighbor = 100000000000000000
         for neighbor_atom in self.nearest_neighbor_list:
-            distance = self.get_pixel_distance_from_another_atom(neighbor_atom)
+            distance = self.get_pixel_distance_from_another_atom(
+                    neighbor_atom)
             if distance < closest_neighbor:
                 closest_neighbor = distance
         return(closest_neighbor)
@@ -150,8 +137,10 @@ class Atom_Position():
         plt.ioff()
         closest_neighbor = self.get_closest_neighbor()
         
-        slice_size = closest_neighbor*percent_distance_to_nearest_neighbor*2
-        data_slice = self.get_image_slice_around_atom(image_data, slice_size)
+        slice_size = closest_neighbor*\
+                percent_distance_to_nearest_neighbor*2
+        data_slice = self.get_image_slice_around_atom(
+                image_data, slice_size)
 
         data_slice_max = data_slice.max()
         self.amplitude_max_intensity = data_slice_max
@@ -169,8 +158,10 @@ class Atom_Position():
         plt.ioff()
         closest_neighbor = self.get_closest_neighbor()
         
-        slice_size = closest_neighbor*percent_distance_to_nearest_neighbor*2
-        data_slice = self.get_image_slice_around_atom(image_data, slice_size)
+        slice_size = closest_neighbor*\
+                percent_distance_to_nearest_neighbor*2
+        data_slice = self.get_image_slice_around_atom(
+                image_data, slice_size)
         slice_radius = slice_size/2
 
         data_slice_max = data_slice.max()
@@ -181,7 +172,8 @@ class Atom_Position():
                 slice_radius,
                 data.shape[0],
                 data.shape[1], 
-                closest_neighbor*percent_distance_to_nearest_neighbor)    
+                closest_neighbor*\
+                    percent_distance_to_nearest_neighbor)    
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
@@ -227,8 +219,10 @@ class Atom_Position():
         plt.ioff()
         closest_neighbor = self.get_closest_neighbor()
 
-        slice_size = closest_neighbor*percent_distance_to_nearest_neighbor*2
-        data_slice = self.get_image_slice_around_atom(image_data, slice_size)
+        slice_size = closest_neighbor*\
+                percent_distance_to_nearest_neighbor*2
+        data_slice = self.get_image_slice_around_atom(
+                image_data, slice_size)
         slice_radius = slice_size/2
         
         data_slice -= data_slice.min()
@@ -240,7 +234,8 @@ class Atom_Position():
                 slice_radius,
                 data.shape[0],
                 data.shape[1], 
-                closest_neighbor*percent_distance_to_nearest_neighbor)    
+                closest_neighbor*\
+                    percent_distance_to_nearest_neighbor)    
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
@@ -292,7 +287,8 @@ class Atom_Position():
             g = self.fit_2d_gaussian_with_mask(
                 image_data,
                 rotation_enabled=rotation_enabled,
-                percent_distance_to_nearest_neighbor=percent_distance_to_nearest_neighbor,
+                percent_distance_to_nearest_neighbor=\
+                    percent_distance_to_nearest_neighbor,
                 debug_plot=debug_plot)
             if g == False:
                 print("Fitting missed")
@@ -332,7 +328,8 @@ class Atom_Position():
             percent_distance_to_nearest_neighbor=0.40):
         closest_neighbor = 100000000000000000
         for neighbor_atom in self.nearest_neighbor_list:
-            distance = self.get_pixel_distance_from_another_atom(neighbor_atom)
+            distance = self.get_pixel_distance_from_another_atom(
+                    neighbor_atom)
             if distance < closest_neighbor:
                 closest_neighbor = distance
         mask = _make_circular_mask(
@@ -340,7 +337,8 @@ class Atom_Position():
                 self.pixel_x, 
                 image_data.shape[0],
                 image_data.shape[1], 
-                closest_neighbor*percent_distance_to_nearest_neighbor)    
+                closest_neighbor*\
+                    percent_distance_to_nearest_neighbor)    
         data = copy.deepcopy(image_data)
         mask = np.invert(mask)
         data[mask] = 0
@@ -373,7 +371,8 @@ class Atom_Position():
                     return(atomic_row)
         return(False)
 
-    def get_neighbor_atoms_in_atomic_row_from_zone_vector(self, zone_vector):
+    def get_neighbor_atoms_in_atomic_row_from_zone_vector(
+            self, zone_vector):
         atom_row = self.get_atomic_row_from_zone_vector(zone_vector)
         atom_row_atom_neighbor_list = []
         for atom in self.nearest_neighbor_list:
@@ -408,7 +407,8 @@ class Atom_Position():
         return(total_distance)
 
     def pixel_distance_from_point(self, point=(0,0)):
-        dist = math.hypot(self.pixel_x - point[0], self.pixel_y - point[1])
+        dist = math.hypot(
+                self.pixel_x - point[0], self.pixel_y - point[1])
         return(dist)
 
     def get_index_in_atom_row(self, atom_row):
@@ -446,7 +446,8 @@ class Atom_Position():
         previous_atom = self.get_previous_atom_in_atom_row(atom_row)
         return(previous_atom)
 
-    def can_atom_row_be_reached_through_zone_vector(self, atom_row, zone_vector):
+    def can_atom_row_be_reached_through_zone_vector(
+            self, atom_row, zone_vector):
         for test_atom_row in self.atom_rows:
             if test_atom_row.zone_vector == zone_vector:
                 for temp_atom in test_atom_row.atom_list:
@@ -455,7 +456,8 @@ class Atom_Position():
                             return(test_atom_row)
         return(False)
 
-    def get_position_convergence(self, distance_to_first_position=False):
+    def get_position_convergence(
+            self, distance_to_first_position=False):
         x_list = self.old_pixel_x_list
         y_list = self.old_pixel_y_list
         distance_list = []
@@ -469,5 +471,3 @@ class Atom_Position():
             dist = math.hypot(x - previous_x, y - previous_y)
             distance_list.append(dist)
         return(distance_list)
-
-
