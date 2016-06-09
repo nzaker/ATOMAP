@@ -6,7 +6,7 @@ from atomap_tools import _make_circular_mask
 from scipy import ndimage
 import math
 
-class Atom_Position():
+class Atom_Position:
     def __init__(self, x, y):
         self.pixel_x = x
         self.pixel_y = y

@@ -6,7 +6,7 @@ from scipy import ndimage
 import matplotlib.pyplot as plt
 import hyperspy.api as hs
 
-from atom_position_class import Atom_Position
+from skimage.feature import peak_local_max
 
 #From Vidars HyperSpy repository
 def _line_profile_coordinates(src, dst, linewidth=1):
@@ -399,6 +399,8 @@ def find_atom_position_between_atom_rows(
         atom_position = (
                 start_point[0] + atom_vector[0], 
                 start_point[1] + atom_vector[1])
+
+        from atom_position_class import Atom_Position
 
         atom = Atom_Position(atom_position[0], atom_position[1])
         
