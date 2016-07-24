@@ -72,10 +72,10 @@ def make_denoised_stem_signal(signal, invert_signal=False):
 
 def do_pca_on_signal(signal, pca_components=22):
     signal.change_dtype('float64')
-    temp_signal = hs.signals.Signal(signal.data)
+    temp_signal = hs.signals.Signal1D(signal.data)
     temp_signal.decomposition()
     temp_signal = temp_signal.get_decomposition_model(pca_components)
-    temp_signal = hs.signals.Image(temp_signal.data)
+    temp_signal = hs.signals.Signal2D(temp_signal.data)
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
     return(temp_signal)
@@ -87,7 +87,7 @@ def subtract_average_background(signal, gaussian_blur=30):
             temp_signal.data, gaussian_blur, mode='nearest')
     background_subtracted = signal.deepcopy().data -\
             average_background_data
-    temp_signal = hs.signals.Signal(
+    temp_signal = hs.signals.Signal1D(
             background_subtracted-background_subtracted.min())
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
