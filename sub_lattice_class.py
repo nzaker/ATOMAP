@@ -8,15 +8,15 @@ import copy
 from matplotlib.gridspec import GridSpec
 
 from atomap_tools import \
-        find_atom_position_1d_from_distance_list_and_atom_row \
-        _get_interpolated2d_from_unregular_data \
-        get_peak2d_skimage \
-        _get_clim_from_data \
+        find_atom_position_1d_from_distance_list_and_atom_row,\
+        _get_interpolated2d_from_unregular_data,\
+        get_peak2d_skimage,\
+        _get_clim_from_data,\
         find_atom_position_1d_from_distance_list_and_atom_row
 
 from atomap_plotting import \
-        plot_zone_vector_and_atom_distance_map \
-        plot_image_map_line_profile_using_interface_row \
+        plot_zone_vector_and_atom_distance_map,\
+        plot_image_map_line_profile_using_interface_row,\
         _make_line_profile_subplot_from_three_parameter_data
 
 from atom_position_class import Atom_Position

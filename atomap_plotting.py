@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
 from atomap_tools import\
-        _get_clim_from_data\
-        find_atom_position_1d_from_distance_list_and_atom_row\
-        _get_interpolated2d_from_regular_data\
+        _get_clim_from_data,\
+        find_atom_position_1d_from_distance_list_and_atom_row,\
+        _get_interpolated2d_from_unregular_data
 
 # Bytte navn etterhvert
 def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list):
