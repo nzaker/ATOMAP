@@ -20,6 +20,7 @@ from atomap_plotting import \
         _make_line_profile_subplot_from_three_parameter_data
 
 from atom_position_class import Atom_Position
+from atom_row_class import Atom_Row
 
 # Rename to Sub_Lattice
 class Atom_Lattice():
@@ -361,7 +362,6 @@ class Atom_Lattice():
                 range=[
                     [-histogram_range,histogram_range],
                     [-histogram_range,histogram_range]])
-
         if not (debug_figname == ''):
             fig, ax = plt.subplots(figsize=(10,10))
             ax.scatter(x_pos_distances, y_pos_distances)
@@ -372,7 +372,7 @@ class Atom_Lattice():
         hist_scale = direction_distance_intensity_hist[1][1]-\
                 direction_distance_intensity_hist[1][0]
 
-        s_direction_distance = hs.signals.Image(
+        s_direction_distance = hs.signals.Signal2D(
                 direction_distance_intensity_hist[0])
         s_direction_distance.axes_manager[0].offset = -bins[0]/2
         s_direction_distance.axes_manager[1].offset = -bins[1]/2
@@ -1045,7 +1045,7 @@ class Atom_Lattice():
             dtype='float32',
             signal_name="datalist_map.hdf5"):
         """data_list : numpy array, 4D"""
-        im = hs.signals.Image(data_list[2])
+        im = hs.signals.Signal2D(data_list[2])
         x_scale = data_list[0][1][0] - data_list[0][0][0]
         y_scale = data_list[1][0][1] - data_list[1][0][0]
         im.axes_manager[0].scale = x_scale*data_scale

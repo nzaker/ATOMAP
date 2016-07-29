@@ -1,5 +1,6 @@
 __pycache__
-<<<<<<< HEAD
-=======
 *.swp
->>>>>>> 3c7d1cc921512c92125ca853d349d38053c8cc79
+*.jpg
+*.png
+*.npz
+*.hdf5
