@@ -5,7 +5,7 @@ from sub_lattice_class import Atom_Lattice
 from hyperspy.api import load
 import numpy as np
 
-class test_sub_lattice_classe(unittest.TestCase):
+class test_sub_lattice_class(unittest.TestCase):
     
     def setUp(self):
         s_adf_filename = "tests/datasets/test_ADF_cropped.hdf5"
@@ -33,5 +33,13 @@ class test_sub_lattice_classe(unittest.TestCase):
                 np.rot90(np.fliplr(self.s_adf_modified.data)))
         atom_lattice.pixel_size = self.pixel_size
         construct_zone_axes_from_atom_lattice(atom_lattice)
-        atom_lattice.plot_atom_row_on_stem_data(
-                atom_lattice.atom_row_list)
+
+        number_zone_vector_110 = len(
+                atom_lattice.atom_rows_by_zone_vector[
+                    atom_lattice.zones_axis_average_distances[0]])
+        number_zone_vector_100 = len(
+                atom_lattice.atom_rows_by_zone_vector[
+                    atom_lattice.zones_axis_average_distances[1]])
+
+        self.assertEqual(number_zone_vector_110, 14)
+        self.assertEqual(number_zone_vector_100, 17)
