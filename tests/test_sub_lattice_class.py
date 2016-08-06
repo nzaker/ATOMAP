@@ -61,6 +61,7 @@ class test_sub_lattice_processing(unittest.TestCase):
         atom_lattice = Atom_Lattice(
                 self.peaks, 
                 np.rot90(np.fliplr(self.s_adf_modified.data)))
+        atom_lattice.pixel_size = self.pixel_size
         refine_atom_lattice(
                 atom_lattice, 
                 [
@@ -74,11 +75,20 @@ class test_sub_lattice_processing(unittest.TestCase):
         atom_lattice = Atom_Lattice(
                 self.peaks, 
                 np.rot90(np.fliplr(self.s_adf_modified.data)))
-        zone_vector = atom_lattice.zones_axis_average_distances[0]
+        atom_lattice.pixel_size = self.pixel_size
+        construct_zone_axes_from_atom_lattice(atom_lattice)
         atom_lattice.plot_distance_map_for_all_zone_vectors()
         print("GRIIIIILOL")
 #        atom_lattice.plot_distance_map_from_zone_vector(
 #                zone_vector)
+
+    def test_process_and_plot_distance_differencemap(self):
+        atom_lattice = Atom_Lattice(
+                self.peaks, 
+                np.rot90(np.fliplr(self.s_adf_modified.data)))
+        atom_lattice.pixel_size = self.pixel_size
+        construct_zone_axes_from_atom_lattice(atom_lattice)
+        atom_lattice.plot_distance_difference_map_for_all_zone_vectors()
 
 class test_sub_lattice_processing(unittest.TestCase):
     def setUp(self):
