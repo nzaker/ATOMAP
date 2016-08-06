@@ -40,6 +40,7 @@ class Atom_Lattice():
         self.save_path = "./"
         self.pixel_size = 1.0
         self.plot_color = 'blue'
+        self.path_name = ""
 
     @property
     def atom_positions(self):
@@ -209,7 +210,12 @@ class Atom_Lattice():
             ort_atom_list.extend(temp_atom_list)
         return(ort_atom_list)
 
-    def plot_distance_map_from_zone_vector(self, zone_vector, atom_row_marker=None, title='', atom_list=None):
+    def plot_distance_map_from_zone_vector(
+            self, 
+            zone_vector, 
+            atom_row_marker=None, 
+            title='', 
+            atom_list=None):
         zone_index = 0
         for index, temp_zone_vector in enumerate(self.zones_axis_average_distances):
             if temp_zone_vector == zone_vector:

@@ -8,6 +8,7 @@ class Material_Structure():
         self.atom_lattice_list = []
         self.adf_image = None
         self.inverted_abf_image = None
+        self.path_name = ""
 
     def construct_zone_axes_for_atom_lattices(self, atom_lattice_list=None):
         if atom_lattice_list == None:
