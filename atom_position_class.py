@@ -239,7 +239,7 @@ class Atom_Position:
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
-        g = hs.model.components.Gaussian2D(
+        g = hs.model.components2D.Gaussian2D(
                 centre_x=0.0,
                 centre_y=0.0,
                 sigma_x=self.sigma_x,

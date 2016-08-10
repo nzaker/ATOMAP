@@ -4,13 +4,14 @@ import matplotlib.pyplot as plt
 import hyperspy.api as hs
 import numpy as np
 from atomap_atom_finding_refining import\
-        subtract_average_background\
-        do_pca_on_signal\
-        refine_atom_lattice\
-        construct_zones_axes_from_atom_lattice
+        subtract_average_background,\
+        do_pca_on_signal,\
+        refine_atom_lattice,\
+        construct_zone_axes_from_atom_lattice,\
+        normalize_signal
 
 from atomap_tools import\
-        get_peak2d_skimage\
+        get_peak2d_skimage,\
         remove_atoms_from_image_using_2d_gaussian
 
 from atom_lattice_class import Material_Structure

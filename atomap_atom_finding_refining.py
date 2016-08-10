@@ -68,7 +68,7 @@ def make_denoised_stem_signal(signal, invert_signal=False):
     else:
         signal_den
     signal_denoised = s_abf_modified2/s_abf_modified2.max()
-    s_abf_pca = hs.signals.Image(s_abf_data_normalized)
+    s_abf_pca = hs.signals.Signal2D(s_abf_data_normalized)
 
 def do_pca_on_signal(signal, pca_components=22):
     signal.change_dtype('float64')
@@ -100,7 +100,7 @@ def normalize_signal(signal, invert_signal=False):
     else:
         temp_signal_data = temp_signal.data
     temp_signal_data = temp_signal_data/temp_signal_data.max()
-    temp_signal = hs.signals.Image(temp_signal_data)
+    temp_signal = hs.signals.Signal2D(temp_signal_data)
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
     return(temp_signal)
