@@ -68,6 +68,45 @@ class Atom_Position:
         y_distance = self.pixel_y - atom.pixel_y
         return((x_distance, y_distance))
 
+    def get_angle_between_atoms(self, atom0, atom1):
+        """
+        Returns the angle between itself and two atoms
+        in radians.
+
+        Parameters:
+        -----------
+        atom0 : Atom Position object
+        atom0 : Atom Position object
+
+        Returns:
+        Angle in radians
+        """
+        vector0 = np.array([
+            atom0.pixel_x - self.pixel_x,
+            atom0.pixel_y - self.pixel_y])
+        vector1 = np.array([
+            atom1.pixel_x - self.pixel_x,
+            atom1.pixel_y - self.pixel_y])
+        cosang = np.dot(vector0, vector1)
+        sinang = np.linalg.norm(np.cross(vector0, vector1))
+        return(np.arctan2(sinang, cosang))
+
+    def get_angle_between_zone_vectors(
+            zone_vector0, 
+            zone_vector1):
+        """
+        Return the angle between itself and the next atoms in
+        the atom rows belonging to zone_vector0 and zone_vector1
+        """
+        atom0 = self.get_next_atom_in_zone_vector(zone_vector0)
+        atom1 = self.get_next_atom_in_zone_vector(zone_vector1)
+        if atom0 == False:
+            return(False)
+        if atom1 == False:
+            return(False)
+        angle = self.get_angle_between_atoms(atom0, atom1)
+        return(angle)
+
     def get_image_slice_around_atom(
             self,
             image_data,
@@ -433,6 +472,8 @@ class Atom_Position:
             return(previous_atom)
 
     def get_next_atom_in_zone_vector(self, zone_vector):
+        """Get the next atom in the atom row belonging to
+        zone vector"""
         atom_row = self.get_atomic_row_from_zone_vector(zone_vector)
         if atom_row == False:
             return(False)
