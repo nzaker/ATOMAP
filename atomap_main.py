@@ -186,7 +186,7 @@ def run_peak_finding_process_for_single_dataset(
                 (image_atoms_removed, 2, 'gaussian')],
             0.2)
 
-    save_material_structure(material_structure)
+    material_structure.save_material_structure()
 
     plt.close('all')
     plt.ion()
@@ -262,8 +262,7 @@ def run_process_for_adf_image_a_cation(
             0.50)
     a_atom_lattice.plot_atom_list_on_stem_data(
             figname=a_atom_lattice.tag+"_atom_refine2_gaussian.jpg")
-    save_material_structure(
-            material_structure, 
+    material_structure.save_material_structure(
             filename=a_atom_lattice.save_path +\
                     "material_structure.hdf5")
     plt.close('all')
@@ -315,8 +314,7 @@ def run_process_for_adf_image_a_b_cation(
         atom.sigma_x = 0.05/a_atom_lattice.pixel_size
         atom.sigma_y = 0.05/a_atom_lattice.pixel_size
 
-    save_material_structure(
-            material_structure, 
+    material_structure.save_material_structure(
             filename=a_atom_lattice.save_path +\
                     "material_structure_no_refinement.hdf5")
     print("Refining a atom lattice")
@@ -333,8 +331,7 @@ def run_process_for_adf_image_a_b_cation(
                     1, 
                     'center_of_mass')],
             0.30)
-    save_material_structure(
-            material_structure, 
+    material_structure.save_material_structure(
             filename=a_atom_lattice.save_path +\
                     "material_structure_center_of_mass.hdf5")
     refine_atom_lattice(
@@ -342,8 +339,7 @@ def run_process_for_adf_image_a_b_cation(
             [
                 (a_atom_lattice.original_adf_image, 1, 'gaussian')],
             0.30)
-    save_material_structure(
-            material_structure, 
+    material_structure.save_material_structure(
             filename=a_atom_lattice.save_path +\
                     "material_structure_2d_model.hdf5")
     plt.close('all')

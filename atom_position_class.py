@@ -185,7 +185,7 @@ class Atom_Position:
                 rotation=self.rotation,
                 A=data_slice_max)
 
-        s = hs.signals.Image(data)
+        s = hs.signals.Signal2D(data)
         s.axes_manager[0].offset = -slice_radius
         s.axes_manager[1].offset = -slice_radius
         s = hs.stack([s]*2)
@@ -252,7 +252,7 @@ class Atom_Position:
         else:
             g.rotation.free = False
 
-        s = hs.signals.Image(data)
+        s = hs.signals.Signal2D(data)
         s.axes_manager[0].offset = -slice_radius
         s.axes_manager[1].offset = -slice_radius
         s = hs.stack([s]*2)
