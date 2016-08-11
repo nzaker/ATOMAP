@@ -5,6 +5,7 @@ import math
 from scipy import ndimage
 import hyperspy.api as hs
 import copy
+import json
 from matplotlib.gridspec import GridSpec
 
 from atomap_tools import \
@@ -108,10 +109,18 @@ class Atom_Lattice():
             ellipticity.append(atom.ellipticity)
         return(ellipticity)
 
-    def get_property_and_positions(self, property_list):
+    def get_property_and_positions(
+            self, 
+            property_list,
+            x_position=None,
+            y_position=None):
+        if x_position == None:
+            x_position = self.x_position
+        if y_position == None:
+            y_position = self.y_position
         data_list = np.array(
-                [self.x_position,
-                self.y_position,
+                [x_position,
+                y_position,
                 property_list])
         data_list = np.swapaxes(data_list,0,1)
         return(data_list)
@@ -143,7 +152,25 @@ class Atom_Lattice():
         data = line_profile_data[:,1]*scale_z
         return(np.array([position, data]))
 
-    def get_atom_angles_from_zone_vector(self, zone_vector0, zone_vector1):
+    def get_atom_angles_from_zone_vector(
+            self, 
+            zone_vector0, 
+            zone_vector1,
+            degrees=False):
+        """
+        Calculates for each atom in the sub lattice the angle
+        between the atom, and the next atom in the atom rows
+        in zone_vector0 and zone_vector1.
+        Default will return the angles in radians.
+
+        Parameters:
+        -----------
+        zone_vector0 : tuple
+        zone_vector1 : tuple
+        degrees : bool, optional
+            If True, will return the angles in degrees.
+            Default False.
+        """
         angle_list = []
         pos_x_list = []
         pos_y_list = []
@@ -155,7 +182,164 @@ class Atom_Lattice():
                 angle_list.append(angle)
                 pos_x_list.append(atom.pixel_x)
                 pos_y_list.append(atom.pixel_y)
+        angle_list = np.array(angle_list)
+        pos_x_list = np.array(pos_x_list)
+        pos_y_list = np.array(pos_y_list)
+        if degrees:
+            angle_list = np.rad2deg(angle_list)
+
         return(pos_x_list, pos_y_list, angle_list)
+
+    def _get_regular_grid_from_unregular_property(
+            self,
+            x_list,
+            y_list,
+            z_list,
+            upscale=4):
+        """
+        Interpolate unregularly spaced data points into a
+        regularly spaced grid, useful for making data work 
+        with plotting using imshow.
+
+        Parameters:
+        -----------
+        x_list : list of numbers
+            x-positions
+        y_list : list of numbers
+            y-positions
+        z_list : list of numbers
+            The property, for example distance between
+            atoms, ellipticity or angle between atoms.
+        """
+
+        data_list = self.get_property_and_positions(
+            z_list,
+            x_position=x_list,
+            y_position=y_list)
+
+        interpolate_x_lim = (0, self.adf_image.shape[1])
+        interpolate_y_lim = (0, self.adf_image.shape[0])
+        new_data = _get_interpolated2d_from_unregular_data(
+            data_list,
+            new_x_lim=interpolate_x_lim, 
+            new_y_lim=interpolate_y_lim, 
+            upscale=upscale)
+
+        return(new_data)
+
+    def plot_property_map_and_profile(
+            self, 
+            x_list,
+            y_list,
+            z_list,
+            interface_row=None,
+            data_scale_z=1.0,
+            save_signal=True,
+            line_profile_prune_outer_values=False,
+            invert_line_profile=False,
+            figname="property_map_and_profile.jpg"):
+        """
+        Plot image data, property map and line profile. The property map
+        can be any scalar 2-D array. The line profile is an integration
+        of the property along a direction defined by an atom row.
+        
+        The property can be anything, for example distance between atoms
+        along a zone axis, or ellipticity of the atoms.
+
+        The image data is taken from the sub_lattice, either adf_image or
+        original_adf_image.
+
+        Parameters:
+        -----------
+        x_list : 1-D list of numbers
+        y_list : 1-D list of numbers
+        z_list : 1-D list of numbers
+            The property list.
+            x_list, y_list and z_list needs to have the same
+            size.
+        interface_row : Atom Row object, optional
+            Atom row which is used when integrating the property,
+            giving a line profile perpendicular to the interface_row.
+            Will also be drawn on the image data and property map.
+        data_scale_z : number, optional
+            Scaling of the property list (z_list). Default 1.0.
+        save_signal : bool, optional
+            If true, will save the property map as a HyperSpy 2D signal.
+            Default True
+        line_profile_prune_outer_values : bool, optional
+            If True, will prune the outer values of the line profile data.
+            Useful for some datasets, where the low and high spatial
+            positions in the line profile will be very noise due to
+            low amount of averaging. Default False.
+        invert_line_profile : bool, optional
+            Reverts the spatial direction the line profile
+            is plotted. Default False
+        figname : string, optional
+            Postfix in the image filename.
+        """
+        
+        data_scale = self.pixel_size    
+    
+        if interface_row == None:
+            zone_vector = self.zones_axis_average_distances[0]
+            middle_atom_row_index = int(len(self.atom_rows_by_zone_vector[zone_vector])/2)
+            interface_row = self.atom_rows_by_zone_vector[zone_vector][middle_atom_row_index]
+
+        line_profile_data_list = self.get_property_and_positions_atom_row_projection(
+            interface_row=interface_row,
+            property_list=z_list,
+            x_position=x_list,
+            y_position=y_list)
+        line_profile_data_list = line_profile_data_list.swapaxes(0,1)
+
+        data_map = self._get_regular_grid_from_unregular_property(
+                x_list,
+                y_list,
+                z_list)
+
+        if invert_line_profile == True:
+            line_profile_data_list[:,0] *= -1
+
+        clim = _get_clim_from_data(
+                data_map[2]*data_scale_z, sigma=2, ignore_zeros=True, ignore_edges=True)
+
+        if self.original_adf_image == None:
+            image_data = self.adf_image
+        else:
+            image_data = self.original_adf_image
+        
+        plot_image_map_line_profile_using_interface_row(
+            image_data,
+            data_map,
+            [line_profile_data_list],
+            interface_row,
+            data_scale=data_scale,
+            data_scale_z=data_scale_z,
+            clim=clim,
+            rotate_atom_row_list_90_degrees=True,
+            line_profile_prune_outer_values=line_profile_prune_outer_values,
+            figname=self.save_path + self.tag + "_" + figname)
+        
+        if save_signal:
+            save_signal_figname = figname[:-4]
+            line_profile_dict = {
+                    'position':(
+                        line_profile_data_list[:,0]*data_scale).tolist(),
+                    self.tag + '_position_difference':(
+                        line_profile_data_list[:,1]*data_scale).tolist()}
+
+            json_filename = self.save_path + self.tag +\
+                    save_signal_figname + "_line_profile.json"
+            with open(json_filename,'w') as fp:
+                json.dump(line_profile_dict, fp)
+
+            sig_name = self.save_path + self.tag +\
+                    "_" + save_signal_figname + ".hdf5"
+            self.save_map_from_datalist(
+                data_map,
+                data_scale,
+                atom_row=interface_row,
+                signal_name=sig_name)
 
     def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
         atom_position_list = self._get_atom_position_list()
@@ -253,8 +437,14 @@ class Atom_Lattice():
                 atom_distance_list, 
                 new_x_lim = interpolate_x_lim,
                 new_y_lim = interpolate_y_lim)
+
+        if self.original_adf_image == None:
+            image_data = self.adf_image
+        else:
+            image_data = self.original_adf_image
+
         plot_zone_vector_and_atom_distance_map(
-                self.original_adf_image,
+                image_data,
                 interpolated_data, 
                 atom_rows=[atom_row_list[2]],
                 clim=plot_clim,
@@ -728,10 +918,15 @@ class Atom_Lattice():
             if temp_zone_vector == zone_vector:
                 zone_index = index
 
+        if self.original_adf_image == None:
+            image_data = self.adf_image
+        else:
+            image_data = self.original_adf_image
+
         atom_row = self.atom_rows_by_zone_vector[zone_vector][0]
 
         plot_zone_vector_and_atom_distance_map(
-            self.original_adf_image,
+            image_data,
             data_list,
             atom_rows=[atom_row],
             clim=clim,
@@ -1155,8 +1350,13 @@ class Atom_Lattice():
             if temp_zone_vector == zone_vector:
                 zone_index = index
 
+        if self.original_adf_image == None:
+            image_data = self.adf_image
+        else:
+            image_data = self.original_adf_image
+
         plot_image_map_line_profile_using_interface_row(
-            self.original_adf_image,
+            image_data,
             data_list,
             line_profile_data_list,
             interface_row,

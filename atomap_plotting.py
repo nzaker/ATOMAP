@@ -40,6 +40,9 @@ def plot_zone_vector_and_atom_distance_map(
     atom_list : list of Atom_Position instances
     extra_marker_list : two arrays of x and y [[x_values], [y_values]]
     """
+    if image_data == None:
+        raise ValueError("Image data is None, no data to plot")
+
     fig = plt.figure(figsize=(10,20))
     gs = GridSpec(95,95)
 
@@ -92,6 +95,7 @@ def plot_image_map_line_profile_using_interface_row(
         interface_row,
         atom_row_list=None,
         data_scale=1,
+        data_scale_z=1,
         atom_list=None,
         extra_marker_list=None,
         clim=None, 
@@ -171,7 +175,7 @@ def plot_image_map_line_profile_using_interface_row(
     _make_subplot_map_from_unregular_grid(
         distance_ax,
         heatmap_data_list, 
-        distance_data_scale=data_scale,
+        distance_data_scale=data_scale_z,
         clim=clim, 
         atom_list=atom_list,
         atom_row_marker=interface_row,
@@ -192,7 +196,7 @@ def plot_image_map_line_profile_using_interface_row(
             line_profile_data[:,1],
             prune_outer_values=line_profile_prune_outer_values,
             scale_x=data_scale,
-            scale_y=data_scale)
+            scale_z=data_scale_z)
 
     fig.tight_layout()
     fig.colorbar(
@@ -207,12 +211,12 @@ def _make_subplot_line_profile(
         x_list,
         y_list,
         scale_x=1.,
-        scale_y=1.,
+        scale_z=1.,
         x_lim=None,
         prune_outer_values=False,
         y_lim=None):
     x_data_list = x_list*scale_x
-    y_data_list = y_list*scale_y
+    y_data_list = y_list*scale_z
     if not (prune_outer_values == False):
         x_data_list = x_data_list[
                 prune_outer_values:-prune_outer_values]
@@ -250,11 +254,11 @@ def _make_subplot_map_from_unregular_grid(
                 x_lim[1]*distance_data_scale,
                 y_lim[0]*distance_data_scale,
                 y_lim[1]*distance_data_scale],
-            origin='lower',
-            cmap='gnuplot2')
+            cmap='viridis',
+            origin='lower')
     if atom_row_marker:
-        atom_row_x = atom_row_marker.get_x_position_list()
-        atom_row_y = atom_row_marker.get_y_position_list()
+        atom_row_x = np.array(atom_row_marker.get_x_position_list())
+        atom_row_y = np.array(atom_row_marker.get_y_position_list())
         ax.plot(
                 atom_row_x*distance_data_scale, 
                 atom_row_y*distance_data_scale, 
