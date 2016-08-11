@@ -143,6 +143,20 @@ class Atom_Lattice():
         data = line_profile_data[:,1]*scale_z
         return(np.array([position, data]))
 
+    def get_atom_angles_from_zone_vector(self, zone_vector0, zone_vector1):
+        angle_list = []
+        pos_x_list = []
+        pos_y_list = []
+        for atom in self.atom_list:
+            angle = atom.get_angle_between_zone_vectors(
+                    zone_vector0, 
+                    zone_vector1)
+            if not (angle == False):
+                angle_list.append(angle)
+                pos_x_list.append(atom.pixel_x)
+                pos_y_list.append(atom.pixel_y)
+        return(pos_x_list, pos_y_list, angle_list)
+
     def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
         atom_position_list = self._get_atom_position_list()
         nearest_neighbor_data = sp.spatial.cKDTree(
