@@ -3,74 +3,92 @@ import h5py
 import numpy as np
 
 # Rename to Atom_Lattice
-class Material_Structure():
+class Atom_Lattice():
     def __init__(self):
-        self.atom_lattice_list = []
+        self.sub_lattice_list = []
         self.adf_image = None
         self.inverted_abf_image = None
         self.path_name = ""
 
-    def construct_zone_axes_for_atom_lattices(self, atom_lattice_list=None):
-        if atom_lattice_list == None:
-            atom_lattice_list = self.atom_lattice_list
-        for atom_lattice in atom_lattice_list:
-            construct_zone_axes_from_atom_lattice(atom_lattice)
+    def construct_zone_axes_for_sub_lattices(self, sub_lattice_list=None):
+        if sub_lattice_list == None:
+            sub_lattice_list = self.sub_lattice_list
+        for sub_lattice in sub_lattice_list:
+            construct_zone_axes_from_sub_lattice(sub_lattice)
 
-    def plot_all_atom_lattices(self, image=None, markersize=1, figname="all_atom_lattice.jpg"):
+    def plot_all_sub_lattices(
+            self, 
+            image=None, 
+            markersize=2, 
+            figname="all_sub_lattice.jpg"):
         if image == None:
             image = self.adf_image
         fig, ax = plt.subplots(figsize=(10,10))
         cax = ax.imshow(self.adf_image)
-        for atom_lattice in self.atom_lattice_list:
-            color = atom_lattice.plot_color
-            for atom in atom_lattice.atom_list:
+        for sub_lattice in self.sub_lattice_list:
+            color = sub_lattice.plot_color
+            for atom in sub_lattice.atom_list:
                 ax.plot(atom.pixel_x, atom.pixel_y, 'o', markersize=markersize, color=color)
         ax.set_ylim(0, self.adf_image.shape[0])
         ax.set_xlim(0, self.adf_image.shape[1])
         fig.tight_layout()
         fig.savefig(figname)
 
-    def plot_atom_distance_maps_for_zone_vectors_and_lattices(
+    def plot_monolayer_distance_map(
             self,
-            atom_lattice_list=None,
+            sub_lattice_list=None,
             interface_row=None,
-            max_number_of_zone_vectors=1):
+            max_number_of_zone_vectors=5):
         plt.ioff()
-        if atom_lattice_list == None:
-            atom_lattice_list = self.atom_lattice_list
-        for atom_lattice in atom_lattice_list:
-            atom_lattice.plot_distance_map_for_all_zone_vectors(
-                atom_row_marker=interface_row,
-                atom_list=atom_lattice.atom_list,
-                max_number_of_zone_vectors=max_number_of_zone_vectors)
+        if sub_lattice_list == None:
+            sub_lattice_list = self.sub_lattice_list
+        for sub_lattice in sub_lattice_list:
+            sub_lattice.plot_monolayer_distance_map(
+                interface_row=interface_row)
 
-    def plot_atom_distance_difference_maps_for_zone_vectors_and_lattices(
+    def plot_atom_distance_map(
             self,
-            atom_list_as_zero=None,
-            atom_lattice_list=None):
+            sub_lattice_list=None,
+            interface_row=None,
+            max_number_of_zone_vectors=5):
         plt.ioff()
-        if atom_lattice_list == None:
-            atom_lattice_list = self.atom_lattice_list
-        for atom_lattice in atom_lattice_list:
-            atom_lattice.plot_distance_difference_map_for_all_zone_vectors(
-                    atom_list_as_zero=atom_list_as_zero)
+        if sub_lattice_list == None:
+            sub_lattice_list = self.sub_lattice_list
+        for sub_lattice in sub_lattice_list:
+            sub_lattice.plot_atom_distance_map(
+                interface_row=interface_row)
+
+    def plot_atom_distance_difference_map(
+            self,
+            sub_lattice_list=None,
+            interface_row=None,
+            max_number_of_zone_vectors=5):
+        plt.ioff()
+        if sub_lattice_list == None:
+            sub_lattice_list = self.sub_lattice_list
+        for sub_lattice in sub_lattice_list:
+            sub_lattice.plot_atom_distance_difference_map(
+                interface_row=interface_row)
  
-    def save_material_structure(self, filename=None):
+    def save_atom_lattice(self, filename=None):
         if filename == None:
             path = self.path_name
-            filename = path + "/" + "material_structure.hdf5"
+            filename = path + "/" + "atom_lattice.hdf5"
 
         h5f = h5py.File(filename, 'w')
-        for atom_lattice in self.atom_lattice_list:
-            subgroup_name = atom_lattice.tag + "_atom_lattice"
-            modified_image_data = atom_lattice.adf_image
-            original_image_data = atom_lattice.original_adf_image
+        for sub_lattice in self.sub_lattice_list:
+            subgroup_name = sub_lattice.tag + "_sub_lattice"
+            modified_image_data = sub_lattice.adf_image
+            original_image_data = sub_lattice.original_adf_image
 
             # Atom position data
-            atom_positions = np.array(atom_lattice._get_atom_position_list())
-            sigma_x = np.array(atom_lattice.sigma_x)
-            sigma_y = np.array(atom_lattice.sigma_y)
-            rotation = np.array(atom_lattice.rotation)
+            atom_positions = np.array(
+                    [sub_lattice.x_position, sub_lattice.y_position]).swapaxes(0,1)
+
+#            atom_positions = np.array(sub_lattice._get_atom_position_list())
+            sigma_x = np.array(sub_lattice.sigma_x)
+            sigma_y = np.array(sub_lattice.sigma_y)
+            rotation = np.array(sub_lattice.rotation)
 
             h5f.create_dataset(
                     subgroup_name + "/modified_image_data",
@@ -104,15 +122,15 @@ class Material_Structure():
                     chunks=True,
                     compression='gzip')
             
-            h5f[subgroup_name].attrs['pixel_size'] = atom_lattice.pixel_size
-            h5f[subgroup_name].attrs['tag'] = atom_lattice.tag
-            h5f[subgroup_name].attrs['path_name'] = atom_lattice.path_name
-            h5f[subgroup_name].attrs['save_path'] = atom_lattice.save_path
-            h5f[subgroup_name].attrs['plot_color'] = atom_lattice.plot_color
+            h5f[subgroup_name].attrs['pixel_size'] = sub_lattice.pixel_size
+            h5f[subgroup_name].attrs['tag'] = sub_lattice.tag
+            h5f[subgroup_name].attrs['path_name'] = sub_lattice.path_name
+            h5f[subgroup_name].attrs['save_path'] = sub_lattice.save_path
+            h5f[subgroup_name].attrs['plot_color'] = sub_lattice.plot_color
 
             # HDF5 does not supporting saving a list of strings, so converting
             # them to bytes
-            zone_axis_names = atom_lattice.zones_axis_average_distances_names
+            zone_axis_names = sub_lattice.zones_axis_average_distances_names
             zone_axis_names_byte = []
             for zone_axis_name in zone_axis_names:
                 zone_axis_names_byte.append(zone_axis_name.encode())

@@ -60,12 +60,12 @@ def _line_profile_coordinates(src, dst, linewidth=1):
 
 # Remove atom from image using 2d gaussian model
 def remove_atoms_from_image_using_2d_gaussian(
-        image, atom_lattice,
+        image, sub_lattice,
         percent_distance_to_nearest_neighbor=0.40):
     model_image = np.zeros(image.shape)
     X,Y = np.meshgrid(np.arange(
         model_image.shape[1]), np.arange(model_image.shape[0]))
-    for atom in atom_lattice.atom_list:
+    for atom in sub_lattice.atom_list:
         percent_distance = percent_distance_to_nearest_neighbor
         for i in range(10):
             g = atom.fit_2d_gaussian_with_mask(
@@ -90,21 +90,21 @@ def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
     return(mask)
 
 def get_atom_rows_square(
-        atom_lattice, atom_row1, atom_row2, 
+        sub_lattice, atom_row1, atom_row2, 
         interface_atom_row, zone_vector, debug_plot=False):
     ort_atom_row1, ort_atom_row2 = atom_row1.get_side_edge_atom_rows_between_self_and_another_atom_row(
             atom_row2, zone_vector)
     
     if debug_plot:
-        atom_lattice.plot_atom_row_on_stem_data(
+        sub_lattice.plot_atom_row_on_stem_data(
                 [atom_row1, atom_row2, ort_atom_row1, ort_atom_row2],
                 figname="atom_row_square_debug.jpg")
 
-    atom_list = atom_lattice.get_atom_list_between_four_atom_rows(
+    atom_list = sub_lattice.get_atom_list_between_four_atom_rows(
             atom_row1, atom_row2, ort_atom_row1, ort_atom_row2)
 
     if debug_plot:
-        atom_lattice.plot_atom_list_on_stem_data(
+        sub_lattice.plot_atom_list_on_stem_data(
                 atom_list, figname="atom_row_square_atom_list_debug.jpg")
     
     x_pos_list = []
@@ -177,7 +177,7 @@ def get_peak2d_skimage(image, separation):
             image.axes_manager._array_indices_generator()):
         peaks[indices] = peak_local_max(
                 z, 
-                min_distance=separation)
+                min_distance=int(separation))
     return(peaks)
 
 def dotproduct(v1, v2):
@@ -507,10 +507,10 @@ def find_atom_positions_for_an_atom_row(
 
 def find_atom_positions_for_all_atom_rows(
         image, 
-        atom_lattice,
+        sub_lattice,
         parallel_zone_vector, 
         orthogonal_zone_vector):
-    atom_row_list = atom_lattice.atom_rows_by_zone_vector[
+    atom_row_list = sub_lattice.atom_rows_by_zone_vector[
             parallel_zone_vector]
     x_pos_list, y_pos_list, z_pos_list = [], [], []
     for atom_row_index, atom_row in enumerate(atom_row_list):
@@ -645,7 +645,7 @@ def _get_average_distance_between_points(peak_position_list):
     average_distance = np.array(distance_between_peak_list).mean()
     return(average_distance)
 
-# Move to Atom_Lattice class
+# Move to Sub_Lattice class
 def _to_dict(self):
     position_array = np.array(self._get_atom_position_list())
     metadata = {

@@ -350,7 +350,7 @@ def _make_line_profile_subplot_from_three_parameter_data(
 
 def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_rows(
         image, 
-        atom_lattice,
+        sub_lattice,
         parallel_zone_vector, 
         orthogonal_zone_vector,
         distance_data_scale=1,
@@ -360,12 +360,12 @@ def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_rows(
     plt.ioff()
     data = find_atom_positions_for_all_atom_rows(
         image, 
-        atom_lattice,
+        sub_lattice,
         parallel_zone_vector, 
         orthogonal_zone_vector)
 
     atom_position_list = np.array(
-            atom_lattice._get_atom_position_list())
+            sub_lattice._get_atom_position_list())
     data[0].extend(atom_position_list[:,0])
     data[1].extend(atom_position_list[:,1])
     data[2].extend(np.zeros(len(atom_position_list[:,0])))
@@ -381,17 +381,17 @@ def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_rows(
     if not clim:
         clim = _get_clim_from_data(data[:,2], sigma=2)
     
-    atom_row_list = atom_lattice.atom_rows_by_zone_vector[
+    atom_row_list = sub_lattice.atom_rows_by_zone_vector[
             parallel_zone_vector]
     plot_zone_vector_and_atom_distance_map(
             image,
             new_data,
             atom_rows=[atom_row_list[3]],
             distance_data_scale=distance_data_scale,
-            atom_list=atom_lattice.atom_list,
+            atom_list=sub_lattice.atom_list,
             clim=clim,
             plot_title=plot_title,
-            figname=atom_lattice.save_path + "oxygen_position_100.jpg")
+            figname=sub_lattice.save_path + "oxygen_position_100.jpg")
 
 # Parameter list in the form of [position, data]
 def plot_line_profiles_from_parameter_input(

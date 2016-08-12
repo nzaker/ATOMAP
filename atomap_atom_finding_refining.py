@@ -1,27 +1,27 @@
 from scipy.ndimage.filters import gaussian_filter
 import hyperspy.api as hs
 
-def construct_zone_axes_from_atom_lattice(atom_lattice):
-    tag = atom_lattice.tag
-    atom_lattice.find_nearest_neighbors(nearest_neighbors=15)
-    atom_lattice._make_nearest_neighbor_direction_distance_statistics(
+def construct_zone_axes_from_sub_lattice(sub_lattice):
+    tag = sub_lattice.tag
+    sub_lattice.find_nearest_neighbors(nearest_neighbors=15)
+    sub_lattice._make_nearest_neighbor_direction_distance_statistics(
             debug_figname=tag+"_cat_nn.png")
-    atom_lattice._generate_all_atom_row_list()
-    atom_lattice._sort_atom_rows_by_zone_vector()
-    atom_lattice.plot_all_atom_rows(fignameprefix=tag+"_atom_row")
+    sub_lattice._generate_all_atom_row_list()
+    sub_lattice._sort_atom_rows_by_zone_vector()
+    sub_lattice.plot_all_atom_rows(fignameprefix=tag+"_atom_row")
 
-def refine_atom_lattice(
-        atom_lattice, 
+def refine_sub_lattice(
+        sub_lattice, 
         refinement_config_list,
         percent_distance_to_nearest_neighbor):
-    tag = atom_lattice.tag
+    tag = sub_lattice.tag
 
     total_number_of_refinements = 0
     for refinement_config in refinement_config_list:
         total_number_of_refinements += refinement_config[1]
 
     before_image = refinement_config_list[-1][0]
-    atom_lattice.find_nearest_neighbors()
+    sub_lattice.find_nearest_neighbors()
 
     current_counts = 1
     for refinement_config in refinement_config_list:
@@ -33,18 +33,18 @@ def refine_atom_lattice(
                     str(current_counts) + "/" + str(
                         total_number_of_refinements))
             if refinement_type == 'gaussian':
-                atom_lattice.refine_atom_positions_using_2d_gaussian(
+                sub_lattice.refine_atom_positions_using_2d_gaussian(
                         image,
                         rotation_enabled=False,
                         percent_distance_to_nearest_neighbor=\
                         percent_distance_to_nearest_neighbor)
-                atom_lattice.refine_atom_positions_using_2d_gaussian(
+                sub_lattice.refine_atom_positions_using_2d_gaussian(
                         image,
                         rotation_enabled=True,
                         percent_distance_to_nearest_neighbor=\
                         percent_distance_to_nearest_neighbor)
             elif refinement_type == 'center_of_mass':
-                atom_lattice.refine_atom_positions_using_center_of_mass(
+                sub_lattice.refine_atom_positions_using_center_of_mass(
                         image, 
                         percent_distance_to_nearest_neighbor=\
                         percent_distance_to_nearest_neighbor)

@@ -23,8 +23,7 @@ from atomap_plotting import \
 from atom_position_class import Atom_Position
 from atom_row_class import Atom_Row
 
-# Rename to Sub_Lattice
-class Atom_Lattice():
+class Sub_Lattice():
     def __init__(self, atom_position_list, adf_image):
         self.atom_list = []
         for atom_position in atom_position_list:
@@ -109,49 +108,6 @@ class Atom_Lattice():
             ellipticity.append(atom.ellipticity)
         return(ellipticity)
 
-    def get_property_and_positions(
-            self, 
-            property_list,
-            x_position=None,
-            y_position=None):
-        if x_position == None:
-            x_position = self.x_position
-        if y_position == None:
-            y_position = self.y_position
-        data_list = np.array(
-                [x_position,
-                y_position,
-                property_list])
-        data_list = np.swapaxes(data_list,0,1)
-        return(data_list)
-
-    def get_property_and_positions_atom_row_projection(
-            self,
-            interface_row,
-            property_list,
-            x_position=None,
-            y_position=None,
-            scale_xy=1.0,
-            scale_z=1.0):
-        if x_position == None:
-            x_position = self.x_position
-        if y_position == None:
-            y_position = self.y_position
-        data_list = np.array(
-                [x_position,
-                y_position,
-                property_list])
-        data_list = np.swapaxes(data_list,0,1)
-        line_profile_data = \
-                find_atom_position_1d_from_distance_list_and_atom_row(
-            data_list,
-            interface_row,
-            rebin_data=True)
-        line_profile_data = np.array(line_profile_data)
-        position = line_profile_data[:,0]*scale_xy
-        data = line_profile_data[:,1]*scale_z
-        return(np.array([position, data]))
-
     def get_atom_angles_from_zone_vector(
             self, 
             zone_vector0, 
@@ -189,6 +145,137 @@ class Atom_Lattice():
             angle_list = np.rad2deg(angle_list)
 
         return(pos_x_list, pos_y_list, angle_list)
+
+    def get_atom_distance_list_from_zone_vector(
+            self, 
+            zone_vector):
+        """
+        Get distance between each atom and the next atom in an
+        atom row given by the zone_vector. Returns the x- and 
+        y-position, and the distance between the atom and the 
+        monolayer. The position is set between the atom and the 
+        monolayer.
+
+        For certain zone axes where there is several monolayers
+        between the atoms in the atom row, there will be some 
+        artifacts created. For example, in the perovskite (110) 
+        projection, the atoms in the <111> atom rows are 
+        separated by 3 monolayers. 
+        
+        To avoid this problem use the function
+        get_monolayer_distance_list_from_zone_vector.
+
+        Parameter:
+        ----------
+        zone_vector : tuple
+            Zone vector for the system
+        """
+        atom_row_list = self.atom_rows_by_zone_vector[zone_vector]
+        atom_distance_list = []
+        for atom_row in atom_row_list:
+            atom_distance_list.extend(
+                    atom_row.get_atom_distance_to_next_atom_and_position_list())
+        atom_distance_list = np.array(atom_distance_list).swapaxes(0,1)
+        return(atom_distance_list[0], atom_distance_list[1], atom_distance_list[2])
+
+    def get_monolayer_distance_list_from_zone_vector(
+            self, 
+            zone_vector):
+        """
+        Get distance between each atom and the next monolayer given
+        by the zone_vector. Returns the x- and y-position, and the 
+        distance between the atom and the monolayer. The position 
+        is set between the atom and the monolayer.
+
+        The reason for finding the distance between monolayer,
+        instead of directly between the atoms is due to some zone axis
+        having having a rather large distance between the atoms in
+        one atom row. For example, in the perovskite (110) projection,
+        the atoms in the <111> atom rows are separated by 3 monolayers.
+        This can give very bad results.
+        
+        To get the distance between atoms, use the function
+        get_atom_distance_list_from_zone_vector.
+
+        Parameter:
+        ----------
+        zone_vector : tuple
+            Zone vector for the system
+        """
+        atom_row_list = self.atom_rows_by_zone_vector[zone_vector]
+        x_list, y_list, z_list = [], [], []
+        for index, atom_row in enumerate(atom_row_list[1:]):
+            atom_row_previous = atom_row_list[index]
+            row_data_list = self._get_distance_and_position_list_between_atom_rows(
+                    atom_row_previous, atom_row)
+            x_list.extend(row_data_list[0].tolist())
+            y_list.extend(row_data_list[1].tolist())
+            z_list.extend(row_data_list[2].tolist())
+        return(x_list, y_list, z_list)
+
+    def get_atom_distance_difference_from_zone_vector(
+            self,
+            zone_vector):
+        """
+        Get distance difference between atoms in atoms rows
+        belonging to a zone axis.
+
+        Parameter:
+        ----------
+        zone_vector : tuple
+            Zone vector for the system
+        """
+        x_list, y_list, z_list = [], [], []
+        for atom_row in self.atom_rows_by_zone_vector[zone_vector]: 
+            data = atom_row.get_net_distance_change_between_atoms()
+            if data is not None:
+                x_list.extend(data[:,0])
+                y_list.extend(data[:,1])
+                z_list.extend(data[:,2])
+        return(x_list, y_list, z_list)
+
+    def get_property_and_positions(
+            self, 
+            property_list,
+            x_position=None,
+            y_position=None):
+        if x_position is None:
+            x_position = self.x_position
+        if y_position is None:
+            y_position = self.y_position
+        data_list = np.array(
+                [x_position,
+                y_position,
+                property_list])
+        data_list = np.swapaxes(data_list,0,1)
+        return(data_list)
+
+    def get_property_and_positions_atom_row_projection(
+            self,
+            interface_row,
+            property_list,
+            x_position=None,
+            y_position=None,
+            scale_xy=1.0,
+            scale_z=1.0):
+        if x_position is None:
+            x_position = self.x_position
+        if y_position is None:
+            y_position = self.y_position
+        data_list = np.array(
+                [x_position,
+                y_position,
+                property_list])
+        data_list = np.swapaxes(data_list,0,1)
+        line_profile_data = \
+                find_atom_position_1d_from_distance_list_and_atom_row(
+            data_list,
+            interface_row,
+            rebin_data=True)
+        line_profile_data = np.array(line_profile_data)
+        position = line_profile_data[:,0]*scale_xy
+        data = line_profile_data[:,1]*scale_z
+        return(np.array([position, data]))
 
     def _get_regular_grid_from_unregular_property(
             self,
@@ -234,9 +321,10 @@ class Atom_Lattice():
             z_list,
             interface_row=None,
             data_scale_z=1.0,
-            save_signal=True,
+            save_signal=False,
             line_profile_prune_outer_values=False,
             invert_line_profile=False,
+            add_zero_value_sublattice=None,
             figname="property_map_and_profile.jpg"):
         """
         Plot image data, property map and line profile. The property map
@@ -274,13 +362,14 @@ class Atom_Lattice():
         invert_line_profile : bool, optional
             Reverts the spatial direction the line profile
             is plotted. Default False
+
         figname : string, optional
             Postfix in the image filename.
         """
         
         data_scale = self.pixel_size    
     
-        if interface_row == None:
+        if interface_row is None:
             zone_vector = self.zones_axis_average_distances[0]
             middle_atom_row_index = int(len(self.atom_rows_by_zone_vector[zone_vector])/2)
             interface_row = self.atom_rows_by_zone_vector[zone_vector][middle_atom_row_index]
@@ -292,18 +381,29 @@ class Atom_Lattice():
             y_position=y_list)
         line_profile_data_list = line_profile_data_list.swapaxes(0,1)
 
-        data_map = self._get_regular_grid_from_unregular_property(
+        if not(add_zero_value_sublattice == None):
+            self._add_zero_position_to_data_list_from_atom_list(
                 x_list,
                 y_list,
-                z_list)
+                z_list,
+                add_zero_value_sublattice.x_position,
+                add_zero_value_sublattice.y_position)
 
-        if invert_line_profile == True:
+        data_map = self._get_regular_grid_from_unregular_property(
+            x_list,
+            y_list,
+            z_list)
+
+        if invert_line_profile is True:
             line_profile_data_list[:,0] *= -1
 
         clim = _get_clim_from_data(
-                data_map[2]*data_scale_z, sigma=2, ignore_zeros=True, ignore_edges=True)
+                data_map[2]*data_scale_z, 
+                sigma=2, 
+                ignore_zeros=True, 
+                ignore_edges=True)
 
-        if self.original_adf_image == None:
+        if self.original_adf_image is None:
             image_data = self.adf_image
         else:
             image_data = self.original_adf_image
@@ -342,7 +442,7 @@ class Atom_Lattice():
                 signal_name=sig_name)
 
     def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
-        atom_position_list = self._get_atom_position_list()
+        atom_position_list = np.array([self.x_position, self.y_position]).swapaxes(0,1)
         nearest_neighbor_data = sp.spatial.cKDTree(
                 atom_position_list,
                 leafsize=leafsize)
@@ -356,22 +456,23 @@ class Atom_Lattice():
                 nn_link_list.append(self.atom_list[nn_link])
             atom.nearest_neighbor_list = nn_link_list
 
-    def get_position_and_ellipticity_vector_for_all_atoms(self):
-        x_pos_list = []
-        y_pos_list = []
-        x_rot_list = [] 
-        y_rot_list = [] 
-
-        for atom in self.atom_list:
-            x_pos_list.append(atom.pixel_x)
-            y_pos_list.append(atom.pixel_y)
-
-            # Maa endres til atom.get_ellipticity_vector
-            elli_vector = atom.get_ellipticity_vector()
-            x_rot_list.append(elli_vector[0])
-            y_rot_list.append(elli_vector[1])
-
-        return(x_pos_list, y_pos_list, x_rot_list, y_rot_list)
+# For removal
+#    def get_position_and_ellipticity_vector_for_all_atoms(self):
+#        x_pos_list = []
+#        y_pos_list = []
+#        x_rot_list = [] 
+#        y_rot_list = [] 
+#
+#        for atom in self.atom_list:
+#            x_pos_list.append(atom.pixel_x)
+#            y_pos_list.append(atom.pixel_y)
+#
+#            # Maa endres til atom.get_ellipticity_vector
+#            elli_vector = atom.get_ellipticity_vector()
+#            x_rot_list.append(elli_vector[0])
+#            y_rot_list.append(elli_vector[1])
+#
+#        return(x_pos_list, y_pos_list, x_rot_list, y_rot_list)
 
     def get_atom_row_slice_between_two_rows(self, atom_row1, atom_row2, zone_vector):
         atom_row_start_index = None
@@ -407,64 +508,6 @@ class Atom_Lattice():
                     temp_atom_list.append(atom)
             ort_atom_list.extend(temp_atom_list)
         return(ort_atom_list)
-
-    def plot_distance_map_from_zone_vector(
-            self, 
-            zone_vector, 
-            atom_row_marker=None, 
-            title='', 
-            atom_list=None):
-        zone_index = 0
-        for index, temp_zone_vector in enumerate(self.zones_axis_average_distances):
-            if temp_zone_vector == zone_vector:
-                zone_index = index
-                break
-        atom_row_list = self.atom_rows_by_zone_vector[zone_vector]
-        atom_distance_list = []
-        for atom_row in atom_row_list:
-            atom_distance_list.extend(
-                    atom_row.get_atom_distance_to_next_atom_and_position_list())
-        
-        atom_distance_list = np.array(atom_distance_list)
-
-        interpolate_x_lim = (0, self.adf_image.shape[1])
-        interpolate_y_lim = (0, self.adf_image.shape[0])
-
-        data_variance = np.var(atom_distance_list[:,2])
-        data_mean = np.mean(atom_distance_list[:,2])
-        plot_clim = (data_mean-data_variance*3, data_mean+data_variance*3)
-        interpolated_data = _get_interpolated2d_from_unregular_data(
-                atom_distance_list, 
-                new_x_lim = interpolate_x_lim,
-                new_y_lim = interpolate_y_lim)
-
-        if self.original_adf_image == None:
-            image_data = self.adf_image
-        else:
-            image_data = self.original_adf_image
-
-        plot_zone_vector_and_atom_distance_map(
-                image_data,
-                interpolated_data, 
-                atom_rows=[atom_row_list[2]],
-                clim=plot_clim,
-                plot_title=title,
-                atom_row_marker=atom_row_marker,
-                vector_to_plot = zone_vector,
-                figname=self.save_path + self.tag + "_distance_map_zone" + str(zone_index))
-
-    def plot_distance_map_for_all_zone_vectors(
-            self,
-            atom_row_marker=None, 
-            atom_list=None,
-            max_number_of_zone_vectors=5):
-        for zone_index, zone_vector in enumerate(self.zones_axis_average_distances):
-            if zone_index < max_number_of_zone_vectors:
-                self.plot_distance_map_from_zone_vector(
-                        zone_vector, 
-                        atom_row_marker=atom_row_marker, 
-                        atom_list=atom_list,
-                        title=str(zone_index) + ", " + str(zone_vector))
 
     def _make_circular_mask(self, centerX, centerY, imageSizeX, imageSizeY, radius):
         y,x = np.ogrid[-centerX:imageSizeX-centerX, -centerY:imageSizeY-centerY]
@@ -518,26 +561,6 @@ class Atom_Lattice():
             atom.refine_position_using_center_of_mass(
                 image_data,
                 percent_distance_to_nearest_neighbor=percent_distance_to_nearest_neighbor)
-
-    def _get_atom_position_list(self):
-        temp_list = []
-        for atom in self.atom_list:
-            temp_list.append(
-                    [atom.pixel_x, atom.pixel_y])
-
-        return(temp_list)
-
-    # Currently not in use
-    def _make_nearest_neighbor_distance_statistics(self):
-        self.nearest_neighbor_distances = []
-        for atom in self.atom_list:
-            for nearest_neighbor in atom.nearest_neighbor_list:
-                self.nearest_neighbor_distances.append(
-                        atom.get_pixel_difference(nearest_neighbor))
-#        hist, bins = np.histogram(atom_lattice.nearest_neighbor_distances, bins=50)
-#        fig, ax = plt.subplots()
-#        ax.hist(self.nearest_neighbor_distances, bins=100)
-#        fig.savefig("histogram.png")
 
     def get_nearest_neighbor_directions(self):
         x_pos_distances = []
@@ -632,7 +655,9 @@ class Atom_Lattice():
         """ Refine zone vector positions using center of mass """
         scale = histogram[1][1] - histogram[1][0]
         offset = histogram[1][0]
-        closest_distance = math.hypot(zone_vector_list[0][0], zone_vector_list[0][1])*distance_percent/scale
+        closest_distance = math.hypot(
+                zone_vector_list[0][0], 
+                zone_vector_list[0][1])*distance_percent/scale
 
         new_zone_vector_list = []
         for zone_vector in zone_vector_list:
@@ -791,35 +816,64 @@ class Atom_Lattice():
         fig.tight_layout()
         fig.savefig(self.save_path + figname)
 
-    def plot_list_of_positions_on_stem_data(self, x_list, y_list, figname="position_plot.jpg"):
-        fig, ax = plt.subplots(figsize=(10,10))
-        cax = ax.imshow(self.adf_image)
-        if self.plot_clim:
-            cax.set_clim(self.plot_clim[0], self.plot_clim[1])
-        ax.scatter(x_list, y_list, color='blue')
-        ax.set_ylim(0, self.adf_image.shape[0])
-        ax.set_xlim(0, self.adf_image.shape[1])
-        fig.tight_layout()
-        fig.savefig(self.save_path + figname)
-
-    def plot_atom_list_on_stem_data(self, 
+    def plot_atom_list_on_image_data(
+            self, 
             atom_list=None, 
             image=None,
             plot_atom_numbers=False, 
+            markersize=2, 
             fontsize=12,
             figsize=(10,10),
             figdpi=200,
-            figname="atom_plot.jpg"):
-        if image == None:
+            figname="atom_plot.jpg",
+            ax=None,
+            fig=None):
+        """
+        Plot atom positions on the image data.
+
+        Parameters:
+        -----------
+        atom_list : list of Atom objects, optional
+            Atom positions to plot. If no list is given, 
+            will use the atom_list.
+        image : 2-D numpy array, optional
+            Image data for plotting. If none is given, will use
+            the original_adf_image.
+        plot_atom_numbers : bool, optional
+            Plot the number of the atom beside each atomic
+            position in the plot. Useful for locating 
+            misfitted atoms. Default False.
+        markersize : number, optional
+            Size of the atom position markers 
+        fontsize : int, optional
+            If plot_atom_numbers is True, this will set
+            the fontsize.
+        figsize : tuple, optional
+            Size of the figure in inches. Default (10, 10)
+        figdpi : number, optional
+            Pixels per inch for the figure. Default 200.
+        figname : string, optional
+            Name of the figure.
+
+        Returns:
+        --------
+        Matplotlib figure object
+        """
+        if image is None:
             image = self.original_adf_image
-        if atom_list == None:
+        if atom_list is None:
             atom_list = self.atom_list
-        fig, ax = plt.subplots(figsize=figsize)
+        if fig is None:
+            fig, ax = plt.subplots(figsize=figsize)
         cax = ax.imshow(image, interpolation='nearest')
         if self.plot_clim:
             cax.set_clim(self.plot_clim[0], self.plot_clim[1])
         for atom_index, atom in enumerate(atom_list):
-            ax.plot(atom.pixel_x, atom.pixel_y, 'o', color='blue')
+            ax.plot(
+                    atom.pixel_x,
+                    atom.pixel_y, 
+                    'o', markersize=markersize, 
+                    color='blue')
             if plot_atom_numbers:
                 ax.text(
                         atom.pixel_x, 
@@ -831,161 +885,30 @@ class Atom_Lattice():
         ax.set_xlim(0, image.shape[1])
         fig.tight_layout()
         fig.savefig(self.save_path + figname, dpi=figdpi)
-
-    def plot_distance_difference_map_for_all_zone_vectors(
-            self,
-            zone_vector_list=None,
-            atom_list_as_zero=None,
-            figname="distance_difference.jpg"):
-
-        if zone_vector_list == None:
-            zone_vector_list = self.zones_axis_average_distances
-        for zone_vector in zone_vector_list:
-            self.plot_distance_difference_map_for_zone_vector(
-                    zone_vector,
-                    atom_list_as_zero=atom_list_as_zero,
-                    figname=figname)
-
-    def get_distance_difference_data_list_for_zone_vector(
-            self,
-            zone_vector):
-        x_list, y_list, z_list = [], [], []
-        for atom_row in self.atom_rows_by_zone_vector[zone_vector]: 
-            data = atom_row.get_net_distance_change_between_atoms()
-            if not (data==None):
-                x_list.extend(data[:,0])
-                y_list.extend(data[:,1])
-                z_list.extend(data[:,2])
-        return(x_list, y_list, z_list)
+        return(fig)
 
     def _add_zero_position_to_data_list_from_atom_list(
             self,
-            data_list,
-            atom_list):
-        atom_x_pos_list = []
-        atom_y_pos_list = []
-        for atom in atom_list:
-            atom_x_pos_list.append(atom.pixel_x)
-            atom_y_pos_list.append(atom.pixel_y)
-        data_list[0].extend(atom_x_pos_list)
-        data_list[1].extend(atom_y_pos_list)
-        data_list[2].extend(np.zeros(len(atom_x_pos_list)))
+            x_list,
+            y_list,
+            z_list,
+            zero_position_x_list,
+            zero_position_y_list):
+        """
+        Add zero value properties to position and property list.
+        Useful to visualizing oxygen tilt pattern.
 
-    def get_distance_difference_map_for_zone_vector(
-            self, 
-            zone_vector,
-            atom_list_as_zero=None):
-
-        data_list = self.get_distance_difference_data_list_for_zone_vector(
-                zone_vector)
-        x_list, y_list, z_list = data_list
-
-        if not (atom_list_as_zero == None):
-            self._add_zero_position_to_data_list_from_atom_list(
-                    [x_list,y_list,z_list],
-                    atom_list_as_zero)
- 
-        middle_atom_row_index = int(len(self.atom_rows_by_zone_vector)/2)
-        middle_atom_row = self.atom_rows_by_zone_vector[zone_vector][middle_atom_row_index]
-
-        data_list = np.array([x_list, y_list, z_list]).swapaxes(0,1)
-        interpolate_x_lim = (0, self.adf_image.shape[1])
-        interpolate_y_lim = (0, self.adf_image.shape[0])
-        new_data = _get_interpolated2d_from_unregular_data(
-            data_list,
-            new_x_lim=interpolate_x_lim, 
-            new_y_lim=interpolate_y_lim, 
-            upscale=4)
-
-        return(new_data)
-
-    def plot_distance_difference_map_for_zone_vector(
-            self, 
-            zone_vector,
-            atom_list_as_zero=None,
-            figname="distance_difference.jpg"):
-
-        plt.ioff()
-        data_list = self.get_distance_difference_map_for_zone_vector(
-            zone_vector,
-            atom_list_as_zero=atom_list_as_zero)
-
-        data_list = np.array(data_list)
-
-        clim = _get_clim_from_data(data_list[2])
-
-        for index, temp_zone_vector in enumerate(self.zones_axis_average_distances):
-            if temp_zone_vector == zone_vector:
-                zone_index = index
-
-        if self.original_adf_image == None:
-            image_data = self.adf_image
-        else:
-            image_data = self.original_adf_image
-
-        atom_row = self.atom_rows_by_zone_vector[zone_vector][0]
-
-        plot_zone_vector_and_atom_distance_map(
-            image_data,
-            data_list,
-            atom_rows=[atom_row],
-            clim=clim,
-            plot_title=str(zone_vector) + ' distance difference list',
-            figname=self.save_path + self.tag + "_zone" + str(zone_index) + "_" + figname)
-
-    def save_distance_difference_map_for_zone_vector(
-            self, 
-            zone_vector,
-            atom_list_as_zero=None,
-            signal_name="distance_difference.hdf5"):
-        data_list = self.get_distance_difference_map_for_zone_vector(
-            zone_vector,
-            atom_list_as_zero=atom_list_as_zero)
-
-        data_list = np.array(data_list)
-
-        for index, temp_zone_vector in enumerate(self.zones_axis_average_distances):
-            if temp_zone_vector == zone_vector:
-                zone_index = index
-
-        sig_name = self.save_path + self.tag + "_zone" + str(zone_index) + "_" + signal_name
-        
-        self.save_map_from_datalist(data_list, self.pixel_size, sig_name)
-
-    def plot_ellipticity(self, interface_row=None, clim=None, figname=''):
-        x_list, y_list, z_list = [], [], []
-        for atom in self.atom_list:
-            x_list.append(atom.pixel_x)
-            y_list.append(atom.pixel_y)
-            z_list.append(atom.ellipticity)
-
-        data_list = np.array([x_list, y_list, z_list]).swapaxes(0,1)
-
-        # Sometimes the 2D-gaussian fitting is very bad, leading to 
-        # a very high sigma_x and very low sigma_y.
-        data_list[:,2].clip(0,5, out=data_list[:,2])
-
-        interpolate_x_lim = (0, self.adf_image.shape[1])
-        interpolate_y_lim = (0, self.adf_image.shape[0])
-        new_data = _get_interpolated2d_from_unregular_data(
-            data_list,
-            new_x_lim=interpolate_x_lim, 
-            new_y_lim=interpolate_y_lim, 
-            upscale=4)
-
-        if clim == None:
-            clim = (0.9, 2.0)
-        
-        if not (interface_row == None):
-            interface_row = [interface_row]
-
-        plot_zone_vector_and_atom_distance_map(
-            self.original_adf_image,
-            new_data,
-            atom_rows=interface_row,
-            clim=clim,
-            plot_title='ellipticity',
-            figname=self.save_path + self.tag + "_ellipticity" + figname)
+        Parameters:
+        -----------
+        x_list : list of numbers
+        y_list : list of numbers
+        z_list : list of numbers
+        zero_position_x_list : list of numbers
+        zero_position_y_list : list of numbers
+        """
+        x_list.extend(zero_position_x_list)
+        y_list.extend(zero_position_y_list)
+        z_list.extend(np.zeros_like(zero_position_x_list))
 
     def plot_rotation(self, interface_row=None, clim=None, figname=''):
         x_pos_list, y_pos_list, x_rot_list, y_rot_list = [], [], [], []
@@ -1087,21 +1010,21 @@ class Atom_Lattice():
             fig.tight_layout()
             fig.savefig(self.save_path + fignameprefix + str(zone_index) + ".jpg")
 
-    def plot_atom_row_distance_line(self, atom_row_interface, zone_vector):
-        atom_distance_xy_list = []
-        for atom in atom_row_interface.atom_list:
-            for atom_row in atom.atom_rows:
-                if atom_row.zone_vector == zone_vector:
-                    atom_index = atom_row.get_atom_index(atom)
-                    atom_distance_list = atom_row.get_atom_distance_list()
-                    atom_x_range = np.arange(len(atom_distance_list)) - atom_index
-                    atom_distance_xy_list.append([atom_x_range, atom_distance_list])
-
-        fig, ax = plt.subplots(figsize=(10,10))
-        for atom_distance_xy in atom_distance_xy_list:
-            ax.plot(atom_distance_xy[0], atom_distance_xy[1])
-        fig.tight_layout()
-        fig.savefig(self.save_path + "atom_row_distance_list.jpg")
+#    def plot_atom_row_distance_line(self, atom_row_interface, zone_vector):
+#        atom_distance_xy_list = []
+#        for atom in atom_row_interface.atom_list:
+#            for atom_row in atom.atom_rows:
+#                if atom_row.zone_vector == zone_vector:
+#                    atom_index = atom_row.get_atom_index(atom)
+#                    atom_distance_list = atom_row.get_atom_distance_list()
+#                    atom_x_range = np.arange(len(atom_distance_list)) - atom_index
+#                    atom_distance_xy_list.append([atom_x_range, atom_distance_list])
+#
+#        fig, ax = plt.subplots(figsize=(10,10))
+#        for atom_distance_xy in atom_distance_xy_list:
+#            ax.plot(atom_distance_xy[0], atom_distance_xy[1])
+#        fig.tight_layout()
+#        fig.savefig(self.save_path + "atom_row_distance_list.jpg")
 
     def get_atom_column_amplitude_gaussian2d(
             self,
@@ -1273,121 +1196,7 @@ class Atom_Lattice():
             im.metadata.marker.atom_row.y = atom_row.get_y_position_list()
         im.save(signal_name, overwrite=True)
 
-    def plot_distance_difference_map_and_line_profile_for_all_zone_vectors(
-            self, 
-            zone_vector_list=None,
-            interface_row=None,
-            line_profiles_to_plot=[],
-            data_scale=None,
-            atom_list_as_zero=None,
-            invert_line_profile=False,
-            figname="distance_difference_and_lineprofile.jpg",
-            save_datafiles=False):
-        if zone_vector_list == None:
-            zone_vector_list = self.zones_axis_average_distances
-        for zone_vector in zone_vector_list:
-            self.plot_distance_difference_map_and_line_profile_for_zone_vector(
-                zone_vector,
-                interface_row=interface_row,
-                line_profiles_to_plot=line_profiles_to_plot,
-                data_scale=data_scale,
-                atom_list_as_zero=atom_list_as_zero,
-                invert_line_profile=invert_line_profile,
-                figname=figname,
-                save_datafiles=save_datafiles)
-
-    def plot_distance_difference_map_and_line_profile_for_zone_vector(
-            self, 
-            zone_vector,
-            interface_row=None,
-            line_profiles_to_plot=[],
-            data_scale=None,
-            atom_list_as_zero=None,
-            invert_line_profile=False,
-            figname="distance_difference_and_lineprofile.jpg",
-            save_datafiles=False):
-    
-        line_profiles_to_plot = copy.deepcopy(line_profiles_to_plot)
-    
-        if data_scale == None:
-            data_scale = self.pixel_size
-        else:
-            data_scale = 1.0
-
-        if interface_row == None:
-            interface_row_index = int(len(self.atom_rows_by_zone_vector[zone_vector])/2.)
-            interface_row = self.atom_rows_by_zone_vector[zone_vector][interface_row_index]
-
-        atom_rows = [self.atom_rows_by_zone_vector[zone_vector][1]]
-
-        plt.ioff()
-        data_list = self.get_distance_difference_data_list_for_zone_vector(
-                zone_vector)
-
-        # Get line profile data
-        data_list = np.array(data_list)
-        data_for_line_profile = np.swapaxes(np.array(data_list),0,1)
-        line_profiles_to_plot.insert(0,data_for_line_profile)
-
-        line_profile_data_list = []
-        for data_for_line_profile in line_profiles_to_plot:
-            line_profile_data = find_atom_position_1d_from_distance_list_and_atom_row(
-                data_for_line_profile,
-                interface_row,
-                rebin_data=True)
-            line_profile_data = np.array(line_profile_data)
-            if invert_line_profile == True:
-                line_profile_data[:,0] *= -1
-            line_profile_data_list.append(line_profile_data)
-
-        data_list = self.get_distance_difference_map_for_zone_vector(
-            zone_vector,
-            atom_list_as_zero=atom_list_as_zero)
-
-        clim = _get_clim_from_data(data_list[2]*data_scale)
-
-        for index, temp_zone_vector in enumerate(self.zones_axis_average_distances):
-            if temp_zone_vector == zone_vector:
-                zone_index = index
-
-        if self.original_adf_image == None:
-            image_data = self.adf_image
-        else:
-            image_data = self.original_adf_image
-
-        plot_image_map_line_profile_using_interface_row(
-            image_data,
-            data_list,
-            line_profile_data_list,
-            interface_row,
-            atom_row_list=atom_rows,
-            data_scale=data_scale,
-            clim=clim,
-            plot_title=str(zone_vector) + ' distance difference list',
-            line_profile_prune_outer_values=2,
-            figname=self.save_path + self.tag + "_zone" + str(zone_index) + "_" + figname)
-        
-        if save_datafiles:
-            line_profile_dict = {
-                    'position':(
-                        line_profile_data_list[0][:,0]*data_scale).tolist(),
-                    'oxygen_position_difference':(
-                        line_profile_data_list[0][:,1]*data_scale).tolist()}
-
-            json_filename = self.save_path + self.tag + "_zone" +\
-                    str(zone_index) + "_distance_difference_line_profile.json"
-            with open(json_filename,'w') as fp:
-                json.dump(line_profile_dict, fp)
-
-            sig_name = self.save_path + self.tag + "_zone" +\
-                    str(zone_index) + "_distance_difference.hdf5"
-            self.save_map_from_datalist(
-                data_list,
-                data_scale,
-                atom_row=interface_row,
-                signal_name=sig_name)
-
-    def get_distance_and_position_list_between_atom_rows(
+    def _get_distance_and_position_list_between_atom_rows(
             self,
             atom_row0,
             atom_row1):
@@ -1402,130 +1211,127 @@ class Atom_Lattice():
         data_list = np.array([list_x,list_y,list_z])
         return(data_list)
 
-    def get_distance_and_position_list_between_atom_rows_for_zone_vector(
-            self, 
-            zone_vector):
-        atom_row_list = self.atom_rows_by_zone_vector[zone_vector]
-        data_list = [[],[],[]]
-        for index, atom_row in enumerate(atom_row_list[1:]):
-            atom_row_previous = atom_row_list[index]
-            row_data_list = self.get_distance_and_position_list_between_atom_rows(
-                    atom_row_previous, atom_row)
-            data_list[0].extend(row_data_list[0].tolist())
-            data_list[1].extend(row_data_list[1].tolist())
-            data_list[2].extend(row_data_list[2].tolist())
-        data_list = np.array(data_list)
-        return(data_list)
-
-    def get_distance_map_and_line_profile_between_atom_rows_from_zone_vector(
-            self, 
-            atom_row,
-            zone_vector):
-        data_list = self.get_distance_and_position_list_between_atom_rows_for_zone_vector(
-                zone_vector)
-
-       # Get line profile data
-        data_for_line_profile = np.swapaxes(np.array(data_list),0,1)
-        line_profile_data_list = find_atom_position_1d_from_distance_list_and_atom_row(
-            data_for_line_profile,
-            atom_row,
-            rebin_data=True)
-        line_profile_data_list = np.array(line_profile_data_list)
- 
-        data_list = data_list.swapaxes(0,1)
-        interpolate_x_lim = (0, self.adf_image.shape[1])
-        interpolate_y_lim = (0, self.adf_image.shape[0])
-        new_data = _get_interpolated2d_from_unregular_data(
-            data_list,
-            new_x_lim=interpolate_x_lim, 
-            new_y_lim=interpolate_y_lim, 
-            upscale=4)
-        return(new_data, line_profile_data_list)
-
-    def plot_distance_map_between_atom_rows_from_zone_vector(
-            self, 
-            zone_vector,
-            interface_row=None,
-            save_signal=True,
-            line_profile_prune_outer_values=False,
-            invert_line_profile=False,
-            figname="between_atom_rows.jpg"):
-        
-        data_scale = self.pixel_size    
-    
-        if interface_row == None:
-            middle_atom_row_index = int(len(self.atom_rows_by_zone_vector)/2)
-            interface_row = self.atom_rows_by_zone_vector[zone_vector][middle_atom_row_index]
-
-        temp_data = self.get_distance_map_and_line_profile_between_atom_rows_from_zone_vector(
-                interface_row,
-                zone_vector)
-
-        data_map, line_profile_data_list = temp_data
-
-        if invert_line_profile == True:
-            line_profile_data_list[:,0] *= -1
-
-        clim = _get_clim_from_data(
-                data_map[2]*data_scale, sigma=2, ignore_zeros=True, ignore_edges=True)
-        
-        for index, temp_zone_vector in enumerate(self.zones_axis_average_distances):
-            if temp_zone_vector == zone_vector:
-                zone_index = index
-                break
-
-        atom_rows = [self.atom_rows_by_zone_vector[zone_vector][1]]
-        plot_image_map_line_profile_using_interface_row(
-            self.original_adf_image,
-            data_map,
-            [line_profile_data_list],
-            interface_row,
-            data_scale=data_scale,
-            clim=clim,
-            rotate_atom_row_list_90_degrees=True,
-            atom_row_list=atom_rows,
-            plot_title=str(zone_vector) + ' distance map between rows',
-            line_profile_prune_outer_values=line_profile_prune_outer_values,
-            figname=self.save_path + self.tag + "_zone" + str(zone_index) + "_" + figname)
-        
-        if save_signal:
-            save_signal_figname = figname[:-4]
-            line_profile_dict = {
-                    'position':(
-                        line_profile_data_list[:,0]*data_scale).tolist(),
-                    self.tag + '_position_difference':(
-                        line_profile_data_list[:,1]*data_scale).tolist()}
-
-            json_filename = self.save_path + self.tag + "_zone" +\
-                    str(zone_index) + "_" + save_signal_figname + "_line_profile.json"
-            with open(json_filename,'w') as fp:
-                json.dump(line_profile_dict, fp)
-
-            sig_name = self.save_path + self.tag + "_zone" +\
-                    str(zone_index) + "_" + save_signal_figname + ".hdf5"
-            self.save_map_from_datalist(
-                data_map,
-                data_scale,
-                atom_row=interface_row,
-                signal_name=sig_name)
-
-    def plot_distance_map_between_atom_rows_for_all_zone_vectors(
+    def plot_ellipticity_map(
             self, 
             interface_row=None,
             save_signal=False,
-            invert_line_profile=False,
+            data_scale_z=1.0,
             line_profile_prune_outer_values=False,
-            figname="between_atom_rows.jpg"):
-        plt.ioff()
-        for zone_vector in self.zones_axis_average_distances:
-            self.plot_distance_map_between_atom_rows_from_zone_vector(
-                    zone_vector,
-                    interface_row=interface_row,
-                    save_signal=save_signal,
-                    invert_line_profile=invert_line_profile,
-                    line_profile_prune_outer_values=line_profile_prune_outer_values,
-                    figname=figname)
+            invert_line_profile=False,
+            figname="ellipticity.jpg"):
+        """
+        Plot a map and line profile of the ellipticity.
+        """
+        self.plot_property_map_and_profile(
+            self.x_position,
+            self.x_position,
+            self.ellipticity,
+            interface_row=interface_row,
+            data_scale_z=data_scale_z,
+            save_signal=save_signal,
+            line_profile_prune_outer_values=line_profile_prune_outer_values,
+            invert_line_profile=invert_line_profile,
+            figname=figname)
 
+    def plot_atom_distance_difference_map(
+            self, 
+            zone_vector_list=None,
+            interface_row=None,
+            save_signal=False,
+            data_scale_z=1.0,
+            line_profile_prune_outer_values=False,
+            invert_line_profile=False,
+            add_zero_value_sublattice=None,
+            figname="atom_distance_difference.jpg"):
+        """
+        Plot a map and line profile of the difference between atoms.
+        """
+        zone_vector_index_list = self._get_zone_vector_index_list(zone_vector_list)
+
+        for zone_index, zone_vector in zone_vector_index_list:
+            tempname = "zone" + str(zone_index) + "_" + figname
+
+            data_list = self.get_atom_distance_difference_from_zone_vector(zone_vector)
+            self.plot_property_map_and_profile(
+                data_list[0],
+                data_list[1],
+                data_list[2],
+                interface_row=interface_row,
+                data_scale_z=data_scale_z,
+                save_signal=save_signal,
+                line_profile_prune_outer_values=line_profile_prune_outer_values,
+                invert_line_profile=invert_line_profile,
+                add_zero_value_sublattice=add_zero_value_sublattice,
+                figname=tempname)
+
+    def plot_monolayer_distance_map(
+            self, 
+            zone_vector_list=None,
+            interface_row=None,
+            save_signal=False,
+            data_scale_z=1.0,
+            line_profile_prune_outer_values=False,
+            invert_line_profile=False,
+            figname="monolayer_distance.jpg"):
+
+        zone_vector_index_list = self._get_zone_vector_index_list(zone_vector_list)
+
+        for zone_index, zone_vector in zone_vector_index_list:
+            tempname = "zone" + str(zone_index) + "_" + figname
+
+            data_list = self.get_monolayer_distance_list_from_zone_vector(zone_vector)
+            self.plot_property_map_and_profile(
+                data_list[0],
+                data_list[1],
+                data_list[2],
+                interface_row=interface_row,
+                data_scale_z=data_scale_z,
+                save_signal=save_signal,
+                line_profile_prune_outer_values=line_profile_prune_outer_values,
+                invert_line_profile=invert_line_profile,
+                figname=tempname)
+
+    def plot_atom_distance_map(
+            self, 
+            zone_vector_list=None,
+            interface_row=None,
+            save_signal=False,
+            data_scale_z=1.0,
+            line_profile_prune_outer_values=False,
+            invert_line_profile=False,
+            figname="atom_distance.jpg"):
+
+        zone_vector_index_list = self._get_zone_vector_index_list(zone_vector_list)
+
+        for zone_index, zone_vector in zone_vector_index_list:
+            tempname = "zone" + str(zone_index) + "_" + figname
+
+            data_list = self.get_atom_distance_list_from_zone_vector(zone_vector)
+            self.plot_property_map_and_profile(
+                data_list[0],
+                data_list[1],
+                data_list[2],
+                interface_row=interface_row,
+                data_scale_z=data_scale_z,
+                save_signal=save_signal,
+                line_profile_prune_outer_values=line_profile_prune_outer_values,
+                invert_line_profile=invert_line_profile,
+                figname=tempname)
+
+    def _get_zone_vector_index_list(self, zone_vector_list):
+        if zone_vector_list == None:
+            zone_vector_list = self.zones_axis_average_distances
+
+        zone_vector_index_list = []
+        for zone_vector in zone_vector_list:
+            for index, temp_zone_vector in enumerate(
+                    self.zones_axis_average_distances):
+                if temp_zone_vector == zone_vector:
+                    zone_index = index
+                    break
+            zone_vector_index_list.append([zone_index, zone_vector])
+        return(zone_vector_index_list)
+        
     def _plot_debug_start_end_atoms(self):
         for zone_index, zone_vector in enumerate(self.zones_axis_average_distances):
             fig, ax = plt.subplots(figsize=(10,10))
@@ -1543,7 +1349,9 @@ class Atom_Lattice():
             ax.set_ylim(0, self.adf_image.shape[0])
             ax.set_xlim(0, self.adf_image.shape[1])
             fig.tight_layout()
-            fig.savefig(self.save_path + "debug_plot_start_end_atoms_zone" + str(zone_index) + ".jpg")
+            fig.savefig(
+                    self.save_path + "debug_plot_start_end_atoms_zone"\
+                    + str(zone_index) + ".jpg")
 
     def _plot_atom_position_convergence(self, figname='atom_position_convergence.jpg'):
         position_absolute_convergence = []
@@ -1662,5 +1470,3 @@ class Atom_Lattice():
         if figname == None:
             figname = self.save_path + self.tag + "_lattice_line_profiles.jpg"
         fig.savefig(figname, dpi=100)
-
-
