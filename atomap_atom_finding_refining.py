@@ -1,5 +1,56 @@
 from scipy.ndimage.filters import gaussian_filter
 import hyperspy.api as hs
+import numpy as np
+from skimage.feature import peak_local_max
+from atomap_plotting import plot_feature_density
+
+def get_peak2d_skimage(image, separation):
+    arr_shape = (image.axes_manager._navigation_shape_in_array
+            if image.axes_manager.navigation_size > 0
+            else [1, ])
+    peaks = np.zeros(arr_shape, dtype=object)
+    for z, indices in zip(
+            image._iterate_signal(),
+            image.axes_manager._array_indices_generator()):
+        peaks[indices] = peak_local_max(
+                z, 
+                min_distance=int(separation))
+    return(peaks)
+
+def find_feature_density(
+        image_data, 
+        separation_range=None, 
+        separation_step=1,
+        plot_figure=False):
+    """
+    Do peak finding with a varying amount of peak separation
+    constrained. Gives a measure of feature density, and 
+    what peak separation should be used to find the initial
+    sub-lattice.
+
+    Inspiration from the program Smart Align by Lewys Jones.
+    """
+    if separation_range is None:
+        min_separation = 3
+        max_separation = int(np.array(image_data.shape).min()/5)
+        separation_range = (min_separation, max_separation)
+    
+    separation_list = range(
+            separation_range[0],
+            separation_range[1], 
+            separation_step)
+
+    separation_value_list = []
+    peakN_list = []
+    for separation in separation_list:
+        peak_list = peak_local_max(image_data, separation)
+        separation_value_list.append(separation)
+        peakN_list.append(len(peak_list))
+
+    if plot_figure:
+        plot_feature_density(separation_value_list, peakN_list)
+
+    return(separation_value_list, peakN_list)
 
 def construct_zone_axes_from_sub_lattice(sub_lattice):
     tag = sub_lattice.tag

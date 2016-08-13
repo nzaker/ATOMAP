@@ -6,8 +6,6 @@ from scipy import ndimage
 import matplotlib.pyplot as plt
 import hyperspy.api as hs
 
-from skimage.feature import peak_local_max
-
 #From Vidars HyperSpy repository
 def _line_profile_coordinates(src, dst, linewidth=1):
     """Return the coordinates of the profile of an image along a scan line.
@@ -166,19 +164,6 @@ def combine_clusters_using_average_distance(data_list, margin=0.5):
     layer_list = combine_clustered_positions_into_layers(
             data_list, first_peak)
     return(layer_list)
-
-def get_peak2d_skimage(image, separation):
-    arr_shape = (image.axes_manager._navigation_shape_in_array
-            if image.axes_manager.navigation_size > 0
-            else [1, ])
-    peaks = np.zeros(arr_shape, dtype=object)
-    for z, indices in zip(
-            image._iterate_signal(),
-            image.axes_manager._array_indices_generator()):
-        peaks[indices] = peak_local_max(
-                z, 
-                min_distance=int(separation))
-    return(peaks)
 
 def dotproduct(v1, v2):
     return sum((a*b) for a, b in zip(v1, v2))

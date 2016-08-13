@@ -443,3 +443,16 @@ def plot_line_profiles_from_parameter_input(
             ax.axvline(extra_line_marker, color='red')
     fig.tight_layout()
     fig.savefig(figname, dpi=100)
+
+def plot_feature_density(
+        separation_value_list, 
+        peakN_list, 
+        figname="feature_density.png"):
+    fig, ax = plt.subplots()
+    ax.plot(separation_value_list, peakN_list)
+    ax.set_xlim(separation_value_list[0], separation_value_list[-1])
+    ax.set_ylim(peakN_list[0], peakN_list[-1])
+    ax.set_xlabel("Feature separation, (pixels)")
+    ax.set_ylabel("Feature density, (#)")
+    fig.tight_layout()
+    fig.savefig("feature_density.png", dpi=200)
