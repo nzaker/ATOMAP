@@ -3,6 +3,7 @@ import hyperspy.api as hs
 import numpy as np
 from skimage.feature import peak_local_max
 from atomap_plotting import plot_feature_density
+import matplotlib.pyplot as plt
 
 def get_peak2d_skimage(image, separation):
     arr_shape = (image.axes_manager._navigation_shape_in_array
@@ -19,9 +20,10 @@ def get_peak2d_skimage(image, separation):
 
 def find_feature_density(
         image_data, 
-        separation_range=None, 
+        separation_range=(3,40), 
         separation_step=1,
-        plot_figure=False):
+        plot_figure=False,
+        plot_debug_figures=False):
     """
     Do peak finding with a varying amount of peak separation
     constrained. Gives a measure of feature density, and 
@@ -46,6 +48,13 @@ def find_feature_density(
         peak_list = peak_local_max(image_data, separation)
         separation_value_list.append(separation)
         peakN_list.append(len(peak_list))
+        if plot_debug_figures:
+            fig, ax = plt.subplots() 
+            ax.imshow(np.rot90(np.fliplr(image_data)))
+            peak_list = peak_list.swapaxes(0,1)
+            ax.scatter(peak_list[0], peak_list[1], color='blue')
+            fig.savefig("feature_density_separation_" + str(separation) + ".png")
+            plt.close(fig)
 
     if plot_figure:
         plot_feature_density(separation_value_list, peakN_list)
