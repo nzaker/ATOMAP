@@ -2,11 +2,11 @@ import unittest
 import numpy as np
 from atom_lattice_class import Atom_Lattice
 from sub_lattice_class import Sub_Lattice
-from atomap_tools import get_peak2d_skimage
 from atomap_atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
-        construct_zone_axes_from_sub_lattice
+        construct_zone_axes_from_sub_lattice,\
+        get_peak2d_skimage
 from atomap_io import load_atom_lattice_from_hdf5
 from hyperspy.api import load
 

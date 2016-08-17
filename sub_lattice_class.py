@@ -11,7 +11,6 @@ from matplotlib.gridspec import GridSpec
 from atomap_tools import \
         find_atom_position_1d_from_distance_list_and_atom_row,\
         _get_interpolated2d_from_unregular_data,\
-        get_peak2d_skimage,\
         _get_clim_from_data,\
         find_atom_position_1d_from_distance_list_and_atom_row
 
@@ -19,6 +18,7 @@ from atomap_plotting import \
         plot_zone_vector_and_atom_distance_map,\
         plot_image_map_line_profile_using_interface_row,\
         _make_line_profile_subplot_from_three_parameter_data
+from atomap_atom_finding_refining import get_peak2d_skimage
 
 from atom_position_class import Atom_Position
 from atom_row_class import Atom_Row
@@ -1224,7 +1224,7 @@ class Sub_Lattice():
         """
         self.plot_property_map_and_profile(
             self.x_position,
-            self.x_position,
+            self.y_position,
             self.ellipticity,
             interface_row=interface_row,
             data_scale_z=data_scale_z,

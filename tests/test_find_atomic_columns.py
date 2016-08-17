@@ -1,6 +1,8 @@
 import unittest
-from atomap_tools import get_peak2d_skimage
-from atomap_atom_finding_refining import subtract_average_background, do_pca_on_signal
+from atomap_atom_finding_refining import\
+        subtract_average_background,\
+        do_pca_on_signal,\
+        get_peak2d_skimage
 from hyperspy.api import load
 import matplotlib.pyplot as plt
 
