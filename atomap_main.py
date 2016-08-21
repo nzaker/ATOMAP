@@ -17,6 +17,34 @@ from atomap_tools import\
 from atom_lattice_class import Atom_Lattice
 from sub_lattice_class import Sub_Lattice
 
+class ModelParameters:
+    def __init__(self):
+        self.peak_seperation = None
+        self.number_of_sublattices = None
+        self.name = None
+
+class PerovskiteOxide110(ModelParameters):
+    def __init__(self):
+        ModelParameters.__init__(self)
+        self.peak_separation = 0.13
+        self.number_of_sublattices = 3
+        self.sublattice_names = "A-cation", "B-cation", "Oxygen"
+
+class SrTiO3_110(PerovskiteOxide110):
+    def __init__(self):
+        PerovskiteOxide110.__init__(self)
+        self.number_of_sublattices = 3
+        self.sublattice_names = "Sr", "Ti", "O"
+        Ti_sublattice_position = {
+                "sublattice":"Sr",
+                "zoneaxis":"100"}
+        O_sublattice_position = {
+                "sublattice":"Ti",
+                "zoneaxis":"110"}
+        self.sublattice_position = [
+                Ti_sublattice_position,
+                O_sublattice_position]
+
 def run_peak_finding_process_for_all_datasets(
         refinement_interations=2):
     dm3_adf_filename_list = glob.glob("*ADF*.dm3")    
