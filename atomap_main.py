@@ -17,6 +17,43 @@ from atomap_tools import\
 from atom_lattice_class import Atom_Lattice
 from sub_lattice_class import Sub_Lattice
 
+class SubLatticeParameterBase:
+    def __init__(self):
+        self.color = 'red'
+        self.name = "Base Sublattice"
+        self.sublattice_order = None
+
+class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
+    def __init__(self):
+        SubLatticeParametersBase.__init__(self)
+        self.name = "A-cation"
+        self.color = 'blue'
+        self.zone_axis = [
+                {'number':0, 'name':'110'},
+                {'number':1, 'name':'100'},
+                {'number':2, 'name':'11-2'},
+                {'number':3, 'name':'112'},
+                {'number':5, 'name':'111'},
+                {'number':6, 'name':'11-1'},
+                ]
+
+class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
+    def __init__(self):
+        SubLatticeParametersBase.__init__(self)
+        self.name = "B-cation"
+        self.color = 'green'
+#        self.zone_axis = [
+#                {'number':0, 'name':'110'},
+#                {'number':1, 'name':'100'},
+#                {'number':2, 'name':'11-2'},
+#                {'number':3, 'name':'112'},
+#                {'number':5, 'name':'111'},
+#                {'number':6, 'name':'11-1'},]
+#        self.sublattice_order = 1
+       #         "zoneaxis":"100",
+       #         "sublattice_position_sublattice":"A-cation"}
+       #         "sublattice_position_zoneaxis":"100"}
+
 class ModelParameters:
     def __init__(self):
         self.peak_separation = None
@@ -30,24 +67,23 @@ class PerovskiteOxide110(ModelParameters):
         self.peak_separation = 0.13
         self.number_of_sublattices = 3
         self.sublattice_names = "A-cation", "B-cation", "Oxygen"
-        self.zone_axis = [
-                {'number':0, 'name':'110'},
-                {'number':1, 'name':'100'},
-                {'number':2, 'name':'11-2'},
-                {'number':3, 'name':'112'},
-                {'number':5, 'name':'111'},
-                {'number':6, 'name':'11-1'},
-                ]
-        B_cation_sublattice_position = {
-                "sublattice":"Sr",
-                "zoneaxis":"100"}
-        O_sublattice_position = {
-                "sublattice":"Ti",
-                "zoneaxis":"110"}
-        self.sublattice_position = [
-                B_cation_sublattice_position,
-                O_sublattice_position]
 
+        A_cation_sublattice = {
+                "sublattice_name":"A-cation",
+                "sublattice_color":"red",
+                "sublattice_order":0}
+        O_sublattice = {
+                "sublattice_name":"Oxygen",
+                "sublattice_order":2,
+                "sublattice_position_sublattice":"B-cation",
+                "sublattice_position_zoneaxis":"110"}
+        A_cation = PerovskiteOxide110SubLatticeACation()
+        A_cation.sublattice_order = 0
+
+        self.sublattice_list = [
+                A_cation,
+                B_cation_sublattice,
+                O_sublattice]
 
 class SrTiO3_110(PerovskiteOxide110):
     def __init__(self):
@@ -78,7 +114,6 @@ def run_atom_lattice_peakfinding_process(
         s_adf_filename, 
         s_abf_filename, 
         model_parameters="Perovskite110",
-        peak_separation=None, # in nanometers
         refinement_interation_config=None,
         invert_abf_signal=True):
     plt.ioff()
@@ -91,10 +126,8 @@ def run_atom_lattice_peakfinding_process(
     
     if model_parameters == "Perovskite110":
         model_parameters = PerovskiteOxide110()
-        if peak_separation is None:
-            peak_separation = model_parameters.peak_separation
 
-    pixel_separation = peak_separation/s_adf.axes_manager[0].scale
+    pixel_separation = model_parameters.peak_separation/s_adf.axes_manager[0].scale
     atom_position_list_pca = get_peak2d_skimage(
             s_adf_modified, 
             separation=pixel_separation)[0]
@@ -116,32 +149,32 @@ def run_atom_lattice_peakfinding_process(
     normalized_abf_data = normalized_abf_data/normalized_abf_data.max()
     atom_lattice.inverted_abf_image = np.rot90(np.fliplr(normalized_abf_data))
 
-    a_sub_lattice = Sub_Lattice(
+    sub_lattice_0 = Sub_Lattice(
             atom_position_list_pca, 
             np.rot90(np.fliplr(s_adf_modified.data)))
 
-    a_sub_lattice.save_path = "./" + path_name + "/"
-    a_sub_lattice.path_name = path_name
-    a_sub_lattice.plot_color = 'blue'
-    a_sub_lattice.tag = 'a'
-    a_sub_lattice.pixel_size = s_adf.axes_manager[0].scale
-    a_sub_lattice.original_adf_image = np.rot90(np.fliplr(s_adf.data))
-    atom_lattice.sub_lattice_list.append(a_sub_lattice)
+    sub_lattice_0.save_path = "./" + path_name + "/"
+    sub_lattice_0.path_name = path_name
+    sub_lattice_0.plot_color = 'blue'
+    sub_lattice_0.tag = 'a'
+    sub_lattice_0.pixel_size = s_adf.axes_manager[0].scale
+    sub_lattice_0.original_adf_image = np.rot90(np.fliplr(s_adf.data))
+    atom_lattice.sub_lattice_list.append(sub_lattice_0)
 
-    for atom in a_sub_lattice.atom_list:
-        atom.sigma_x = 0.05/a_sub_lattice.pixel_size
-        atom.sigma_y = 0.05/a_sub_lattice.pixel_size
+    for atom in sub_lattice_0.atom_list:
+        atom.sigma_x = 0.05/sub_lattice_0.pixel_size
+        atom.sigma_y = 0.05/sub_lattice_0.pixel_size
 
     print("Refining a atom lattice")
     refine_sub_lattice(
-            a_sub_lattice, 
+            sub_lattice_0, 
             [
-#                (a_sub_lattice.adf_image, 2, 'gaussian'),
-                (a_sub_lattice.original_adf_image, 2, 'gaussian')],
+#                (sub_lattice_0.adf_image, 2, 'gaussian'),
+                (sub_lattice_0.original_adf_image, 2, 'gaussian')],
             0.35)
 
     plt.close('all')
-    construct_zone_axes_from_sub_lattice(a_sub_lattice)
+    construct_zone_axes_from_sub_lattice(sub_lattice_0)
 
     plt.ion()
     return(atom_lattice)
