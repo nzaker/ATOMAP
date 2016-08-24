@@ -25,8 +25,9 @@ class SubLatticeParameterBase:
 
 class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
     def __init__(self):
-        SubLatticeParametersBase.__init__(self)
+        SubLatticeParameterBase.__init__(self)
         self.name = "A-cation"
+        self.tag = "A"
         self.color = 'blue'
         self.zone_axis = [
                 {'number':0, 'name':'110'},
@@ -36,23 +37,24 @@ class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
                 {'number':5, 'name':'111'},
                 {'number':6, 'name':'11-1'},
                 ]
+        self.sublattice_order = 0
 
 class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
     def __init__(self):
-        SubLatticeParametersBase.__init__(self)
+        SubLatticeParameterBase.__init__(self)
         self.name = "B-cation"
+        self.tag = "B"
         self.color = 'green'
-#        self.zone_axis = [
-#                {'number':0, 'name':'110'},
-#                {'number':1, 'name':'100'},
-#                {'number':2, 'name':'11-2'},
-#                {'number':3, 'name':'112'},
-#                {'number':5, 'name':'111'},
-#                {'number':6, 'name':'11-1'},]
-#        self.sublattice_order = 1
-       #         "zoneaxis":"100",
-       #         "sublattice_position_sublattice":"A-cation"}
-       #         "sublattice_position_zoneaxis":"100"}
+        self.zone_axis = [
+                {'number':0, 'name':'110'},
+                {'number':1, 'name':'100'},
+                {'number':2, 'name':'11-2'},
+                {'number':3, 'name':'112'},
+                {'number':5, 'name':'111'},
+                {'number':6, 'name':'11-1'},]
+        self.sublattice_order = 1
+        self.sublattice_position_sublattice = "A-cation"
+        self.sublattice_position_zoneaxis = "100"
 
 class ModelParameters:
     def __init__(self):
@@ -64,26 +66,18 @@ class PerovskiteOxide110(ModelParameters):
     def __init__(self):
         ModelParameters.__init__(self)
         self.name = "Peroskite 110"
-        self.peak_separation = 0.13
+        self.peak_separation = 0.127
         self.number_of_sublattices = 3
-        self.sublattice_names = "A-cation", "B-cation", "Oxygen"
-
-        A_cation_sublattice = {
-                "sublattice_name":"A-cation",
-                "sublattice_color":"red",
-                "sublattice_order":0}
-        O_sublattice = {
-                "sublattice_name":"Oxygen",
-                "sublattice_order":2,
-                "sublattice_position_sublattice":"B-cation",
-                "sublattice_position_zoneaxis":"110"}
-        A_cation = PerovskiteOxide110SubLatticeACation()
-        A_cation.sublattice_order = 0
 
         self.sublattice_list = [
-                A_cation,
-                B_cation_sublattice,
-                O_sublattice]
+            PerovskiteOxide110SubLatticeACation(),
+            PerovskiteOxide110SubLatticeBCation(),
+            ]
+
+    def get_sublattice_from_order(self, order_number):
+        for sublattice in self.sublattice_list:
+            if order_number == sublattice.sublattice_order:
+                return(sublattice)
 
 class SrTiO3_110(PerovskiteOxide110):
     def __init__(self):
@@ -149,14 +143,17 @@ def run_atom_lattice_peakfinding_process(
     normalized_abf_data = normalized_abf_data/normalized_abf_data.max()
     atom_lattice.inverted_abf_image = np.rot90(np.fliplr(normalized_abf_data))
 
+    sublattice_0_param = model_parameters.get_sublattice_from_order(1)
+
     sub_lattice_0 = Sub_Lattice(
             atom_position_list_pca, 
             np.rot90(np.fliplr(s_adf_modified.data)))
 
     sub_lattice_0.save_path = "./" + path_name + "/"
     sub_lattice_0.path_name = path_name
-    sub_lattice_0.plot_color = 'blue'
-    sub_lattice_0.tag = 'a'
+    sub_lattice_0.plot_color = sublattice_0_param.color
+    sub_lattice_0.name = sublattice_0_param.name
+    sub_lattice_0.tag = sublattice_0_param.tag
     sub_lattice_0.pixel_size = s_adf.axes_manager[0].scale
     sub_lattice_0.original_adf_image = np.rot90(np.fliplr(s_adf.data))
     atom_lattice.sub_lattice_list.append(sub_lattice_0)
@@ -165,7 +162,7 @@ def run_atom_lattice_peakfinding_process(
         atom.sigma_x = 0.05/sub_lattice_0.pixel_size
         atom.sigma_y = 0.05/sub_lattice_0.pixel_size
 
-    print("Refining a atom lattice")
+    print("Refining " + sub_lattice_0.name)
     refine_sub_lattice(
             sub_lattice_0, 
             [
