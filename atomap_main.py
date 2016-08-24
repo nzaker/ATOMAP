@@ -143,7 +143,7 @@ def run_atom_lattice_peakfinding_process(
     normalized_abf_data = normalized_abf_data/normalized_abf_data.max()
     atom_lattice.inverted_abf_image = np.rot90(np.fliplr(normalized_abf_data))
 
-    sublattice_0_param = model_parameters.get_sublattice_from_order(1)
+    sublattice_0_param = model_parameters.get_sublattice_from_order(0)
 
     sub_lattice_0 = Sub_Lattice(
             atom_position_list_pca, 
