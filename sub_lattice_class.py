@@ -82,35 +82,35 @@ class Sub_Lattice():
 
     @property
     def atom_amplitude_gaussian2d(self):
-        amplitude = [] 
+        amplitude = []
         for atom in self.atom_list:
             amplitude.append(atom.amplitude_gaussian)
         return(amplitude)
 
     @property
     def atom_amplitude_max_intensity(self):
-        amplitude = [] 
+        amplitude = []
         for atom in self.atom_list:
             amplitude.append(atom.amplitude_max_intensity)
         return(amplitude)
 
     @property
     def rotation(self):
-        rotation = [] 
+        rotation = []
         for atom in self.atom_list:
             rotation.append(atom.rotation)
         return(rotation)
 
     @property
     def ellipticity(self):
-        ellipticity = [] 
+        ellipticity = []
         for atom in self.atom_list:
             ellipticity.append(atom.ellipticity)
         return(ellipticity)
 
     def get_atom_angles_from_zone_vector(
-            self, 
-            zone_vector0, 
+            self,
+            zone_vector0,
             zone_vector1,
             degrees=False):
         """
@@ -132,7 +132,7 @@ class Sub_Lattice():
         pos_y_list = []
         for atom in self.atom_list:
             angle = atom.get_angle_between_zone_vectors(
-                    zone_vector0, 
+                    zone_vector0,
                     zone_vector1)
             if not (angle == False):
                 angle_list.append(angle)
@@ -147,21 +147,21 @@ class Sub_Lattice():
         return(pos_x_list, pos_y_list, angle_list)
 
     def get_atom_distance_list_from_zone_vector(
-            self, 
+            self,
             zone_vector):
         """
         Get distance between each atom and the next atom in an
-        atom row given by the zone_vector. Returns the x- and 
-        y-position, and the distance between the atom and the 
-        monolayer. The position is set between the atom and the 
+        atom row given by the zone_vector. Returns the x- and
+        y-position, and the distance between the atom and the
+        monolayer. The position is set between the atom and the
         monolayer.
 
         For certain zone axes where there is several monolayers
-        between the atoms in the atom row, there will be some 
-        artifacts created. For example, in the perovskite (110) 
-        projection, the atoms in the <111> atom rows are 
-        separated by 3 monolayers. 
-        
+        between the atoms in the atom row, there will be some
+        artifacts created. For example, in the perovskite (110)
+        projection, the atoms in the <111> atom rows are
+        separated by 3 monolayers.
+
         To avoid this problem use the function
         get_monolayer_distance_list_from_zone_vector.
 
@@ -179,12 +179,12 @@ class Sub_Lattice():
         return(atom_distance_list[0], atom_distance_list[1], atom_distance_list[2])
 
     def get_monolayer_distance_list_from_zone_vector(
-            self, 
+            self,
             zone_vector):
         """
         Get distance between each atom and the next monolayer given
-        by the zone_vector. Returns the x- and y-position, and the 
-        distance between the atom and the monolayer. The position 
+        by the zone_vector. Returns the x- and y-position, and the
+        distance between the atom and the monolayer. The position
         is set between the atom and the monolayer.
 
         The reason for finding the distance between monolayer,
@@ -193,7 +193,7 @@ class Sub_Lattice():
         one atom row. For example, in the perovskite (110) projection,
         the atoms in the <111> atom rows are separated by 3 monolayers.
         This can give very bad results.
-        
+
         To get the distance between atoms, use the function
         get_atom_distance_list_from_zone_vector.
 
@@ -226,7 +226,7 @@ class Sub_Lattice():
             Zone vector for the system
         """
         x_list, y_list, z_list = [], [], []
-        for atom_row in self.atom_rows_by_zone_vector[zone_vector]: 
+        for atom_row in self.atom_rows_by_zone_vector[zone_vector]:
             data = atom_row.get_net_distance_change_between_atoms()
             if data is not None:
                 x_list.extend(data[:,0])
@@ -235,7 +235,7 @@ class Sub_Lattice():
         return(x_list, y_list, z_list)
 
     def get_property_and_positions(
-            self, 
+            self,
             property_list,
             x_position=None,
             y_position=None):
@@ -285,7 +285,7 @@ class Sub_Lattice():
             upscale=4):
         """
         Interpolate unregularly spaced data points into a
-        regularly spaced grid, useful for making data work 
+        regularly spaced grid, useful for making data work
         with plotting using imshow.
 
         Parameters:
@@ -308,14 +308,14 @@ class Sub_Lattice():
         interpolate_y_lim = (0, self.adf_image.shape[0])
         new_data = _get_interpolated2d_from_unregular_data(
             data_list,
-            new_x_lim=interpolate_x_lim, 
-            new_y_lim=interpolate_y_lim, 
+            new_x_lim=interpolate_x_lim,
+            new_y_lim=interpolate_y_lim,
             upscale=upscale)
 
         return(new_data)
 
     def plot_property_map_and_profile(
-            self, 
+            self,
             x_list,
             y_list,
             z_list,
@@ -330,7 +330,7 @@ class Sub_Lattice():
         Plot image data, property map and line profile. The property map
         can be any scalar 2-D array. The line profile is an integration
         of the property along a direction defined by an atom row.
-        
+
         The property can be anything, for example distance between atoms
         along a zone axis, or ellipticity of the atoms.
 
@@ -366,9 +366,9 @@ class Sub_Lattice():
         figname : string, optional
             Postfix in the image filename.
         """
-        
-        data_scale = self.pixel_size    
-    
+
+        data_scale = self.pixel_size
+
         if interface_row is None:
             zone_vector = self.zones_axis_average_distances[0]
             middle_atom_row_index = int(len(self.atom_rows_by_zone_vector[zone_vector])/2)
@@ -381,7 +381,7 @@ class Sub_Lattice():
             y_position=y_list)
         line_profile_data_list = line_profile_data_list.swapaxes(0,1)
 
-        if not(add_zero_value_sublattice == None):
+        if not(add_zero_value_sublattice is None):
             self._add_zero_position_to_data_list_from_atom_list(
                 x_list,
                 y_list,
@@ -398,16 +398,16 @@ class Sub_Lattice():
             line_profile_data_list[:,0] *= -1
 
         clim = _get_clim_from_data(
-                data_map[2]*data_scale_z, 
-                sigma=2, 
-                ignore_zeros=True, 
+                data_map[2]*data_scale_z,
+                sigma=2,
+                ignore_zeros=True,
                 ignore_edges=True)
 
         if self.original_adf_image is None:
             image_data = self.adf_image
         else:
             image_data = self.original_adf_image
-        
+
         plot_image_map_line_profile_using_interface_row(
             image_data,
             data_map,
@@ -419,7 +419,7 @@ class Sub_Lattice():
             rotate_atom_row_list_90_degrees=True,
             line_profile_prune_outer_values=line_profile_prune_outer_values,
             figname=self.save_path + self.tag + "_" + figname)
-        
+
         if save_signal:
             save_signal_figname = figname[:-4]
             line_profile_dict = {
@@ -442,7 +442,8 @@ class Sub_Lattice():
                 signal_name=sig_name)
 
     def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
-        atom_position_list = np.array([self.x_position, self.y_position]).swapaxes(0,1)
+        atom_position_list = np.array(
+                [self.x_position, self.y_position]).swapaxes(0,1)
         nearest_neighbor_data = sp.spatial.cKDTree(
                 atom_position_list,
                 leafsize=leafsize)
@@ -456,28 +457,12 @@ class Sub_Lattice():
                 nn_link_list.append(self.atom_list[nn_link])
             atom.nearest_neighbor_list = nn_link_list
 
-# For removal
-#    def get_position_and_ellipticity_vector_for_all_atoms(self):
-#        x_pos_list = []
-#        y_pos_list = []
-#        x_rot_list = [] 
-#        y_rot_list = [] 
-#
-#        for atom in self.atom_list:
-#            x_pos_list.append(atom.pixel_x)
-#            y_pos_list.append(atom.pixel_y)
-#
-#            # Maa endres til atom.get_ellipticity_vector
-#            elli_vector = atom.get_ellipticity_vector()
-#            x_rot_list.append(elli_vector[0])
-#            y_rot_list.append(elli_vector[1])
-#
-#        return(x_pos_list, y_pos_list, x_rot_list, y_rot_list)
-
-    def get_atom_row_slice_between_two_rows(self, atom_row1, atom_row2, zone_vector):
+    def get_atom_row_slice_between_two_rows(
+            self, atom_row1, atom_row2, zone_vector):
         atom_row_start_index = None
         atom_row_end_index = None
-        for index, temp_atom_row in enumerate(self.atom_rows_by_zone_vector[zone_vector]):
+        for index, temp_atom_row in enumerate(self.atom_rows_by_zone_vector[
+            zone_vector]):
             if temp_atom_row == atom_row1:
                 atom_row_start_index = index
             if temp_atom_row == atom_row2:
@@ -509,15 +494,17 @@ class Sub_Lattice():
             ort_atom_list.extend(temp_atom_list)
         return(ort_atom_list)
 
-    def _make_circular_mask(self, centerX, centerY, imageSizeX, imageSizeY, radius):
-        y,x = np.ogrid[-centerX:imageSizeX-centerX, -centerY:imageSizeY-centerY]
+    def _make_circular_mask(
+            self, centerX, centerY, imageSizeX, imageSizeY, radius):
+        y, x = np.ogrid[
+                -centerX:imageSizeX-centerX, -centerY:imageSizeY-centerY]
         mask = x*x + y*y <= radius*radius
         return(mask)
-    
+
     def find_perpendicular_vector(self, v):
         if v[0] == 0 and v[1] == 0:
             raise ValueError('zero vector')
-        return np.cross(v, [1, 0]) 
+        return np.cross(v, [1, 0])
 
     def _sort_atom_rows_by_zone_vector(self):
         for zone_vector in self.zones_axis_average_distances:
@@ -526,41 +513,46 @@ class Sub_Lattice():
                 if atom_row.zone_vector == zone_vector:
                     temp_atom_row_list.append(atom_row)
             self.atom_rows_by_zone_vector[zone_vector] = temp_atom_row_list
-            
+
         for index, (zone_vector, atom_row_list) in enumerate(
                 self.atom_rows_by_zone_vector.items()):
             length = 100000000
-            orthogonal_vector = (length*zone_vector[1], -length*zone_vector[0])
-        
+            orthogonal_vector = (
+                    length*zone_vector[1], -length*zone_vector[0])
+
             closest_atom_list = []
             for atom_row in atom_row_list:
                 closest_atom = 10000000000000000000000000
                 for atom in atom_row.atom_list:
-                    dist = atom.pixel_distance_from_point(orthogonal_vector)
+                    dist = atom.pixel_distance_from_point(
+                        orthogonal_vector)
                     if dist < closest_atom:
                         closest_atom = dist
                 closest_atom_list.append(closest_atom)
-            atom_row_list.sort(key=dict(zip(atom_row_list, closest_atom_list)).get)
+            atom_row_list.sort(
+                    key=dict(zip(atom_row_list, closest_atom_list)).get)
 
     def refine_atom_positions_using_2d_gaussian(
-            self, 
-            image_data, 
+            self,
+            image_data,
             percent_distance_to_nearest_neighbor=0.40,
             rotation_enabled=True,
             debug_plot=False):
         for atom in self.atom_list:
             atom.refine_position_using_2d_gaussian(
-                    image_data, 
+                    image_data,
                     rotation_enabled=rotation_enabled,
-                    percent_distance_to_nearest_neighbor=percent_distance_to_nearest_neighbor,
+                    percent_distance_to_nearest_neighbor=\
+                        percent_distance_to_nearest_neighbor,
                     debug_plot=debug_plot)
 
     def refine_atom_positions_using_center_of_mass(
             self, image_data, percent_distance_to_nearest_neighbor=0.25):
-        for atom_index ,atom in enumerate(self.atom_list):
+        for atom_index, atom in enumerate(self.atom_list):
             atom.refine_position_using_center_of_mass(
                 image_data,
-                percent_distance_to_nearest_neighbor=percent_distance_to_nearest_neighbor)
+                percent_distance_to_nearest_neighbor=\
+                    percent_distance_to_nearest_neighbor)
 
     def get_nearest_neighbor_directions(self):
         x_pos_distances = []
@@ -572,9 +564,9 @@ class Sub_Lattice():
                     x_pos_distances.append(distance[0])
                     y_pos_distances.append(distance[1])
         return(np.array([x_pos_distances, y_pos_distances]))
-                
+
     def _make_nearest_neighbor_direction_distance_statistics(
-            self, 
+            self,
             nearest_neighbor_histogram_max=0.8,
             debug_figname=''):
         x_pos_distances = []
@@ -585,28 +577,28 @@ class Sub_Lattice():
                 if not ((distance[0] == 0) and (distance[1] == 0)):
                     x_pos_distances.append(distance[0])
                     y_pos_distances.append(distance[1])
-        
-        bins = (50,50)
+
+        bins = (50, 50)
         histogram_range = nearest_neighbor_histogram_max/self.pixel_size
         direction_distance_intensity_hist = np.histogram2d(
                 x_pos_distances,
                 y_pos_distances,
                 bins=bins,
                 range=[
-                    [-histogram_range,histogram_range],
-                    [-histogram_range,histogram_range]])
+                    [-histogram_range, histogram_range],
+                    [-histogram_range, histogram_range]])
         if not (debug_figname == ''):
-            fig, ax = plt.subplots(figsize=(10,10))
+            fig, ax = plt.subplots(figsize=(10, 10))
             ax.scatter(x_pos_distances, y_pos_distances)
-            ax.set_ylim(-histogram_range,histogram_range)
-            ax.set_xlim(-histogram_range,histogram_range)
+            ax.set_ylim(-histogram_range, histogram_range)
+            ax.set_xlim(-histogram_range, histogram_range)
             fig.savefig(self.save_path + debug_figname)
 
-        hist_scale = direction_distance_intensity_hist[1][1]-\
-                direction_distance_intensity_hist[1][0]
+        hist_scale = direction_distance_intensity_hist[1][1] -\
+            direction_distance_intensity_hist[1][0]
 
         s_direction_distance = hs.signals.Signal2D(
-                direction_distance_intensity_hist[0])
+            direction_distance_intensity_hist[0])
         s_direction_distance.axes_manager[0].offset = -bins[0]/2
         s_direction_distance.axes_manager[1].offset = -bins[1]/2
         s_direction_distance.axes_manager[0].scale = hist_scale
@@ -617,8 +609,8 @@ class Sub_Lattice():
         shifted_clusters = []
         for cluster in clusters:
             temp_cluster = (
-                    round((cluster[0]-bins[0]/2)*hist_scale,2), 
-                    round((cluster[1]-bins[1]/2)*hist_scale,2))
+                    round((cluster[0]-bins[0]/2)*hist_scale, 2),
+                    round((cluster[1]-bins[1]/2)*hist_scale, 2))
             shifted_clusters.append(temp_cluster)
 
         self.shortest_atom_distance = self._find_shortest_vector(
@@ -626,16 +618,16 @@ class Sub_Lattice():
         shifted_clusters = self._sort_vectors_by_length(shifted_clusters)
 
         shifted_clusters = self._remove_parallel_vectors(
-                shifted_clusters, 
+                shifted_clusters,
                 tolerance=self.shortest_atom_distance/3.)
 
         hr_histogram = np.histogram2d(
                 x_pos_distances,
                 y_pos_distances,
-                bins=(250,250),
+                bins=(250, 250),
                 range=[
-                    [-histogram_range,histogram_range],
-                    [-histogram_range,histogram_range]])
+                    [-histogram_range, histogram_range],
+                    [-histogram_range, histogram_range]])
 
         new_zone_vector_list = self._refine_zone_vector_positions(
                 shifted_clusters,
@@ -645,18 +637,19 @@ class Sub_Lattice():
         self.zones_axis_average_distances = new_zone_vector_list
 
         for new_zone_vector in new_zone_vector_list:
-            self.zones_axis_average_distances_names.append(str(new_zone_vector))
+            self.zones_axis_average_distances_names.append(
+                str(new_zone_vector))
 
     def _refine_zone_vector_positions(
-            self, 
-            zone_vector_list, 
+            self,
+            zone_vector_list,
             histogram,
             distance_percent=0.5):
         """ Refine zone vector positions using center of mass """
         scale = histogram[1][1] - histogram[1][0]
         offset = histogram[1][0]
         closest_distance = math.hypot(
-                zone_vector_list[0][0], 
+                zone_vector_list[0][0],
                 zone_vector_list[0][1])*distance_percent/scale
 
         new_zone_vector_list = []
@@ -666,14 +659,16 @@ class Sub_Lattice():
             circular_mask = self._make_circular_mask(
                     zone_vector_x,
                     zone_vector_y,
-                    histogram[0].shape[0], 
-                    histogram[0].shape[1], 
+                    histogram[0].shape[0],
+                    histogram[0].shape[1],
                     closest_distance)
             center_of_mass = ndimage.measurements.center_of_mass(
-                    circular_mask*histogram[0]) 
+                    circular_mask*histogram[0])
 
-            new_x_pos = float(format(center_of_mass[0]*scale+offset,'.2f'))
-            new_y_pos = float(format(center_of_mass[1]*scale+offset,'.2f'))
+            new_x_pos = float(
+                    format(center_of_mass[0]*scale+offset, '.2f'))
+            new_y_pos = float(
+                    format(center_of_mass[1]*scale+offset, '.2f'))
             new_zone_vector_list.append((new_x_pos, new_y_pos))
         return(new_zone_vector_list)
 
@@ -701,7 +696,8 @@ class Sub_Lattice():
         element_prune_list = []
         for zone_index, zone_vector in enumerate(vector_list):
             opposite_vector = (-1*zone_vector[0], -1*zone_vector[1])
-            for temp_index, temp_zone_vector in enumerate(vector_list[zone_index+1:]):
+            for temp_index, temp_zone_vector in enumerate(
+                    vector_list[zone_index+1:]):
                 dist_x = temp_zone_vector[0]-opposite_vector[0]
                 dist_y = temp_zone_vector[1]-opposite_vector[1]
                 distance = math.hypot(dist_x, dist_y)
@@ -727,11 +723,12 @@ class Sub_Lattice():
 
     def _find_all_atomic_rows_from_direction(self, zone_vector):
         for atom in self.atom_list:
-            already_in_atom_row_with_zone_vector = False
             if not atom.is_in_atomic_row(zone_vector):
-                atom_row = self._find_atomic_columns_from_atom(atom, zone_vector)
+                atom_row = self._find_atomic_columns_from_atom(
+                        atom, zone_vector)
                 if not (len(atom_row) == 1):
-                    atom_row_instance = Atom_Row(atom_row, zone_vector, self)
+                    atom_row_instance = Atom_Row(
+                            atom_row, zone_vector, self)
                     for atom in atom_row:
                         atom.in_atomic_row.append(atom_row_instance)
                     self.atom_row_list.append(atom_row_instance)
@@ -741,7 +738,6 @@ class Sub_Lattice():
         atom_range = atom_range_factor*self.shortest_atom_distance
         end_of_atom_row = False
         zone_axis_list1 = [start_atom]
-#        start_atom.in_atomic_row.append(zone_vector)
         while not end_of_atom_row:
             atom = zone_axis_list1[-1]
             atoms_within_distance = []
@@ -758,7 +754,7 @@ class Sub_Lattice():
             if zone_axis_list1[-1] is atom:
                 end_of_atom_row = True
                 atom.end_atom.append(zone_vector)
-        
+
         zone_vector2 = (-1*zone_vector[0], -1*zone_vector[1])
         start_of_atom_row = False
         zone_axis_list2 = [start_atom]
@@ -782,8 +778,9 @@ class Sub_Lattice():
         if not (len(zone_axis_list2) == 1):
             zone_axis_list1.extend(zone_axis_list2[1:])
         return(zone_axis_list1)
-    
-    def find_missing_atoms_from_zone_vector(self, zone_vector, new_atom_tag=''):
+
+    def find_missing_atoms_from_zone_vector(
+            self, zone_vector, new_atom_tag=''):
         atom_row_list = self.atom_rows_by_zone_vector[zone_vector]
 
         new_atom_list = []
@@ -793,8 +790,10 @@ class Sub_Lattice():
             for atom_index, atom in enumerate(atom_row.atom_list[1:]):
                 previous_atom = atom_row.atom_list[atom_index]
                 difference_vector = previous_atom.get_pixel_difference(atom)
-                new_atom_x = previous_atom.pixel_x - difference_vector[0]*0.5
-                new_atom_y = previous_atom.pixel_y - difference_vector[1]*0.5
+                new_atom_x = previous_atom.pixel_x -\
+                    difference_vector[0]*0.5
+                new_atom_y = previous_atom.pixel_y -\
+                    difference_vector[1]*0.5
                 new_atom = Atom_Position(new_atom_x, new_atom_y)
                 new_atom.tag = new_atom_tag
                 temp_new_atom_list.append(new_atom)
@@ -802,8 +801,9 @@ class Sub_Lattice():
             new_atom_row_list.append(temp_new_atom_list)
         return(new_atom_list)
 
-    def plot_atom_row_on_stem_data(self, atom_row_list, figname="atom_row_plot.jpg"):
-        fig, ax = plt.subplots(figsize=(10,10))
+    def plot_atom_row_on_stem_data(
+            self, atom_row_list, figname="atom_row_plot.jpg"):
+        fig, ax = plt.subplots(figsize=(10, 10))
         cax = ax.imshow(self.adf_image)
         if self.plot_clim:
             cax.set_clim(self.plot_clim[0], self.plot_clim[1])
@@ -817,13 +817,13 @@ class Sub_Lattice():
         fig.savefig(self.save_path + figname)
 
     def plot_atom_list_on_image_data(
-            self, 
-            atom_list=None, 
+            self,
+            atom_list=None,
             image=None,
-            plot_atom_numbers=False, 
-            markersize=2, 
+            plot_atom_numbers=False,
+            markersize=2,
             fontsize=12,
-            figsize=(10,10),
+            figsize=(10, 10),
             figdpi=200,
             figname="atom_plot.jpg",
             ax=None,
@@ -834,17 +834,17 @@ class Sub_Lattice():
         Parameters:
         -----------
         atom_list : list of Atom objects, optional
-            Atom positions to plot. If no list is given, 
+            Atom positions to plot. If no list is given,
             will use the atom_list.
         image : 2-D numpy array, optional
             Image data for plotting. If none is given, will use
             the original_adf_image.
         plot_atom_numbers : bool, optional
             Plot the number of the atom beside each atomic
-            position in the plot. Useful for locating 
+            position in the plot. Useful for locating
             misfitted atoms. Default False.
         markersize : number, optional
-            Size of the atom position markers 
+            Size of the atom position markers
         fontsize : int, optional
             If plot_atom_numbers is True, this will set
             the fontsize.
@@ -871,14 +871,14 @@ class Sub_Lattice():
         for atom_index, atom in enumerate(atom_list):
             ax.plot(
                     atom.pixel_x,
-                    atom.pixel_y, 
-                    'o', markersize=markersize, 
+                    atom.pixel_y,
+                    'o', markersize=markersize,
                     color='blue')
             if plot_atom_numbers:
                 ax.text(
-                        atom.pixel_x, 
-                        atom.pixel_y, 
-                        str(atom_index), 
+                        atom.pixel_x,
+                        atom.pixel_y,
+                        str(atom_index),
                         fontsize=fontsize,
                         color='red')
         ax.set_ylim(0, image.shape[0])
@@ -921,13 +921,11 @@ class Sub_Lattice():
 
         image_data = self.original_adf_image
 
-        fig, axarr = plt.subplots(2, 1, figsize=(10,20))
+        fig, axarr = plt.subplots(2, 1, figsize=(10, 20))
 
         image_ax = axarr[0]
         rot_ax = axarr[1]
 
-        image_y_lim = (0,image_data.shape[0])
-        image_x_lim = (0,image_data.shape[1])
         image_ax.imshow(image_data)
         image_ax.set_ylim(0, image_data.shape[0])
         image_ax.set_xlim(0, image_data.shape[1])
@@ -945,11 +943,12 @@ class Sub_Lattice():
         rot_ax.imshow(image_data, alpha=0.0)
         rot_ax.set_xlim(min(x_pos_list), max(x_pos_list))
         rot_ax.set_ylim(min(y_pos_list), max(y_pos_list))
-        figname=self.save_path + self.tag + "_rotation"
+        figname = self.save_path + self.tag + "_rotation"
         fig.tight_layout()
         fig.savefig(figname + ".png", dpi=200)
 
-    def plot_ellipticity_rotation(self, interface_row=None, clim=None, figname=''):
+    def plot_ellipticity_rotation(
+            self, interface_row=None, clim=None, figname=''):
         x_pos_list, y_pos_list, x_rot_list, y_rot_list = [], [], [], []
         for atom in self.atom_list:
             x_pos_list.append(atom.pixel_x)
@@ -960,13 +959,11 @@ class Sub_Lattice():
 
         image_data = self.original_adf_image
 
-        fig, axarr = plt.subplots(2, 1, figsize=(10,20))
+        fig, axarr = plt.subplots(2, 1, figsize=(10, 20))
 
         image_ax = axarr[0]
         rot_ax = axarr[1]
 
-        image_y_lim = (0,image_data.shape[0])
-        image_x_lim = (0,image_data.shape[1])
         image_ax.imshow(image_data)
         image_ax.set_ylim(0, image_data.shape[0])
         image_ax.set_xlim(0, image_data.shape[1])
@@ -984,13 +981,14 @@ class Sub_Lattice():
         rot_ax.imshow(image_data, alpha=0.0)
         rot_ax.set_xlim(min(x_pos_list), max(x_pos_list))
         rot_ax.set_ylim(min(y_pos_list), max(y_pos_list))
-        figname=self.save_path + self.tag + "_ellipticity_rotation"
+        figname = self.save_path + self.tag + "_ellipticity_rotation"
         fig.tight_layout()
         fig.savefig(figname + ".png", dpi=300)
 
     def plot_all_atom_rows(self, fignameprefix="atom_row"):
-        for zone_index, zone_vector in enumerate(self.zones_axis_average_distances):
-            fig, ax = plt.subplots(figsize=(20,20))
+        for zone_index, zone_vector in enumerate(
+                self.zones_axis_average_distances):
+            fig, ax = plt.subplots(figsize=(20, 20))
             cax = ax.imshow(self.adf_image)
             if self.plot_clim:
                 cax.set_clim(self.plot_clim[0], self.plot_clim[1])
@@ -1000,7 +998,7 @@ class Sub_Lattice():
                 y_pos = atom_row.get_y_position_list()
                 ax.plot(x_pos, y_pos, lw=3, color='blue')
                 ax.text(
-                        atom_row.start_atom.pixel_x, 
+                        atom_row.start_atom.pixel_x,
                         atom_row.start_atom.pixel_y,
                         str(atom_row_index),
                         color='red')
@@ -1008,31 +1006,18 @@ class Sub_Lattice():
             ax.set_xlim(0, self.adf_image.shape[1])
             ax.set_title(str(zone_index) + " , " + str(zone_vector))
             fig.tight_layout()
-            fig.savefig(self.save_path + fignameprefix + str(zone_index) + ".jpg")
-
-#    def plot_atom_row_distance_line(self, atom_row_interface, zone_vector):
-#        atom_distance_xy_list = []
-#        for atom in atom_row_interface.atom_list:
-#            for atom_row in atom.atom_rows:
-#                if atom_row.zone_vector == zone_vector:
-#                    atom_index = atom_row.get_atom_index(atom)
-#                    atom_distance_list = atom_row.get_atom_distance_list()
-#                    atom_x_range = np.arange(len(atom_distance_list)) - atom_index
-#                    atom_distance_xy_list.append([atom_x_range, atom_distance_list])
-#
-#        fig, ax = plt.subplots(figsize=(10,10))
-#        for atom_distance_xy in atom_distance_xy_list:
-#            ax.plot(atom_distance_xy[0], atom_distance_xy[1])
-#        fig.tight_layout()
-#        fig.savefig(self.save_path + "atom_row_distance_list.jpg")
+            fig.savefig(
+                    self.save_path +
+                    fignameprefix +
+                    str(zone_index) + ".jpg")
 
     def get_atom_column_amplitude_gaussian2d(
             self,
             image=None,
             percent_distance_to_nearest_neighbor=0.40):
-        if image == None:
+        if image is None:
             image = self.original_adf_image
-        
+
         percent_distance = percent_distance_to_nearest_neighbor
         for atom in self.atom_list:
             atom.fit_2d_gaussian_with_mask_centre_locked(
@@ -1043,7 +1028,7 @@ class Sub_Lattice():
             self,
             image=None,
             percent_distance_to_nearest_neighbor=0.40):
-        if image == None:
+        if image is None:
             image = self.original_adf_image
 
         percent_distance = percent_distance_to_nearest_neighbor
@@ -1051,7 +1036,7 @@ class Sub_Lattice():
             atom.calculate_max_intensity(
                     image,
                     percent_distance_to_nearest_neighbor=percent_distance)
-    
+
     def get_atom_list_atom_amplitude_gauss2d_range(
             self,
             amplitude_range):
@@ -1078,15 +1063,19 @@ class Sub_Lattice():
             markersize=1,
             figname="atom_sigma_hist_gauss2d_map.jpg"):
         counts, bin_sizes = np.histogram(self.sigma_average, bins=bins)
-        fig, axarr = plt.subplots(1, len(bin_sizes), figsize=(5*len(bin_sizes),5))
-        ax_hist = axarr[0] 
+        fig, axarr = plt.subplots(
+                1, len(bin_sizes),
+                figsize=(5*len(bin_sizes), 5))
+        ax_hist = axarr[0]
         ax_hist.hist(self.sigma_average, bins=bins)
         for index, ax in enumerate(axarr[1:]):
             ax.imshow(self.original_adf_image)
             atom_list = self.get_atom_list_atom_sigma_range(
-                    (bin_sizes[index],bin_sizes[index+1]))
+                    (bin_sizes[index], bin_sizes[index+1]))
             for atom in atom_list:
-                ax.plot(atom.pixel_x, atom.pixel_y, 'o', markersize=markersize)
+                ax.plot(
+                        atom.pixel_x, atom.pixel_y,
+                        'o', markersize=markersize)
             ax.set_ylim(0, self.adf_image.shape[0])
             ax.set_xlim(0, self.adf_image.shape[1])
         fig.tight_layout()
@@ -1097,14 +1086,17 @@ class Sub_Lattice():
             bins=10,
             markersize=1,
             figname="atom_amplitude_gauss2d_hist_map.jpg"):
-        counts, bin_sizes = np.histogram(self.atom_amplitude_gaussian2d, bins=bins)
-        fig, axarr = plt.subplots(1, len(bin_sizes), figsize=(5*len(bin_sizes),5))
-        ax_hist = axarr[0] 
+        counts, bin_sizes = np.histogram(
+                self.atom_amplitude_gaussian2d, bins=bins)
+        fig, axarr = plt.subplots(
+                1, len(bin_sizes),
+                figsize=(5*len(bin_sizes), 5))
+        ax_hist = axarr[0]
         ax_hist.hist(self.atom_amplitude_gaussian2d, bins=bins)
         for index, ax in enumerate(axarr[1:]):
             ax.imshow(self.original_adf_image)
             atom_list = self.get_atom_list_atom_amplitude_gauss2d_range(
-                    (bin_sizes[index],bin_sizes[index+1]))
+                    (bin_sizes[index], bin_sizes[index+1]))
             for atom in atom_list:
                 ax.plot(atom.pixel_x, atom.pixel_y, 'o', markersize=markersize)
             ax.set_ylim(0, self.adf_image.shape[0])
@@ -1113,8 +1105,8 @@ class Sub_Lattice():
         fig.savefig(figname)
 
     def plot_atom_column_histogram_sigma(
-            self, 
-            bins=20, 
+            self,
+            bins=20,
             figname="atom_amplitude_sigma_histogram.png"):
         fig, ax = plt.subplots()
         ax.hist(
@@ -1126,15 +1118,15 @@ class Sub_Lattice():
         fig.savefig(figname, dpi=200)
 
     def plot_atom_column_histogram_amplitude_gauss2d(
-            self, 
-            bins=20, 
+            self,
+            bins=20,
             xlim=None,
             figname="atom_amplitude_gauss2d_histogram.png"):
         fig, ax = plt.subplots()
         ax.hist(
                 self.atom_amplitude_gaussian2d,
                 bins=bins)
-        if not (xlim == None):
+        if not (xlim is None):
             ax.set_xlim(xlim[0], xlim[1])
         ax.set_xlabel("Intensity bins")
         ax.set_ylabel("Amount")
@@ -1142,8 +1134,8 @@ class Sub_Lattice():
         fig.savefig(figname, dpi=200)
 
     def plot_atom_column_histogram_max_intensity(
-            self, 
-            bins=20, 
+            self,
+            bins=20,
             figname="atom_amplitude_max_intensity_histogram.png"):
         fig, ax = plt.subplots()
         ax.hist(
@@ -1157,7 +1149,7 @@ class Sub_Lattice():
     def plot_amplitude_sigma_scatter(
             self,
             figname="sigma_amplitude_scatter.png"):
-        fig, ax = plt.subplots(figsize=(5,5))
+        fig, ax = plt.subplots(figsize=(5, 5))
         ax.scatter(self.sigma_average, self.atom_amplitude_gaussian2d)
         ax.set_xlabel("Average sigma")
         ax.set_ylabel("Amplitude")
@@ -1168,15 +1160,18 @@ class Sub_Lattice():
             self,
             bins=30,
             figname="sigma_amplitude_hist2d.png"):
-        fig, ax = plt.subplots(figsize=(5,5))
-        ax.hist2d(self.sigma_average, self.atom_amplitude_gaussian2d, bins=bins)
+        fig, ax = plt.subplots(figsize=(5, 5))
+        ax.hist2d(
+                self.sigma_average,
+                self.atom_amplitude_gaussian2d,
+                bins=bins)
         ax.set_xlabel("Average sigma")
         ax.set_ylabel("Amplitude")
         ax.set_title("Sigma and amplitude hist2d")
         fig.savefig(figname, dpi=200)
 
     def save_map_from_datalist(
-            self, 
+            self,
             data_list,
             data_scale,
             atom_row=None,
@@ -1189,30 +1184,33 @@ class Sub_Lattice():
         im.axes_manager[0].scale = x_scale*data_scale
         im.axes_manager[1].scale = y_scale*data_scale
         im.change_dtype('float32')
-        if not (atom_row == None):
+        if not (atom_row is None):
             im.metadata.add_node('marker.atom_row.x')
             im.metadata.add_node('marker.atom_row.y')
-            im.metadata.marker.atom_row.x = atom_row.get_x_position_list()
-            im.metadata.marker.atom_row.y = atom_row.get_y_position_list()
+            im.metadata.marker.atom_row.x =\
+                atom_row.get_x_position_list()
+            im.metadata.marker.atom_row.y =\
+                atom_row.get_y_position_list()
         im.save(signal_name, overwrite=True)
 
     def _get_distance_and_position_list_between_atom_rows(
             self,
             atom_row0,
             atom_row1):
-        list_x, list_y, list_z = [],[],[]
+        list_x, list_y, list_z = [], [], []
         for atom in atom_row0.atom_list:
             pos_x, pos_y = atom_row1.get_closest_position_to_point(
                     (atom.pixel_x, atom.pixel_y), extend_line=True)
-            distance = atom.pixel_distance_from_point(point=(pos_x, pos_y))
+            distance = atom.pixel_distance_from_point(
+                    point=(pos_x, pos_y))
             list_x.append((pos_x + atom.pixel_x)*0.5)
             list_y.append((pos_y + atom.pixel_y)*0.5)
             list_z.append(distance)
-        data_list = np.array([list_x,list_y,list_z])
+        data_list = np.array([list_x, list_y, list_z])
         return(data_list)
 
     def plot_ellipticity_map(
-            self, 
+            self,
             interface_row=None,
             save_signal=False,
             data_scale_z=1.0,
@@ -1229,12 +1227,13 @@ class Sub_Lattice():
             interface_row=interface_row,
             data_scale_z=data_scale_z,
             save_signal=save_signal,
-            line_profile_prune_outer_values=line_profile_prune_outer_values,
+            line_profile_prune_outer_values=
+                line_profile_prune_outer_values,
             invert_line_profile=invert_line_profile,
             figname=figname)
 
     def plot_atom_distance_difference_map(
-            self, 
+            self,
             zone_vector_list=None,
             interface_row=None,
             save_signal=False,
@@ -1246,12 +1245,14 @@ class Sub_Lattice():
         """
         Plot a map and line profile of the difference between atoms.
         """
-        zone_vector_index_list = self._get_zone_vector_index_list(zone_vector_list)
+        zone_vector_index_list = self._get_zone_vector_index_list(
+                zone_vector_list)
 
         for zone_index, zone_vector in zone_vector_index_list:
             tempname = "zone" + str(zone_index) + "_" + figname
 
-            data_list = self.get_atom_distance_difference_from_zone_vector(zone_vector)
+            data_list = self.get_atom_distance_difference_from_zone_vector(
+                    zone_vector)
             self.plot_property_map_and_profile(
                 data_list[0],
                 data_list[1],
@@ -1259,13 +1260,14 @@ class Sub_Lattice():
                 interface_row=interface_row,
                 data_scale_z=data_scale_z,
                 save_signal=save_signal,
-                line_profile_prune_outer_values=line_profile_prune_outer_values,
+                line_profile_prune_outer_values=
+                    line_profile_prune_outer_values,
                 invert_line_profile=invert_line_profile,
                 add_zero_value_sublattice=add_zero_value_sublattice,
                 figname=tempname)
 
     def plot_monolayer_distance_map(
-            self, 
+            self,
             zone_vector_list=None,
             interface_row=None,
             save_signal=False,
@@ -1274,12 +1276,14 @@ class Sub_Lattice():
             invert_line_profile=False,
             figname="monolayer_distance.jpg"):
 
-        zone_vector_index_list = self._get_zone_vector_index_list(zone_vector_list)
+        zone_vector_index_list = self._get_zone_vector_index_list(
+                zone_vector_list)
 
         for zone_index, zone_vector in zone_vector_index_list:
             tempname = "zone" + str(zone_index) + "_" + figname
 
-            data_list = self.get_monolayer_distance_list_from_zone_vector(zone_vector)
+            data_list = self.get_monolayer_distance_list_from_zone_vector(
+                    zone_vector)
             self.plot_property_map_and_profile(
                 data_list[0],
                 data_list[1],
@@ -1287,12 +1291,13 @@ class Sub_Lattice():
                 interface_row=interface_row,
                 data_scale_z=data_scale_z,
                 save_signal=save_signal,
-                line_profile_prune_outer_values=line_profile_prune_outer_values,
+                line_profile_prune_outer_values=
+                    line_profile_prune_outer_values,
                 invert_line_profile=invert_line_profile,
                 figname=tempname)
 
     def plot_atom_distance_map(
-            self, 
+            self,
             zone_vector_list=None,
             interface_row=None,
             save_signal=False,
@@ -1301,12 +1306,14 @@ class Sub_Lattice():
             invert_line_profile=False,
             figname="atom_distance.jpg"):
 
-        zone_vector_index_list = self._get_zone_vector_index_list(zone_vector_list)
+        zone_vector_index_list = self._get_zone_vector_index_list(
+                zone_vector_list)
 
         for zone_index, zone_vector in zone_vector_index_list:
             tempname = "zone" + str(zone_index) + "_" + figname
 
-            data_list = self.get_atom_distance_list_from_zone_vector(zone_vector)
+            data_list = self.get_atom_distance_list_from_zone_vector(
+                    zone_vector)
             self.plot_property_map_and_profile(
                 data_list[0],
                 data_list[1],
@@ -1314,12 +1321,13 @@ class Sub_Lattice():
                 interface_row=interface_row,
                 data_scale_z=data_scale_z,
                 save_signal=save_signal,
-                line_profile_prune_outer_values=line_profile_prune_outer_values,
+                line_profile_prune_outer_values=
+                    line_profile_prune_outer_values,
                 invert_line_profile=invert_line_profile,
                 figname=tempname)
 
     def _get_zone_vector_index_list(self, zone_vector_list):
-        if zone_vector_list == None:
+        if zone_vector_list is None:
             zone_vector_list = self.zones_axis_average_distances
 
         zone_vector_index_list = []
@@ -1331,41 +1339,59 @@ class Sub_Lattice():
                     break
             zone_vector_index_list.append([zone_index, zone_vector])
         return(zone_vector_index_list)
-        
+
     def _plot_debug_start_end_atoms(self):
-        for zone_index, zone_vector in enumerate(self.zones_axis_average_distances):
-            fig, ax = plt.subplots(figsize=(10,10))
+        for zone_index, zone_vector in enumerate(
+                self.zones_axis_average_distances):
+            fig, ax = plt.subplots(figsize=(10, 10))
             cax = ax.imshow(self.adf_image)
             if self.plot_clim:
                 cax.set_clim(self.plot_clim[0], self.plot_clim[1])
             for atom_index, atom in enumerate(self.atom_list):
                 if zone_vector in atom.start_atom:
-                    ax.plot(atom.pixel_x, atom.pixel_y, 'o', color='blue')
-                    ax.text(atom.pixel_x, atom.pixel_y, str(atom_index))
+                    ax.plot(
+                            atom.pixel_x,
+                            atom.pixel_y,
+                            'o', color='blue')
+                    ax.text(
+                            atom.pixel_x,
+                            atom.pixel_y,
+                            str(atom_index))
             for atom_index, atom in enumerate(self.atom_list):
                 if zone_vector in atom.end_atom:
-                    ax.plot(atom.pixel_x, atom.pixel_y, 'o', color='green')
-                    ax.text(atom.pixel_x, atom.pixel_y, str(atom_index))
+                    ax.plot(
+                            atom.pixel_x,
+                            atom.pixel_y,
+                            'o', color='green')
+                    ax.text(
+                            atom.pixel_x,
+                            atom.pixel_y,
+                            str(atom_index))
             ax.set_ylim(0, self.adf_image.shape[0])
             ax.set_xlim(0, self.adf_image.shape[1])
             fig.tight_layout()
             fig.savefig(
-                    self.save_path + "debug_plot_start_end_atoms_zone"\
-                    + str(zone_index) + ".jpg")
+                    self.save_path +
+                    "debug_plot_start_end_atoms_zone" +
+                    str(zone_index) + ".jpg")
 
-    def _plot_atom_position_convergence(self, figname='atom_position_convergence.jpg'):
+    def _plot_atom_position_convergence(
+            self, figname='atom_position_convergence.jpg'):
         position_absolute_convergence = []
         position_jump_convergence = []
         for atom in self.atom_list:
-            dist0 = atom.get_position_convergence(distance_to_first_position=True)
+            dist0 = atom.get_position_convergence(
+                    distance_to_first_position=True)
             dist1 = atom.get_position_convergence()
             position_absolute_convergence.append(dist0)
             position_jump_convergence.append(dist1)
 
-        absolute_convergence = np.array(position_absolute_convergence).mean(axis=0)
-        relative_convergence = np.array(position_jump_convergence).mean(axis=0)
-        
-        fig, axarr = plt.subplots(2,1, sharex=True)
+        absolute_convergence = np.array(
+                position_absolute_convergence).mean(axis=0)
+        relative_convergence = np.array(
+                position_jump_convergence).mean(axis=0)
+
+        fig, axarr = plt.subplots(2, 1, sharex=True)
         absolute_ax = axarr[0]
         relative_ax = axarr[1]
 
@@ -1389,15 +1415,16 @@ class Sub_Lattice():
             extra_line_marker_list=[],
             invert_line_profiles=False,
             figname=None):
-        if zone_vector_number_list == None:
+        if zone_vector_number_list is None:
             zone_vector_number_list = range(7)
 
-        number_of_subplots = len(zone_vector_number_list) + len(parameter_list)
+        number_of_subplots = len(zone_vector_number_list) +\
+            len(parameter_list)
 
-        figsize = (15,number_of_subplots*3)
+        figsize = (15, number_of_subplots*3)
         fig = plt.figure(figsize=figsize)
 
-        gs = GridSpec(10*number_of_subplots,10)
+        gs = GridSpec(10*number_of_subplots, 10)
 
         line_profile_gs_size = 10
         line_profile_index = 0
@@ -1405,12 +1432,12 @@ class Sub_Lattice():
             zone_vector = self.zones_axis_average_distances[zone_vector_number]
             data_list = self.get_distance_difference_data_list_for_zone_vector(
                 zone_vector)
-            data_list = np.swapaxes(np.array(data_list),0,1)
+            data_list = np.swapaxes(np.array(data_list), 0, 1)
 
             ax = fig.add_subplot(
                     gs[
                         line_profile_index*line_profile_gs_size:
-                        (line_profile_index+1)*line_profile_gs_size,:])
+                        (line_profile_index+1)*line_profile_gs_size, :])
 
             _make_line_profile_subplot_from_three_parameter_data(
                     ax,
@@ -1420,20 +1447,21 @@ class Sub_Lattice():
                     scale_y=self.pixel_size,
                     invert_line_profiles=invert_line_profiles)
 
-            zone_vector_name = self.zones_axis_average_distances_names[zone_vector_number]
+            zone_vector_name = self.zones_axis_average_distances_names[
+                    zone_vector_number]
             ylabel = self.tag + ", " + zone_vector_name + \
-                 "\nPosition deviation, [nm]"
+                "\nPosition deviation, [nm]"
             ax.set_ylabel(ylabel)
 
             line_profile_index += 1
 
         for index, parameter in enumerate(parameter_list):
             data_list = self.get_property_and_positions(parameter)
-            
+
             ax = fig.add_subplot(
                     gs[
                         line_profile_index*line_profile_gs_size:
-                        (line_profile_index+1)*line_profile_gs_size,:])
+                        (line_profile_index+1)*line_profile_gs_size, :])
 
             _make_line_profile_subplot_from_three_parameter_data(
                     ax,
@@ -1442,14 +1470,14 @@ class Sub_Lattice():
                     scale_x=self.pixel_size,
                     invert_line_profiles=invert_line_profiles)
 
-            if not (parameter_name_list == None):
+            if not (parameter_name_list is None):
                 ax.set_ylabel(parameter_name_list[index])
 
             line_profile_index += 1
-                         
-        if x_lim == False:
+
+        if x_lim is False:
             x_min = 100000000000
-            x_max = -10000000000 
+            x_max = -10000000000
             for ax in fig.axes:
                 ax_xlim = ax.get_xlim()
                 if ax_xlim[0] < x_min:
@@ -1465,8 +1493,8 @@ class Sub_Lattice():
         for extra_line_marker in extra_line_marker_list:
             for ax in fig.axes:
                 ax.axvline(extra_line_marker, color='red')
-        
+
         fig.tight_layout()
-        if figname == None:
+        if figname is None:
             figname = self.save_path + self.tag + "_lattice_line_profiles.jpg"
         fig.savefig(figname, dpi=100)
