@@ -6,6 +6,7 @@ from atomap_tools import _make_circular_mask
 from scipy import ndimage
 import math
 
+
 class Atom_Position:
     def __init__(self, x, y):
         self.pixel_x = x
@@ -93,7 +94,7 @@ class Atom_Position:
 
     def get_angle_between_zone_vectors(
             self,
-            zone_vector0, 
+            zone_vector0,
             zone_vector1):
         """
         Return the angle between itself and the next atoms in
@@ -101,9 +102,9 @@ class Atom_Position:
         """
         atom0 = self.get_next_atom_in_zone_vector(zone_vector0)
         atom1 = self.get_next_atom_in_zone_vector(zone_vector1)
-        if atom0 == False:
+        if atom0 is False:
             return(False)
-        if atom1 == False:
+        if atom1 is False:
             return(False)
         angle = self.get_angle_between_atoms(atom0, atom1)
         return(angle)
@@ -116,7 +117,7 @@ class Atom_Position:
         x1 = self.pixel_x + slice_size/2
         y0 = self.pixel_y - slice_size/2
         y1 = self.pixel_y + slice_size/2
-        
+
         if x0 < 0.0:
             x0 = 0
         if y0 < 0.0:
@@ -125,8 +126,8 @@ class Atom_Position:
             x1 = image_data.shape[1]
         if y1 > image_data.shape[0]:
             x1 = image_data.shape[0]
-        
-        data_slice = copy.deepcopy(image_data[y0:y1,x0:x1])
+
+        data_slice = copy.deepcopy(image_data[y0:y1, x0:x1])
         return(data_slice)
 
     def _plot_gaussian2d_debug(
@@ -135,12 +136,12 @@ class Atom_Position:
             gaussian,
             data_slice):
 
-            X,Y = np.meshgrid(
-                    np.arange(-slice_radius,slice_radius,1),
-                    np.arange(-slice_radius,slice_radius,1))
-            s_m = gaussian.function(X,Y)
+            X, Y = np.meshgrid(
+                    np.arange(-slice_radius, slice_radius, 1),
+                    np.arange(-slice_radius, slice_radius, 1))
+            s_m = gaussian.function(X, Y)
 
-            fig, axarr = plt.subplots(2,2)
+            fig, axarr = plt.subplots(2, 2)
             ax0 = axarr[0][0]
             ax1 = axarr[0][1]
             ax2 = axarr[1][0]
@@ -156,9 +157,9 @@ class Atom_Position:
             fig.tight_layout()
             fig.savefig(
                 "debug_plot_2d_gaussian_" +
-                str(np.random.randint(1000,10000)) + ".jpg", dpi=400)
+                str(np.random.randint(1000, 10000)) + ".jpg", dpi=400)
             plt.close('all')
-    
+
     def get_closest_neighbor(self):
         closest_neighbor = 100000000000000000
         for neighbor_atom in self.nearest_neighbor_list:
@@ -176,17 +177,17 @@ class Atom_Position:
         this function returns False"""
         plt.ioff()
         closest_neighbor = self.get_closest_neighbor()
-        
-        slice_size = closest_neighbor*\
+
+        slice_size = closest_neighbor *\
                 percent_distance_to_nearest_neighbor*2
         data_slice = self.get_image_slice_around_atom(
                 image_data, slice_size)
 
         data_slice_max = data_slice.max()
         self.amplitude_max_intensity = data_slice_max
-        
+
         return(data_slice_max)
-    
+
     def fit_2d_gaussian_with_mask_centre_locked(
             self,
             image_data,
@@ -197,7 +198,7 @@ class Atom_Position:
         this function returns False"""
         plt.ioff()
         closest_neighbor = self.get_closest_neighbor()
-        
+
         slice_size = closest_neighbor*\
                 percent_distance_to_nearest_neighbor*2
         data_slice = self.get_image_slice_around_atom(
@@ -211,9 +212,8 @@ class Atom_Position:
                 slice_radius,
                 slice_radius,
                 data.shape[0],
-                data.shape[1], 
-                closest_neighbor*\
-                    percent_distance_to_nearest_neighbor)    
+                data.shape[1],
+                closest_neighbor*percent_distance_to_nearest_neighbor)
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
@@ -264,7 +264,7 @@ class Atom_Position:
         data_slice = self.get_image_slice_around_atom(
                 image_data, slice_size)
         slice_radius = slice_size/2
-        
+
         data_slice -= data_slice.min()
         data_slice_max = data_slice.max()
         data = data_slice
@@ -273,9 +273,9 @@ class Atom_Position:
                 slice_radius,
                 slice_radius,
                 data.shape[0],
-                data.shape[1], 
-                closest_neighbor*\
-                    percent_distance_to_nearest_neighbor)    
+                data.shape[1],
+                closest_neighbor*
+                percent_distance_to_nearest_neighbor)
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
@@ -317,8 +317,8 @@ class Atom_Position:
             return(g)
 
     def refine_position_using_2d_gaussian(
-            self, 
-            image_data, 
+            self,
+            image_data,
             rotation_enabled=True,
             percent_distance_to_nearest_neighbor=0.40,
             debug_plot=False):
@@ -327,17 +327,16 @@ class Atom_Position:
             g = self.fit_2d_gaussian_with_mask(
                 image_data,
                 rotation_enabled=rotation_enabled,
-                percent_distance_to_nearest_neighbor=\
-                    percent_distance_to_nearest_neighbor,
+                percent_distance_to_nearest_neighbor=
+                percent_distance_to_nearest_neighbor,
                 debug_plot=debug_plot)
-            if g == False:
+            if g is False:
                 print("Fitting missed")
                 if i == 9:
-                    #Center of mass calculation
                     new_x, new_y = self.find_center_position_with_center_of_mass_using_mask(
-                            image_data,
-                            percent_distance_to_nearest_neighbor=\
-                                    percent_distance_to_nearest_neighbor)
+                        image_data,
+                        percent_distance_to_nearest_neighbor=
+                        percent_distance_to_nearest_neighbor)
                     new_sigma_x = self.sigma_x
                     new_sigma_y = self.sigma_y
                     new_rotation = self.rotation
@@ -373,12 +372,11 @@ class Atom_Position:
             if distance < closest_neighbor:
                 closest_neighbor = distance
         mask = _make_circular_mask(
-                self.pixel_y, 
-                self.pixel_x, 
+                self.pixel_y,
+                self.pixel_x,
                 image_data.shape[0],
-                image_data.shape[1], 
-                closest_neighbor*\
-                    percent_distance_to_nearest_neighbor)    
+                image_data.shape[1],
+                closest_neighbor*percent_distance_to_nearest_neighbor)
         data = copy.deepcopy(image_data)
         mask = np.invert(mask)
         data[mask] = 0
@@ -389,8 +387,8 @@ class Atom_Position:
         return(new_x, new_y)
 
     def refine_position_using_center_of_mass(
-            self, 
-            image_data, 
+            self,
+            image_data,
             percent_distance_to_nearest_neighbor=0.40):
         new_x, new_y = self.find_center_position_with_center_of_mass_using_mask(
                 image_data,
@@ -401,7 +399,7 @@ class Atom_Position:
         self.pixel_y = new_y
 
     def _calculate_center_of_mass(self, data):
-        center_of_mass = ndimage.measurements.center_of_mass(data) 
+        center_of_mass = ndimage.measurements.center_of_mass(data)
         return(center_of_mass)
 
     def get_atomic_row_from_zone_vector(self, zone_vector):
@@ -446,7 +444,7 @@ class Atom_Position:
         total_distance = math.hypot(x_distance, y_distance)
         return(total_distance)
 
-    def pixel_distance_from_point(self, point=(0,0)):
+    def pixel_distance_from_point(self, point=(0, 0)):
         dist = math.hypot(
                 self.pixel_x - point[0], self.pixel_y - point[1])
         return(dist)
@@ -476,14 +474,14 @@ class Atom_Position:
         """Get the next atom in the atom row belonging to
         zone vector"""
         atom_row = self.get_atomic_row_from_zone_vector(zone_vector)
-        if atom_row == False:
+        if atom_row is False:
             return(False)
         next_atom = self.get_next_atom_in_atom_row(atom_row)
         return(next_atom)
 
     def get_previous_atom_in_zone_vector(self, zone_vector):
         atom_row = self.get_atomic_row_from_zone_vector(zone_vector)
-        if atom_row == False:
+        if atom_row is False:
             return(False)
         previous_atom = self.get_previous_atom_in_atom_row(atom_row)
         return(previous_atom)
@@ -503,7 +501,7 @@ class Atom_Position:
         x_list = self.old_pixel_x_list
         y_list = self.old_pixel_y_list
         distance_list = []
-        for index, (x, y) in enumerate(zip(x_list[1:],y_list[1:])):
+        for index, (x, y) in enumerate(zip(x_list[1:], y_list[1:])):
             if distance_to_first_position:
                 previous_x = x_list[0]
                 previous_y = y_list[0]
