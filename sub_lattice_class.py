@@ -9,19 +9,18 @@ import json
 from matplotlib.gridspec import GridSpec
 
 from atomap_tools import \
-        find_atom_position_1d_from_distance_list_and_atom_row,\
         _get_interpolated2d_from_unregular_data,\
         _get_clim_from_data,\
         find_atom_position_1d_from_distance_list_and_atom_row
 
 from atomap_plotting import \
-        plot_zone_vector_and_atom_distance_map,\
         plot_image_map_line_profile_using_interface_row,\
         _make_line_profile_subplot_from_three_parameter_data
 from atomap_atom_finding_refining import get_peak2d_skimage
 
 from atom_position_class import Atom_Position
 from atom_row_class import Atom_Row
+
 
 class Sub_Lattice():
     def __init__(self, atom_position_list, adf_image):
@@ -134,7 +133,7 @@ class Sub_Lattice():
             angle = atom.get_angle_between_zone_vectors(
                     zone_vector0,
                     zone_vector1)
-            if not (angle == False):
+            if angle is not False:
                 angle_list.append(angle)
                 pos_x_list.append(atom.pixel_x)
                 pos_y_list.append(atom.pixel_y)
@@ -173,10 +172,14 @@ class Sub_Lattice():
         atom_row_list = self.atom_rows_by_zone_vector[zone_vector]
         atom_distance_list = []
         for atom_row in atom_row_list:
-            atom_distance_list.extend(
-                    atom_row.get_atom_distance_to_next_atom_and_position_list())
-        atom_distance_list = np.array(atom_distance_list).swapaxes(0,1)
-        return(atom_distance_list[0], atom_distance_list[1], atom_distance_list[2])
+            dist = atom_row.get_atom_distance_to_next_atom_and_position_list()
+            atom_distance_list.extend(dist)
+        atom_distance_list = np.array(
+                atom_distance_list).swapaxes(0, 1)
+        return(
+                atom_distance_list[0],
+                atom_distance_list[1],
+                atom_distance_list[2])
 
     def get_monolayer_distance_list_from_zone_vector(
             self,
@@ -206,7 +209,8 @@ class Sub_Lattice():
         x_list, y_list, z_list = [], [], []
         for index, atom_row in enumerate(atom_row_list[1:]):
             atom_row_previous = atom_row_list[index]
-            row_data_list = self._get_distance_and_position_list_between_atom_rows(
+            row_data_list = self.\
+                _get_distance_and_position_list_between_atom_rows(
                     atom_row_previous, atom_row)
             x_list.extend(row_data_list[0].tolist())
             y_list.extend(row_data_list[1].tolist())
@@ -229,9 +233,9 @@ class Sub_Lattice():
         for atom_row in self.atom_rows_by_zone_vector[zone_vector]:
             data = atom_row.get_net_distance_change_between_atoms()
             if data is not None:
-                x_list.extend(data[:,0])
-                y_list.extend(data[:,1])
-                z_list.extend(data[:,2])
+                x_list.extend(data[:, 0])
+                y_list.extend(data[:, 1])
+                z_list.extend(data[:, 2])
         return(x_list, y_list, z_list)
 
     def get_property_and_positions(
@@ -243,11 +247,11 @@ class Sub_Lattice():
             x_position = self.x_position
         if y_position is None:
             y_position = self.y_position
-        data_list = np.array(
-                [x_position,
-                y_position,
-                property_list])
-        data_list = np.swapaxes(data_list,0,1)
+        data_list = np.array([
+                        x_position,
+                        y_position,
+                        property_list])
+        data_list = np.swapaxes(data_list, 0, 1)
         return(data_list)
 
     def get_property_and_positions_atom_row_projection(
@@ -262,19 +266,19 @@ class Sub_Lattice():
             x_position = self.x_position
         if y_position is None:
             y_position = self.y_position
-        data_list = np.array(
-                [x_position,
-                y_position,
-                property_list])
-        data_list = np.swapaxes(data_list,0,1)
+        data_list = np.array([
+                        x_position,
+                        y_position,
+                        property_list])
+        data_list = np.swapaxes(data_list, 0, 1)
         line_profile_data = \
-                find_atom_position_1d_from_distance_list_and_atom_row(
-            data_list,
-            interface_row,
-            rebin_data=True)
+            find_atom_position_1d_from_distance_list_and_atom_row(
+                data_list,
+                interface_row,
+                rebin_data=True)
         line_profile_data = np.array(line_profile_data)
-        position = line_profile_data[:,0]*scale_xy
-        data = line_profile_data[:,1]*scale_z
+        position = line_profile_data[:, 0]*scale_xy
+        data = line_profile_data[:, 1]*scale_z
         return(np.array([position, data]))
 
     def _get_regular_grid_from_unregular_property(
@@ -371,15 +375,17 @@ class Sub_Lattice():
 
         if interface_row is None:
             zone_vector = self.zones_axis_average_distances[0]
-            middle_atom_row_index = int(len(self.atom_rows_by_zone_vector[zone_vector])/2)
-            interface_row = self.atom_rows_by_zone_vector[zone_vector][middle_atom_row_index]
+            middle_atom_row_index = int(len(
+                self.atom_rows_by_zone_vector[zone_vector])/2)
+            interface_row = self.atom_rows_by_zone_vector[
+                    zone_vector][middle_atom_row_index]
 
         line_profile_data_list = self.get_property_and_positions_atom_row_projection(
             interface_row=interface_row,
             property_list=z_list,
             x_position=x_list,
             y_position=y_list)
-        line_profile_data_list = line_profile_data_list.swapaxes(0,1)
+        line_profile_data_list = line_profile_data_list.swapaxes(0, 1)
 
         if not(add_zero_value_sublattice is None):
             self._add_zero_position_to_data_list_from_atom_list(
@@ -395,7 +401,7 @@ class Sub_Lattice():
             z_list)
 
         if invert_line_profile is True:
-            line_profile_data_list[:,0] *= -1
+            line_profile_data_list[:, 0] *= -1
 
         clim = _get_clim_from_data(
                 data_map[2]*data_scale_z,
@@ -421,20 +427,22 @@ class Sub_Lattice():
             figname=self.save_path + self.tag + "_" + figname)
 
         if save_signal:
-            save_signal_figname = figname[:-4]
+            save_signal_figname = figname[: -4]
             line_profile_dict = {
-                    'position':(
-                        line_profile_data_list[:,0]*data_scale).tolist(),
-                    self.tag + '_position_difference':(
-                        line_profile_data_list[:,1]*data_scale).tolist()}
+                    'position': (
+                        line_profile_data_list[:, 0] *
+                        data_scale).tolist(),
+                    self.tag + '_position_difference': (
+                        line_profile_data_list[:, 1] *
+                        data_scale).tolist()}
 
             json_filename = self.save_path + self.tag +\
-                    save_signal_figname + "_line_profile.json"
-            with open(json_filename,'w') as fp:
+                save_signal_figname + "_line_profile.json"
+            with open(json_filename, 'w') as fp:
                 json.dump(line_profile_dict, fp)
 
             sig_name = self.save_path + self.tag +\
-                    "_" + save_signal_figname + ".hdf5"
+                "_" + save_signal_figname + ".hdf5"
             self.save_map_from_datalist(
                 data_map,
                 data_scale,
@@ -443,7 +451,7 @@ class Sub_Lattice():
 
     def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
         atom_position_list = np.array(
-                [self.x_position, self.y_position]).swapaxes(0,1)
+                [self.x_position, self.y_position]).swapaxes(0, 1)
         nearest_neighbor_data = sp.spatial.cKDTree(
                 atom_position_list,
                 leafsize=leafsize)
@@ -452,7 +460,8 @@ class Sub_Lattice():
                     atom.get_pixel_position(),
                     nearest_neighbors)
             nn_link_list = []
-            #Skipping the first element, since it points to the atom itself
+            # Skipping the first element,
+            # since it points to the atom itself
             for nn_link in nn_data_list[1][1:]:
                 nn_link_list.append(self.atom_list[nn_link])
             atom.nearest_neighbor_list = nn_link_list
@@ -462,7 +471,7 @@ class Sub_Lattice():
         atom_row_start_index = None
         atom_row_end_index = None
         for index, temp_atom_row in enumerate(self.atom_rows_by_zone_vector[
-            zone_vector]):
+                zone_vector]):
             if temp_atom_row == atom_row1:
                 atom_row_start_index = index
             if temp_atom_row == atom_row2:
@@ -542,8 +551,8 @@ class Sub_Lattice():
             atom.refine_position_using_2d_gaussian(
                     image_data,
                     rotation_enabled=rotation_enabled,
-                    percent_distance_to_nearest_neighbor=\
-                        percent_distance_to_nearest_neighbor,
+                    percent_distance_to_nearest_neighbor=
+                    percent_distance_to_nearest_neighbor,
                     debug_plot=debug_plot)
 
     def refine_atom_positions_using_center_of_mass(
@@ -551,8 +560,8 @@ class Sub_Lattice():
         for atom_index, atom in enumerate(self.atom_list):
             atom.refine_position_using_center_of_mass(
                 image_data,
-                percent_distance_to_nearest_neighbor=\
-                    percent_distance_to_nearest_neighbor)
+                percent_distance_to_nearest_neighbor=
+                percent_distance_to_nearest_neighbor)
 
     def get_nearest_neighbor_directions(self):
         x_pos_distances = []
@@ -1228,7 +1237,7 @@ class Sub_Lattice():
             data_scale_z=data_scale_z,
             save_signal=save_signal,
             line_profile_prune_outer_values=
-                line_profile_prune_outer_values,
+            line_profile_prune_outer_values,
             invert_line_profile=invert_line_profile,
             figname=figname)
 
@@ -1261,7 +1270,7 @@ class Sub_Lattice():
                 data_scale_z=data_scale_z,
                 save_signal=save_signal,
                 line_profile_prune_outer_values=
-                    line_profile_prune_outer_values,
+                line_profile_prune_outer_values,
                 invert_line_profile=invert_line_profile,
                 add_zero_value_sublattice=add_zero_value_sublattice,
                 figname=tempname)
@@ -1292,7 +1301,7 @@ class Sub_Lattice():
                 data_scale_z=data_scale_z,
                 save_signal=save_signal,
                 line_profile_prune_outer_values=
-                    line_profile_prune_outer_values,
+                line_profile_prune_outer_values,
                 invert_line_profile=invert_line_profile,
                 figname=tempname)
 
@@ -1322,7 +1331,7 @@ class Sub_Lattice():
                 data_scale_z=data_scale_z,
                 save_signal=save_signal,
                 line_profile_prune_outer_values=
-                    line_profile_prune_outer_values,
+                line_profile_prune_outer_values,
                 invert_line_profile=invert_line_profile,
                 figname=tempname)
 
