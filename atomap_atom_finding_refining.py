@@ -5,6 +5,7 @@ from skimage.feature import peak_local_max
 from atomap_plotting import plot_feature_density
 import matplotlib.pyplot as plt
 
+
 def get_peak2d_skimage(image, separation):
     arr_shape = (image.axes_manager._navigation_shape_in_array
             if image.axes_manager.navigation_size > 0
@@ -14,19 +15,20 @@ def get_peak2d_skimage(image, separation):
             image._iterate_signal(),
             image.axes_manager._array_indices_generator()):
         peaks[indices] = peak_local_max(
-                z, 
+                z,
                 min_distance=int(separation))
     return(peaks)
 
+
 def find_feature_density(
-        image_data, 
-        separation_range=(3,40), 
+        image_data,
+        separation_range=(3, 40),
         separation_step=1,
         plot_figure=False,
         plot_debug_figures=False):
     """
     Do peak finding with a varying amount of peak separation
-    constrained. Gives a measure of feature density, and 
+    constrained. Gives a measure of feature density, and
     what peak separation should be used to find the initial
     sub-lattice.
 
@@ -36,10 +38,10 @@ def find_feature_density(
         min_separation = 3
         max_separation = int(np.array(image_data.shape).min()/5)
         separation_range = (min_separation, max_separation)
-    
+
     separation_list = range(
             separation_range[0],
-            separation_range[1], 
+            separation_range[1],
             separation_step)
 
     separation_value_list = []
@@ -49,17 +51,20 @@ def find_feature_density(
         separation_value_list.append(separation)
         peakN_list.append(len(peak_list))
         if plot_debug_figures:
-            fig, ax = plt.subplots() 
+            fig, ax = plt.subplots()
             ax.imshow(np.rot90(np.fliplr(image_data)))
-            peak_list = peak_list.swapaxes(0,1)
+            peak_list = peak_list.swapaxes(0, 1)
             ax.scatter(peak_list[0], peak_list[1], color='blue')
-            fig.savefig("feature_density_separation_" + str(separation) + ".png")
+            fig.savefig(
+                    "feature_density_separation_" +
+                    str(separation) + ".png")
             plt.close(fig)
 
     if plot_figure:
         plot_feature_density(separation_value_list, peakN_list)
 
     return(separation_value_list, peakN_list)
+
 
 def construct_zone_axes_from_sub_lattice(sub_lattice):
     tag = sub_lattice.tag
@@ -70,17 +75,16 @@ def construct_zone_axes_from_sub_lattice(sub_lattice):
     sub_lattice._sort_atom_rows_by_zone_vector()
     sub_lattice.plot_all_atom_rows(fignameprefix=tag+"_atom_row")
 
+
 def refine_sub_lattice(
-        sub_lattice, 
+        sub_lattice,
         refinement_config_list,
         percent_distance_to_nearest_neighbor):
-    tag = sub_lattice.tag
 
     total_number_of_refinements = 0
     for refinement_config in refinement_config_list:
         total_number_of_refinements += refinement_config[1]
 
-    before_image = refinement_config_list[-1][0]
     sub_lattice.find_nearest_neighbors()
 
     current_counts = 1
@@ -88,7 +92,7 @@ def refine_sub_lattice(
         image = refinement_config[0]
         number_of_refinements = refinement_config[1]
         refinement_type = refinement_config[2]
-        for index in range(1,number_of_refinements+1):
+        for index in range(1, number_of_refinements+1):
             print(
                     str(current_counts) + "/" + str(
                         total_number_of_refinements))
@@ -96,19 +100,20 @@ def refine_sub_lattice(
                 sub_lattice.refine_atom_positions_using_2d_gaussian(
                         image,
                         rotation_enabled=False,
-                        percent_distance_to_nearest_neighbor=\
+                        percent_distance_to_nearest_neighbor=
                         percent_distance_to_nearest_neighbor)
                 sub_lattice.refine_atom_positions_using_2d_gaussian(
                         image,
                         rotation_enabled=True,
-                        percent_distance_to_nearest_neighbor=\
+                        percent_distance_to_nearest_neighbor=
                         percent_distance_to_nearest_neighbor)
             elif refinement_type == 'center_of_mass':
                 sub_lattice.refine_atom_positions_using_center_of_mass(
-                        image, 
-                        percent_distance_to_nearest_neighbor=\
+                        image,
+                        percent_distance_to_nearest_neighbor=
                         percent_distance_to_nearest_neighbor)
             current_counts += 1
+
 
 # DENNE ER UFERDIG
 def make_denoised_stem_signal(signal, invert_signal=False):
@@ -118,7 +123,8 @@ def make_denoised_stem_signal(signal, invert_signal=False):
             temp_signal.data, 30, mode='nearest')
     background_subtracted = signal.deepcopy().data -\
             average_background_data
-    signal_denoised = hs.signals.Signal(background_subtracted-background_subtracted.min())
+    signal_denoised = hs.signals.Signal(
+            background_subtracted-background_subtracted.min())
 
     signal_denoised.decomposition()
     signal_denoised = signal_denoised.get_decomposition_model(22)
@@ -130,6 +136,7 @@ def make_denoised_stem_signal(signal, invert_signal=False):
     signal_denoised = s_abf_modified2/s_abf_modified2.max()
     s_abf_pca = hs.signals.Signal2D(s_abf_data_normalized)
 
+
 def do_pca_on_signal(signal, pca_components=22):
     signal.change_dtype('float64')
     temp_signal = hs.signals.Signal1D(signal.data)
@@ -139,6 +146,7 @@ def do_pca_on_signal(signal, pca_components=22):
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
     return(temp_signal)
+
 
 def subtract_average_background(signal, gaussian_blur=30):
     signal.change_dtype('float64')
@@ -152,6 +160,7 @@ def subtract_average_background(signal, gaussian_blur=30):
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
     return(temp_signal)
+
 
 def normalize_signal(signal, invert_signal=False):
     temp_signal = signal.deepcopy()
