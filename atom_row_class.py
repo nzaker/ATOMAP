@@ -6,6 +6,7 @@ from scipy.stats import linregress
 from scipy import interpolate
 import matplotlib.pyplot as plt
 
+
 class Atom_Row():
     def __init__(self, atom_list, zone_vector, atom_lattice):
         self.atom_list = atom_list
@@ -54,8 +55,8 @@ class Atom_Row():
             if self_atom in atom_row.atom_list:
                 return(self_atom)
         return("Intersecting atom not found")
-        
-    def sort_atoms_by_distance_to_point(self, point=(0,0)):
+
+    def sort_atoms_by_distance_to_point(self, point=(0, 0)):
         self.atom_list.sort(
                 key=operator.methodcaller(
                     'pixel_distance_from_point', point))
@@ -111,27 +112,28 @@ class Atom_Row():
             self, atom_row, zone_vector):
         start_orthogonal_atom_row = None
         self_atom = self.start_atom
-        while start_orthogonal_atom_row == None:
+        while start_orthogonal_atom_row is None:
             temp_atom_row = self_atom.can_atom_row_be_reached_through_zone_vector(
                     atom_row, zone_vector)
-            if temp_atom_row == False:
+            if temp_atom_row is False:
                 self_atom = self_atom.get_next_atom_in_atom_row(self)
-                if self_atom == False:
+                if self_atom is False:
                     break
             else:
-                start_orthogonal_atom_row = temp_atom_row 
+                start_orthogonal_atom_row = temp_atom_row
 
         end_orthogonal_atom_row = None
         self_atom = self.end_atom
-        while end_orthogonal_atom_row == None:
+        while end_orthogonal_atom_row is None:
             temp_atom_row = self_atom.can_atom_row_be_reached_through_zone_vector(
                     atom_row, zone_vector)
-            if temp_atom_row == False:
-                self_atom = self_atom.get_previous_atom_in_atom_row(self)
-                if self_atom == False:
+            if temp_atom_row is False:
+                self_atom = self_atom.get_previous_atom_in_atom_row(
+                        self)
+                if self_atom is False:
                     break
             else:
-                end_orthogonal_atom_row = temp_atom_row 
+                end_orthogonal_atom_row = temp_atom_row
         return(start_orthogonal_atom_row, end_orthogonal_atom_row)
 
     def get_net_distance_change_between_atoms(self):
@@ -140,12 +142,12 @@ class Atom_Row():
             return(None)
         data = self.get_atom_distance_to_next_atom_and_position_list()
         data = np.array(data)
-        x_pos_list = data[:,0]
-        y_pos_list = data[:,1]
-        z_pos_list = data[:,2]
+        x_pos_list = data[:, 0]
+        y_pos_list = data[:, 1]
+        z_pos_list = data[:, 2]
         new_data_list = []
-        for index, (x_pos,y_pos,z_pos) in enumerate(
-                zip(x_pos_list,y_pos_list,z_pos_list)):
+        for index, (x_pos, y_pos, z_pos) in enumerate(
+                zip(x_pos_list, y_pos_list, z_pos_list)):
             if not (index == 0):
                 previous_x_pos = x_pos_list[index-1]
                 previous_y_pos = y_pos_list[index-1]
@@ -160,12 +162,12 @@ class Atom_Row():
 
     def get_atom_index(self, check_atom):
         for atom_index, atom in enumerate(self.atom_list):
-            if atom ==  check_atom:
+            if atom == check_atom:
                 return(atom_index)
 
     def get_closest_position_to_point(
-            self, 
-            point_position, 
+            self,
+            point_position,
             extend_line=False):
         x_pos = self.get_x_position_list()
         y_pos = self.get_y_position_list()
@@ -179,16 +181,18 @@ class Atom_Row():
 
         if extend_line:
             reg_results = linregress(pos_list0[:4], pos_list1[:4])
-            delta_0 = np.mean((np.array(pos_list0[0:3])-np.array(pos_list0[1:4]).mean()))*40
+            delta_0 = np.mean(
+                    (np.array(pos_list0[0:3]) -
+                    np.array(pos_list0[1:4]).mean()))*40
             delta_1 = reg_results[0]*delta_0
             start_0 = delta_0 + pos_list0[0]
             start_1 = delta_1 + pos_list1[0]
             pos_list0.insert(0, start_0)
-            pos_list1.insert(0, start_1)    
+            pos_list1.insert(0, start_1)
 
             reg_results = linregress(pos_list0[-4:], pos_list1[-4:])
             delta_0 = np.mean((
-                        np.array(pos_list0[-3:])-\
+                        np.array(pos_list0[-3:]) -
                         np.array(pos_list0[-4:-1]).mean()))*40
             delta_1 = reg_results[0]*delta_0
             end_0 = delta_0 + pos_list0[-1]
@@ -219,24 +223,24 @@ class Atom_Row():
 
         distance = (dist_x**2 + dist_y**2)**0.5
 
-        closest_index = distance.argmin()        
+        closest_index = distance.argmin()
         closest_point = (new_x[closest_index], new_y[closest_index])
         return(closest_point)
 
     def get_closest_distance_and_angle_to_point(
-            self, 
-            point_position, 
+            self,
+            point_position,
             plot_debug=False,
             use_precalculated_line=False):
         x_pos = self.get_x_position_list()
         y_pos = self.get_y_position_list()
-        
-        if (use_precalculated_line == False):
+
+        if (use_precalculated_line is False):
             fit = np.polyfit(x_pos, y_pos, 1)
             fit_fn = np.poly1d(fit)
             x_pos_range = x_pos[-1] - x_pos[0]
             new_x = np.arange(
-                    x_pos[0]-x_pos_range, 
+                    x_pos[0]-x_pos_range,
                     x_pos[-1]+x_pos_range,
                     0.00001)
             new_y = fit_fn(new_x)
@@ -268,33 +272,33 @@ class Atom_Row():
                 point_position[1]-point0[1])
 
         direction = np.cross(vector0, vector1)
-    
+
         if plot_debug:
             plt.ioff()
             fig, ax = plt.subplots()
             ax.plot(
-                    self.get_x_position_list(), 
+                    self.get_x_position_list(),
                     self.get_y_position_list())
             ax.plot(new_x, new_y)
             ax.plot(
                     [point_position[0], point0[0]],
                     [point_position[1], point0[1]])
-            ax.set_xlim(0,1000)
-            ax.set_ylim(0,1000)
+            ax.set_xlim(0, 1000)
+            ax.set_ylim(0, 1000)
             ax.text(
                     0.2,
-                    0.2, 
+                    0.2,
                     str(closest_distance*math.copysign(1, direction)))
-            fig.savefig(str(np.random.randint(1000,20000)) + ".png")
+            fig.savefig(str(np.random.randint(1000, 20000)) + ".png")
             plt.close()
-        
+
         return(closest_distance, direction)
 
     def _plot_debug_atom_row(self):
-        fig, ax = plt.subplots(figsize=(10,10))
+        fig, ax = plt.subplots(figsize=(10, 10))
         cax = ax.imshow(self.atom_lattice.adf_image)
         if self.atom_lattice.plot_clim:
-            clim = atom_lattice.plot_clim
+            clim = self.atom_lattice.plot_clim
             cax.set_clim(clim[0], clim[1])
         for atom_index, atom in enumerate(self.atom_list):
             ax.plot(atom.pixel_x, atom.pixel_y, 'o', color='blue')
@@ -305,4 +309,4 @@ class Atom_Row():
         fig.savefig("debug_plot_atom_row.jpg")
 
     def plot_atom_distance(self, figname="atom_distance.png"):
-        fig, ax = plt.subplots(figsize=(10,10))
+        fig, ax = plt.subplots(figsize=(10, 10))
