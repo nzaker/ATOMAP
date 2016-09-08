@@ -23,6 +23,12 @@ class SubLatticeParameterBase:
         self.name = "Base Sublattice"
         self.sublattice_order = None
 
+    def __repr__(self):
+        return '<%s, %s>' % (
+            self.__class__.__name__, 
+            self.name
+            )
+
 class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
     def __init__(self):
         SubLatticeParameterBase.__init__(self)
@@ -61,17 +67,22 @@ class ModelParameters:
         self.peak_separation = None
         self.number_of_sublattices = None
         self.name = None
+    
+    def __repr__(self):
+        return '<%s, %s>' % (
+            self.__class__.__name__, 
+            self.name,
+            )
 
 class PerovskiteOxide110(ModelParameters):
     def __init__(self):
         ModelParameters.__init__(self)
         self.name = "Peroskite 110"
         self.peak_separation = 0.127
-        self.number_of_sublattices = 3
+        self.number_of_sublattices = 1
 
         self.sublattice_list = [
             PerovskiteOxide110SubLatticeACation(),
-            PerovskiteOxide110SubLatticeBCation(),
             ]
 
     def get_sublattice_from_order(self, order_number):
@@ -103,6 +114,34 @@ def run_image_filtering(signal, invert_signal=False):
     if invert_signal:
         signal.data = 1./signal.data
     return(signal_modified)
+
+def make_atom_lattice_from_image(
+        image0_filename,
+        model_parameters=None,
+        image1_filename=None):
+    image0 = hs.load(image0_filename)
+    image0_modified = run_image_filtering(image0)
+
+    if model_parameters is None:
+        model_parameters = PerovskiteOxide110()
+
+    pixel_separation = model_parameters.peak_separation/image0.axes_manager[0].scale
+    initial_atom_position_list = get_peak2d_skimage(
+            image0_modified, 
+            separation=pixel_separation)[0]
+
+    #################################
+    path_name = image0_filename
+    path_name = path_name[0:path_name.rfind(".")]
+    if not os.path.exists(path_name):
+        os.makedirs(path_name)
+    
+    atom_lattice = Atom_Lattice()
+    atom_lattice.original_filename = image0_filename
+    atom_lattice.path_name = path_name
+    atom_lattice.adf_image = np.rot90(np.fliplr(image0.data))
+
+    ### WORK IN PROGRESS
 
 def run_atom_lattice_peakfinding_process(
         s_adf_filename, 
