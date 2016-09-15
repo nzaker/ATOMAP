@@ -52,7 +52,17 @@ class Atom_Position:
 
     @rotation.setter
     def rotation(self, new_rotation):
-        self.__rotation = new_rotation % 2*math.pi
+        self.__rotation = new_rotation % math.pi
+
+    @property
+    def rotation_ellipticity(self):
+        """Rotation between the "x-axis" and longest sigma.
+        Basically giving the direction of the ellipticity."""
+        if self.sigma_x > self.sigma_y:
+            temp_rotation = self.__rotation % math.pi
+        else:
+            temp_rotation = (self.__rotation+(math.pi/2)) % math.pi
+        return(temp_rotation)
 
     @property
     def ellipticity(self):
@@ -217,7 +227,7 @@ class Atom_Position:
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
-        g = hs.model.components.Gaussian2D(
+        g = hs.model.components2D.Gaussian2D(
                 centre_x=0.0,
                 centre_y=0.0,
                 sigma_x=self.sigma_x,
@@ -346,7 +356,7 @@ class Atom_Position:
             else:
                 new_x = g.centre_x.value
                 new_y = g.centre_y.value
-                new_rotation = g.rotation.value % 2*math.pi
+                new_rotation = g.rotation.value % math.pi
                 new_sigma_x = abs(g.sigma_x.value)
                 new_sigma_y = abs(g.sigma_y.value)
                 break
@@ -360,6 +370,7 @@ class Atom_Position:
         self.rotation = new_rotation
         self.sigma_x = new_sigma_x
         self.sigma_y = new_sigma_y
+        self.amplitude_gaussian = g.A.value
 
     def find_center_position_with_center_of_mass_using_mask(
             self,

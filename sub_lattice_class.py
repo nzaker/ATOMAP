@@ -15,6 +15,7 @@ from atomap_tools import \
 
 from atomap_plotting import \
         plot_image_map_line_profile_using_interface_row,\
+        plot_complex_image_map_line_profile_using_interface_row,\
         _make_line_profile_subplot_from_three_parameter_data
 from atomap_atom_finding_refining import get_peak2d_skimage
 
@@ -106,6 +107,20 @@ class Sub_Lattice():
         for atom in self.atom_list:
             ellipticity.append(atom.ellipticity)
         return(ellipticity)
+
+    @property
+    def rotation(self):
+        rotation = []
+        for atom in self.atom_list:
+            rotation.append(atom.rotation)
+        return(rotation)
+
+    @property
+    def rotation_ellipticity(self):
+        rotation_ellipticity = []
+        for atom in self.atom_list:
+            rotation_ellipticity.append(atom.rotation_ellipticity)
+        return(rotation_ellipticity)
 
     def get_atom_angles_from_zone_vector(
             self,
@@ -317,6 +332,84 @@ class Sub_Lattice():
             upscale=upscale)
 
         return(new_data)
+
+    def plot_complex_property_map_and_profile(
+            self,
+            x_list,
+            y_list,
+            amplitude_list,
+            phase_list,
+            interface_row=None,
+            save_signal=False,
+            amplitude_image_lim=None,
+            phase_image_lim=None,
+            line_profile_prune_outer_values=False,
+            invert_line_profile=False,
+            add_zero_value_sublattice=None,
+            figname="complex_property_map_and_profile.jpg"):
+        data_scale = self.pixel_size
+
+        if interface_row is None:
+            zone_vector = self.zones_axis_average_distances[0]
+            middle_atom_row_index = int(len(
+                self.atom_rows_by_zone_vector[zone_vector])/2)
+            interface_row = self.atom_rows_by_zone_vector[
+                    zone_vector][middle_atom_row_index]
+
+        line_profile_amplitude_data_list = self.get_property_and_positions_atom_row_projection(
+            interface_row=interface_row,
+            property_list=amplitude_list,
+            x_position=x_list,
+            y_position=y_list)
+        line_profile_amplitude_data_list = line_profile_amplitude_data_list.swapaxes(0, 1)
+
+        line_profile_phase_data_list = self.get_property_and_positions_atom_row_projection(
+            interface_row=interface_row,
+            property_list=phase_list,
+            x_position=x_list,
+            y_position=y_list)
+        line_profile_phase_data_list = line_profile_phase_data_list.swapaxes(0, 1)
+
+        if not(add_zero_value_sublattice is None):
+            self._add_zero_position_to_data_list_from_atom_list(
+                x_list,
+                y_list,
+                z_list,
+                add_zero_value_sublattice.x_position,
+                add_zero_value_sublattice.y_position)
+
+        amplitude_map = self._get_regular_grid_from_unregular_property(
+            x_list,
+            y_list,
+            amplitude_list)
+        
+        phase_map = self._get_regular_grid_from_unregular_property(
+            x_list,
+            y_list,
+            phase_list)
+
+        if invert_line_profile is True:
+            line_profile_amplitude_data_list[:, 0] *= -1
+            line_profile_phase_data_list[:, 0] *= -1
+
+        if self.original_adf_image is None:
+            image_data = self.adf_image
+        else:
+            image_data = self.original_adf_image
+
+        plot_complex_image_map_line_profile_using_interface_row(
+            image_data,
+            amplitude_map,
+            phase_map,
+            line_profile_amplitude_data_list,
+            line_profile_phase_data_list,
+            interface_row,
+            data_scale=data_scale,
+            amplitude_image_lim=amplitude_image_lim,
+            phase_image_lim=phase_image_lim,
+            rotate_atom_row_list_90_degrees=True,
+            line_profile_prune_outer_values=line_profile_prune_outer_values,
+            figname=self.save_path + self.tag + "_" + figname)
 
     def plot_property_map_and_profile(
             self,
@@ -1334,6 +1427,30 @@ class Sub_Lattice():
                 line_profile_prune_outer_values,
                 invert_line_profile=invert_line_profile,
                 figname=tempname)
+
+    def get_atom_model(self):
+        model_image = np.zeros(self.adf_image.shape)
+        X, Y = np.meshgrid(np.arange(
+            model_image.shape[1]), np.arange(model_image.shape[0]))
+
+        g = hs.model.components2D.Gaussian2D(
+            centre_x=0.0,
+            centre_y=0.0,
+            sigma_x=1.0,
+            sigma_y=1.0,
+            rotation=1.0,
+            A=1.0)
+
+        for atom in self.atom_list:
+            g.A.value = atom.amplitude_gaussian
+            g.centre_x.value = atom.pixel_x
+            g.centre_y.value = atom.pixel_y
+            g.sigma_x.value = atom.sigma_x
+            g.sigma_y.value = atom.sigma_y
+            g.rotation.value = atom.rotation
+            model_image += g.function(X, Y)
+
+        return(model_image)
 
     def _get_zone_vector_index_list(self, zone_vector_list):
         if zone_vector_list is None:

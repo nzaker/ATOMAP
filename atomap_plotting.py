@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
+from matplotlib.colors import hsv_to_rgb
+import math
+import copy
 
 from atomap_tools import\
         _get_clim_from_data,\
@@ -72,7 +75,7 @@ def plot_zone_vector_and_atom_distance_map(
         atom_row_y = atom_row_marker.get_y_position_list()
         image_ax.plot(atom_row_x, atom_row_y, color='red', lw=2)
 
-    _make_subplot_map_from_unregular_grid(
+    _make_subplot_map_from_regular_grid(
         distance_ax,
         distance_data, 
         distance_data_scale=distance_data_scale,
@@ -88,17 +91,19 @@ def plot_zone_vector_and_atom_distance_map(
     fig.savefig(figname)
     plt.close(fig)
 
-def plot_image_map_line_profile_using_interface_row(
+def plot_complex_image_map_line_profile_using_interface_row(
         image_data,
-        heatmap_data_list,
-        line_profile_data_list,
+        amplitude_data,
+        phase_data,
+        line_profile_amplitude_data,
+        line_profile_phase_data,
         interface_row,
         atom_row_list=None,
         data_scale=1,
-        data_scale_z=1,
         atom_list=None,
         extra_marker_list=None,
-        clim=None, 
+        amplitude_image_lim=None,
+        phase_image_lim=None,
         plot_title='',
         vector_to_plot=None,
         rotate_atom_row_list_90_degrees=False,
@@ -108,7 +113,7 @@ def plot_image_map_line_profile_using_interface_row(
     atom_list : list of Atom_Position instances
     extra_marker_list : two arrays of x and y [[x_values], [y_values]]
     """
-    number_of_line_profiles = len(line_profile_data_list)
+    number_of_line_profiles = 2
     
     figsize = (10, 18+2*number_of_line_profiles)
 
@@ -172,7 +177,168 @@ def plot_image_map_line_profile_using_interface_row(
             color='blue', 
             lw=2)
 
-    _make_subplot_map_from_unregular_grid(
+    _make_subplot_map_from_complex_regular_grid(
+        distance_ax,
+        amplitude_data, 
+        phase_data, 
+        atom_list=atom_list,
+        amplitude_image_lim=amplitude_image_lim,
+        phase_image_lim=phase_image_lim,
+        atom_row_marker=interface_row,
+        extra_marker_list=extra_marker_list,
+        vector_to_plot=vector_to_plot)
+    distance_cax = distance_ax.images[0]
+    distance_ax.plot(
+            atom_row_x*data_scale, 
+            atom_row_y*data_scale, 
+            color='red', 
+            lw=2)
+
+    line_profile_data_list = [line_profile_amplitude_data, line_profile_phase_data]
+
+    for line_profile_ax, line_profile_data in zip(
+            line_profile_ax_list, line_profile_data_list):
+        _make_subplot_line_profile(
+            line_profile_ax,
+            line_profile_data[:,0],
+            line_profile_data[:,1],
+            prune_outer_values=line_profile_prune_outer_values,
+            scale_x=data_scale)
+
+    fig.tight_layout()
+    fig.colorbar(
+            distance_cax, 
+            cax=colorbar_ax, 
+            orientation='horizontal')
+    fig.savefig(figname)
+    plt.close(fig)
+
+def normalize_array(np_array, max_number=1.0):
+    np_array = copy.deepcopy(np_array)
+    np_array -= np_array.min()
+    np_array /= np_array.max()
+    return(np_array*max_number)
+
+def get_rgb_array(angle, magnitude, rotation=0, angle_lim=None, magnitude_lim=None):
+    angle = (( angle + math.radians(rotation) + np.pi) % (2 * np.pi )) - np.pi
+    if angle_lim is not None:
+        np.clip(angle, angle_lim[0], angle_lim[1], out=angle)
+    if magnitude_lim is not None:
+        np.clip(magnitude, magnitude_lim[0], magnitude_lim[1], out=magnitude)
+    magnitude = normalize_array(magnitude)
+    angle = normalize_array(angle)
+    S = np.ones_like(angle)
+    HSV = np.dstack((angle, S, magnitude))
+    RGB = hsv_to_rgb(HSV)
+    return(RGB)
+
+def make_color_wheel(ax, rotation=0):
+    x, y = np.mgrid[-2.0:2.0:500j,-2.0:2.0:500j]
+    r = (x**2+y**2)**0.5
+    t = np.arctan2(x,y)
+    del x, y
+    if not (rotation == 0):
+        t += math.radians(rotation)
+        t = (t+ np.pi) % (2 * np.pi) - np.pi
+
+    r_masked = np.ma.masked_where(
+            (2.0 < r) | (r < 1.0), r)
+    r_masked -= 1.0
+
+    mask = r_masked.mask
+    r_masked.data[r_masked.mask] = r_masked.mean()
+    rgb_array = get_rgb_array(t, r_masked.data)
+    rgb_array = np.dstack((rgb_array, np.invert(mask)))
+
+    cmap = cm.get_cmap('hsv')
+    ax.imshow(rgb_array, interpolation='quadric', origin='lower')
+    ax.set_axis_off()
+
+def plot_image_map_line_profile_using_interface_row(
+        image_data,
+        heatmap_data_list,
+        line_profile_data_list,
+        interface_row,
+        atom_row_list=None,
+        data_scale=1,
+        data_scale_z=1,
+        atom_list=None,
+        extra_marker_list=None,
+        clim=None, 
+        plot_title='',
+        vector_to_plot=None,
+        rotate_atom_row_list_90_degrees=False,
+        line_profile_prune_outer_values=False,
+        figname="map_data.jpg"):  
+    """
+    atom_list : list of Atom_Position instances
+    extra_marker_list : two arrays of x and y [[x_values], [y_values]]
+    """
+    number_of_line_profiles = len(line_profile_data_list)
+    
+    figsize = (10, 18+2*number_of_line_profiles)
+
+    fig = plt.figure(figsize=figsize)
+    gs = GridSpec(95+10*number_of_line_profiles,95)
+
+    image_ax = fig.add_subplot(gs[0:45,:])
+    distance_ax = fig.add_subplot(gs[45:90,:])
+    colorbar_ax = fig.add_subplot(gs[90:95,:])
+    line_profile_ax_list = []
+    for i in range(number_of_line_profiles):
+        gs_y_start = 95+10*i
+        line_profile_ax = fig.add_subplot(
+                gs[gs_y_start:gs_y_start+10,:])
+        line_profile_ax_list.append(line_profile_ax)
+    
+    image_y_lim = (0,image_data.shape[0]*data_scale)
+    image_x_lim = (0,image_data.shape[1]*data_scale)
+        
+    image_clim = _get_clim_from_data(image_data, sigma=2)
+    image_cax = image_ax.imshow(
+            image_data,
+            origin='lower',
+            extent=[
+                image_x_lim[0],
+                image_x_lim[1],
+                image_y_lim[0],
+                image_y_lim[1]])
+
+    image_cax.set_clim(image_clim[0], image_clim[1])
+    image_ax.set_xlim(image_x_lim[0], image_x_lim[1])
+    image_ax.set_ylim(image_y_lim[0], image_y_lim[1])
+    image_ax.set_title(plot_title)
+
+    if not(atom_row_list == None):
+        for atom_row in atom_row_list:
+            if rotate_atom_row_list_90_degrees:
+                atom_row_x = np.array(atom_row.get_x_position_list())
+                atom_row_y = np.array(atom_row.get_y_position_list())
+                start_x = atom_row_x[0]
+                start_y = atom_row_y[0]
+                delta_y = (atom_row_x[-1] - atom_row_x[0]) 
+                delta_x = -(atom_row_y[-1] - atom_row_y[0]) 
+                atom_row_x = np.array([start_x, start_x + delta_x])
+                atom_row_y = np.array([start_y, start_y + delta_y])
+            else:
+                atom_row_x = np.array(atom_row.get_x_position_list())
+                atom_row_y = np.array(atom_row.get_y_position_list())
+            image_ax.plot(
+                    atom_row_x*data_scale, 
+                    atom_row_y*data_scale, 
+                    color='red', 
+                    lw=2)
+    
+    atom_row_x = np.array(interface_row.get_x_position_list())
+    atom_row_y = np.array(interface_row.get_y_position_list())
+    image_ax.plot(
+            atom_row_x*data_scale, 
+            atom_row_y*data_scale, 
+            color='blue', 
+            lw=2)
+
+
+    _make_subplot_map_from_regular_grid(
         distance_ax,
         heatmap_data_list, 
         distance_data_scale=data_scale_z,
@@ -234,7 +400,7 @@ def _make_subplot_line_profile(
         ax.set_ylim(y_lim[0], y_lim[1])
     ax.axvline(0, color='red')
 
-def _make_subplot_map_from_unregular_grid(
+def _make_subplot_map_from_regular_grid(
         ax,
         data, 
         atom_list=None, 
@@ -293,6 +459,70 @@ def _make_subplot_map_from_unregular_grid(
     ax.set_ylim(
             data[1][0][0]*distance_data_scale,
             data[1][0][-1]*distance_data_scale)
+
+def _make_subplot_map_from_complex_regular_grid(
+        ax,
+        amplitude_data, 
+        phase_data, 
+        atom_list=None, 
+        distance_data_scale=1.,
+        atom_row_marker=None,
+        amplitude_image_lim=None,
+        phase_image_lim=None,
+        extra_marker_list=None,
+        plot_title='',
+        vector_to_plot=None):
+    """ amplitude_data and phase_data in the form [(x, y ,z)]"""
+    x_lim = (amplitude_data[0][0][0], amplitude_data[0][-1][0])
+    y_lim = (amplitude_data[1][0][0], amplitude_data[1][0][-1])
+    rgb_array = get_rgb_array(
+            phase_data[2], 
+            amplitude_data[2],
+            rotation=0,
+            angle_lim=phase_image_lim,
+            magnitude_lim=amplitude_image_lim) 
+    cax = ax.imshow(
+            np.fliplr(np.rot90(rgb_array,-1)),
+            extent=[
+                x_lim[0]*distance_data_scale,
+                x_lim[1]*distance_data_scale,
+                y_lim[0]*distance_data_scale,
+                y_lim[1]*distance_data_scale],
+            origin='lower')
+    if atom_row_marker:
+        atom_row_x = np.array(atom_row_marker.get_x_position_list())
+        atom_row_y = np.array(atom_row_marker.get_y_position_list())
+        ax.plot(
+                atom_row_x*distance_data_scale, 
+                atom_row_y*distance_data_scale, 
+                color='red', lw=2)
+    if atom_list:
+        x = []
+        y = []
+        for atom in atom_list:
+            x.append(atom.pixel_x*distance_data_scale)
+            y.append(atom.pixel_y*distance_data_scale)
+        ax.scatter(x, y) 
+    if extra_marker_list:
+        ax.scatter(
+                extra_marker_list[0], 
+                extra_marker_list[1], 
+                color='red')
+    if vector_to_plot:
+        x0 = x_lim[0] + (x_lim[1] - x_lim[0])/2*0.15
+        y0 = y_lim[0] + (y_lim[1] - y_lim[0])/2*0.15
+        ax.arrow(
+                x0*distance_data_scale, 
+                y0*distance_data_scale, 
+                vector_to_plot[0]*distance_data_scale, 
+                vector_to_plot[1]*distance_data_scale, 
+                width=0.20)
+    ax.set_xlim(
+            amplitude_data[0][0][0]*distance_data_scale,
+            amplitude_data[0][-1][0]*distance_data_scale)
+    ax.set_ylim(
+            amplitude_data[1][0][0]*distance_data_scale,
+            amplitude_data[1][0][-1]*distance_data_scale)
 
 def _make_line_profile_subplot_from_three_parameter_data(
         ax,
