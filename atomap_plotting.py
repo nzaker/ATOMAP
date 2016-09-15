@@ -630,7 +630,7 @@ def plot_line_profiles_from_parameter_input(
         invert_line_profiles=False,
         extra_line_marker_list=[],
         x_lim=False,
-        figname="line_profile_list.png"):
+        figname="line_profile_list.jpg"):
     figsize = (15,len(parameter_list)*3)
     fig = plt.figure(figsize=figsize)
 
