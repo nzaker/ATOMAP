@@ -308,5 +308,16 @@ class Atom_Row():
         fig.tight_layout()
         fig.savefig("debug_plot_atom_row.jpg")
 
-    def plot_atom_distance(self, figname="atom_distance.png"):
-        fig, ax = plt.subplots(figsize=(10, 10))
+    def get_angle_to_horizontal_axis(self):
+        """Get angle between atoms in the atom row and horizontal
+        axis."""
+        angle_list = []
+        atom = self.start_atom
+        while atom is not False:
+            next_atom = atom.get_next_atom_in_atom_row(self)
+            if next_atom is False:
+                break
+            angle = atom.get_angle_between_atoms(next_atom)
+            angle_list.append(angle)
+            atom = next_atom
+        return(angle_list)

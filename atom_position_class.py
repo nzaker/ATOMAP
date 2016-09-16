@@ -79,15 +79,19 @@ class Atom_Position:
         y_distance = self.pixel_y - atom.pixel_y
         return((x_distance, y_distance))
 
-    def get_angle_between_atoms(self, atom0, atom1):
+    def get_angle_between_atoms(self, atom0, atom1=None):
         """
         Returns the angle between itself and two atoms
-        in radians.
+        in radians, or between another atom and the
+        horizontal axis.
 
         Parameters:
         -----------
         atom0 : Atom Position object
-        atom0 : Atom Position object
+        atom1 : Atom Position object, optional
+            If atom1 is not specified, the angle between
+            itself, atom0 and the horizontal axis will be
+            returned.
 
         Returns:
         Angle in radians
@@ -95,9 +99,14 @@ class Atom_Position:
         vector0 = np.array([
             atom0.pixel_x - self.pixel_x,
             atom0.pixel_y - self.pixel_y])
-        vector1 = np.array([
-            atom1.pixel_x - self.pixel_x,
-            atom1.pixel_y - self.pixel_y])
+        if atom1 is None:
+            vector1 = np.array([
+                self.pixel_x+1000,
+                0])
+        else:
+            vector1 = np.array([
+                atom1.pixel_x - self.pixel_x,
+                atom1.pixel_y - self.pixel_y])
         cosang = np.dot(vector0, vector1)
         sinang = np.linalg.norm(np.cross(vector0, vector1))
         return(np.arctan2(sinang, cosang))

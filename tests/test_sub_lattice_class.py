@@ -24,7 +24,7 @@ class test_make_simple_sub_lattice(unittest.TestCase):
         self.assertEqual(len(sub_lattice.atom_list), self.atoms_N)
 
 
-class test_sub_lattice_processing(unittest.TestCase):
+class test_sub_lattice_construct_refine(unittest.TestCase):
     
     def setUp(self):
         s_adf_filename = "tests/datasets/test_ADF_cropped.hdf5"
@@ -78,6 +78,33 @@ class test_sub_lattice_processing(unittest.TestCase):
                 figname="com_test.jpg")
 
 
+class test_sub_lattice_processing(unittest.TestCase):
+    
+    def setUp(self):
+        s_adf_filename = "tests/datasets/test_ADF_cropped.hdf5"
+        peak_separation = 0.15
+
+        s_adf = load(s_adf_filename)
+        s_adf.change_dtype('float64')
+        s_adf_modified = subtract_average_background(s_adf)
+        s_adf_modified = do_pca_on_signal(s_adf_modified)
+        pixel_size = s_adf.axes_manager[0].scale
+        pixel_separation = peak_separation/pixel_size
+
+        peaks = get_peak2d_skimage(
+                s_adf_modified, 
+                pixel_separation)[0]
+        self.sub_lattice = Sub_Lattice(
+                peaks, 
+                np.rot90(np.fliplr(s_adf_modified.data)))
+        self.sub_lattice.pixel_size = pixel_size
+        construct_zone_axes_from_sub_lattice(self.sub_lattice)
+
+    def test_zone_vector_mean_angle(self):
+        zone_vector = self.sub_lattice.zones_axis_average_distances[0]
+        mean_angle = self.sub_lattice.get_zone_vector_mean_angle(zone_vector)
+        print(mean_angle)
+
 class test_sub_lattice_plotting(unittest.TestCase):
     
     def setUp(self):
@@ -113,16 +140,8 @@ class test_sub_lattice_plotting(unittest.TestCase):
         self.sub_lattice.plot_atom_list_on_image_data(
                 image=self.sub_lattice.adf_image)
 
-
-#class test_sub_lattice_plotting(unittest.TestCase):
-#
-#    def setUp(self):
-#        atoms_N = 10
-#        image_data = np.arange(10000).reshape(100,100)
-#        peaks = np.arange(20).reshape(atoms_N,2)
-#        self.sub_lattice = Sub_Lattice(
-#                peaks, 
-#                image_data) 
+    def test_plot_ellipticity_rotation_complex(self):
+        self.sub_lattice.plot_ellipticity_rotation_complex()
 
 
 class test_sub_lattice_interpolation(unittest.TestCase):

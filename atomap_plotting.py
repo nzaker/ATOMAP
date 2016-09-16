@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
+from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.colors import hsv_to_rgb
+from matplotlib import cm
 import math
 import copy
 
@@ -10,7 +11,6 @@ from atomap_tools import\
         find_atom_position_1d_from_distance_list_and_atom_row,\
         _get_interpolated2d_from_unregular_data
 
-# Bytte navn etterhvert
 def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list):
     fig, ax = plt.subplots()
     ax.quiver(
@@ -105,6 +105,8 @@ def plot_complex_image_map_line_profile_using_interface_row(
         amplitude_image_lim=None,
         phase_image_lim=None,
         plot_title='',
+        add_color_wheel=False,
+        color_bar_markers=None,
         vector_to_plot=None,
         rotate_atom_row_list_90_degrees=False,
         line_profile_prune_outer_values=False,
@@ -118,15 +120,15 @@ def plot_complex_image_map_line_profile_using_interface_row(
     figsize = (10, 18+2*number_of_line_profiles)
 
     fig = plt.figure(figsize=figsize)
-    gs = GridSpec(95+10*number_of_line_profiles,95)
+    gs = GridSpec(100+10*number_of_line_profiles,95)
 
     image_ax = fig.add_subplot(gs[0:45,:])
     distance_ax = fig.add_subplot(gs[45:90,:])
-    colorbar_ax = fig.add_subplot(gs[90:95,:])
+    colorbar_ax = fig.add_subplot(gs[90:100,:])
     
     line_profile_ax_list = []
     for i in range(number_of_line_profiles):
-        gs_y_start = 95+10*i
+        gs_y_start = 100+10*i
         line_profile_ax = fig.add_subplot(
                 gs[gs_y_start:gs_y_start+10,:])
         line_profile_ax_list.append(line_profile_ax)
@@ -187,7 +189,6 @@ def plot_complex_image_map_line_profile_using_interface_row(
         atom_row_marker=interface_row,
         extra_marker_list=extra_marker_list,
         vector_to_plot=vector_to_plot)
-    distance_cax = distance_ax.images[0]
     distance_ax.plot(
             atom_row_x*data_scale, 
             atom_row_y*data_scale, 
@@ -205,11 +206,46 @@ def plot_complex_image_map_line_profile_using_interface_row(
             prune_outer_values=line_profile_prune_outer_values,
             scale_x=data_scale)
 
+    amplitude_delta = 0.01*(amplitude_image_lim[1]-amplitude_image_lim[0])
+    phase_delta = 0.01*(phase_image_lim[1]-phase_image_lim[0])
+    colorbar_mgrid = np.mgrid[
+            amplitude_image_lim[0]:amplitude_image_lim[1]:amplitude_delta,
+            phase_image_lim[0]:phase_image_lim[1]:phase_delta
+            ]
+    colorbar_rgb = get_rgb_array(colorbar_mgrid[1], colorbar_mgrid[0])
+    colorbar_ax.imshow(
+            colorbar_rgb,
+            origin='lower',
+            extent=[
+                phase_image_lim[0],
+                phase_image_lim[1],
+                amplitude_image_lim[0],
+                amplitude_image_lim[1]])
+
+    colorbar_ax.set_xlabel("Phase", size=6)
+    
+    if color_bar_markers is not None:
+        for color_bar_marker in color_bar_markers:
+            colorbar_ax.axvline(
+                    color_bar_marker[0],
+                    color='white')
+            colorbar_ax.text(
+                    color_bar_marker[0], amplitude_image_lim[0]*0.97, 
+                    color_bar_marker[1],
+                    transform=colorbar_ax.transData,
+                    va='top',
+                    ha='center',
+                    fontsize=8)
+
+    if add_color_wheel:
+        ax_magnetic_color_wheel_gs = GridSpecFromSubplotSpec(
+                40, 40, subplot_spec=gs[45:90,:])
+        ax_magnetic_color_wheel = fig.add_subplot(ax_magnetic_color_wheel_gs[30:39,3:12])
+        ax_magnetic_color_wheel.set_axis_off()
+
+        make_color_wheel(ax_magnetic_color_wheel)
+
     fig.tight_layout()
-    fig.colorbar(
-            distance_cax, 
-            cax=colorbar_ax, 
-            orientation='horizontal')
     fig.savefig(figname)
     plt.close(fig)
 
@@ -220,13 +256,16 @@ def normalize_array(np_array, max_number=1.0):
     return(np_array*max_number)
 
 def get_rgb_array(angle, magnitude, rotation=0, angle_lim=None, magnitude_lim=None):
-    angle = (( angle + math.radians(rotation) + np.pi) % (2 * np.pi )) - np.pi
+    if not (rotation == 0):
+        angle = (( angle + math.radians(rotation) + np.pi) % (2 * np.pi )) - np.pi
     if angle_lim is not None:
         np.clip(angle, angle_lim[0], angle_lim[1], out=angle)
+        angle = angle/angle.max()
+    else:
+        angle = normalize_array(angle)
     if magnitude_lim is not None:
         np.clip(magnitude, magnitude_lim[0], magnitude_lim[1], out=magnitude)
     magnitude = normalize_array(magnitude)
-    angle = normalize_array(angle)
     S = np.ones_like(angle)
     HSV = np.dstack((angle, S, magnitude))
     RGB = hsv_to_rgb(HSV)

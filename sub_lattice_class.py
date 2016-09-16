@@ -345,7 +345,9 @@ class Sub_Lattice():
             phase_image_lim=None,
             line_profile_prune_outer_values=False,
             invert_line_profile=False,
+            add_color_wheel=False,
             add_zero_value_sublattice=None,
+            color_bar_markers=None,
             figname="complex_property_map_and_profile.jpg"):
         data_scale = self.pixel_size
 
@@ -388,6 +390,20 @@ class Sub_Lattice():
             y_list,
             phase_list)
 
+        if amplitude_image_lim is None:
+            amplitude_image_lim = _get_clim_from_data(
+                    amplitude_map[2],
+                    sigma=2,
+                    ignore_zeros=False,
+                    ignore_edges=True)
+
+        if phase_image_lim is None:
+            phase_image_lim = _get_clim_from_data(
+                    phase_map[2],
+                    sigma=2,
+                    ignore_zeros=False,
+                    ignore_edges=True)
+
         if invert_line_profile is True:
             line_profile_amplitude_data_list[:, 0] *= -1
             line_profile_phase_data_list[:, 0] *= -1
@@ -407,6 +423,8 @@ class Sub_Lattice():
             data_scale=data_scale,
             amplitude_image_lim=amplitude_image_lim,
             phase_image_lim=phase_image_lim,
+            add_color_wheel=add_color_wheel,
+            color_bar_markers=color_bar_markers,
             rotate_atom_row_list_90_degrees=True,
             line_profile_prune_outer_values=line_profile_prune_outer_values,
             figname=self.save_path + self.tag + "_" + figname)
@@ -1049,43 +1067,37 @@ class Sub_Lattice():
         fig.tight_layout()
         fig.savefig(figname + ".png", dpi=200)
 
-    def plot_ellipticity_rotation(
-            self, interface_row=None, clim=None, figname=''):
-        x_pos_list, y_pos_list, x_rot_list, y_rot_list = [], [], [], []
-        for atom in self.atom_list:
-            x_pos_list.append(atom.pixel_x)
-            y_pos_list.append(atom.pixel_y)
-            rot = atom.get_ellipticity_vector()
-            x_rot_list.append(rot[0])
-            y_rot_list.append(rot[1])
-
-        image_data = self.original_adf_image
-
-        fig, axarr = plt.subplots(2, 1, figsize=(10, 20))
-
-        image_ax = axarr[0]
-        rot_ax = axarr[1]
-
-        image_ax.imshow(image_data)
-        image_ax.set_ylim(0, image_data.shape[0])
-        image_ax.set_xlim(0, image_data.shape[1])
-
-        rot_ax.quiver(
-                x_pos_list,
-                y_pos_list,
-                x_rot_list,
-                y_rot_list,
-                scale=40.0,
-                headwidth=0.0,
-                headlength=0.0,
-                headaxislength=0.0,
-                pivot='middle')
-        rot_ax.imshow(image_data, alpha=0.0)
-        rot_ax.set_xlim(min(x_pos_list), max(x_pos_list))
-        rot_ax.set_ylim(min(y_pos_list), max(y_pos_list))
-        figname = self.save_path + self.tag + "_ellipticity_rotation"
-        fig.tight_layout()
-        fig.savefig(figname + ".png", dpi=300)
+    def plot_ellipticity_rotation_complex(
+            self,
+            interface_row=None,
+            save_signal=False,
+            amplitude_image_lim=None,
+            phase_image_lim=None,
+            line_profile_prune_outer_values=False,
+            color_bar_markers=None,
+            add_color_wheel=False,
+            invert_line_profile=False,
+            figname="ellipticity_rotation.jpg"):
+        """
+        Plot a complex map and line profile of the magnitude and
+        direction of the ellipticity.
+        """
+        if phase_image_lim is None:
+            phase_image_lim = (0, math.pi)
+        self.plot_complex_property_map_and_profile(
+            self.x_position,
+            self.y_position,
+            self.ellipticity,
+            self.rotation_ellipticity,
+            interface_row=interface_row,
+            save_signal=save_signal,
+            amplitude_image_lim=amplitude_image_lim,
+            phase_image_lim=phase_image_lim,
+            color_bar_markers=color_bar_markers,
+            line_profile_prune_outer_values=line_profile_prune_outer_values,
+            invert_line_profile=invert_line_profile,
+            add_color_wheel=add_color_wheel,
+            figname=figname)
 
     def plot_all_atom_rows(self, fignameprefix="atom_row"):
         for zone_index, zone_vector in enumerate(
@@ -1624,3 +1636,17 @@ class Sub_Lattice():
         if figname is None:
             figname = self.save_path + self.tag + "_lattice_line_profiles.jpg"
         fig.savefig(figname, dpi=100)
+
+    def get_zone_vector_mean_angle(self, zone_vector):
+        """Get the mean angle between the atoms rows with a specific zone vector
+        and the horizontal axis. For each atom row the angle between all the atoms,
+        its neighbor and horizontal axis is calculated. The mean of these angles
+        for all the atom rows is returned.
+        """
+        atom_row_list = self.atom_rows_by_zone_vector[zone_vector]
+        angle_list = []
+        for atom_row in atom_row_list:
+            temp_angle_list = atom_row.get_angle_to_horizontal_axis()
+            angle_list.extend(temp_angle_list)
+        mean_angle = np.array(angle_list).mean()
+        return(mean_angle)
