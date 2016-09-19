@@ -259,7 +259,7 @@ def run_process_for_adf_image_a_cation(
         atom.sigma_x = 0.05/a_sub_lattice.pixel_size
         atom.sigma_y = 0.05/a_sub_lattice.pixel_size
 
-    a_sub_lattice.plot_atom_list_on_stem_data(
+    a_sub_lattice.plot_atom_list_on_image_data(
             figname=a_sub_lattice.tag+"_atom_refine0_initial.jpg")
 
     print("Refining a atom lattice")
@@ -276,14 +276,14 @@ def run_process_for_adf_image_a_cation(
                     1, 
                     'center_of_mass')],
             0.50)
-    a_sub_lattice.plot_atom_list_on_stem_data(
+    a_sub_lattice.plot_atom_list_on_image_data(
             figname=a_sub_lattice.tag+"_atom_refine1_com.jpg")
     refine_sub_lattice(
             a_sub_lattice, 
             [
                 (a_sub_lattice.original_adf_image, 1, 'gaussian')],
             0.50)
-    a_sub_lattice.plot_atom_list_on_stem_data(
+    a_sub_lattice.plot_atom_list_on_image_data(
             figname=a_sub_lattice.tag+"_atom_refine2_gaussian.jpg")
     atom_lattice.save_atom_lattice(
             filename=a_sub_lattice.save_path +\
@@ -512,7 +512,7 @@ def run_process_for_adf_image_a_cation(
         atom.sigma_x = 0.05/a_sub_lattice.pixel_size
         atom.sigma_y = 0.05/a_sub_lattice.pixel_size
 
-    a_sub_lattice.plot_atom_list_on_stem_data(
+    a_sub_lattice.plot_atom_list_on_image_data(
             figname=a_sub_lattice.tag+"_atom_refine0_initial.jpg")
 
     print("Refining a atom lattice")
@@ -529,14 +529,14 @@ def run_process_for_adf_image_a_cation(
                     1, 
                     'center_of_mass')],
             0.50)
-    a_sub_lattice.plot_atom_list_on_stem_data(
+    a_sub_lattice.plot_atom_list_on_image_data(
             figname=a_sub_lattice.tag+"_atom_refine1_com.jpg")
     refine_sub_lattice(
             a_sub_lattice, 
             [
                 (a_sub_lattice.original_adf_image, 1, 'gaussian')],
             0.50)
-    a_sub_lattice.plot_atom_list_on_stem_data(
+    a_sub_lattice.plot_atom_list_on_image_data(
             figname=a_sub_lattice.tag+"_atom_refine2_gaussian.jpg")
     atom_lattice.save_atom_lattice(
             filename=a_sub_lattice.save_path +\
