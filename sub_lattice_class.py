@@ -122,6 +122,13 @@ class Sub_Lattice():
             rotation_ellipticity.append(atom.rotation_ellipticity)
         return(rotation_ellipticity)
 
+    def get_zone_vector_index(self, zone_vector_id):
+        """Find zone vector index from zone vector name"""
+        for zone_vector_index, zone_vector in enumerate(self.zones_axis_average_distances_names):
+            if zone_vector == zone_vector_id:
+                return(zone_vector_index)
+        raise ValueError('Could not find zone_vector ' + str(zone_vector_id))
+
     def get_atom_angles_from_zone_vector(
             self,
             zone_vector0,

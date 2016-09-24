@@ -13,6 +13,19 @@ class Atom_Lattice():
         self.inverted_abf_image = None
         self.path_name = ""
 
+    def get_sub_lattice(self, sub_lattice_id):
+        """
+        Get a sublattice object from either sublattice index
+        or name.
+        """
+        if isinstance(sub_lattice_id, str):
+            for sub_lattice in self.sub_lattice_list:
+                if sub_lattice.name == sub_lattice_id:
+                    return(sub_lattice)
+        elif isinstance(sub_lattice_id, int):
+            return(self.sub_lattice_list[sub_lattice_id])
+        raise ValueError('Could not find sub_lattice ' + str(sub_lattice_id))
+
     def construct_zone_axes_for_sub_lattices(self, sub_lattice_list=None):
         if sub_lattice_list is None:
             sub_lattice_list = self.sub_lattice_list
