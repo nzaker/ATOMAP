@@ -1,4 +1,5 @@
 import os
+import copy
 import glob
 import matplotlib.pyplot as plt
 import hyperspy.api as hs
@@ -44,6 +45,11 @@ class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
                 {'number':6, 'name':'11-1'},
                 ]
         self.sublattice_order = 0
+        self.refinement_config = {
+                'config':[
+                    ['image0', 2, 'gaussian'],
+                    ],
+                'neighbor_distance':0.35}
 
 class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
     def __init__(self):
@@ -61,6 +67,18 @@ class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
         self.sublattice_order = 1
         self.sublattice_position_sublattice = "A-cation"
         self.sublattice_position_zoneaxis = "100"
+        self.refinement_config = {
+                'config':[
+                    ['image0', 2, 'center_of_mass'],
+                    ['image0', 2, 'gaussian'],
+                    ],
+                'neighbor_distance':0.25}
+        self.atom_subtract_config = [
+                {
+                    'sublattice':'A-cation',
+                    'neighbor_distance':0.35,
+                    },
+                ]
 
 class ModelParameters:
     def __init__(self):
@@ -81,6 +99,7 @@ class PerovskiteOxide110(ModelParameters):
 
         self.sublattice_list = [
             PerovskiteOxide110SubLatticeACation(),
+            PerovskiteOxide110SubLatticeBCation(),
             ]
 
     def get_sublattice_from_order(self, order_number):
@@ -138,10 +157,13 @@ def make_atom_lattice_from_image(
     if not os.path.exists(path_name):
         os.makedirs(path_name)
     
+    image0_data = np.rot90(np.fliplr(image0.data))
+    image0_modified_data = np.rot90(np.fliplr(image0_modified))
+
     atom_lattice = Atom_Lattice()
     atom_lattice.original_filename = image0_filename
     atom_lattice.path_name = path_name
-    atom_lattice.adf_image = np.rot90(np.fliplr(image0.data))
+    atom_lattice.adf_image = image0_data
 
     for sublattice_index in range(model_parameters.number_of_sublattices):
         sublattice_para = model_parameters.get_sublattice_from_order(sublattice_index)  
@@ -149,7 +171,7 @@ def make_atom_lattice_from_image(
         if sublattice_para.sublattice_order == 0:
             sublattice = Sub_Lattice(
                 initial_atom_position_list, 
-                np.rot90(np.fliplr(image0_modified.data)))
+                image0_modified_data)
         else:
             temp_sublattice = atom_lattice.get_sub_lattice(
                     sublattice_para.sublattice_position_sublattice)
@@ -161,8 +183,8 @@ def make_atom_lattice_from_image(
 
             sublattice = Sub_Lattice(
                 atom_list,
-                np.rot90(np.fliplr(image0_modified.data)))
-            ###### NEED TO DO ATOM SUBTRACTION
+                image0_data)
+
 
         sublattice.save_path = "./" + path_name + "/"
         sublattice.path_name = path_name
@@ -170,19 +192,44 @@ def make_atom_lattice_from_image(
         sublattice.name = sublattice_para.name
         sublattice.tag = sublattice_para.tag
         sublattice.pixel_size = image0.axes_manager[0].scale
-        sublattice.original_adf_image = np.rot90(np.fliplr(image0.data))
+        sublattice.original_adf_image = image0_data
         atom_lattice.sub_lattice_list.append(sublattice)
  
         for atom in sublattice.atom_list:
             atom.sigma_x = 0.05/sublattice.pixel_size
             atom.sigma_y = 0.05/sublattice.pixel_size
 
+        if not(sublattice_para.sublattice_order == 0):
+            construct_zone_axes_from_sub_lattice(sublattice)
+            atom_subtract_config = sublattice_para.atom_subtract_config
+            image0_data = sublattice.adf_image
+            for atom_subtract_para in atom_subtract_config:
+                temp_sublattice = atom_lattice.get_sub_lattice(
+                        atom_subtract_para['sublattice'])
+                neighbor_distance = atom_subtract_para['neighbor_distance']
+                print(neighbor_distance)
+                image0_data = remove_atoms_from_image_using_2d_gaussian(
+                    image0_data,
+                    temp_sublattice,
+                    percent_distance_to_nearest_neighbor=neighbor_distance)
+            sublattice.adf_image = image0_data
+            sublattice.original_adf_image = image0_data
+
+        refinement_config = sublattice_para.refinement_config
+        refinement_neighbor_distance = refinement_config['neighbor_distance']
+        refinement_steps = refinement_config['config']
+        for refinement_step in refinement_steps:
+            if refinement_step[0] == 'image0':
+                refinement_step[0] = sublattice.original_adf_image
+            elif refinement_step[0] == 'image0_modified':
+                refinement_step[0] = sublattice.adf_image
+            else:
+                refinement_step[0] = sublattice.original_adf_image
+
         refine_sub_lattice(
             sublattice, 
-            [
-#                (sublattice_0.adf_image, 2, 'gaussian'),
-                (sublattice.original_adf_image, 2, 'gaussian')],
-            0.35)
+            refinement_steps,
+            refinement_neighbor_distance)
         construct_zone_axes_from_sub_lattice(sublattice)
 
         for zone_axis in sublattice_para.zone_axis_list:
