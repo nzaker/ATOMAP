@@ -681,16 +681,58 @@ class Sub_Lattice():
                 percent_distance_to_nearest_neighbor=
                 percent_distance_to_nearest_neighbor)
 
-    def get_nearest_neighbor_directions(self):
+    def get_nearest_neighbor_directions(self, pixel_scale=True, neighbors=None):
+        """
+        Get the vector to the nearest neighbors for the atoms in the sublattice.
+        Giving information similar to a FFT of the image, but for real space.
+
+        Useful for seeing if the peakfinding and symmetry finder worked correctly.
+        Potentially useful for doing structure fingerprinting.
+
+        Parameters
+        ----------
+        pixel_scale : bool, optional. Default True
+            If True, will return coordinates in pixel scale.
+            If False, will return in data scale (pixel_size).
+        neighbors : int, optional
+            The number of neighbors returned for each atoms.
+            If no number is given, will return all the neighbors,
+            which is typcially 9 for each atom. As given when 
+            running the symmetry finder.
+
+        Returns
+        -------
+        Tuple: (x_position, y_position). Where both are numpy arrays.
+
+        Example
+        -------
+        >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions()
+        >>> import matplotlib.pyplot as plt
+        >>> plt.scatter(x_pos, y_pos)
+        With all the keywords 
+        >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions(
+                pixel_scale=False, neigbors=3)
+        """
+        if neighbors is None:
+            neighbors = 10000
+
         x_pos_distances = []
         y_pos_distances = []
         for atom in self.atom_list:
-            for neighbor_atom in atom.nearest_neighbor_list:
+            for index, neighbor_atom in enumerate(atom.nearest_neighbor_list):
+                if index > neighbors:
+                    break
                 distance = atom.get_pixel_difference(neighbor_atom)
                 if not ((distance[0] == 0) and (distance[1] == 0)):
                     x_pos_distances.append(distance[0])
                     y_pos_distances.append(distance[1])
-        return(np.array([x_pos_distances, y_pos_distances]))
+        if not pixel_scale:
+            scale = self.pixel_size
+        else:
+            scale = 1.
+        x_pos_distances = np.array(x_pos_distances)*scale
+        y_pos_distances = np.array(y_pos_distances)*scale
+        return(x_pos_distances, y_pos_distances)
 
     def _make_nearest_neighbor_direction_distance_statistics(
             self,
