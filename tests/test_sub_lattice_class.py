@@ -103,7 +103,9 @@ class test_sub_lattice_processing(unittest.TestCase):
     def test_zone_vector_mean_angle(self):
         zone_vector = self.sub_lattice.zones_axis_average_distances[0]
         mean_angle = self.sub_lattice.get_zone_vector_mean_angle(zone_vector)
-        print(mean_angle)
+
+    def test_get_nearest_neighbor_directions(self):
+        self.sub_lattice.get_nearest_neighbor_directions()
 
 class test_sub_lattice_plotting(unittest.TestCase):
     
