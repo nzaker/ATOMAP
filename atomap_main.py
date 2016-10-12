@@ -535,11 +535,11 @@ def run_peak_finding_process_for_single_dataset(
     construct_zone_axes_from_sub_lattice(o_sublattice)
     image_atoms_removed = o_sublattice.original_adf_image
     image_atoms_removed = remove_atoms_from_image_using_2d_gaussian(
-        image_atoms_removed, 
+        image_atoms_removed,
         a_sublattice,
         percent_distance_to_nearest_neighbor=0.40)
     image_atoms_removed = remove_atoms_from_image_using_2d_gaussian(
-        image_atoms_removed, 
+        image_atoms_removed,
         b_sublattice,
         percent_distance_to_nearest_neighbor=0.30)
 
@@ -552,7 +552,7 @@ def run_peak_finding_process_for_single_dataset(
 
     print("Refining o atom lattice")
     refine_sub_lattice(
-            o_sublattice, 
+            o_sublattice,
             [
                 (image_atoms_removed, 1, 'center_of_mass'),
                 (image_atoms_removed, 2, 'gaussian')],
@@ -563,6 +563,7 @@ def run_peak_finding_process_for_single_dataset(
     plt.close('all')
     plt.ion()
     return(atom_lattice)
+
 
 def run_process_for_adf_image_a_cation(
         s_adf_filename,
@@ -577,7 +578,7 @@ def run_process_for_adf_image_a_cation(
         s_adf_modified = do_pca_on_signal(s_adf_modified)
     peak_separation1 = peak_separation/s_adf.axes_manager[0].scale
     atom_position_list_pca = get_peak2d_skimage(
-            s_adf_modified, 
+            s_adf_modified,
             separation=peak_separation1)[0]
 
     #################################
@@ -593,7 +594,7 @@ def run_process_for_adf_image_a_cation(
     atom_lattice.adf_image = np.rot90(np.fliplr(s_adf.data))
 
     a_sublattice = Sub_Lattice(
-            atom_position_list_pca, 
+            atom_position_list_pca,
             np.rot90(np.fliplr(s_adf_modified.data)))
 
     a_sublattice.save_path = "./" + path_name + "/"
@@ -613,34 +614,35 @@ def run_process_for_adf_image_a_cation(
 
     print("Refining a atom lattice")
     refine_sub_lattice(
-            a_sublattice, 
+            a_sublattice,
             [
                 (a_sublattice.adf_image, 1, 'center_of_mass')],
             0.50)
     refine_sub_lattice(
-            a_sublattice, 
+            a_sublattice,
             [
                 (
                     a_sublattice.original_adf_image,
-                    1, 
+                    1,
                     'center_of_mass')],
             0.50)
     a_sublattice.plot_atom_list_on_image_data(
             figname=a_sublattice.tag+"_atom_refine1_com.jpg")
     refine_sub_lattice(
-            a_sublattice, 
+            a_sublattice,
             [
                 (a_sublattice.original_adf_image, 1, 'gaussian')],
             0.50)
     a_sublattice.plot_atom_list_on_image_data(
             figname=a_sublattice.tag+"_atom_refine2_gaussian.jpg")
     atom_lattice.save_atom_lattice(
-            filename=a_sublattice.save_path +\
-                    "atom_lattice.hdf5")
+            filename=a_sublattice.save_path +
+            "atom_lattice.hdf5")
     plt.close('all')
     construct_zone_axes_from_sub_lattice(a_sublattice)
 
     return(atom_lattice)
+
 
 def run_process_for_adf_image_a_b_cation(
         s_adf_filename,
@@ -655,7 +657,7 @@ def run_process_for_adf_image_a_b_cation(
         s_adf_modified = do_pca_on_signal(s_adf_modified)
     peak_separation1 = peak_separation/s_adf.axes_manager[0].scale
     atom_position_list_pca = get_peak2d_skimage(
-            s_adf_modified, 
+            s_adf_modified,
             separation=peak_separation1)[0]
 
     #################################
@@ -671,7 +673,7 @@ def run_process_for_adf_image_a_b_cation(
     atom_lattice.adf_image = np.rot90(np.fliplr(s_adf.data))
 
     a_sublattice = Sub_Lattice(
-            atom_position_list_pca, 
+            atom_position_list_pca,
             np.rot90(np.fliplr(s_adf_modified.data)))
 
     a_sublattice.save_path = "./" + path_name + "/"
@@ -687,33 +689,33 @@ def run_process_for_adf_image_a_b_cation(
         atom.sigma_y = 0.05/a_sublattice.pixel_size
 
     atom_lattice.save_atom_lattice(
-            filename=a_sublattice.save_path +\
-                    "atom_lattice_no_refinement.hdf5")
+            filename=a_sublattice.save_path +
+            "atom_lattice_no_refinement.hdf5")
     print("Refining a atom lattice")
     refine_sub_lattice(
-            a_sublattice, 
+            a_sublattice,
             [
                 (a_sublattice.adf_image, 1, 'center_of_mass')],
             0.25)
     refine_sub_lattice(
-            a_sublattice, 
+            a_sublattice,
             [
                 (
-                    a_sublattice.original_adf_image, 
-                    1, 
+                    a_sublattice.original_adf_image,
+                    1,
                     'center_of_mass')],
             0.30)
     atom_lattice.save_atom_lattice(
-            filename=a_sublattice.save_path +\
-                    "atom_lattice_center_of_mass.hdf5")
+            filename=a_sublattice.save_path +
+            "atom_lattice_center_of_mass.hdf5")
     refine_sub_lattice(
-            a_sublattice, 
+            a_sublattice,
             [
                 (a_sublattice.original_adf_image, 1, 'gaussian')],
             0.30)
     atom_lattice.save_atom_lattice(
-            filename=a_sublattice.save_path +\
-                    "atom_lattice_2d_model.hdf5")
+            filename=a_sublattice.save_path +
+            "atom_lattice_2d_model.hdf5")
     plt.close('all')
     construct_zone_axes_from_sub_lattice(a_sublattice)
 
@@ -721,7 +723,9 @@ def run_process_for_adf_image_a_b_cation(
 #    b_atom_list = a_sublattice.find_missing_atoms_from_zone_vector(
 #            zone_vector_100, new_atom_tag='B')
 #
-#    b_sublattice = Sub_Lattice(b_atom_list, np.rot90(np.fliplr(s_adf_modified.data)))
+#    b_sublattice = Sub_Lattice(
+#        b_atom_list,
+#        np.rot90(np.fliplr(s_adf_modified.data)))
 #    atom_lattice.sub_lattice_list.append(b_sublattice)
 #    b_sublattice.save_path = "./" + path_name + "/"
 #    b_sublattice.path_name = path_name
@@ -736,7 +740,7 @@ def run_process_for_adf_image_a_b_cation(
 #
 #    image_atoms_removed = b_sublattice.original_adf_image
 #    image_atoms_removed = remove_atoms_from_image_using_2d_gaussian(
-#        image_atoms_removed, 
+#        image_atoms_removed,
 #        a_sublattice,
 #        percent_distance_to_nearest_neighbor=0.35)
 #    construct_zone_axes_from_sub_lattice(b_sublattice)
@@ -745,7 +749,7 @@ def run_process_for_adf_image_a_b_cation(
 #
 #    print("Refining b atom lattice")
 #    refine_sub_lattice(
-#            b_sublattice, 
+#            b_sublattice,
 #            [
 #                (b_sublattice.adf_image, 2, 'gaussian')],
 #            0.3)

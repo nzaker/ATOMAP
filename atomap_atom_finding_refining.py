@@ -115,14 +115,14 @@ def refine_sub_lattice(
             current_counts += 1
 
 
-# DENNE ER UFERDIG
+# Work in progress
 def make_denoised_stem_signal(signal, invert_signal=False):
     signal.change_dtype('float64')
     temp_signal = signal.deepcopy()
     average_background_data = gaussian_filter(
             temp_signal.data, 30, mode='nearest')
     background_subtracted = signal.deepcopy().data -\
-            average_background_data
+        average_background_data
     signal_denoised = hs.signals.Signal(
             background_subtracted-background_subtracted.min())
 
@@ -154,7 +154,7 @@ def subtract_average_background(signal, gaussian_blur=30):
     average_background_data = gaussian_filter(
             temp_signal.data, gaussian_blur, mode='nearest')
     background_subtracted = signal.deepcopy().data -\
-            average_background_data
+        average_background_data
     temp_signal = hs.signals.Signal1D(
             background_subtracted-background_subtracted.min())
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale

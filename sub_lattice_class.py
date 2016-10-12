@@ -109,13 +109,6 @@ class Sub_Lattice():
         return(ellipticity)
 
     @property
-    def rotation(self):
-        rotation = []
-        for atom in self.atom_list:
-            rotation.append(atom.rotation)
-        return(rotation)
-
-    @property
     def rotation_ellipticity(self):
         rotation_ellipticity = []
         for atom in self.atom_list:
@@ -124,7 +117,8 @@ class Sub_Lattice():
 
     def get_zone_vector_index(self, zone_vector_id):
         """Find zone vector index from zone vector name"""
-        for zone_vector_index, zone_vector in enumerate(self.zones_axis_average_distances_names):
+        for zone_vector_index, zone_vector in enumerate(
+                self.zones_axis_average_distances_names):
             if zone_vector == zone_vector_id:
                 return(zone_vector_index)
         raise ValueError('Could not find zone_vector ' + str(zone_vector_id))
@@ -353,7 +347,6 @@ class Sub_Lattice():
             line_profile_prune_outer_values=False,
             invert_line_profile=False,
             add_color_wheel=False,
-            add_zero_value_sublattice=None,
             color_bar_markers=None,
             figname="complex_property_map_and_profile.jpg"):
         data_scale = self.pixel_size
@@ -378,14 +371,6 @@ class Sub_Lattice():
             x_position=x_list,
             y_position=y_list)
         line_profile_phase_data_list = line_profile_phase_data_list.swapaxes(0, 1)
-
-        if not(add_zero_value_sublattice is None):
-            self._add_zero_position_to_data_list_from_atom_list(
-                x_list,
-                y_list,
-                z_list,
-                add_zero_value_sublattice.x_position,
-                add_zero_value_sublattice.y_position)
 
         amplitude_map = self._get_regular_grid_from_unregular_property(
             x_list,
@@ -1687,10 +1672,12 @@ class Sub_Lattice():
         fig.savefig(figname, dpi=100)
 
     def get_zone_vector_mean_angle(self, zone_vector):
-        """Get the mean angle between the atoms planes with a specific zone vector
-        and the horizontal axis. For each atom plane the angle between all the atoms,
-        its neighbor and horizontal axis is calculated. The mean of these angles
-        for all the atom planes is returned.
+        """Get the mean angle between the atoms planes with a
+        specific zone vector and the horizontal axis. For each
+        atom plane the angle between all the atoms, its
+        neighbor and horizontal axis is calculated.
+        #The mean of these angles for all the atom
+        planes is returned.
         """
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
         angle_list = []

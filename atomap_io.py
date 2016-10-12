@@ -1,7 +1,8 @@
 import h5py
-from atom_lattice_class import Atom_Lattice 
+from atom_lattice_class import Atom_Lattice
 from sub_lattice_class import Sub_Lattice
 from atomap_atom_finding_refining import construct_zone_axes_from_sub_lattice
+
 
 def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
     h5f = h5py.File(filename, 'r')
@@ -20,15 +21,21 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
 
             if 'sigma_x' in sub_lattice_set.keys():
                 sigma_x_array = sub_lattice_set['sigma_x'][:]
-                for atom, sigma_x in zip(sub_lattice.atom_list, sigma_x_array):
+                for atom, sigma_x in zip(
+                        sub_lattice.atom_list,
+                        sigma_x_array):
                     atom.sigma_x = sigma_x
             if 'sigma_y' in sub_lattice_set.keys():
                 sigma_y_array = sub_lattice_set['sigma_y'][:]
-                for atom, sigma_y in zip(sub_lattice.atom_list, sigma_y_array):
+                for atom, sigma_y in zip(
+                        sub_lattice.atom_list,
+                        sigma_y_array):
                     atom.sigma_y = sigma_y
             if 'rotation' in sub_lattice_set.keys():
                 rotation_array = sub_lattice_set['rotation'][:]
-                for atom, rotation in zip(sub_lattice.atom_list, rotation_array):
+                for atom, rotation in zip(
+                        sub_lattice.atom_list,
+                        rotation_array):
                     atom.rotation = rotation
 
             sub_lattice.pixel_size = sub_lattice_set.attrs['pixel_size']
@@ -52,7 +59,8 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
                 construct_zone_axes_from_sub_lattice(sub_lattice)
 
             if 'zone_axis_names_byte' in sub_lattice_set.keys():
-                zone_axis_names_byte = sub_lattice_set.attrs['zone_axis_names_byte']
+                zone_axis_names_byte = sub_lattice_set.attrs[
+                        'zone_axis_names_byte']
                 zone_axis_names = []
                 for zone_axis_name_byte in zone_axis_names_byte:
                     zone_axis_names.append(zone_axis_name_byte.decode())
