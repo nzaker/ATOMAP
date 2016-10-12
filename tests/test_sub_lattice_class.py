@@ -54,10 +54,10 @@ class test_sub_lattice_construct_refine(unittest.TestCase):
         construct_zone_axes_from_sub_lattice(sub_lattice)
 
         number_zone_vector_110 = len(
-                sub_lattice.atom_rows_by_zone_vector[
+                sub_lattice.atom_planes_by_zone_vector[
                     sub_lattice.zones_axis_average_distances[0]])
         number_zone_vector_100 = len(
-                sub_lattice.atom_rows_by_zone_vector[
+                sub_lattice.atom_planes_by_zone_vector[
                     sub_lattice.zones_axis_average_distances[1]])
 
         self.assertEqual(number_zone_vector_110, 14)

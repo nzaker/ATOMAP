@@ -7,7 +7,7 @@ from scipy import interpolate
 import matplotlib.pyplot as plt
 
 
-class Atom_Row():
+class Atom_Plane():
     def __init__(self, atom_list, zone_vector, atom_lattice):
         self.atom_list = atom_list
         self.zone_vector = zone_vector
@@ -20,11 +20,11 @@ class Atom_Row():
                 self.start_atom.get_pixel_position())
 
         self.atom_distance_list = self.get_atom_distance_list()
-        self._link_atom_to_atom_row()
+        self._link_atom_to_atom_plane()
 
-    def _link_atom_to_atom_row(self):
+    def _link_atom_to_atom_plane(self):
         for atom in self.atom_list:
-            atom.atom_rows.append(self)
+            atom.atom_planes.append(self)
 
     def get_x_position_list(self):
         x_position_list = []
@@ -50,9 +50,9 @@ class Atom_Row():
                 self.end_atom = atom
                 break
 
-    def get_intersecting_atom_from_atom_row(self, atom_row):
+    def get_intersecting_atom_from_atom_plane(self, atom_plane):
         for self_atom in self.atom_list:
-            if self_atom in atom_row.atom_list:
+            if self_atom in atom_plane.atom_list:
                 return(self_atom)
         return("Intersecting atom not found")
 
@@ -76,7 +76,7 @@ class Atom_Row():
         if atom1_is_first:
             while not (atom1 == self.end_atom):
                 atom_list.append(atom1)
-                atom1 = atom1.get_next_atom_in_atom_row(self)
+                atom1 = atom1.get_next_atom_in_atom_plane(self)
                 if atom1 == atom2:
                     atom_list.append(atom2)
                     break
@@ -108,33 +108,33 @@ class Atom_Row():
         atom_distances = np.array(atom_distances)
         return(atom_distances)
 
-    def get_side_edge_atom_rows_between_self_and_another_atom_row(
-            self, atom_row, zone_vector):
-        start_orthogonal_atom_row = None
+    def get_side_edge_atom_planes_between_self_and_another_atom_plane(
+            self, atom_plane, zone_vector):
+        start_orthogonal_atom_plane = None
         self_atom = self.start_atom
-        while start_orthogonal_atom_row is None:
-            temp_atom_row = self_atom.can_atom_row_be_reached_through_zone_vector(
-                    atom_row, zone_vector)
-            if temp_atom_row is False:
-                self_atom = self_atom.get_next_atom_in_atom_row(self)
+        while start_orthogonal_atom_plane is None:
+            temp_atom_plane = self_atom.can_atom_plane_be_reached_through_zone_vector(
+                    atom_plane, zone_vector)
+            if temp_atom_plane is False:
+                self_atom = self_atom.get_next_atom_in_atom_plane(self)
                 if self_atom is False:
                     break
             else:
-                start_orthogonal_atom_row = temp_atom_row
+                start_orthogonal_atom_plane = temp_atom_plane
 
-        end_orthogonal_atom_row = None
+        end_orthogonal_atom_plane = None
         self_atom = self.end_atom
-        while end_orthogonal_atom_row is None:
-            temp_atom_row = self_atom.can_atom_row_be_reached_through_zone_vector(
-                    atom_row, zone_vector)
-            if temp_atom_row is False:
-                self_atom = self_atom.get_previous_atom_in_atom_row(
+        while end_orthogonal_atom_plane is None:
+            temp_atom_plane = self_atom.can_atom_plane_be_reached_through_zone_vector(
+                    atom_plane, zone_vector)
+            if temp_atom_plane is False:
+                self_atom = self_atom.get_previous_atom_in_atom_plane(
                         self)
                 if self_atom is False:
                     break
             else:
-                end_orthogonal_atom_row = temp_atom_row
-        return(start_orthogonal_atom_row, end_orthogonal_atom_row)
+                end_orthogonal_atom_plane = temp_atom_plane
+        return(start_orthogonal_atom_plane, end_orthogonal_atom_plane)
 
     def get_net_distance_change_between_atoms(self):
         """Output [(x,y,z)]"""
@@ -294,7 +294,7 @@ class Atom_Row():
 
         return(closest_distance, direction)
 
-    def _plot_debug_atom_row(self):
+    def _plot_debug_atom_plane(self):
         fig, ax = plt.subplots(figsize=(10, 10))
         cax = ax.imshow(self.atom_lattice.adf_image)
         if self.atom_lattice.plot_clim:
@@ -306,15 +306,15 @@ class Atom_Row():
         ax.set_ylim(0, self.atom_lattice.adf_image.shape[0])
         ax.set_xlim(0, self.atom_lattice.adf_image.shape[1])
         fig.tight_layout()
-        fig.savefig("debug_plot_atom_row.jpg")
+        fig.savefig("debug_plot_atom_plane.jpg")
 
     def get_angle_to_horizontal_axis(self):
-        """Get angle between atoms in the atom row and horizontal
+        """Get angle between atoms in the atom plane and horizontal
         axis."""
         angle_list = []
         atom = self.start_atom
         while atom is not False:
-            next_atom = atom.get_next_atom_in_atom_row(self)
+            next_atom = atom.get_next_atom_in_atom_plane(self)
             if next_atom is False:
                 break
             angle = atom.get_angle_between_atoms(next_atom)

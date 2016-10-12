@@ -71,9 +71,9 @@ def construct_zone_axes_from_sub_lattice(sub_lattice):
     sub_lattice.find_nearest_neighbors(nearest_neighbors=15)
     sub_lattice._make_nearest_neighbor_direction_distance_statistics(
             debug_figname=tag+"_cat_nn.png")
-    sub_lattice._generate_all_atom_row_list()
-    sub_lattice._sort_atom_rows_by_zone_vector()
-    sub_lattice.plot_all_atom_rows(fignameprefix=tag+"_atom_row")
+    sub_lattice._generate_all_atom_plane_list()
+    sub_lattice._sort_atom_planes_by_zone_vector()
+    sub_lattice.plot_all_atom_planes(fignameprefix=tag+"_atom_plane")
 
 
 def refine_sub_lattice(

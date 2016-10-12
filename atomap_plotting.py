@@ -8,7 +8,7 @@ import copy
 
 from atomap_tools import\
         _get_clim_from_data,\
-        find_atom_position_1d_from_distance_list_and_atom_row,\
+        find_atom_position_1d_from_distance_list_and_atom_plane,\
         _get_interpolated2d_from_unregular_data
 
 def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list):
@@ -30,12 +30,12 @@ def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list):
 def plot_zone_vector_and_atom_distance_map(
         image_data,
         distance_data, 
-        atom_rows=None,
+        atom_planes=None,
         distance_data_scale=1,
         atom_list=None,
         extra_marker_list=None,
         clim=None, 
-        atom_row_marker=None,
+        atom_plane_marker=None,
         plot_title='',
         vector_to_plot=None,
         figname="map_data.jpg"):  
@@ -56,24 +56,24 @@ def plot_zone_vector_and_atom_distance_map(
     image_clim = _get_clim_from_data(image_data, sigma=2)
     image_cax = image_ax.imshow(image_data)
     image_cax.set_clim(image_clim[0], image_clim[1])
-    if atom_rows:
-        for atom_row_index, atom_row in enumerate(atom_rows):
-            x_pos = atom_row.get_x_position_list()
-            y_pos = atom_row.get_y_position_list()
+    if atom_planes:
+        for atom_plane_index, atom_plane in enumerate(atom_planes):
+            x_pos = atom_plane.get_x_position_list()
+            y_pos = atom_plane.get_y_position_list()
             image_ax.plot(x_pos, y_pos, lw=3, color='blue')
             image_ax.text(
-                    atom_row.start_atom.pixel_x, 
-                    atom_row.start_atom.pixel_y,
-                    str(atom_row_index),
+                    atom_plane.start_atom.pixel_x, 
+                    atom_plane.start_atom.pixel_y,
+                    str(atom_plane_index),
                     color='red')
     image_ax.set_ylim(0, image_data.shape[0])
     image_ax.set_xlim(0, image_data.shape[1])
     image_ax.set_title(plot_title)
 
-    if atom_row_marker:
-        atom_row_x = atom_row_marker.get_x_position_list()
-        atom_row_y = atom_row_marker.get_y_position_list()
-        image_ax.plot(atom_row_x, atom_row_y, color='red', lw=2)
+    if atom_plane_marker:
+        atom_plane_x = atom_plane_marker.get_x_position_list()
+        atom_plane_y = atom_plane_marker.get_y_position_list()
+        image_ax.plot(atom_plane_x, atom_plane_y, color='red', lw=2)
 
     _make_subplot_map_from_regular_grid(
         distance_ax,
@@ -81,7 +81,7 @@ def plot_zone_vector_and_atom_distance_map(
         distance_data_scale=distance_data_scale,
         clim=clim, 
         atom_list=atom_list,
-        atom_row_marker=atom_row_marker,
+        atom_plane_marker=atom_plane_marker,
         extra_marker_list=extra_marker_list,
         vector_to_plot=vector_to_plot)
     distance_cax = distance_ax.images[0]
@@ -91,14 +91,14 @@ def plot_zone_vector_and_atom_distance_map(
     fig.savefig(figname)
     plt.close(fig)
 
-def plot_complex_image_map_line_profile_using_interface_row(
+def plot_complex_image_map_line_profile_using_interface_plane(
         image_data,
         amplitude_data,
         phase_data,
         line_profile_amplitude_data,
         line_profile_phase_data,
-        interface_row,
-        atom_row_list=None,
+        interface_plane,
+        atom_plane_list=None,
         data_scale=1,
         atom_list=None,
         extra_marker_list=None,
@@ -108,7 +108,7 @@ def plot_complex_image_map_line_profile_using_interface_row(
         add_color_wheel=False,
         color_bar_markers=None,
         vector_to_plot=None,
-        rotate_atom_row_list_90_degrees=False,
+        rotate_atom_plane_list_90_degrees=False,
         line_profile_prune_outer_values=False,
         figname="map_data.jpg"):  
     """
@@ -151,31 +151,31 @@ def plot_complex_image_map_line_profile_using_interface_row(
     image_ax.set_ylim(image_y_lim[0], image_y_lim[1])
     image_ax.set_title(plot_title)
 
-    if not(atom_row_list == None):
-        for atom_row in atom_row_list:
-            if rotate_atom_row_list_90_degrees:
-                atom_row_x = np.array(atom_row.get_x_position_list())
-                atom_row_y = np.array(atom_row.get_y_position_list())
-                start_x = atom_row_x[0]
-                start_y = atom_row_y[0]
-                delta_y = (atom_row_x[-1] - atom_row_x[0]) 
-                delta_x = -(atom_row_y[-1] - atom_row_y[0]) 
-                atom_row_x = np.array([start_x, start_x + delta_x])
-                atom_row_y = np.array([start_y, start_y + delta_y])
+    if not(atom_plane_list == None):
+        for atom_plane in atom_plane_list:
+            if rotate_atom_plane_list_90_degrees:
+                atom_plane_x = np.array(atom_plane.get_x_position_list())
+                atom_plane_y = np.array(atom_plane.get_y_position_list())
+                start_x = atom_plane_x[0]
+                start_y = atom_plane_y[0]
+                delta_y = (atom_plane_x[-1] - atom_plane_x[0]) 
+                delta_x = -(atom_plane_y[-1] - atom_plane_y[0]) 
+                atom_plane_x = np.array([start_x, start_x + delta_x])
+                atom_plane_y = np.array([start_y, start_y + delta_y])
             else:
-                atom_row_x = np.array(atom_row.get_x_position_list())
-                atom_row_y = np.array(atom_row.get_y_position_list())
+                atom_plane_x = np.array(atom_plane.get_x_position_list())
+                atom_plane_y = np.array(atom_plane.get_y_position_list())
             image_ax.plot(
-                    atom_row_x*data_scale, 
-                    atom_row_y*data_scale, 
+                    atom_plane_x*data_scale, 
+                    atom_plane_y*data_scale, 
                     color='red', 
                     lw=2)
     
-    atom_row_x = np.array(interface_row.get_x_position_list())
-    atom_row_y = np.array(interface_row.get_y_position_list())
+    atom_plane_x = np.array(interface_plane.get_x_position_list())
+    atom_plane_y = np.array(interface_plane.get_y_position_list())
     image_ax.plot(
-            atom_row_x*data_scale, 
-            atom_row_y*data_scale, 
+            atom_plane_x*data_scale, 
+            atom_plane_y*data_scale, 
             color='blue', 
             lw=2)
 
@@ -186,12 +186,12 @@ def plot_complex_image_map_line_profile_using_interface_row(
         atom_list=atom_list,
         amplitude_image_lim=amplitude_image_lim,
         phase_image_lim=phase_image_lim,
-        atom_row_marker=interface_row,
+        atom_plane_marker=interface_plane,
         extra_marker_list=extra_marker_list,
         vector_to_plot=vector_to_plot)
     distance_ax.plot(
-            atom_row_x*data_scale, 
-            atom_row_y*data_scale, 
+            atom_plane_x*data_scale, 
+            atom_plane_y*data_scale, 
             color='red', 
             lw=2)
 
@@ -293,12 +293,12 @@ def make_color_wheel(ax, rotation=0):
     ax.imshow(rgb_array, interpolation='quadric', origin='lower')
     ax.set_axis_off()
 
-def plot_image_map_line_profile_using_interface_row(
+def plot_image_map_line_profile_using_interface_plane(
         image_data,
         heatmap_data_list,
         line_profile_data_list,
-        interface_row,
-        atom_row_list=None,
+        interface_plane,
+        atom_plane_list=None,
         data_scale=1,
         data_scale_z=1,
         atom_list=None,
@@ -306,7 +306,7 @@ def plot_image_map_line_profile_using_interface_row(
         clim=None, 
         plot_title='',
         vector_to_plot=None,
-        rotate_atom_row_list_90_degrees=False,
+        rotate_atom_plane_list_90_degrees=False,
         line_profile_prune_outer_values=False,
         figname="map_data.jpg"):  
     """
@@ -348,31 +348,31 @@ def plot_image_map_line_profile_using_interface_row(
     image_ax.set_ylim(image_y_lim[0], image_y_lim[1])
     image_ax.set_title(plot_title)
 
-    if not(atom_row_list == None):
-        for atom_row in atom_row_list:
-            if rotate_atom_row_list_90_degrees:
-                atom_row_x = np.array(atom_row.get_x_position_list())
-                atom_row_y = np.array(atom_row.get_y_position_list())
-                start_x = atom_row_x[0]
-                start_y = atom_row_y[0]
-                delta_y = (atom_row_x[-1] - atom_row_x[0]) 
-                delta_x = -(atom_row_y[-1] - atom_row_y[0]) 
-                atom_row_x = np.array([start_x, start_x + delta_x])
-                atom_row_y = np.array([start_y, start_y + delta_y])
+    if not(atom_plane_list == None):
+        for atom_plane in atom_plane_list:
+            if rotate_atom_plane_list_90_degrees:
+                atom_plane_x = np.array(atom_plane.get_x_position_list())
+                atom_plane_y = np.array(atom_plane.get_y_position_list())
+                start_x = atom_plane_x[0]
+                start_y = atom_plane_y[0]
+                delta_y = (atom_plane_x[-1] - atom_plane_x[0]) 
+                delta_x = -(atom_plane_y[-1] - atom_plane_y[0]) 
+                atom_plane_x = np.array([start_x, start_x + delta_x])
+                atom_plane_y = np.array([start_y, start_y + delta_y])
             else:
-                atom_row_x = np.array(atom_row.get_x_position_list())
-                atom_row_y = np.array(atom_row.get_y_position_list())
+                atom_plane_x = np.array(atom_plane.get_x_position_list())
+                atom_plane_y = np.array(atom_plane.get_y_position_list())
             image_ax.plot(
-                    atom_row_x*data_scale, 
-                    atom_row_y*data_scale, 
+                    atom_plane_x*data_scale, 
+                    atom_plane_y*data_scale, 
                     color='red', 
                     lw=2)
     
-    atom_row_x = np.array(interface_row.get_x_position_list())
-    atom_row_y = np.array(interface_row.get_y_position_list())
+    atom_plane_x = np.array(interface_plane.get_x_position_list())
+    atom_plane_y = np.array(interface_plane.get_y_position_list())
     image_ax.plot(
-            atom_row_x*data_scale, 
-            atom_row_y*data_scale, 
+            atom_plane_x*data_scale, 
+            atom_plane_y*data_scale, 
             color='blue', 
             lw=2)
 
@@ -383,13 +383,13 @@ def plot_image_map_line_profile_using_interface_row(
         distance_data_scale=data_scale_z,
         clim=clim, 
         atom_list=atom_list,
-        atom_row_marker=interface_row,
+        atom_plane_marker=interface_plane,
         extra_marker_list=extra_marker_list,
         vector_to_plot=vector_to_plot)
     distance_cax = distance_ax.images[0]
     distance_ax.plot(
-            atom_row_x*data_scale, 
-            atom_row_y*data_scale, 
+            atom_plane_x*data_scale, 
+            atom_plane_y*data_scale, 
             color='red', 
             lw=2)
 
@@ -445,7 +445,7 @@ def _make_subplot_map_from_regular_grid(
         atom_list=None, 
         distance_data_scale=1.,
         clim=None, 
-        atom_row_marker=None,
+        atom_plane_marker=None,
         extra_marker_list=None,
         plot_title='',
         vector_to_plot=None):
@@ -461,12 +461,12 @@ def _make_subplot_map_from_regular_grid(
                 y_lim[1]*distance_data_scale],
             cmap='viridis',
             origin='lower')
-    if atom_row_marker:
-        atom_row_x = np.array(atom_row_marker.get_x_position_list())
-        atom_row_y = np.array(atom_row_marker.get_y_position_list())
+    if atom_plane_marker:
+        atom_plane_x = np.array(atom_plane_marker.get_x_position_list())
+        atom_plane_y = np.array(atom_plane_marker.get_y_position_list())
         ax.plot(
-                atom_row_x*distance_data_scale, 
-                atom_row_y*distance_data_scale, 
+                atom_plane_x*distance_data_scale, 
+                atom_plane_y*distance_data_scale, 
                 color='red', lw=2)
     if atom_list:
         x = []
@@ -505,7 +505,7 @@ def _make_subplot_map_from_complex_regular_grid(
         phase_data, 
         atom_list=None, 
         distance_data_scale=1.,
-        atom_row_marker=None,
+        atom_plane_marker=None,
         amplitude_image_lim=None,
         phase_image_lim=None,
         extra_marker_list=None,
@@ -528,12 +528,12 @@ def _make_subplot_map_from_complex_regular_grid(
                 y_lim[0]*distance_data_scale,
                 y_lim[1]*distance_data_scale],
             origin='lower')
-    if atom_row_marker:
-        atom_row_x = np.array(atom_row_marker.get_x_position_list())
-        atom_row_y = np.array(atom_row_marker.get_y_position_list())
+    if atom_plane_marker:
+        atom_plane_x = np.array(atom_plane_marker.get_x_position_list())
+        atom_plane_y = np.array(atom_plane_marker.get_y_position_list())
         ax.plot(
-                atom_row_x*distance_data_scale, 
-                atom_row_y*distance_data_scale, 
+                atom_plane_x*distance_data_scale, 
+                atom_plane_y*distance_data_scale, 
                 color='red', lw=2)
     if atom_list:
         x = []
@@ -566,14 +566,14 @@ def _make_subplot_map_from_complex_regular_grid(
 def _make_line_profile_subplot_from_three_parameter_data(
         ax,
         data_list,
-        interface_row,
+        interface_plane,
         scale_x=1.0,
         scale_y=1.0,
         invert_line_profiles=False):
 
-    line_profile_data = find_atom_position_1d_from_distance_list_and_atom_row(
+    line_profile_data = find_atom_position_1d_from_distance_list_and_atom_plane(
         data_list,
-        interface_row,
+        interface_plane,
         rebin_data=True)
 
     line_profile_data = np.array(line_profile_data)
@@ -593,14 +593,14 @@ def _make_line_profile_subplot_from_three_parameter_data(
 def _make_line_profile_subplot_from_three_parameter_data(
         ax,
         data_list,
-        interface_row,
+        interface_plane,
         scale_x=1.0,
         scale_y=1.0,
         invert_line_profiles=False):
 
-    line_profile_data = find_atom_position_1d_from_distance_list_and_atom_row(
+    line_profile_data = find_atom_position_1d_from_distance_list_and_atom_plane(
         data_list,
-        interface_row,
+        interface_plane,
         rebin_data=True)
 
     line_profile_data = np.array(line_profile_data)
@@ -617,7 +617,7 @@ def _make_line_profile_subplot_from_three_parameter_data(
         scale_x=scale_x,
         scale_y=scale_y)
 
-def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_rows(
+def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_planes(
         image, 
         sub_lattice,
         parallel_zone_vector, 
@@ -627,7 +627,7 @@ def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_rows(
         plot_title=''):
 
     plt.ioff()
-    data = find_atom_positions_for_all_atom_rows(
+    data = find_atom_positions_for_all_atom_planes(
         image, 
         sub_lattice,
         parallel_zone_vector, 
@@ -650,12 +650,12 @@ def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_rows(
     if not clim:
         clim = _get_clim_from_data(data[:,2], sigma=2)
     
-    atom_row_list = sub_lattice.atom_rows_by_zone_vector[
+    atom_plane_list = sub_lattice.atom_planes_by_zone_vector[
             parallel_zone_vector]
     plot_zone_vector_and_atom_distance_map(
             image,
             new_data,
-            atom_rows=[atom_row_list[3]],
+            atom_planes=[atom_plane_list[3]],
             distance_data_scale=distance_data_scale,
             atom_list=sub_lattice.atom_list,
             clim=clim,

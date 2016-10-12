@@ -48,7 +48,7 @@ class test_adf_abf_sto(unittest.TestCase):
                 image=b_sub_lattice.adf_image)
         self.assertEqual(len(b_sub_lattice.atom_list), 221)
 
-    def test_find_b_atom_rows(self):
+    def test_find_b_atom_planes(self):
         a_sub_lattice = Sub_Lattice(
                 self.peaks, 
                 np.rot90(np.fliplr(self.s_adf_modified.data)))

@@ -91,24 +91,24 @@ def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
     return(mask)
 
 
-def get_atom_rows_square(
-        sub_lattice, atom_row1, atom_row2,
-        interface_atom_row, zone_vector, debug_plot=False):
-    ort_atom_row1, ort_atom_row2 = atom_row1.get_side_edge_atom_rows_between_self_and_another_atom_row(
-            atom_row2, zone_vector)
+def get_atom_planes_square(
+        sub_lattice, atom_plane1, atom_plane2,
+        interface_atom_plane, zone_vector, debug_plot=False):
+    ort_atom_plane1, ort_atom_plane2 = atom_plane1.get_side_edge_atom_planes_between_self_and_another_atom_plane(
+            atom_plane2, zone_vector)
 
     if debug_plot:
-        sub_lattice.plot_atom_row_on_stem_data(
-                [atom_row1, atom_row2, ort_atom_row1, ort_atom_row2],
-                figname="atom_row_square_debug.jpg")
+        sub_lattice.plot_atom_plane_on_stem_data(
+                [atom_plane1, atom_plane2, ort_atom_plane1, ort_atom_plane2],
+                figname="atom_plane_square_debug.jpg")
 
-    atom_list = sub_lattice.get_atom_list_between_four_atom_rows(
-            atom_row1, atom_row2, ort_atom_row1, ort_atom_row2)
+    atom_list = sub_lattice.get_atom_list_between_four_atom_planes(
+            atom_plane1, atom_plane2, ort_atom_plane1, ort_atom_plane2)
 
     if debug_plot:
         sub_lattice.plot_atom_list_on_stem_data(
                 atom_list,
-                figname="atom_row_square_atom_list_debug.jpg")
+                figname="atom_plane_square_atom_list_debug.jpg")
 
     x_pos_list = []
     y_pos_list = []
@@ -120,8 +120,8 @@ def get_atom_rows_square(
 
     data_list = np.array(
             [x_pos_list, y_pos_list, z_pos_list]).swapaxes(0, 1)
-    atom_layer_list = find_atom_position_1d_from_distance_list_and_atom_row(
-            data_list, interface_atom_row, rebin_data=True)
+    atom_layer_list = find_atom_position_1d_from_distance_list_and_atom_plane(
+            data_list, interface_atom_plane, rebin_data=True)
 
     atom_layer_list = np.array(atom_layer_list)[:, 0]
     x_pos_list = []
@@ -316,29 +316,29 @@ def get_point_between_two_atoms(atom_list):
     return((x_pos, y_pos))
 
 
-def find_atom_position_between_atom_rows(
+def find_atom_position_between_atom_planes(
         image,
-        atom_row0,
-        atom_row1,
+        atom_plane0,
+        atom_plane1,
         orthogonal_zone_vector,
         integration_width_percent=0.2,
         max_oxygen_sigma_percent=0.2):
     start_atoms_found = False
-    start_atom0 = atom_row0.start_atom
+    start_atom0 = atom_plane0.start_atom
     while not start_atoms_found:
         orthogonal_atom0 = start_atom0.get_next_atom_in_zone_vector(
                 orthogonal_zone_vector)
         orthogonal_atom1 = start_atom0.get_previous_atom_in_zone_vector(
                 orthogonal_zone_vector)
-        if orthogonal_atom0 in atom_row1.atom_list:
+        if orthogonal_atom0 in atom_plane1.atom_list:
             start_atoms_found = True
             start_atom1 = orthogonal_atom0
-        elif orthogonal_atom1 in atom_row1.atom_list:
+        elif orthogonal_atom1 in atom_plane1.atom_list:
             start_atoms_found = True
             start_atom1 = orthogonal_atom1
         else:
-            start_atom0 = start_atom0.get_next_atom_in_atom_row(
-                    atom_row0)
+            start_atom0 = start_atom0.get_next_atom_in_atom_plane(
+                    atom_plane0)
 
     slice_list = []
 
@@ -346,8 +346,8 @@ def find_atom_position_between_atom_rows(
             start_atom1)
     integration_width = atom_distance*integration_width_percent
 
-    end_atom0 = start_atom0.get_next_atom_in_atom_row(atom_row0)
-    end_atom1 = start_atom1.get_next_atom_in_atom_row(atom_row1)
+    end_atom0 = start_atom0.get_next_atom_in_atom_plane(atom_plane0)
+    end_atom1 = start_atom1.get_next_atom_in_atom_plane(atom_plane1)
 
     position_x_list = []
     position_y_list = []
@@ -376,8 +376,8 @@ def find_atom_position_between_atom_rows(
         slice_list.append(output_slice)
         start_atom0 = end_atom0
         start_atom1 = end_atom1
-        end_atom0 = start_atom0.get_next_atom_in_atom_row(atom_row0)
-        end_atom1 = start_atom1.get_next_atom_in_atom_row(atom_row1)
+        end_atom0 = start_atom0.get_next_atom_in_atom_plane(atom_plane0)
+        end_atom1 = start_atom1.get_next_atom_in_atom_plane(atom_plane1)
 
     summed_slices = []
     for slice_data in slice_list:
@@ -503,37 +503,37 @@ def _calculate_net_distance_change_between_3d_positions(data_list):
     return([new_x_pos_list, new_y_pos_list, new_z_pos_list])
 
 
-def find_atom_positions_for_an_atom_row(
+def find_atom_positions_for_an_atom_plane(
         image,
-        atom_row0,
-        atom_row1,
+        atom_plane0,
+        atom_plane1,
         orthogonal_zone_vector):
-    atom_list = find_atom_position_between_atom_rows(
+    atom_list = find_atom_position_between_atom_planes(
         image,
-        atom_row0,
-        atom_row1,
+        atom_plane0,
+        atom_plane1,
         orthogonal_zone_vector)
     position_data = _calculate_net_distance_change_between_atoms(
             atom_list)
     return(position_data)
 
 
-def find_atom_positions_for_all_atom_rows(
+def find_atom_positions_for_all_atom_planes(
         image,
         sub_lattice,
         parallel_zone_vector,
         orthogonal_zone_vector):
-    atom_row_list = sub_lattice.atom_rows_by_zone_vector[
+    atom_plane_list = sub_lattice.atom_planes_by_zone_vector[
             parallel_zone_vector]
     x_pos_list, y_pos_list, z_pos_list = [], [], []
-    for atom_row_index, atom_row in enumerate(atom_row_list):
-        if not (atom_row_index == 0):
-            atom_row0 = atom_row_list[atom_row_index-1]
-            atom_row1 = atom_row
-            position_data = find_atom_positions_for_an_atom_row(
+    for atom_plane_index, atom_plane in enumerate(atom_plane_list):
+        if not (atom_plane_index == 0):
+            atom_plane0 = atom_plane_list[atom_plane_index-1]
+            atom_plane1 = atom_plane
+            position_data = find_atom_positions_for_an_atom_plane(
                 image,
-                atom_row0,
-                atom_row1,
+                atom_plane0,
+                atom_plane1,
                 orthogonal_zone_vector)
             x_pos_list.extend(position_data[0])
             y_pos_list.extend(position_data[1])
@@ -568,17 +568,17 @@ def _get_clim_from_data(
     return(clim)
 
 
-def find_atom_position_1d_from_distance_list_and_atom_row(
+def find_atom_position_1d_from_distance_list_and_atom_plane(
         input_data_list,
-        interface_row,
+        interface_plane,
         rebin_data=True):
 
     x_pos_list = input_data_list[:, 0]
     y_pos_list = input_data_list[:, 1]
     z_pos_list = input_data_list[:, 2]
 
-    x_pos = interface_row.get_x_position_list()
-    y_pos = interface_row.get_y_position_list()
+    x_pos = interface_plane.get_x_position_list()
+    y_pos = interface_plane.get_y_position_list()
     fit = np.polyfit(x_pos, y_pos, 1)
     fit_fn = np.poly1d(fit)
     x_pos_range = max(x_pos) - min(x_pos)
@@ -591,7 +591,7 @@ def find_atom_position_1d_from_distance_list_and_atom_row(
     data_list = []
     for x_pos, y_pos, z_pos in zip(x_pos_list, y_pos_list, z_pos_list):
         closest_distance, direction =\
-                interface_row.get_closest_distance_and_angle_to_point(
+                interface_plane.get_closest_distance_and_angle_to_point(
                 (x_pos, y_pos),
                 use_precalculated_line=[interface_x, interface_y],
                 plot_debug=False)

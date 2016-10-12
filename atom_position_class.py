@@ -12,10 +12,10 @@ class Atom_Position:
         self.pixel_x = x
         self.pixel_y = y
         self.nearest_neighbor_list = None
-        self.in_atomic_row = []
+        self.in_atomic_plane = []
         self.start_atom = []
         self.end_atom = []
-        self.atom_rows = []
+        self.atom_planes = []
         self.tag = ''
         self.old_pixel_x_list = []
         self.old_pixel_y_list = []
@@ -117,7 +117,7 @@ class Atom_Position:
             zone_vector1):
         """
         Return the angle between itself and the next atoms in
-        the atom rows belonging to zone_vector0 and zone_vector1
+        the atom planes belonging to zone_vector0 and zone_vector1
         """
         atom0 = self.get_next_atom_in_zone_vector(zone_vector0)
         atom1 = self.get_next_atom_in_zone_vector(zone_vector1)
@@ -422,26 +422,26 @@ class Atom_Position:
         center_of_mass = ndimage.measurements.center_of_mass(data)
         return(center_of_mass)
 
-    def get_atomic_row_from_zone_vector(self, zone_vector):
-        for atomic_row in self.in_atomic_row:
-            if atomic_row.zone_vector[0] == zone_vector[0]:
-                if atomic_row.zone_vector[1] == zone_vector[1]:
-                    return(atomic_row)
+    def get_atomic_plane_from_zone_vector(self, zone_vector):
+        for atomic_plane in self.in_atomic_plane:
+            if atomic_plane.zone_vector[0] == zone_vector[0]:
+                if atomic_plane.zone_vector[1] == zone_vector[1]:
+                    return(atomic_plane)
         return(False)
 
-    def get_neighbor_atoms_in_atomic_row_from_zone_vector(
+    def get_neighbor_atoms_in_atomic_plane_from_zone_vector(
             self, zone_vector):
-        atom_row = self.get_atomic_row_from_zone_vector(zone_vector)
-        atom_row_atom_neighbor_list = []
+        atom_plane = self.get_atomic_plane_from_zone_vector(zone_vector)
+        atom_plane_atom_neighbor_list = []
         for atom in self.nearest_neighbor_list:
-            if atom in atom_row.atom_list:
-                atom_row_atom_neighbor_list.append(atom)
-        return(atom_row_atom_neighbor_list)
+            if atom in atom_plane.atom_list:
+                atom_plane_atom_neighbor_list.append(atom)
+        return(atom_plane_atom_neighbor_list)
 
-    def is_in_atomic_row(self, zone_direction):
-        for atomic_row in self.in_atomic_row:
-            if atomic_row.zone_vector[0] == zone_direction[0]:
-                if atomic_row.zone_vector[1] == zone_direction[1]:
+    def is_in_atomic_plane(self, zone_direction):
+        for atomic_plane in self.in_atomic_plane:
+            if atomic_plane.zone_vector[0] == zone_direction[0]:
+                if atomic_plane.zone_vector[1] == zone_direction[1]:
                     return(True)
         return(False)
 
@@ -469,51 +469,51 @@ class Atom_Position:
                 self.pixel_x - point[0], self.pixel_y - point[1])
         return(dist)
 
-    def get_index_in_atom_row(self, atom_row):
-        for atom_index, atom in enumerate(atom_row.atom_list):
+    def get_index_in_atom_plane(self, atom_plane):
+        for atom_index, atom in enumerate(atom_plane.atom_list):
             if atom == self:
                 return(atom_index)
 
-    def get_next_atom_in_atom_row(self, atom_row):
-        current_index = self.get_index_in_atom_row(atom_row)
-        if self == atom_row.end_atom:
+    def get_next_atom_in_atom_plane(self, atom_plane):
+        current_index = self.get_index_in_atom_plane(atom_plane)
+        if self == atom_plane.end_atom:
             return(False)
         else:
-            next_atom = atom_row.atom_list[current_index+1]
+            next_atom = atom_plane.atom_list[current_index+1]
             return(next_atom)
 
-    def get_previous_atom_in_atom_row(self, atom_row):
-        current_index = self.get_index_in_atom_row(atom_row)
-        if self == atom_row.start_atom:
+    def get_previous_atom_in_atom_plane(self, atom_plane):
+        current_index = self.get_index_in_atom_plane(atom_plane)
+        if self == atom_plane.start_atom:
             return(False)
         else:
-            previous_atom = atom_row.atom_list[current_index-1]
+            previous_atom = atom_plane.atom_list[current_index-1]
             return(previous_atom)
 
     def get_next_atom_in_zone_vector(self, zone_vector):
-        """Get the next atom in the atom row belonging to
+        """Get the next atom in the atom plane belonging to
         zone vector"""
-        atom_row = self.get_atomic_row_from_zone_vector(zone_vector)
-        if atom_row is False:
+        atom_plane = self.get_atomic_plane_from_zone_vector(zone_vector)
+        if atom_plane is False:
             return(False)
-        next_atom = self.get_next_atom_in_atom_row(atom_row)
+        next_atom = self.get_next_atom_in_atom_plane(atom_plane)
         return(next_atom)
 
     def get_previous_atom_in_zone_vector(self, zone_vector):
-        atom_row = self.get_atomic_row_from_zone_vector(zone_vector)
-        if atom_row is False:
+        atom_plane = self.get_atomic_plane_from_zone_vector(zone_vector)
+        if atom_plane is False:
             return(False)
-        previous_atom = self.get_previous_atom_in_atom_row(atom_row)
+        previous_atom = self.get_previous_atom_in_atom_plane(atom_plane)
         return(previous_atom)
 
-    def can_atom_row_be_reached_through_zone_vector(
-            self, atom_row, zone_vector):
-        for test_atom_row in self.atom_rows:
-            if test_atom_row.zone_vector == zone_vector:
-                for temp_atom in test_atom_row.atom_list:
-                    for temp_atom_row in temp_atom.atom_rows:
-                        if temp_atom_row == atom_row:
-                            return(test_atom_row)
+    def can_atom_plane_be_reached_through_zone_vector(
+            self, atom_plane, zone_vector):
+        for test_atom_plane in self.atom_planes:
+            if test_atom_plane.zone_vector == zone_vector:
+                for temp_atom in test_atom_plane.atom_list:
+                    for temp_atom_plane in temp_atom.atom_planes:
+                        if temp_atom_plane == atom_plane:
+                            return(test_atom_plane)
         return(False)
 
     def get_position_convergence(
