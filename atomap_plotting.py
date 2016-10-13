@@ -47,12 +47,12 @@ def plot_zone_vector_and_atom_distance_map(
     if image_data is None:
         raise ValueError("Image data is None, no data to plot")
 
-    fig = plt.figure(figsize=(10,20))
-    gs = GridSpec(95,95)
+    fig = plt.figure(figsize=(10, 20))
+    gs = GridSpec(95, 95)
 
-    image_ax = fig.add_subplot(gs[0:45,:])
-    distance_ax = fig.add_subplot(gs[45:90,:])
-    colorbar_ax = fig.add_subplot(gs[90:,:])
+    image_ax = fig.add_subplot(gs[0:45, :])
+    distance_ax = fig.add_subplot(gs[45:90, :])
+    colorbar_ax = fig.add_subplot(gs[90:, :])
 
     image_clim = _get_clim_from_data(image_data, sigma=2)
     image_cax = image_ax.imshow(image_data)
@@ -122,21 +122,21 @@ def plot_complex_image_map_line_profile_using_interface_plane(
     figsize = (10, 18+2*number_of_line_profiles)
 
     fig = plt.figure(figsize=figsize)
-    gs = GridSpec(100+10*number_of_line_profiles,95)
+    gs = GridSpec(100+10*number_of_line_profiles, 95)
 
-    image_ax = fig.add_subplot(gs[0:45,:])
-    distance_ax = fig.add_subplot(gs[45:90,:])
-    colorbar_ax = fig.add_subplot(gs[90:100,:])
+    image_ax = fig.add_subplot(gs[0:45, :])
+    distance_ax = fig.add_subplot(gs[45:90, :])
+    colorbar_ax = fig.add_subplot(gs[90:100, :])
 
     line_profile_ax_list = []
     for i in range(number_of_line_profiles):
         gs_y_start = 100+10*i
         line_profile_ax = fig.add_subplot(
-                gs[gs_y_start:gs_y_start+10,:])
+                gs[gs_y_start:gs_y_start+10, :])
         line_profile_ax_list.append(line_profile_ax)
 
-    image_y_lim = (0,image_data.shape[0]*data_scale)
-    image_x_lim = (0,image_data.shape[1]*data_scale)
+    image_y_lim = (0, image_data.shape[0]*data_scale)
+    image_x_lim = (0, image_data.shape[1]*data_scale)
 
     image_clim = _get_clim_from_data(image_data, sigma=2)
     image_cax = image_ax.imshow(
@@ -205,8 +205,8 @@ def plot_complex_image_map_line_profile_using_interface_plane(
             line_profile_ax_list, line_profile_data_list):
         _make_subplot_line_profile(
             line_profile_ax,
-            line_profile_data[:,0],
-            line_profile_data[:,1],
+            line_profile_data[:, 0],
+            line_profile_data[:, 1],
             prune_outer_values=prune_outer_values,
             scale_x=data_scale)
 
@@ -243,7 +243,7 @@ def plot_complex_image_map_line_profile_using_interface_plane(
 
     if add_color_wheel:
         ax_magnetic_color_wheel_gs = GridSpecFromSubplotSpec(
-                40, 40, subplot_spec=gs[45:90,:])[30:39,3:12]
+                40, 40, subplot_spec=gs[45:90, :])[30:39, 3:12]
         ax_magnetic_color_wheel = fig.add_subplot(ax_magnetic_color_wheel_gs)
         ax_magnetic_color_wheel.set_axis_off()
 
@@ -262,8 +262,8 @@ def normalize_array(np_array, max_number=1.0):
 
 
 def get_rgb_array(
-        angle, magnitude, 
-        rotation=0, 
+        angle, magnitude,
+        rotation=0,
         angle_lim=None, magnitude_lim=None):
     if not (rotation == 0):
         angle = ((angle + np.radians(rotation) + np.pi) % (2 * np.pi)) - np.pi
@@ -282,9 +282,9 @@ def get_rgb_array(
 
 
 def make_color_wheel(ax, rotation=0):
-    x, y = np.mgrid[-2.0:2.0:500j,-2.0:2.0:500j]
+    x, y = np.mgrid[-2.0:2.0:500j, -2.0:2.0:500j]
     r = (x**2+y**2)**0.5
-    t = np.arctan2(x,y)
+    t = np.arctan2(x, y)
     del x, y
     if not (rotation == 0):
         t += np.radians(rotation)
@@ -329,20 +329,20 @@ def plot_image_map_line_profile_using_interface_plane(
     figsize = (10, 18+2*number_of_line_profiles)
 
     fig = plt.figure(figsize=figsize)
-    gs = GridSpec(95+10*number_of_line_profiles,95)
+    gs = GridSpec(95+10*number_of_line_profiles, 95)
 
-    image_ax = fig.add_subplot(gs[0:45,:])
-    distance_ax = fig.add_subplot(gs[45:90,:])
-    colorbar_ax = fig.add_subplot(gs[90:95,:])
+    image_ax = fig.add_subplot(gs[0:45, :])
+    distance_ax = fig.add_subplot(gs[45:90, :])
+    colorbar_ax = fig.add_subplot(gs[90:95, :])
     line_profile_ax_list = []
     for i in range(number_of_line_profiles):
         gs_y_start = 95+10*i
         line_profile_ax = fig.add_subplot(
-                gs[gs_y_start:gs_y_start+10,:])
+                gs[gs_y_start:gs_y_start+10, :])
         line_profile_ax_list.append(line_profile_ax)
 
-    image_y_lim = (0,image_data.shape[0]*data_scale)
-    image_x_lim = (0,image_data.shape[1]*data_scale)
+    image_y_lim = (0, image_data.shape[0]*data_scale)
+    image_x_lim = (0, image_data.shape[1]*data_scale)
 
     image_clim = _get_clim_from_data(image_data, sigma=2)
     image_cax = image_ax.imshow(
@@ -407,8 +407,8 @@ def plot_image_map_line_profile_using_interface_plane(
             line_profile_ax_list, line_profile_data_list):
         _make_subplot_line_profile(
             line_profile_ax,
-            line_profile_data[:,0],
-            line_profile_data[:,1],
+            line_profile_data[:, 0],
+            line_profile_data[:, 1],
             prune_outer_values=prune_outer_values,
             scale_x=data_scale,
             scale_z=data_scale_z)
@@ -461,7 +461,7 @@ def _make_subplot_map_from_regular_grid(
         extra_marker_list=None,
         plot_title='',
         vector_to_plot=None):
-    """ Data in the form [(x, y ,z)]"""
+    """ Data in the form [(x, y, z)]"""
     x_lim = (data[0][0][0], data[0][-1][0])
     y_lim = (data[1][0][0], data[1][0][-1])
     cax = ax.imshow(
@@ -524,7 +524,7 @@ def _make_subplot_map_from_complex_regular_grid(
         extra_marker_list=None,
         plot_title='',
         vector_to_plot=None):
-    """ amplitude_data and phase_data in the form [(x, y ,z)]"""
+    """ amplitude_data and phase_data in the form [(x, y , z)]"""
     x_lim = (amplitude_data[0][0][0], amplitude_data[0][-1][0])
     y_lim = (amplitude_data[1][0][0], amplitude_data[1][0][-1])
     rgb_array = get_rgb_array(
@@ -534,7 +534,7 @@ def _make_subplot_map_from_complex_regular_grid(
             angle_lim=phase_image_lim,
             magnitude_lim=amplitude_image_lim)
     cax = ax.imshow(
-            np.fliplr(np.rot90(rgb_array,-1)),
+            np.fliplr(np.rot90(rgb_array, -1)),
             extent=[
                 x_lim[0]*distance_data_scale,
                 x_lim[1]*distance_data_scale,
@@ -592,8 +592,8 @@ def _make_line_profile_subplot_from_three_parameter_data(
 
     line_profile_data = np.array(line_profile_data)
 
-    position = line_profile_data[:,0]
-    data = line_profile_data[:,1]
+    position = line_profile_data[:, 0]
+    data = line_profile_data[:, 1]
     if invert_line_profiles:
         position = position*-1
 
@@ -620,8 +620,8 @@ def _make_line_profile_subplot_from_three_parameter_data(
 
     line_profile_data = np.array(line_profile_data)
 
-    position = line_profile_data[:,0]
-    data = line_profile_data[:,1]
+    position = line_profile_data[:, 0]
+    data = line_profile_data[:, 1]
     if invert_line_profiles:
         position = position*-1
 
@@ -651,9 +651,9 @@ def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_planes(
 
     atom_position_list = np.array(
             sub_lattice._get_atom_position_list())
-    data[0].extend(atom_position_list[:,0])
-    data[1].extend(atom_position_list[:,1])
-    data[2].extend(np.zeros(len(atom_position_list[:,0])))
+    data[0].extend(atom_position_list[:, 0])
+    data[1].extend(atom_position_list[:, 1])
+    data[2].extend(np.zeros(len(atom_position_list[:, 0])))
     data = np.swapaxes(data, 0, 1)
     interpolate_x_lim = (0, image.shape[1])
     interpolate_y_lim = (0, image.shape[0])
@@ -664,7 +664,7 @@ def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_planes(
         upscale=4)
 
     if not clim:
-        clim = _get_clim_from_data(data[:,2], sigma=2)
+        clim = _get_clim_from_data(data[:, 2], sigma=2)
 
     atom_plane_list = sub_lattice.atom_planes_by_zone_vector[
             parallel_zone_vector]
@@ -687,16 +687,16 @@ def plot_line_profiles_from_parameter_input(
         extra_line_marker_list=[],
         x_lim=False,
         figname="line_profile_list.jpg"):
-    figsize = (15,len(parameter_list)*3)
+    figsize = (15, len(parameter_list)*3)
     fig = plt.figure(figsize=figsize)
 
-    gs = GridSpec(10*len(parameter_list),10)
+    gs = GridSpec(10*len(parameter_list), 10)
     line_profile_gs_size = 10
     for index, parameter in enumerate(parameter_list):
         ax = fig.add_subplot(
                 gs[
                     index*line_profile_gs_size:
-                    (index+1)*line_profile_gs_size,:])
+                    (index+1)*line_profile_gs_size, :])
         position = parameter[0]
         if invert_line_profiles:
             position = position*-1
