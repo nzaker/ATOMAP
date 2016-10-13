@@ -1,7 +1,7 @@
 import h5py
-from atom_lattice_class import Atom_Lattice
-from sub_lattice_class import Sub_Lattice
-from atomap_atom_finding_refining import construct_zone_axes_from_sub_lattice
+from atomap.atom_lattice_class import Atom_Lattice
+from atomap.sub_lattice_class import Sub_Lattice
+from atomap.atomap_atom_finding_refining import construct_zone_axes_from_sub_lattice
 
 
 def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):

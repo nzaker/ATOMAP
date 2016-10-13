@@ -1,14 +1,17 @@
+import os
 import unittest
 import numpy as np
-from atom_lattice_class import Atom_Lattice
-from sub_lattice_class import Sub_Lattice
-from atomap_atom_finding_refining import\
+from atomap.atom_lattice_class import Atom_Lattice
+from atomap.sub_lattice_class import Sub_Lattice
+from atomap.atomap_atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
         construct_zone_axes_from_sub_lattice,\
         get_peak2d_skimage
-from atomap_io import load_atom_lattice_from_hdf5
+from atomap.atomap_io import load_atom_lattice_from_hdf5
 from hyperspy.api import load
+
+my_path = os.path.dirname(__file__)
 
 class test_create_atom_lattice_object(unittest.TestCase):
 
@@ -53,19 +56,21 @@ class test_atom_lattice_object_tools(unittest.TestCase):
                 filename=save_path)
 
     def test_load_atom_lattice(self):
-        hdf5_filename = "tests/datasets/test_atom_lattice.hdf5"
+        hdf5_filename = "/datasets/test_atom_lattice.hdf5"
         load_atom_lattice_from_hdf5(
-                hdf5_filename, 
+                my_path + hdf5_filename, 
                 construct_zone_axes=False)
 
 
 class test_atom_lattice_plotting(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "tests/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
         peak_separation = 0.15
 
-        s_adf = load(s_adf_filename)
+        s_adf = load(
+                my_path +
+                s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         s_adf_modified = do_pca_on_signal(s_adf_modified)

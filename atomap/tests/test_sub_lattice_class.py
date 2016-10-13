@@ -1,15 +1,18 @@
+import os
 import unittest
-from atomap_atom_finding_refining import\
+import numpy as np
+from atomap.atomap_atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
         construct_zone_axes_from_sub_lattice,\
         get_peak2d_skimage
-from sub_lattice_class import Sub_Lattice
+from atomap.sub_lattice_class import Sub_Lattice
 from hyperspy.api import load
-import numpy as np
-from atomap_atom_finding_refining import refine_sub_lattice
+from atomap.atomap_atom_finding_refining import refine_sub_lattice
 
-from atom_lattice_class import Atom_Lattice
+from atomap.atom_lattice_class import Atom_Lattice
+
+my_path = os.path.dirname(__file__)
 
 class test_make_simple_sub_lattice(unittest.TestCase):
     def setUp(self):
@@ -27,10 +30,12 @@ class test_make_simple_sub_lattice(unittest.TestCase):
 class test_sub_lattice_construct_refine(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "tests/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
         peak_separation = 0.15
 
-        s_adf = load(s_adf_filename)
+        s_adf = load(
+                my_path +
+                s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         self.s_adf_modified = do_pca_on_signal(s_adf_modified)
@@ -81,10 +86,12 @@ class test_sub_lattice_construct_refine(unittest.TestCase):
 class test_sub_lattice_processing(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "tests/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
         peak_separation = 0.15
 
-        s_adf = load(s_adf_filename)
+        s_adf = load(
+                my_path +
+                s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         s_adf_modified = do_pca_on_signal(s_adf_modified)
@@ -110,10 +117,12 @@ class test_sub_lattice_processing(unittest.TestCase):
 class test_sub_lattice_plotting(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "tests/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
         peak_separation = 0.15
 
-        s_adf = load(s_adf_filename)
+        s_adf = load(
+                my_path +
+                s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         s_adf_modified = do_pca_on_signal(s_adf_modified)

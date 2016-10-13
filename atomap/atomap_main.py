@@ -4,7 +4,7 @@ import glob
 import matplotlib.pyplot as plt
 import hyperspy.api as hs
 import numpy as np
-from atomap_atom_finding_refining import\
+from atomap.atomap_atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
         refine_sub_lattice,\
@@ -12,11 +12,11 @@ from atomap_atom_finding_refining import\
         get_peak2d_skimage,\
         normalize_signal
 
-from atomap_tools import\
+from atomap.atomap_tools import\
         remove_atoms_from_image_using_2d_gaussian
 
-from atom_lattice_class import Atom_Lattice
-from sub_lattice_class import Sub_Lattice
+from atomap.atom_lattice_class import Atom_Lattice
+from atomap.sub_lattice_class import Sub_Lattice
 
 
 class SubLatticeParameterBase:

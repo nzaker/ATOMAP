@@ -2,7 +2,7 @@ from scipy.ndimage.filters import gaussian_filter
 import hyperspy.api as hs
 import numpy as np
 from skimage.feature import peak_local_max
-from atomap_plotting import plot_feature_density
+from atomap.atomap_plotting import plot_feature_density
 import matplotlib.pyplot as plt
 
 

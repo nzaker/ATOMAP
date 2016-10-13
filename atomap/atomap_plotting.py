@@ -5,7 +5,7 @@ from matplotlib.colors import hsv_to_rgb
 from matplotlib import cm
 import copy
 
-from atomap_tools import\
+from atomap.atomap_tools import\
         _get_clim_from_data,\
         project_position_property_sum_planes,\
         _get_interpolated2d_from_unregular_data

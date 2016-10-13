@@ -2,7 +2,7 @@ import copy
 import numpy as np
 import hyperspy.api as hs
 import matplotlib.pyplot as plt
-from atomap_tools import _make_circular_mask
+from atomap.atomap_tools import _make_circular_mask
 from scipy import ndimage
 import math
 

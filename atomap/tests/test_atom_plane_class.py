@@ -1,5 +1,5 @@
 import unittest
-from atom_plane_class import Atom_Plane
+from atomap.atom_plane_class import Atom_Plane
 
 class test_create_atom_plane_object(unittest.TestCase):
 

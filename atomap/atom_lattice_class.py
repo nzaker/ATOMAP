@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import h5py
 import numpy as np
-from atomap_atom_finding_refining import\
+from atomap.atomap_atom_finding_refining import\
         construct_zone_axes_from_sub_lattice
 
 
