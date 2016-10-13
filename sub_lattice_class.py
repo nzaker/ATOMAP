@@ -188,7 +188,7 @@ class Sub_Lattice():
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
         atom_distance_list = []
         for atom_plane in atom_plane_list:
-            dist = atom_plane.get_atom_distance_to_next_atom_and_position_list()
+            dist = atom_plane.position_distance_to_neighbor()
             atom_distance_list.extend(dist)
         atom_distance_list = np.array(
                 atom_distance_list).swapaxes(0, 1)

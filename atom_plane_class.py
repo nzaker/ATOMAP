@@ -91,8 +91,22 @@ class Atom_Plane():
                 atom_distances.append(distance)
         return(atom_distances)
 
-    def get_atom_distance_to_next_atom_and_position_list(self):
-        """Returns in [(x, y, distance)]"""
+    def position_distance_to_neighbor(self):
+        """
+        Get distance between all atoms and its next neighbor
+        in the atom plane, and the position between these two atoms.
+
+        Returns
+        -------
+        Numpy array [x, y, distance]
+
+        Example
+        -------
+        >>>> pos_distance = atom_plane.position_distance_to_neighbor()
+        >>>> x_pos = pos_distance[0]
+        >>>> y_pos = pos_distance[1]
+        >>>> distance = pos_distance[2]
+        """
         atom_distances = []
         if len(self.atom_list) < 2:
             return(None)
@@ -140,7 +154,7 @@ class Atom_Plane():
         """Output [(x,y,z)]"""
         if len(self.atom_list) < 3:
             return(None)
-        data = self.get_atom_distance_to_next_atom_and_position_list()
+        data = self.position_distance_to_neighbor()
         data = np.array(data)
         x_pos_list = data[:, 0]
         y_pos_list = data[:, 1]
