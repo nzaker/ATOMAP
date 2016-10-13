@@ -344,7 +344,7 @@ class Sub_Lattice():
             save_signal=False,
             amplitude_image_lim=None,
             phase_image_lim=None,
-            line_profile_prune_outer_values=False,
+            prune_outer_values=False,
             invert_line_profile=False,
             add_color_wheel=False,
             color_bar_markers=None,
@@ -418,7 +418,7 @@ class Sub_Lattice():
             add_color_wheel=add_color_wheel,
             color_bar_markers=color_bar_markers,
             rotate_atom_plane_list_90_degrees=True,
-            line_profile_prune_outer_values=line_profile_prune_outer_values,
+            prune_outer_values=prune_outer_values,
             figname=self.save_path + self.tag + "_" + figname)
 
     def plot_property_map_and_profile(
@@ -429,7 +429,7 @@ class Sub_Lattice():
             interface_plane=None,
             data_scale_z=1.0,
             save_signal=False,
-            line_profile_prune_outer_values=False,
+            prune_outer_values=False,
             invert_line_profile=False,
             add_zero_value_sublattice=None,
             figname="property_map_and_profile.jpg"):
@@ -461,7 +461,7 @@ class Sub_Lattice():
         save_signal : bool, optional
             If true, will save the property map as a HyperSpy 2D signal.
             Default True
-        line_profile_prune_outer_values : bool, optional
+        prune_outer_values : bool, optional
             If True, will prune the outer values of the line profile data.
             Useful for some datasets, where the low and high spatial
             positions in the line profile will be very noise due to
@@ -526,7 +526,7 @@ class Sub_Lattice():
             data_scale_z=data_scale_z,
             clim=clim,
             rotate_atom_plane_list_90_degrees=True,
-            line_profile_prune_outer_values=line_profile_prune_outer_values,
+            prune_outer_values=prune_outer_values,
             figname=self.save_path + self.tag + "_" + figname)
 
         if save_signal:
@@ -1105,7 +1105,7 @@ class Sub_Lattice():
             save_signal=False,
             amplitude_image_lim=None,
             phase_image_lim=None,
-            line_profile_prune_outer_values=False,
+            prune_outer_values=False,
             color_bar_markers=None,
             add_color_wheel=False,
             invert_line_profile=False,
@@ -1126,7 +1126,7 @@ class Sub_Lattice():
             amplitude_image_lim=amplitude_image_lim,
             phase_image_lim=phase_image_lim,
             color_bar_markers=color_bar_markers,
-            line_profile_prune_outer_values=line_profile_prune_outer_values,
+            prune_outer_values=prune_outer_values,
             invert_line_profile=invert_line_profile,
             add_color_wheel=add_color_wheel,
             figname=figname)
@@ -1360,7 +1360,7 @@ class Sub_Lattice():
             interface_plane=None,
             save_signal=False,
             data_scale_z=1.0,
-            line_profile_prune_outer_values=False,
+            prune_outer_values=False,
             invert_line_profile=False,
             figname="ellipticity.jpg"):
         """
@@ -1373,8 +1373,7 @@ class Sub_Lattice():
             interface_plane=interface_plane,
             data_scale_z=data_scale_z,
             save_signal=save_signal,
-            line_profile_prune_outer_values=
-            line_profile_prune_outer_values,
+            prune_outer_values=prune_outer_values,
             invert_line_profile=invert_line_profile,
             figname=figname)
 
@@ -1384,7 +1383,7 @@ class Sub_Lattice():
             interface_plane=None,
             save_signal=False,
             data_scale_z=1.0,
-            line_profile_prune_outer_values=False,
+            prune_outer_values=False,
             invert_line_profile=False,
             add_zero_value_sublattice=None,
             figname="atom_distance_difference.jpg"):
@@ -1406,8 +1405,7 @@ class Sub_Lattice():
                 interface_plane=interface_plane,
                 data_scale_z=data_scale_z,
                 save_signal=save_signal,
-                line_profile_prune_outer_values=
-                line_profile_prune_outer_values,
+                prune_outer_values=prune_outer_values,
                 invert_line_profile=invert_line_profile,
                 add_zero_value_sublattice=add_zero_value_sublattice,
                 figname=tempname)
@@ -1418,7 +1416,7 @@ class Sub_Lattice():
             interface_plane=None,
             save_signal=False,
             data_scale_z=1.0,
-            line_profile_prune_outer_values=False,
+            prune_outer_values=False,
             invert_line_profile=False,
             figname="monolayer_distance.jpg"):
 
@@ -1437,8 +1435,7 @@ class Sub_Lattice():
                 interface_plane=interface_plane,
                 data_scale_z=data_scale_z,
                 save_signal=save_signal,
-                line_profile_prune_outer_values=
-                line_profile_prune_outer_values,
+                prune_outer_values=prune_outer_values,
                 invert_line_profile=invert_line_profile,
                 figname=tempname)
 
@@ -1448,7 +1445,7 @@ class Sub_Lattice():
             interface_plane=None,
             save_signal=False,
             data_scale_z=1.0,
-            line_profile_prune_outer_values=False,
+            prune_outer_values=False,
             invert_line_profile=False,
             figname="atom_distance.jpg"):
 
@@ -1467,8 +1464,7 @@ class Sub_Lattice():
                 interface_plane=interface_plane,
                 data_scale_z=data_scale_z,
                 save_signal=save_signal,
-                line_profile_prune_outer_values=
-                line_profile_prune_outer_values,
+                prune_outer_values=prune_outer_values,
                 invert_line_profile=invert_line_profile,
                 figname=tempname)
 

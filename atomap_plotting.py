@@ -109,7 +109,7 @@ def plot_complex_image_map_line_profile_using_interface_plane(
         color_bar_markers=None,
         vector_to_plot=None,
         rotate_atom_plane_list_90_degrees=False,
-        line_profile_prune_outer_values=False,
+        prune_outer_values=False,
         figname="map_data.jpg"):  
     """
     atom_list : list of Atom_Position instances
@@ -203,7 +203,7 @@ def plot_complex_image_map_line_profile_using_interface_plane(
             line_profile_ax,
             line_profile_data[:,0],
             line_profile_data[:,1],
-            prune_outer_values=line_profile_prune_outer_values,
+            prune_outer_values=prune_outer_values,
             scale_x=data_scale)
 
     amplitude_delta = 0.01*(amplitude_image_lim[1]-amplitude_image_lim[0])
@@ -307,7 +307,7 @@ def plot_image_map_line_profile_using_interface_plane(
         plot_title='',
         vector_to_plot=None,
         rotate_atom_plane_list_90_degrees=False,
-        line_profile_prune_outer_values=False,
+        prune_outer_values=False,
         figname="map_data.jpg"):  
     """
     atom_list : list of Atom_Position instances
@@ -399,7 +399,7 @@ def plot_image_map_line_profile_using_interface_plane(
             line_profile_ax,
             line_profile_data[:,0],
             line_profile_data[:,1],
-            prune_outer_values=line_profile_prune_outer_values,
+            prune_outer_values=prune_outer_values,
             scale_x=data_scale,
             scale_z=data_scale_z)
 
