@@ -191,14 +191,13 @@ class Atom_Position:
     def calculate_max_intensity(
             self,
             image_data,
-            percent_distance_to_nearest_neighbor=0.40):
+            percent_to_nn=0.40):
         """ If the Gaussian is centered outside the masked area,
         this function returns False"""
         plt.ioff()
         closest_neighbor = self.get_closest_neighbor()
 
-        slice_size = closest_neighbor *\
-                percent_distance_to_nearest_neighbor*2
+        slice_size = closest_neighbor * percent_to_nn * 2
         data_slice = self.get_image_slice_around_atom(
                 image_data, slice_size)
 
@@ -211,15 +210,14 @@ class Atom_Position:
             self,
             image_data,
             rotation_enabled=True,
-            percent_distance_to_nearest_neighbor=0.40,
+            percent_to_nn=0.40,
             debug_plot=False):
         """ If the Gaussian is centered outside the masked area,
         this function returns False"""
         plt.ioff()
         closest_neighbor = self.get_closest_neighbor()
 
-        slice_size = closest_neighbor*\
-                percent_distance_to_nearest_neighbor*2
+        slice_size = closest_neighbor * percent_to_nn * 2
         data_slice = self.get_image_slice_around_atom(
                 image_data, slice_size)
         slice_radius = slice_size/2
@@ -232,7 +230,7 @@ class Atom_Position:
                 slice_radius,
                 data.shape[0],
                 data.shape[1],
-                closest_neighbor*percent_distance_to_nearest_neighbor)
+                closest_neighbor*percent_to_nn)
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
@@ -271,15 +269,14 @@ class Atom_Position:
             self,
             image_data,
             rotation_enabled=True,
-            percent_distance_to_nearest_neighbor=0.40,
+            percent_to_nn=0.40,
             debug_plot=False):
         """ If the Gaussian is centered outside the masked area,
         this function returns False"""
         plt.ioff()
         closest_neighbor = self.get_closest_neighbor()
 
-        slice_size = closest_neighbor*\
-                percent_distance_to_nearest_neighbor*2
+        slice_size = closest_neighbor * percent_to_nn * 2
         data_slice = self.get_image_slice_around_atom(
                 image_data, slice_size)
         slice_radius = slice_size/2
@@ -293,8 +290,7 @@ class Atom_Position:
                 slice_radius,
                 data.shape[0],
                 data.shape[1],
-                closest_neighbor*
-                percent_distance_to_nearest_neighbor)
+                closest_neighbor*percent_to_nn)
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
@@ -339,29 +335,27 @@ class Atom_Position:
             self,
             image_data,
             rotation_enabled=True,
-            percent_distance_to_nearest_neighbor=0.40,
+            percent_to_nn=0.40,
             debug_plot=False):
 
         for i in range(10):
             g = self.fit_2d_gaussian_with_mask(
                 image_data,
                 rotation_enabled=rotation_enabled,
-                percent_distance_to_nearest_neighbor=
-                percent_distance_to_nearest_neighbor,
+                percent_to_nn=percent_to_nn,
                 debug_plot=debug_plot)
             if g is False:
                 print("Fitting missed")
                 if i == 9:
                     new_x, new_y = self.find_center_position_with_center_of_mass_using_mask(
                         image_data,
-                        percent_distance_to_nearest_neighbor=
-                        percent_distance_to_nearest_neighbor)
+                        percent_to_nn=percent_to_nn)
                     new_sigma_x = self.sigma_x
                     new_sigma_y = self.sigma_y
                     new_rotation = self.rotation
                     break
                 else:
-                    percent_distance_to_nearest_neighbor *= 0.95
+                    percent_to_nn *= 0.95
             else:
                 new_x = g.centre_x.value
                 new_y = g.centre_y.value
@@ -384,7 +378,7 @@ class Atom_Position:
     def find_center_position_with_center_of_mass_using_mask(
             self,
             image_data,
-            percent_distance_to_nearest_neighbor=0.40):
+            percent_to_nn=0.40):
         closest_neighbor = 100000000000000000
         for neighbor_atom in self.nearest_neighbor_list:
             distance = self.get_pixel_distance_from_another_atom(
@@ -396,7 +390,7 @@ class Atom_Position:
                 self.pixel_x,
                 image_data.shape[0],
                 image_data.shape[1],
-                closest_neighbor*percent_distance_to_nearest_neighbor)
+                closest_neighbor*percent_to_nn)
         data = copy.deepcopy(image_data)
         mask = np.invert(mask)
         data[mask] = 0
@@ -409,10 +403,10 @@ class Atom_Position:
     def refine_position_using_center_of_mass(
             self,
             image_data,
-            percent_distance_to_nearest_neighbor=0.40):
+            percent_to_nn=0.40):
         new_x, new_y = self.find_center_position_with_center_of_mass_using_mask(
                 image_data,
-                percent_distance_to_nearest_neighbor)
+                percent_to_nn)
         self.old_pixel_x_list.append(self.pixel_x)
         self.old_pixel_y_list.append(self.pixel_y)
         self.pixel_x = new_x

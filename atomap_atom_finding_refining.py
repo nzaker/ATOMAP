@@ -79,7 +79,7 @@ def construct_zone_axes_from_sub_lattice(sub_lattice):
 def refine_sub_lattice(
         sub_lattice,
         refinement_config_list,
-        percent_distance_to_nearest_neighbor):
+        percent_to_nn):
 
     total_number_of_refinements = 0
     for refinement_config in refinement_config_list:
@@ -100,18 +100,15 @@ def refine_sub_lattice(
                 sub_lattice.refine_atom_positions_using_2d_gaussian(
                         image,
                         rotation_enabled=False,
-                        percent_distance_to_nearest_neighbor=
-                        percent_distance_to_nearest_neighbor)
+                        percent_to_nn=percent_to_nn)
                 sub_lattice.refine_atom_positions_using_2d_gaussian(
                         image,
                         rotation_enabled=True,
-                        percent_distance_to_nearest_neighbor=
-                        percent_distance_to_nearest_neighbor)
+                        percent_to_nn=percent_to_nn)
             elif refinement_type == 'center_of_mass':
                 sub_lattice.refine_atom_positions_using_center_of_mass(
                         image,
-                        percent_distance_to_nearest_neighbor=
-                        percent_distance_to_nearest_neighbor)
+                        percent_to_nn=percent_to_nn)
             current_counts += 1
 
 

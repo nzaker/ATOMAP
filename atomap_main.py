@@ -211,7 +211,7 @@ def make_atom_lattice_from_image(
                 image0_data = remove_atoms_from_image_using_2d_gaussian(
                     image0_data,
                     temp_sublattice,
-                    percent_distance_to_nearest_neighbor=neighbor_distance)
+                    percent_to_nn=neighbor_distance)
             sublattice.adf_image = image0_data
             sublattice.original_adf_image = image0_data
 
@@ -503,7 +503,7 @@ def run_peak_finding_process_for_single_dataset(
     image_atoms_removed = remove_atoms_from_image_using_2d_gaussian(
         image_atoms_removed, 
         a_sublattice,
-        percent_distance_to_nearest_neighbor=0.35)
+        percent_to_nn=0.35)
 
     b_sublattice.original_adf_image_atoms_removed =\
             image_atoms_removed
@@ -537,11 +537,11 @@ def run_peak_finding_process_for_single_dataset(
     image_atoms_removed = remove_atoms_from_image_using_2d_gaussian(
         image_atoms_removed,
         a_sublattice,
-        percent_distance_to_nearest_neighbor=0.40)
+        percent_to_nn=0.40)
     image_atoms_removed = remove_atoms_from_image_using_2d_gaussian(
         image_atoms_removed,
         b_sublattice,
-        percent_distance_to_nearest_neighbor=0.30)
+        percent_to_nn=0.30)
 
     o_sublattice.adf_image = image_atoms_removed
 
@@ -742,7 +742,7 @@ def run_process_for_adf_image_a_b_cation(
 #    image_atoms_removed = remove_atoms_from_image_using_2d_gaussian(
 #        image_atoms_removed,
 #        a_sublattice,
-#        percent_distance_to_nearest_neighbor=0.35)
+#        percent_to_nn=0.35)
 #    construct_zone_axes_from_sub_lattice(b_sublattice)
 #
 #    b_sublattice.adf_image = image_atoms_removed

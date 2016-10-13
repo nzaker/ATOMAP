@@ -60,18 +60,17 @@ def _line_profile_coordinates(src, dst, linewidth=1):
 # Remove atom from image using 2d gaussian model
 def remove_atoms_from_image_using_2d_gaussian(
         image, sub_lattice,
-        percent_distance_to_nearest_neighbor=0.40):
+        percent_to_nn=0.40):
     model_image = np.zeros(image.shape)
     X, Y = np.meshgrid(np.arange(
         model_image.shape[1]), np.arange(model_image.shape[0]))
     for atom in sub_lattice.atom_list:
-        percent_distance = percent_distance_to_nearest_neighbor
+        percent_distance = percent_to_nn
         for i in range(10):
             g = atom.fit_2d_gaussian_with_mask(
                     image,
                     rotation_enabled=True,
-                    percent_distance_to_nearest_neighbor=
-                    percent_distance)
+                    percent_to_nn=percent_distance)
             if g is False:
                 if i == 9:
                     break

@@ -647,24 +647,22 @@ class Sub_Lattice():
     def refine_atom_positions_using_2d_gaussian(
             self,
             image_data,
-            percent_distance_to_nearest_neighbor=0.40,
+            percent_to_nn=0.40,
             rotation_enabled=True,
             debug_plot=False):
         for atom in self.atom_list:
             atom.refine_position_using_2d_gaussian(
                     image_data,
                     rotation_enabled=rotation_enabled,
-                    percent_distance_to_nearest_neighbor=
-                    percent_distance_to_nearest_neighbor,
+                    percent_to_nn=percent_to_nn,
                     debug_plot=debug_plot)
 
     def refine_atom_positions_using_center_of_mass(
-            self, image_data, percent_distance_to_nearest_neighbor=0.25):
+            self, image_data, percent_to_nn=0.25):
         for atom_index, atom in enumerate(self.atom_list):
             atom.refine_position_using_center_of_mass(
                 image_data,
-                percent_distance_to_nearest_neighbor=
-                percent_distance_to_nearest_neighbor)
+                percent_to_nn=percent_to_nn)
 
     def get_nearest_neighbor_directions(self, pixel_scale=True, neighbors=None):
         """
@@ -1162,28 +1160,28 @@ class Sub_Lattice():
     def get_atom_column_amplitude_gaussian2d(
             self,
             image=None,
-            percent_distance_to_nearest_neighbor=0.40):
+            percent_to_nn=0.40):
         if image is None:
             image = self.original_adf_image
 
-        percent_distance = percent_distance_to_nearest_neighbor
+        percent_distance = percent_to_nn
         for atom in self.atom_list:
             atom.fit_2d_gaussian_with_mask_centre_locked(
                     image,
-                    percent_distance_to_nearest_neighbor=percent_distance)
+                    percent_to_nn=percent_distance)
 
     def get_atom_column_amplitude_max_intensity(
             self,
             image=None,
-            percent_distance_to_nearest_neighbor=0.40):
+            percent_to_nn=0.40):
         if image is None:
             image = self.original_adf_image
 
-        percent_distance = percent_distance_to_nearest_neighbor
+        percent_distance = percent_to_nn
         for atom in self.atom_list:
             atom.calculate_max_intensity(
                     image,
-                    percent_distance_to_nearest_neighbor=percent_distance)
+                    percent_to_nn=percent_distance)
 
     def get_atom_list_atom_amplitude_gauss2d_range(
             self,
