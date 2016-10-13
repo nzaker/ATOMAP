@@ -11,7 +11,7 @@ from matplotlib.gridspec import GridSpec
 from atomap_tools import \
         _get_interpolated2d_from_unregular_data,\
         _get_clim_from_data,\
-        find_atom_position_1d_from_distance_list_and_atom_plane
+        project_position_property_sum_planes
 
 from atomap_plotting import \
         plot_image_map_line_profile_using_interface_plane,\
@@ -288,7 +288,7 @@ class Sub_Lattice():
                         property_list])
         data_list = np.swapaxes(data_list, 0, 1)
         line_profile_data = \
-            find_atom_position_1d_from_distance_list_and_atom_plane(
+            project_position_property_sum_planes(
                 data_list,
                 interface_plane,
                 rebin_data=True)

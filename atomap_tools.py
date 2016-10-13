@@ -93,7 +93,13 @@ def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
 def get_atom_planes_square(
         sub_lattice, atom_plane1, atom_plane2,
         interface_atom_plane, zone_vector, debug_plot=False):
-    ort_atom_plane1, ort_atom_plane2 = atom_plane1.get_side_edge_atom_planes_between_self_and_another_atom_plane(
+    """
+    Parameters
+    ----------
+    sub_lattice : Atomap sub_lattice object
+    atom_plane1, atom_plane2 : Atomap atom_plane object
+    """
+    ort_atom_plane1, ort_atom_plane2 = atom_plane1.get_connecting_atom_planes(
             atom_plane2, zone_vector)
 
     if debug_plot:
@@ -119,7 +125,7 @@ def get_atom_planes_square(
 
     data_list = np.array(
             [x_pos_list, y_pos_list, z_pos_list]).swapaxes(0, 1)
-    atom_layer_list = find_atom_position_1d_from_distance_list_and_atom_plane(
+    atom_layer_list = project_position_property_sum_planes(
             data_list, interface_atom_plane, rebin_data=True)
 
     atom_layer_list = np.array(atom_layer_list)[:, 0]
@@ -271,11 +277,9 @@ def get_arbitrary_slice(
         line2_y = [slice_bounds[1][0][-1], slice_bounds[1][-1][-1]]
 
         ax0.imshow(image)
-        ax0.plot([
-                    start_point[0],
-                    end_point[0]],
-                    [start_point[1],
-                    end_point[1]])
+        ax0.plot(
+                [start_point[0], end_point[0]],
+                [start_point[1], end_point[1]])
         ax0.plot(line1_x, line1_y)
         ax0.plot(line2_x, line2_y)
         ax1.imshow(np.rot90(np.fliplr(output_slice)))
@@ -566,12 +570,55 @@ def _get_clim_from_data(
         clim = tuple(clim)
     return(clim)
 
-
-def find_atom_position_1d_from_distance_list_and_atom_plane(
+def project_position_property_sum_planes(
         input_data_list,
         interface_plane,
         rebin_data=True):
+    """
+    Project 2D positions onto a 1D plane.
+    
+    The 2D positions are found as function of distance
+    to the interface_plane. If rebin_data is True,
+    the function will attempt to sum the positions belonging
+    to the same plane.
+    In this case, one will get the positions as a function of
+    atomic plane from the interface_plane.
 
+    Note, positions will not be projected on to the interface_plane,
+    but on a plane perpendicular to the interface_plane.
+    The returned data will give the distance from the projected
+    positions to the interface_plane.
+
+    Parameters
+    ----------
+    input_data_list : Numpy array, [Nx3]
+        Numpy array with positions and property value.
+        Must be in the from [[x,y,z]], so that the 
+        x-positions are extracted using input_data_list[:,0].
+        y-positions using input_data_list[:,1].
+        Property value using input_data_list[:,2].
+    interface_plane : Atomap atom_plane object
+    rebin_data : bool, optional 
+        If True, will attempt to combine the data points
+        which belong to the same atomic plane.
+        The points which belong to the same plane will be
+        averaged into a single value for each atomic plane.
+        This will give the property value as a function distance
+        to the interface_plane.
+
+    Returns
+    -------
+    Numpy array, [[position, property]].
+
+    Example
+    -------
+    >>>> data = project_position_property_sum_planes(
+            input_data,
+            interface_plane)
+    >>>> positions = data[:,0]
+    >>>> property_values = data[:,0]
+    >>>> plt.plot(positions, property_values)
+    """
     x_pos_list = input_data_list[:, 0]
     y_pos_list = input_data_list[:, 1]
     z_pos_list = input_data_list[:, 2]
@@ -591,9 +638,9 @@ def find_atom_position_1d_from_distance_list_and_atom_plane(
     for x_pos, y_pos, z_pos in zip(x_pos_list, y_pos_list, z_pos_list):
         closest_distance, direction =\
                 interface_plane.get_closest_distance_and_angle_to_point(
-                (x_pos, y_pos),
-                use_precalculated_line=[interface_x, interface_y],
-                plot_debug=False)
+                    (x_pos, y_pos),
+                    use_precalculated_line=[interface_x, interface_y],
+                    plot_debug=False)
         position = closest_distance*math.copysign(1, direction)*-1
         data_list.append([position, z_pos])
     data_list = np.array(data_list)

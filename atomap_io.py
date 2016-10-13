@@ -59,12 +59,12 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
                 construct_zone_axes_from_sub_lattice(sub_lattice)
 
             if 'zone_axis_names_byte' in sub_lattice_set.keys():
-                zone_axis_names_byte = sub_lattice_set.attrs[
+                zone_axis_list_byte = sub_lattice_set.attrs[
                         'zone_axis_names_byte']
-                zone_axis_names = []
-                for zone_axis_name_byte in zone_axis_names_byte:
-                    zone_axis_names.append(zone_axis_name_byte.decode())
-                sub_lattice.zones_axis_average_distances_names = zone_axis_names
+                zone_axis_list = []
+                for zone_axis_name_byte in zone_axis_list_byte:
+                    zone_axis_list.append(zone_axis_name_byte.decode())
+                sub_lattice.zones_axis_average_distances_names = zone_axis_list
 
         if group_name == 'image_data0':
             atom_lattice.adf_image = h5f[group_name][:]

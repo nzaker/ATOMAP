@@ -122,8 +122,25 @@ class Atom_Plane():
         atom_distances = np.array(atom_distances)
         return(atom_distances)
 
-    def get_side_edge_atom_planes_between_self_and_another_atom_plane(
+    def get_connecting_atom_planes(
             self, atom_plane, zone_vector):
+        """
+        Get the outer atom planes which connect self atom
+        plane with another atom plane, through a specific
+        atom plane direction.
+
+        The self atom plane, atom plane, and the two returned
+        atom planes will span make a parallelogram.
+
+        Parameters
+        ----------
+        atom_plane : Atomap atom_plane object
+        zone_vector : tuple
+
+        Returns
+        -------
+        tuple, two atom plane objects
+        """
         start_orthogonal_atom_plane = None
         atom = self.start_atom
         while start_orthogonal_atom_plane is None:
