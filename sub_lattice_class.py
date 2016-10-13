@@ -254,7 +254,7 @@ class Sub_Lattice():
                 z_list.extend(data[:, 2])
         return(x_list, y_list, z_list)
 
-    def get_property_and_positions(
+    def property_position(
             self,
             property_list,
             x_position=None,
@@ -270,7 +270,7 @@ class Sub_Lattice():
         data_list = np.swapaxes(data_list, 0, 1)
         return(data_list)
 
-    def get_property_and_positions_atom_plane_projection(
+    def property_position_projection(
             self,
             interface_plane,
             property_list,
@@ -319,7 +319,7 @@ class Sub_Lattice():
             atoms, ellipticity or angle between atoms.
         """
 
-        data_list = self.get_property_and_positions(
+        data_list = self.property_position(
             z_list,
             x_position=x_list,
             y_position=y_list)
@@ -358,14 +358,14 @@ class Sub_Lattice():
             interface_plane = self.atom_planes_by_zone_vector[
                     zone_vector][middle_atom_plane_index]
 
-        line_profile_amplitude_data_list = self.get_property_and_positions_atom_plane_projection(
+        line_profile_amplitude_data_list = self.property_position_projection(
             interface_plane=interface_plane,
             property_list=amplitude_list,
             x_position=x_list,
             y_position=y_list)
         line_profile_amplitude_data_list = line_profile_amplitude_data_list.swapaxes(0, 1)
 
-        line_profile_phase_data_list = self.get_property_and_positions_atom_plane_projection(
+        line_profile_phase_data_list = self.property_position_projection(
             interface_plane=interface_plane,
             property_list=phase_list,
             x_position=x_list,
@@ -483,7 +483,7 @@ class Sub_Lattice():
             interface_plane = self.atom_planes_by_zone_vector[
                     zone_vector][middle_atom_plane_index]
 
-        line_profile_data_list = self.get_property_and_positions_atom_plane_projection(
+        line_profile_data_list = self.property_position_projection(
             interface_plane=interface_plane,
             property_list=z_list,
             x_position=x_list,
@@ -1622,7 +1622,7 @@ class Sub_Lattice():
             line_profile_index += 1
 
         for index, parameter in enumerate(parameter_list):
-            data_list = self.get_property_and_positions(parameter)
+            data_list = self.property_position(parameter)
 
             ax = fig.add_subplot(
                     gs[
