@@ -125,29 +125,29 @@ class Atom_Plane():
     def get_side_edge_atom_planes_between_self_and_another_atom_plane(
             self, atom_plane, zone_vector):
         start_orthogonal_atom_plane = None
-        self_atom = self.start_atom
+        atom = self.start_atom
         while start_orthogonal_atom_plane is None:
-            temp_atom_plane = self_atom.can_atom_plane_be_reached_through_zone_vector(
+            temp_plane = atom.can_atom_plane_be_reached_through_zone_vector(
                     atom_plane, zone_vector)
-            if temp_atom_plane is False:
-                self_atom = self_atom.get_next_atom_in_atom_plane(self)
-                if self_atom is False:
+            if temp_plane is False:
+                atom = atom.get_next_atom_in_atom_plane(self)
+                if atom is False:
                     break
             else:
-                start_orthogonal_atom_plane = temp_atom_plane
+                start_orthogonal_atom_plane = temp_plane
 
         end_orthogonal_atom_plane = None
-        self_atom = self.end_atom
+        atom = self.end_atom
         while end_orthogonal_atom_plane is None:
-            temp_atom_plane = self_atom.can_atom_plane_be_reached_through_zone_vector(
+            temp_plane = atom.can_atom_plane_be_reached_through_zone_vector(
                     atom_plane, zone_vector)
-            if temp_atom_plane is False:
-                self_atom = self_atom.get_previous_atom_in_atom_plane(
+            if temp_plane is False:
+                atom = atom.get_previous_atom_in_atom_plane(
                         self)
-                if self_atom is False:
+                if atom is False:
                     break
             else:
-                end_orthogonal_atom_plane = temp_atom_plane
+                end_orthogonal_atom_plane = temp_plane
         return(start_orthogonal_atom_plane, end_orthogonal_atom_plane)
 
     def get_net_distance_change_between_atoms(self):
@@ -195,9 +195,9 @@ class Atom_Plane():
 
         if extend_line:
             reg_results = linregress(pos_list0[:4], pos_list1[:4])
-            delta_0 = np.mean(
-                    (np.array(pos_list0[0:3]) -
-                    np.array(pos_list0[1:4]).mean()))*40
+            delta_0 = np.mean((
+                np.array(pos_list0[0:3]) -
+                np.array(pos_list0[1:4]).mean()))*40
             delta_1 = reg_results[0]*delta_0
             start_0 = delta_0 + pos_list0[0]
             start_1 = delta_1 + pos_list1[0]

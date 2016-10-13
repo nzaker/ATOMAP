@@ -358,25 +358,25 @@ class Sub_Lattice():
             interface_plane = self.atom_planes_by_zone_vector[
                     zone_vector][middle_atom_plane_index]
 
-        line_profile_amplitude_data_list = self.property_position_projection(
+        amplitude_data_projected = self.property_position_projection(
             interface_plane=interface_plane,
             property_list=amplitude_list,
             x_position=x_list,
             y_position=y_list)
-        line_profile_amplitude_data_list = line_profile_amplitude_data_list.swapaxes(0, 1)
+        amplitude_data_projected = amplitude_data_projected.swapaxes(0, 1)
 
-        line_profile_phase_data_list = self.property_position_projection(
+        phase_data_projected = self.property_position_projection(
             interface_plane=interface_plane,
             property_list=phase_list,
             x_position=x_list,
             y_position=y_list)
-        line_profile_phase_data_list = line_profile_phase_data_list.swapaxes(0, 1)
+        phase_data_projected = phase_data_projected.swapaxes(0, 1)
 
         amplitude_map = self._get_regular_grid_from_unregular_property(
             x_list,
             y_list,
             amplitude_list)
-        
+
         phase_map = self._get_regular_grid_from_unregular_property(
             x_list,
             y_list,
@@ -397,8 +397,8 @@ class Sub_Lattice():
                     ignore_edges=True)
 
         if invert_line_profile is True:
-            line_profile_amplitude_data_list[:, 0] *= -1
-            line_profile_phase_data_list[:, 0] *= -1
+            amplitude_data_projected[:, 0] *= -1
+            phase_data_projected[:, 0] *= -1
 
         if self.original_adf_image is None:
             image_data = self.adf_image
@@ -409,8 +409,8 @@ class Sub_Lattice():
             image_data,
             amplitude_map,
             phase_map,
-            line_profile_amplitude_data_list,
-            line_profile_phase_data_list,
+            amplitude_data_projected,
+            phase_data_projected,
             interface_plane,
             data_scale=data_scale,
             amplitude_image_lim=amplitude_image_lim,
@@ -573,8 +573,8 @@ class Sub_Lattice():
             self, atom_plane1, atom_plane2, zone_vector):
         atom_plane_start_index = None
         atom_plane_end_index = None
-        for index, temp_atom_plane in enumerate(self.atom_planes_by_zone_vector[
-                zone_vector]):
+        for index, temp_atom_plane in enumerate(
+                self.atom_planes_by_zone_vector[zone_vector]):
             if temp_atom_plane == atom_plane1:
                 atom_plane_start_index = index
             if temp_atom_plane == atom_plane2:
@@ -588,7 +588,11 @@ class Sub_Lattice():
         return(atom_plane_slice)
 
     def get_atom_list_between_four_atom_planes(
-            self, par_atom_plane1, par_atom_plane2, ort_atom_plane1, ort_atom_plane2):
+            self,
+            par_atom_plane1,
+            par_atom_plane2,
+            ort_atom_plane1,
+            ort_atom_plane2):
         ort_atom_plane_slice = self.get_atom_plane_slice_between_two_planes(
                 ort_atom_plane1, ort_atom_plane2, ort_atom_plane1.zone_vector)
         par_atom_plane_slice = self.get_atom_plane_slice_between_two_planes(
@@ -664,13 +668,16 @@ class Sub_Lattice():
                 image_data,
                 percent_to_nn=percent_to_nn)
 
-    def get_nearest_neighbor_directions(self, pixel_scale=True, neighbors=None):
+    def get_nearest_neighbor_directions(
+            self, pixel_scale=True, neighbors=None):
         """
-        Get the vector to the nearest neighbors for the atoms in the sublattice.
-        Giving information similar to a FFT of the image, but for real space.
+        Get the vector to the nearest neighbors for the atoms
+        in the sublattice. Giving information similar to a FFT
+        of the image, but for real space.
 
-        Useful for seeing if the peakfinding and symmetry finder worked correctly.
-        Potentially useful for doing structure fingerprinting.
+        Useful for seeing if the peakfinding and symmetry
+        finder worked correctly. Potentially useful for
+        doing structure fingerprinting.
 
         Parameters
         ----------
@@ -680,7 +687,7 @@ class Sub_Lattice():
         neighbors : int, optional
             The number of neighbors returned for each atoms.
             If no number is given, will return all the neighbors,
-            which is typcially 9 for each atom. As given when 
+            which is typcially 9 for each atom. As given when
             running the symmetry finder.
 
         Returns
@@ -692,7 +699,7 @@ class Sub_Lattice():
         >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions()
         >>> import matplotlib.pyplot as plt
         >>> plt.scatter(x_pos, y_pos)
-        With all the keywords 
+        With all the keywords
         >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions(
                 pixel_scale=False, neigbors=3)
         """
