@@ -347,7 +347,7 @@ class Atom_Position:
             if g is False:
                 print("Fitting missed")
                 if i == 9:
-                    new_x, new_y = self.find_center_position_with_center_of_mass_using_mask(
+                    new_x, new_y = self.get_center_position_com(
                         image_data,
                         percent_to_nn=percent_to_nn)
                     new_sigma_x = self.sigma_x
@@ -375,7 +375,7 @@ class Atom_Position:
         self.sigma_y = new_sigma_y
         self.amplitude_gaussian = g.A.value
 
-    def find_center_position_with_center_of_mass_using_mask(
+    def get_center_position_com(
             self,
             image_data,
             percent_to_nn=0.40):
@@ -404,7 +404,7 @@ class Atom_Position:
             self,
             image_data,
             percent_to_nn=0.40):
-        new_x, new_y = self.find_center_position_with_center_of_mass_using_mask(
+        new_x, new_y = self.get_center_position_com(
                 image_data,
                 percent_to_nn)
         self.old_pixel_x_list.append(self.pixel_x)
