@@ -7,14 +7,35 @@ import matplotlib.pyplot as plt
 
 
 def get_peak2d_skimage(image, separation):
-    arr_shape = (image.axes_manager._navigation_shape_in_array
-            if image.axes_manager.navigation_size > 0
-            else [1, ])
-    peaks = np.zeros(arr_shape, dtype=object)
+    """
+    Find the most intense features in a HyperSpy signal, where the 
+    features has to be separated by a minimum distance.
+
+    Will work with image stacks.
+
+    Parameters
+    ----------
+    image : HyperSpy 2D signal
+        Can be in the form of an image stack.
+    separation : number
+        Minimum separation between the features.
+
+    Returns
+    -------
+    Numpy array, list of the most intense peaks. 
+
+    Example
+    -------
+    If s is a single image
+    >>>> peaks = get_peak2d_skimage(s, 5)
+    >>>> peak_x = peaks[0][:,0]
+    >>>> peak_y = peaks[0][:,1]
+    """
+    peaks = np.zeros([image.axes_manager.navigation_size+1, ], dtype=object)
     for z, indices in zip(
             image._iterate_signal(),
             image.axes_manager._array_indices_generator()):
-        peaks[indices] = peak_local_max(
+            peaks[indices] = peak_local_max(
                 z,
                 min_distance=int(separation))
     return(peaks)
