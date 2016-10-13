@@ -18,6 +18,7 @@ from atomap_tools import\
 from atom_lattice_class import Atom_Lattice
 from sub_lattice_class import Sub_Lattice
 
+
 class SubLatticeParameterBase:
     def __init__(self):
         self.color = 'red'
@@ -26,9 +27,10 @@ class SubLatticeParameterBase:
 
     def __repr__(self):
         return '<%s, %s>' % (
-            self.__class__.__name__, 
+            self.__class__.__name__,
             self.name
             )
+
 
 class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
     def __init__(self):
@@ -37,19 +39,20 @@ class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
         self.tag = "A"
         self.color = 'blue'
         self.zone_axis_list = [
-                {'number':0, 'name':'110'},
-                {'number':1, 'name':'100'},
-                {'number':2, 'name':'11-2'},
-                {'number':3, 'name':'112'},
-                {'number':5, 'name':'111'},
-                {'number':6, 'name':'11-1'},
+                {'number': 0, 'name': '110'},
+                {'number': 1, 'name': '100'},
+                {'number': 2, 'name': '11-2'},
+                {'number': 3, 'name': '112'},
+                {'number': 5, 'name': '111'},
+                {'number': 6, 'name': '11-1'},
                 ]
         self.sublattice_order = 0
         self.refinement_config = {
-                'config':[
+                'config': [
                     ['image0', 2, 'gaussian'],
                     ],
-                'neighbor_distance':0.35}
+                'neighbor_distance': 0.35}
+
 
 class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
     def __init__(self):
@@ -58,38 +61,40 @@ class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
         self.tag = "B"
         self.color = 'green'
         self.zone_axis_list = [
-                {'number':0, 'name':'110'},
-                {'number':1, 'name':'100'},
-                {'number':2, 'name':'11-2'},
-                {'number':3, 'name':'112'},
-                {'number':5, 'name':'111'},
-                {'number':6, 'name':'11-1'},]
+                {'number': 0, 'name': '110'},
+                {'number': 1, 'name': '100'},
+                {'number': 2, 'name': '11-2'},
+                {'number': 3, 'name': '112'},
+                {'number': 5, 'name': '111'},
+                {'number': 6, 'name': '11-1'}, ]
         self.sublattice_order = 1
         self.sublattice_position_sublattice = "A-cation"
         self.sublattice_position_zoneaxis = "100"
         self.refinement_config = {
-                'config':[
+                'config': [
                     ['image0', 2, 'center_of_mass'],
                     ['image0', 2, 'gaussian'],
                     ],
-                'neighbor_distance':0.25}
+                'neighbor_distance': 0.25}
         self.atom_subtract_config = [
                 {
-                    'sublattice':'A-cation',
-                    'neighbor_distance':0.35,
+                    'sublattice': 'A-cation',
+                    'neighbor_distance': 0.35,
                     },
                 ]
+
 
 class ModelParameters:
     def __init__(self):
         self.peak_separation = None
         self.name = None
-    
+
     def __repr__(self):
         return '<%s, %s>' % (
-            self.__class__.__name__, 
+            self.__class__.__name__,
             self.name,
             )
+
 
 class PerovskiteOxide110(ModelParameters):
     def __init__(self):
@@ -112,19 +117,21 @@ class PerovskiteOxide110(ModelParameters):
     def number_of_sublattices(self):
         return(len(self.sublattice_list))
 
+
 class SrTiO3_110(PerovskiteOxide110):
     def __init__(self):
         PerovskiteOxide110.__init__(self)
         self.sublattice_names = "Sr", "Ti", "O"
         Ti_sublattice_position = {
-                "sublattice":"Sr",
-                "zoneaxis":"100"}
+                "sublattice": "Sr",
+                "zoneaxis": "100"}
         O_sublattice_position = {
-                "sublattice":"Ti",
-                "zoneaxis":"110"}
+                "sublattice": "Ti",
+                "zoneaxis": "110"}
         self.sublattice_position = [
                 Ti_sublattice_position,
                 O_sublattice_position]
+
 
 def run_image_filtering(signal, invert_signal=False):
     signal.change_dtype('float64')
@@ -136,6 +143,7 @@ def run_image_filtering(signal, invert_signal=False):
         signal.data = 1./signal.data
     return(signal_modified)
 
+
 def make_atom_lattice_from_image(
         image0_filename,
         model_parameters=None,
@@ -146,17 +154,18 @@ def make_atom_lattice_from_image(
     if model_parameters is None:
         model_parameters = PerovskiteOxide110()
 
-    pixel_separation = model_parameters.peak_separation/image0.axes_manager[0].scale
+    image0_scale = image0.axes_manager[0].scale
+    pixel_separation = model_parameters.peak_separation/image0_scale
     initial_atom_position_list = get_peak2d_skimage(
-            image0_modified, 
+            image0_modified,
             separation=pixel_separation)[0]
 
     #################################
     path_name = image0_filename
-    path_name = path_name[0:path_name.rfind(".")]
+    path_name = path_name[0: path_name.rfind(".")]
     if not os.path.exists(path_name):
         os.makedirs(path_name)
-    
+
     image0_data = np.rot90(np.fliplr(image0.data))
     image0_modified_data = np.rot90(np.fliplr(image0_modified))
 
@@ -166,25 +175,26 @@ def make_atom_lattice_from_image(
     atom_lattice.adf_image = image0_data
 
     for sublattice_index in range(model_parameters.number_of_sublattices):
-        sublattice_para = model_parameters.get_sublattice_from_order(sublattice_index)  
-        
+        sublattice_para = model_parameters.get_sublattice_from_order(
+                sublattice_index)
+
         if sublattice_para.sublattice_order == 0:
             sublattice = Sub_Lattice(
-                initial_atom_position_list, 
+                initial_atom_position_list,
                 image0_modified_data)
         else:
             temp_sublattice = atom_lattice.get_sub_lattice(
                     sublattice_para.sublattice_position_sublattice)
             temp_zone_vector_index = temp_sublattice.get_zone_vector_index(
                     sublattice_para.sublattice_position_zoneaxis)
-            zone_vector = temp_sublattice.zones_axis_average_distances[temp_zone_vector_index]
+            zone_vector = temp_sublattice.zones_axis_average_distances[
+                    temp_zone_vector_index]
             atom_list = temp_sublattice.find_missing_atoms_from_zone_vector(
                     zone_vector, new_atom_tag=sublattice_para.tag)
 
             sublattice = Sub_Lattice(
                 atom_list,
                 image0_data)
-
 
         sublattice.save_path = "./" + path_name + "/"
         sublattice.path_name = path_name
@@ -194,7 +204,7 @@ def make_atom_lattice_from_image(
         sublattice.pixel_size = image0.axes_manager[0].scale
         sublattice.original_adf_image = image0_data
         atom_lattice.sub_lattice_list.append(sublattice)
- 
+
         for atom in sublattice.atom_list:
             atom.sigma_x = 0.05/sublattice.pixel_size
             atom.sigma_y = 0.05/sublattice.pixel_size
@@ -227,21 +237,24 @@ def make_atom_lattice_from_image(
                 refinement_step[0] = sublattice.original_adf_image
 
         refine_sub_lattice(
-            sublattice, 
+            sublattice,
             refinement_steps,
             refinement_neighbor_distance)
         construct_zone_axes_from_sub_lattice(sublattice)
 
         for zone_axis in sublattice_para.zone_axis_list:
-            if zone_axis['number'] <= len(sublattice.zones_axis_average_distances_names):
-                sublattice.zones_axis_average_distances_names[zone_axis['number']] =\
+            if zone_axis['number'] <= len(
+                    sublattice.zones_axis_average_distances_names):
+                sublattice.zones_axis_average_distances_names[
+                        zone_axis['number']] =\
                         zone_axis['name']
 
     return(atom_lattice)
-    
+
+
 def run_atom_lattice_peakfinding_process(
-        s_adf_filename, 
-        s_abf_filename, 
+        s_adf_filename,
+        s_abf_filename,
         model_parameters="Perovskite110",
         refinement_interation_config=None,
         invert_abf_signal=True):
@@ -252,18 +265,19 @@ def run_atom_lattice_peakfinding_process(
 
     s_adf = hs.load(s_adf_filename)
     s_adf_modified = run_image_filtering(s_adf)
-    
+
     if model_parameters == "Perovskite110":
         model_parameters = PerovskiteOxide110()
 
-    pixel_separation = model_parameters.peak_separation/s_adf.axes_manager[0].scale
+    s_adf_scale = s_adf.axes_manager[0].scale
+    pixel_separation = model_parameters.peak_separation/s_adf_scale
     atom_position_list_pca = get_peak2d_skimage(
-            s_adf_modified, 
+            s_adf_modified,
             separation=pixel_separation)[0]
 
     #################################
     path_name = s_adf_filename
-    path_name = path_name[0:path_name.rfind(".")]
+    path_name = path_name[0: path_name.rfind(".")]
     if not os.path.exists(path_name):
         os.makedirs(path_name)
     #########################################
@@ -281,7 +295,7 @@ def run_atom_lattice_peakfinding_process(
     sublattice_0_param = model_parameters.get_sublattice_from_order(0)
 
     sublattice_0 = Sub_Lattice(
-            atom_position_list_pca, 
+            atom_position_list_pca,
             np.rot90(np.fliplr(s_adf_modified.data)))
 
     sublattice_0.save_path = "./" + path_name + "/"
@@ -299,9 +313,8 @@ def run_atom_lattice_peakfinding_process(
 
     print("Refining " + sublattice_0.name)
     refine_sub_lattice(
-            sublattice_0, 
+            sublattice_0,
             [
-#                (sublattice_0.adf_image, 2, 'gaussian'),
                 (sublattice_0.original_adf_image, 2, 'gaussian')],
             0.35)
 
@@ -310,6 +323,7 @@ def run_atom_lattice_peakfinding_process(
 
     plt.ion()
     return(atom_lattice)
+
 
 def run_process_for_adf_image_a_cation(
         s_adf_filename,
@@ -324,12 +338,12 @@ def run_process_for_adf_image_a_cation(
         s_adf_modified = do_pca_on_signal(s_adf_modified)
     peak_separation1 = peak_separation/s_adf.axes_manager[0].scale
     atom_position_list_pca = get_peak2d_skimage(
-            s_adf_modified, 
+            s_adf_modified,
             separation=peak_separation1)[0]
 
     #################################
     path_name = s_adf_filename
-    path_name = path_name[0:path_name.rfind(".")]
+    path_name = path_name[0: path_name.rfind(".")]
     if not os.path.exists(path_name):
         os.makedirs(path_name)
     #########################################
@@ -340,7 +354,7 @@ def run_process_for_adf_image_a_cation(
     atom_lattice.adf_image = np.rot90(np.fliplr(s_adf.data))
 
     a_sublattice = Sub_Lattice(
-            atom_position_list_pca, 
+            atom_position_list_pca,
             np.rot90(np.fliplr(s_adf_modified.data)))
 
     a_sublattice.save_path = "./" + path_name + "/"
@@ -360,45 +374,45 @@ def run_process_for_adf_image_a_cation(
 
     print("Refining a atom lattice")
     refine_sub_lattice(
-            a_sublattice, 
+            a_sublattice,
             [
                 (a_sublattice.adf_image, 1, 'center_of_mass')],
             0.50)
     refine_sub_lattice(
-            a_sublattice, 
+            a_sublattice,
             [
                 (
                     a_sublattice.original_adf_image,
-                    1, 
+                    1,
                     'center_of_mass')],
             0.50)
     a_sublattice.plot_atom_list_on_image_data(
             figname=a_sublattice.tag+"_atom_refine1_com.jpg")
     refine_sub_lattice(
-            a_sublattice, 
+            a_sublattice,
             [
                 (a_sublattice.original_adf_image, 1, 'gaussian')],
             0.50)
     a_sublattice.plot_atom_list_on_image_data(
             figname=a_sublattice.tag+"_atom_refine2_gaussian.jpg")
     atom_lattice.save_atom_lattice(
-            filename=a_sublattice.save_path +\
-                    "atom_lattice.hdf5")
+            filename=a_sublattice.save_path + "atom_lattice.hdf5")
     plt.close('all')
     construct_zone_axes_from_sub_lattice(a_sublattice)
 
     return(atom_lattice)
 
+
 def run_peak_finding_process_for_all_datasets(
         refinement_interations=2):
-    dm3_adf_filename_list = glob.glob("*ADF*.dm3")    
+    dm3_adf_filename_list = glob.glob("*ADF*.dm3")
     dm3_adf_filename_list.sort()
     dataset_list = []
     total_datasets = len(dm3_adf_filename_list)+1
     for index, dm3_adf_filename in enumerate(dm3_adf_filename_list):
         print(
-                "Dataset "+str(index+1)+\
-                "/"+str(total_datasets)+\
+                "Dataset " + str(index+1) +
+                "/" + str(total_datasets) +
                 ": " + dm3_adf_filename)
         dm3_abf_filename = dm3_adf_filename.replace("ADF", "ABF")
         dataset = run_peak_finding_process_for_single_dataset(
@@ -408,10 +422,11 @@ def run_peak_finding_process_for_all_datasets(
         dataset_list.append(dataset)
     return(dataset_list)
 
+
 def run_peak_finding_process_for_single_dataset(
-        s_adf_filename, 
-        s_abf_filename, 
-        peak_separation=0.13, # in nanometers
+        s_adf_filename,
+        s_abf_filename,
+        peak_separation=0.13,  # in nanometers
         refinement_interation_config=None,
         invert_abf_signal=True):
     plt.ioff()
@@ -424,7 +439,7 @@ def run_peak_finding_process_for_single_dataset(
             s_abf_modified, invert_signal=invert_abf_signal)
     if invert_abf_signal:
         s_abf.data = 1./s_abf.data
-    
+
     ################
     s_adf = hs.load(s_adf_filename)
     s_adf.change_dtype('float64')
@@ -433,12 +448,12 @@ def run_peak_finding_process_for_single_dataset(
 
     pixel_separation = peak_separation/s_adf.axes_manager[0].scale
     atom_position_list_pca = get_peak2d_skimage(
-            s_adf_modified, 
+            s_adf_modified,
             separation=pixel_separation)[0]
 
     #################################
     path_name = s_adf_filename
-    path_name = path_name[0:path_name.rfind(".")]
+    path_name = path_name[0: path_name.rfind(".")]
     if not os.path.exists(path_name):
         os.makedirs(path_name)
     #########################################
@@ -454,7 +469,7 @@ def run_peak_finding_process_for_single_dataset(
     atom_lattice.inverted_abf_image = np.rot90(np.fliplr(normalized_abf_data))
 
     a_sublattice = Sub_Lattice(
-            atom_position_list_pca, 
+            atom_position_list_pca,
             np.rot90(np.fliplr(s_adf_modified.data)))
 
     a_sublattice.save_path = "./" + path_name + "/"
@@ -471,9 +486,8 @@ def run_peak_finding_process_for_single_dataset(
 
     print("Refining a atom lattice")
     refine_sub_lattice(
-            a_sublattice, 
+            a_sublattice,
             [
-#                (a_sublattice.adf_image, 2, 'gaussian'),
                 (a_sublattice.original_adf_image, 2, 'gaussian')],
             0.35)
 
@@ -485,7 +499,7 @@ def run_peak_finding_process_for_single_dataset(
             zone_vector_100, new_atom_tag='B')
 
     b_sublattice = Sub_Lattice(
-            b_atom_list, 
+            b_atom_list,
             np.rot90(np.fliplr(s_adf_modified.data)))
     b_sublattice.save_path = "./" + path_name + "/"
     b_sublattice.path_name = path_name
@@ -501,17 +515,16 @@ def run_peak_finding_process_for_single_dataset(
     construct_zone_axes_from_sub_lattice(b_sublattice)
     image_atoms_removed = b_sublattice.original_adf_image
     image_atoms_removed = remove_atoms_from_image_using_2d_gaussian(
-        image_atoms_removed, 
+        image_atoms_removed,
         a_sublattice,
         percent_to_nn=0.35)
 
-    b_sublattice.original_adf_image_atoms_removed =\
-            image_atoms_removed
+    b_sublattice.original_adf_image_atoms_removed = image_atoms_removed
     b_sublattice.adf_image = image_atoms_removed
 
     print("Refining b atom lattice")
     refine_sub_lattice(
-            b_sublattice, 
+            b_sublattice,
             [
                 (image_atoms_removed, 2, 'center_of_mass'),
                 (image_atoms_removed, 2, 'gaussian')],
@@ -583,7 +596,7 @@ def run_process_for_adf_image_a_cation(
 
     #################################
     path_name = s_adf_filename
-    path_name = path_name[0:path_name.rfind(".")]
+    path_name = path_name[0: path_name.rfind(".")]
     if not os.path.exists(path_name):
         os.makedirs(path_name)
     #########################################
@@ -662,7 +675,7 @@ def run_process_for_adf_image_a_b_cation(
 
     #################################
     path_name = s_adf_filename
-    path_name = path_name[0:path_name.rfind(".")]
+    path_name = path_name[0: path_name.rfind(".")]
     if not os.path.exists(path_name):
         os.makedirs(path_name)
     #########################################
