@@ -4,7 +4,7 @@ import numpy as np
 from skimage.feature import peak_local_max
 from atomap.atomap_plotting import plot_feature_density
 import matplotlib.pyplot as plt
-
+import copy
 
 def get_peak2d_skimage(image, separation):
     """
@@ -41,19 +41,27 @@ def get_peak2d_skimage(image, separation):
     return(peaks)
 
 
-def find_feature_density(
+def find_features_by_separation(
         image_data,
-        separation_range=(3, 40),
-        separation_step=1,
-        plot_figure=False,
-        plot_debug_figures=False):
+        separation_range=None,
+        separation_step=1):
     """
     Do peak finding with a varying amount of peak separation
-    constrained. Gives a measure of feature density, and
-    what peak separation should be used to find the initial
-    sub-lattice.
+    constrained.
 
     Inspiration from the program Smart Align by Lewys Jones.
+
+    Parameters
+    ----------
+    image_data : Numpy 2D array
+    separation_range : tuple, optional
+        Lower and upper end of minimum pixel distance between the
+        features.
+    separation_step : int, optional
+
+    Returns
+    -------
+    tuple, (separation_list, peak_list)
     """
     if separation_range is None:
         min_separation = 3
@@ -66,25 +74,88 @@ def find_feature_density(
             separation_step)
 
     separation_value_list = []
-    peakN_list = []
+    peak_list = []
     for separation in separation_list:
-        peak_list = peak_local_max(image_data, separation)
+        peaks = peak_local_max(image_data, separation)
         separation_value_list.append(separation)
-        peakN_list.append(len(peak_list))
-        if plot_debug_figures:
-            fig, ax = plt.subplots()
-            ax.imshow(np.rot90(np.fliplr(image_data)))
-            peak_list = peak_list.swapaxes(0, 1)
-            ax.scatter(peak_list[0], peak_list[1], color='blue')
-            fig.savefig(
-                    "feature_density_separation_" +
-                    str(separation) + ".png")
-            plt.close(fig)
+        peak_list.append(peaks)
 
-    if plot_figure:
-        plot_feature_density(separation_value_list, peakN_list)
+    return(separation_value_list, peak_list)
 
-    return(separation_value_list, peakN_list)
+# WORK IN PROGRESS
+def plot_feature_separation(
+        image_data,
+        separation_range=(5,30),
+        separation_step=1):
+    """
+    Plot the peak positions on in a HyperSpy signal.
+    """
+    separation_list, peak_list = find_features_by_separation(
+            image_data=image_data,
+            separation_range=separation_range,
+            separation_step=separation_step)
+
+    s = hs.signals.Signal2D([image_data]*len(separation_list))
+    peak_list = np.array(peak_list)
+
+    max_peaks = 0
+    for peaks in peak_list:
+        if len(peaks) > max_peaks:
+            max_peaks = len(peaks)
+
+    marker_list_x = np.ones((len(peak_list), max_peaks))
+    marker_list_y = np.ones((len(peak_list), max_peaks))
+
+#    print(peak_list.shape)
+#    for index, peaks in enumerate(peak_list):
+#        marker_list_x[index, 0:len(peaks)] = copy.deepcopy(peaks[:,1])
+#        marker_list_y[index, 0:len(peaks)] = copy.deepcopy(peaks[:,0])
+#    print(marker_list_x.shape)
+#    print(marker_list_y.shape)
+
+#    s.axes_manager.navigation_axes[0].offset = separation_list[0]
+#    s.axes_manager.navigation_axes[0].scale = separation_step
+
+#    m = hs.plot.markers.point(
+#            x=marker_list_x, y=marker_list_y, color='red')
+#    s.add_marker(m)
+
+    m = hs.plot.markers.point(
+            x=peak_list[:,1], y=peak_list[:,0], color='red')
+    s.add_marker(m)
+
+#    for index, (marker_x, marker_y) in enumerate(zip(marker_list_x, marker_list_y)):
+#        m = hs.plot.markers.point(
+#                x=marker_x, y=marker_y, color='red')
+#        s.add_marker(m,
+#                plot_on_signal=True,
+#                plot_marker=True) 
+    return(s)
+
+def find_feature_density(
+        image_data,
+        separation_range=None,
+        separation_step=1,
+        plot_figure=False,
+        plot_debug_figures=False):
+    """
+    Do peak finding with a varying amount of peak separation
+    constrained. Gives a measure of feature density, and
+    what peak separation should be used to find the initial
+    sub-lattice.
+
+    Inspiration from the program Smart Align by Lewys Jones.
+    """
+
+    separation_list, peak_list = find_features_by_separation(
+            image_data=image_data,
+            separation_range=separation_range,
+            separation_step=separation_step)
+    peakN_list = []
+    for peaks in peak_list:
+        peakN_list.append(len(peaks))
+
+    return(separation_list, peakN_list)
 
 
 def construct_zone_axes_from_sub_lattice(sub_lattice):
