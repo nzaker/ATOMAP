@@ -8,16 +8,16 @@ import copy
 import json
 from matplotlib.gridspec import GridSpec
 
-from atomap.atomap_tools import \
+from atomap.tools import \
         _get_interpolated2d_from_unregular_data,\
         _get_clim_from_data,\
         project_position_property_sum_planes
 
-from atomap.atomap_plotting import \
+from atomap.plotting import \
         plot_image_map_line_profile_using_interface_plane,\
         plot_complex_image_map_line_profile_using_interface_plane,\
         _make_line_profile_subplot_from_three_parameter_data
-from atomap.atomap_atom_finding_refining import get_peak2d_skimage
+from atomap.atom_finding_refining import get_peak2d_skimage
 
 from atomap.atom_position_class import Atom_Position
 from atomap.atom_plane_class import Atom_Plane

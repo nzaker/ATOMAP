@@ -1,6 +1,6 @@
 import os
 import unittest
-from atomap.atomap_atom_finding_refining import\
+from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
         construct_zone_axes_from_sub_lattice,\

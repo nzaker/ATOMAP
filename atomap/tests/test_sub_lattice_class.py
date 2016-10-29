@@ -1,14 +1,14 @@
 import os
 import unittest
 import numpy as np
-from atomap.atomap_atom_finding_refining import\
+from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
         construct_zone_axes_from_sub_lattice,\
         get_peak2d_skimage
 from atomap.sub_lattice_class import Sub_Lattice
 from hyperspy.api import load
-from atomap.atomap_atom_finding_refining import refine_sub_lattice
+from atomap.atom_finding_refining import refine_sub_lattice
 
 from atomap.atom_lattice_class import Atom_Lattice
 

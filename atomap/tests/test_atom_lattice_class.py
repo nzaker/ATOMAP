@@ -3,12 +3,12 @@ import unittest
 import numpy as np
 from atomap.atom_lattice_class import Atom_Lattice
 from atomap.sub_lattice_class import Sub_Lattice
-from atomap.atomap_atom_finding_refining import\
+from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
         construct_zone_axes_from_sub_lattice,\
         get_peak2d_skimage
-from atomap.atomap_io import load_atom_lattice_from_hdf5
+from atomap.io import load_atom_lattice_from_hdf5
 from hyperspy.api import load
 
 my_path = os.path.dirname(__file__)
