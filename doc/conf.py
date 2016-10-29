@@ -32,6 +32,7 @@ import sphinx_rtd_theme
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
 ]
 
@@ -97,6 +98,7 @@ exclude_patterns = ['_build']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+autoclass_content = 'both'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
