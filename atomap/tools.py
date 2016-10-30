@@ -570,13 +570,13 @@ def _get_clim_from_data(
         clim = tuple(clim)
     return(clim)
 
+
 def project_position_property_sum_planes(
         input_data_list,
         interface_plane,
         rebin_data=True):
     """
     Project 2D positions onto a 1D plane.
-    
     The 2D positions are found as function of distance
     to the interface_plane. If rebin_data is True,
     the function will attempt to sum the positions belonging
@@ -593,12 +593,12 @@ def project_position_property_sum_planes(
     ----------
     input_data_list : Numpy array, [Nx3]
         Numpy array with positions and property value.
-        Must be in the from [[x,y,z]], so that the 
+        Must be in the from [[x,y,z]], so that the
         x-positions are extracted using input_data_list[:,0].
         y-positions using input_data_list[:,1].
         Property value using input_data_list[:,2].
     interface_plane : Atomap atom_plane object
-    rebin_data : bool, optional 
+    rebin_data : bool, optional
         If True, will attempt to combine the data points
         which belong to the same atomic plane.
         The points which belong to the same plane will be

@@ -3,8 +3,6 @@ import hyperspy.api as hs
 import numpy as np
 from skimage.feature import peak_local_max
 from atomap.plotting import plot_feature_density
-import matplotlib.pyplot as plt
-import copy
 
 def get_peak2d_skimage(image, separation):
     """
