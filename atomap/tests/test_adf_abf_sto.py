@@ -6,7 +6,7 @@ from atomap.atom_finding_refining import\
         construct_zone_axes_from_sub_lattice,\
         get_peak2d_skimage
 
-from atomap.sub_lattice_class import Sub_Lattice
+from atomap.sub_lattice import Sub_Lattice
 from hyperspy.api import load
 import numpy as np
 

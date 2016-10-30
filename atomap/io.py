@@ -1,6 +1,6 @@
 import h5py
-from atomap.atom_lattice_class import Atom_Lattice
-from atomap.sub_lattice_class import Sub_Lattice
+from atomap.atom_lattice import Atom_Lattice
+from atomap.sub_lattice import Sub_Lattice
 from atomap.atom_finding_refining import construct_zone_axes_from_sub_lattice
 
 

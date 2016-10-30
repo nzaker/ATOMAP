@@ -6,11 +6,11 @@ from atomap.atom_finding_refining import\
         do_pca_on_signal,\
         construct_zone_axes_from_sub_lattice,\
         get_peak2d_skimage
-from atomap.sub_lattice_class import Sub_Lattice
+from atomap.sub_lattice import Sub_Lattice
 from hyperspy.api import load
 from atomap.atom_finding_refining import refine_sub_lattice
 
-from atomap.atom_lattice_class import Atom_Lattice
+from atomap.atom_lattice import Atom_Lattice
 
 my_path = os.path.dirname(__file__)
 

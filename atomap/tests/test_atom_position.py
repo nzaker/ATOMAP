@@ -1,5 +1,5 @@
 import unittest
-from atomap.atom_position_class import Atom_Position
+from atomap.atom_position import Atom_Position
 from numpy import pi
 
 class test_create_atom_position_object(unittest.TestCase):

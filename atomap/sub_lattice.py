@@ -19,8 +19,8 @@ from atomap.plotting import \
         _make_line_profile_subplot_from_three_parameter_data
 from atomap.atom_finding_refining import get_peak2d_skimage
 
-from atomap.atom_position_class import Atom_Position
-from atomap.atom_plane_class import Atom_Plane
+from atomap.atom_position import Atom_Position
+from atomap.atom_plane import Atom_Plane
 
 
 class Sub_Lattice():
