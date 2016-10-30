@@ -66,6 +66,7 @@ class Atom_Position:
 
     @property
     def ellipticity(self):
+        """Largest sigma divided by the shortest"""
         if self.sigma_x > self.sigma_y:
             return(self.sigma_x/self.sigma_y)
         else:
@@ -75,6 +76,7 @@ class Atom_Position:
         return((self.pixel_x, self.pixel_y))
 
     def get_pixel_difference(self, atom):
+        """Vector between self and given atom"""
         x_distance = self.pixel_x - atom.pixel_x
         y_distance = self.pixel_y - atom.pixel_y
         return((x_distance, y_distance))
@@ -132,6 +134,20 @@ class Atom_Position:
             self,
             image_data,
             slice_size):
+        """
+        Return a square slice of the image data, with the 
+        atom position in the center.
+
+        Parameters
+        ----------
+        image_data : Numpy 2D array
+        slice_size : int
+            Width and height of the square slice
+
+        Returns
+        -------
+        2D numpy array
+        """
         x0 = self.pixel_x - slice_size/2
         x1 = self.pixel_x + slice_size/2
         y0 = self.pixel_y - slice_size/2
@@ -180,6 +196,13 @@ class Atom_Position:
             plt.close('all')
 
     def get_closest_neighbor(self):
+        """
+        Find the closest neighbor to an atom in the same sub lattice.
+
+        Returns
+        -------
+        Atomap atom_position object
+        """
         closest_neighbor = 100000000000000000
         for neighbor_atom in self.nearest_neighbor_list:
             distance = self.get_pixel_distance_from_another_atom(
@@ -337,6 +360,27 @@ class Atom_Position:
             rotation_enabled=True,
             percent_to_nn=0.40,
             debug_plot=False):
+        """
+        Parameters
+        ----------
+        image_data : Numpy 2D array
+        rotation_enabled : bool, optional
+            If True, the Gaussian will be able to rotate.
+            Note, this can increase the chance of fitting failure.
+            Default True.
+        percent_to_nn : float, optional
+            The percent of the distance to the nearest neighbor atom
+            in the same sub lattice. The distance times this percentage
+            defines the mask around the atom where the Gaussian will be
+            fitted. A smaller value can reduce the effect from
+            neighboring atoms, but might also decrease the accuracy of
+            the fitting due to less data to fit to. 
+            Default 0.4 (40%).
+        debug_plot : bool, optional
+            Make debug figure for every Gaussian fit.
+            Useful for debugging failed Gaussian fitting.
+            Default False.
+        """
 
         for i in range(10):
             g = self.fit_2d_gaussian_with_mask(
