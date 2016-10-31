@@ -38,6 +38,7 @@ class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
         self.name = "A-cation"
         self.tag = "A"
         self.color = 'blue'
+        self.image_type = 0
         self.zone_axis_list = [
                 {'number': 0, 'name': '110'},
                 {'number': 1, 'name': '100'},
@@ -49,7 +50,7 @@ class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
         self.sublattice_order = 0
         self.refinement_config = {
                 'config': [
-                    ['image0', 2, 'gaussian'],
+                    ['image_data', 2, 'gaussian'],
                     ],
                 'neighbor_distance': 0.35}
 
@@ -60,6 +61,7 @@ class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
         self.name = "B-cation"
         self.tag = "B"
         self.color = 'green'
+        self.image_type = 0
         self.zone_axis_list = [
                 {'number': 0, 'name': '110'},
                 {'number': 1, 'name': '100'},
@@ -72,8 +74,8 @@ class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
         self.sublattice_position_zoneaxis = "100"
         self.refinement_config = {
                 'config': [
-                    ['image0', 2, 'center_of_mass'],
-                    ['image0', 2, 'gaussian'],
+                    ['image_data', 1, 'center_of_mass'],
+                    ['image_data', 1, 'gaussian'],
                     ],
                 'neighbor_distance': 0.25}
         self.atom_subtract_config = [
@@ -83,6 +85,39 @@ class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
                     },
                 ]
 
+class PerovskiteOxide110SubLatticeOxygen(SubLatticeParameterBase):
+    def __init__(self):
+        SubLatticeParameterBase.__init__(self)
+        self.name = "Oxygen"
+        self.tag = "O"
+        self.color = 'red'
+        self.image_type = 1
+        self.zone_axis_list = [
+                {'number': 0, 'name': '110'},
+                {'number': 1, 'name': '100'},
+                {'number': 2, 'name': '11-2'},
+                {'number': 3, 'name': '112'},
+                {'number': 5, 'name': '111'},
+                {'number': 6, 'name': '11-1'}, ]
+        self.sublattice_order = 2
+        self.sublattice_position_sublattice = "B-cation"
+        self.sublattice_position_zoneaxis = "110"
+        self.refinement_config = {
+                'config': [
+                    ['image_data', 1, 'center_of_mass'],
+                    ['image_data', 1, 'gaussian'],
+                    ],
+                'neighbor_distance': 0.25}
+        self.atom_subtract_config = [
+                {
+                    'sublattice': 'A-cation',
+                    'neighbor_distance': 0.35,
+                    },
+                {
+                    'sublattice': 'B-cation',
+                    'neighbor_distance': 0.30,
+                    },
+                ]
 
 class ModelParameters:
     def __init__(self):
@@ -105,6 +140,7 @@ class PerovskiteOxide110(ModelParameters):
         self.sublattice_list = [
             PerovskiteOxide110SubLatticeACation(),
             PerovskiteOxide110SubLatticeBCation(),
+            PerovskiteOxide110SubLatticeOxygen(),
             ]
 
     def get_sublattice_from_order(self, order_number):
@@ -148,17 +184,22 @@ def make_atom_lattice_from_image(
         image0_filename,
         model_parameters=None,
         image1_filename=None):
-    image0 = hs.load(image0_filename)
-    image0_modified = run_image_filtering(image0)
+    s_image0 = hs.load(image0_filename)
+    s_image0_modified = run_image_filtering(s_image0)
 
     if model_parameters is None:
         model_parameters = PerovskiteOxide110()
 
-    image0_scale = image0.axes_manager[0].scale
+    image0_scale = s_image0.axes_manager[0].scale
     pixel_separation = model_parameters.peak_separation/image0_scale
     initial_atom_position_list = get_peak2d_skimage(
-            image0_modified,
+            s_image0_modified,
             separation=pixel_separation)[0]
+
+    if image1_filename is not None:
+        s_image1 = hs.load(image1_filename)
+        s_image1.data = 1./s_image1.data
+        image1_data = np.rot90(np.fliplr(s_image1.data))
 
     #################################
     path_name = image0_filename
@@ -166,8 +207,8 @@ def make_atom_lattice_from_image(
     if not os.path.exists(path_name):
         os.makedirs(path_name)
 
-    image0_data = np.rot90(np.fliplr(image0.data))
-    image0_modified_data = np.rot90(np.fliplr(image0_modified))
+    image0_data = np.rot90(np.fliplr(s_image0.data))
+    image0_data_modified = np.rot90(np.fliplr(s_image0_modified.data))
 
     atom_lattice = Atom_Lattice()
     atom_lattice.original_filename = image0_filename
@@ -177,11 +218,23 @@ def make_atom_lattice_from_image(
     for sublattice_index in range(model_parameters.number_of_sublattices):
         sublattice_para = model_parameters.get_sublattice_from_order(
                 sublattice_index)
+        
+        if sublattice_para.image_type == 0:
+            s_image = s_image0
+            image_data = image0_data
+            image_data_modified = image0_data_modified
+        if sublattice_para.image_type == 1:
+            if image1_filename is not None:
+                s_image = s_image1
+                image_data = image1_data
+                image_data_modified = image1_data
+            else:
+                break
 
         if sublattice_para.sublattice_order == 0:
             sublattice = Sub_Lattice(
                 initial_atom_position_list,
-                image0_modified_data)
+                image_data_modified)
         else:
             temp_sublattice = atom_lattice.get_sub_lattice(
                     sublattice_para.sublattice_position_sublattice)
@@ -194,15 +247,15 @@ def make_atom_lattice_from_image(
 
             sublattice = Sub_Lattice(
                 atom_list,
-                image0_data)
+                image_data)
 
         sublattice.save_path = "./" + path_name + "/"
         sublattice.path_name = path_name
         sublattice.plot_color = sublattice_para.color
         sublattice.name = sublattice_para.name
         sublattice.tag = sublattice_para.tag
-        sublattice.pixel_size = image0.axes_manager[0].scale
-        sublattice.original_adf_image = image0_data
+        sublattice.pixel_size = s_image.axes_manager[0].scale
+        sublattice.original_adf_image = image_data
         atom_lattice.sub_lattice_list.append(sublattice)
 
         for atom in sublattice.atom_list:
@@ -212,26 +265,25 @@ def make_atom_lattice_from_image(
         if not(sublattice_para.sublattice_order == 0):
             construct_zone_axes_from_sub_lattice(sublattice)
             atom_subtract_config = sublattice_para.atom_subtract_config
-            image0_data = sublattice.adf_image
+            image_data = sublattice.adf_image
             for atom_subtract_para in atom_subtract_config:
                 temp_sublattice = atom_lattice.get_sub_lattice(
                         atom_subtract_para['sublattice'])
                 neighbor_distance = atom_subtract_para['neighbor_distance']
-                print(neighbor_distance)
-                image0_data = remove_atoms_from_image_using_2d_gaussian(
-                    image0_data,
+                image_data = remove_atoms_from_image_using_2d_gaussian(
+                    image_data,
                     temp_sublattice,
                     percent_to_nn=neighbor_distance)
-            sublattice.adf_image = image0_data
-            sublattice.original_adf_image = image0_data
+            sublattice.adf_image = image_data
+            sublattice.original_adf_image = image_data
 
         refinement_config = sublattice_para.refinement_config
         refinement_neighbor_distance = refinement_config['neighbor_distance']
         refinement_steps = refinement_config['config']
         for refinement_step in refinement_steps:
-            if refinement_step[0] == 'image0':
+            if refinement_step[0] == 'image_data':
                 refinement_step[0] = sublattice.original_adf_image
-            elif refinement_step[0] == 'image0_modified':
+            elif refinement_step[0] == 'image_data_modified':
                 refinement_step[0] = sublattice.adf_image
             else:
                 refinement_step[0] = sublattice.original_adf_image

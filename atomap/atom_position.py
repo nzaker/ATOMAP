@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from atomap.tools import _make_circular_mask
 from scipy import ndimage
 import math
+from atomap.external.gaussian2d import Gaussian2D
 
 
 class Atom_Position:
@@ -257,7 +258,7 @@ class Atom_Position:
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
-        g = hs.model.components2D.Gaussian2D(
+        g = Gaussian2D(
                 centre_x=0.0,
                 centre_y=0.0,
                 sigma_x=self.sigma_x,
@@ -317,7 +318,7 @@ class Atom_Position:
         data = copy.deepcopy(data)
         mask = np.invert(mask)
         data[mask] = 0
-        g = hs.model.components2D.Gaussian2D(
+        g = Gaussian2D(
                 centre_x=0.0,
                 centre_y=0.0,
                 sigma_x=self.sigma_x,
@@ -417,7 +418,10 @@ class Atom_Position:
         self.rotation = new_rotation
         self.sigma_x = new_sigma_x
         self.sigma_y = new_sigma_y
-        self.amplitude_gaussian = g.A.value
+        if g is not False:
+            self.amplitude_gaussian = g.A.value
+        else:
+            self.amplitude_gaussian = 0.0
 
     def get_center_position_com(
             self,
