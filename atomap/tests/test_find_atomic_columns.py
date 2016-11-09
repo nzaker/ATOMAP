@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import os
 import unittest
 from atomap.atom_finding_refining import\

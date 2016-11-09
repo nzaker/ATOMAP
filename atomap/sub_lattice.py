@@ -302,7 +302,7 @@ class Sub_Lattice():
             x_list,
             y_list,
             z_list,
-            upscale=4):
+            upscale=2):
         """
         Interpolate unregularly spaced data points into a
         regularly spaced grid, useful for making data work
