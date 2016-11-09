@@ -961,7 +961,26 @@ class Sub_Lattice():
         return(new_atom_list)
 
     def plot_atom_plane_on_stem_data(
-            self, atom_plane_list, figname="atom_plane_plot.jpg"):
+            self, atom_plane_list, figname=None):
+        """
+        Plot atom_planes as lines on the adf_image.
+
+        Parameters
+        ----------
+        atom_plane_list : list of atom_plane objects
+            atom_planes to be plotted on the image contained in
+        figname : string, optional
+            Name of the saved figure, default "atom_plane_plot.jpg".
+
+        Returns
+        -------
+        matplotlib figure object
+
+        Example
+        -------
+        >>>> fig = sub_lattice.plot_atom_plane_on_stem_data(atom_planes)
+        >>>> fig.savefig("atom_planes.jpg")
+        """
         fig, ax = plt.subplots(figsize=(10, 10))
         cax = ax.imshow(self.adf_image)
         if self.plot_clim:
@@ -972,8 +991,10 @@ class Sub_Lattice():
             ax.plot(x_pos, y_pos, 'o', color='blue')
         ax.set_ylim(0, self.adf_image.shape[0])
         ax.set_xlim(0, self.adf_image.shape[1])
-        fig.tight_layout()
-        fig.savefig(self.save_path + figname)
+        if figname is not None:
+            fig.tight_layout()
+            fig.savefig(self.save_path + figname)
+        return(fig)
 
     def plot_atom_list_on_image_data(
             self,
