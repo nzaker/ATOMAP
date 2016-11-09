@@ -6,6 +6,8 @@ transmission electron microscopy images.
 
 The code is available under the GNU GPL v3 license.
 
+Currently the code is only available on GitLab.
+
 Contents:
 
 .. toctree::
