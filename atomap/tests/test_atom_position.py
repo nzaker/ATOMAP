@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import unittest
 from atomap.atom_position import Atom_Position
 from numpy import pi

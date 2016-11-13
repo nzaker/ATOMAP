@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import os
 import unittest
 import numpy as np
@@ -114,7 +116,7 @@ class test_sub_lattice_processing(unittest.TestCase):
     def test_get_nearest_neighbor_directions(self):
         self.sub_lattice.get_nearest_neighbor_directions()
 
-class test_sub_lattice_plotting(unittest.TestCase):
+class test_sub_lattice_plotting_distance(unittest.TestCase):
     
     def setUp(self):
         s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
@@ -141,19 +143,114 @@ class test_sub_lattice_plotting(unittest.TestCase):
     def test_plot_sub_lattice_atom_distance_map(self):
         self.sub_lattice.plot_atom_distance_map()
 
+class test_sub_lattice_plotting_distance_difference(unittest.TestCase):
+    
+    def setUp(self):
+        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        peak_separation = 0.15
+
+        s_adf = load(
+                my_path +
+                s_adf_filename)
+        s_adf.change_dtype('float64')
+        s_adf_modified = subtract_average_background(s_adf)
+        s_adf_modified = do_pca_on_signal(s_adf_modified)
+        pixel_size = s_adf.axes_manager[0].scale
+        pixel_separation = peak_separation/pixel_size
+
+        peaks = get_peak2d_skimage(
+                s_adf_modified, 
+                pixel_separation)[0]
+        self.sub_lattice = Sub_Lattice(
+                peaks, 
+                np.rot90(np.fliplr(s_adf_modified.data)))
+        self.sub_lattice.pixel_size = pixel_size
+        construct_zone_axes_from_sub_lattice(self.sub_lattice)
+
     def test_plot_sub_lattice_atom_distance_difference_map(self):
         self.sub_lattice.plot_atom_distance_difference_map()
 
+class test_sub_lattice_plotting_monolayer_distance(unittest.TestCase):
+    
+    def setUp(self):
+        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        peak_separation = 0.15
+
+        s_adf = load(
+                my_path +
+                s_adf_filename)
+        s_adf.change_dtype('float64')
+        s_adf_modified = subtract_average_background(s_adf)
+        s_adf_modified = do_pca_on_signal(s_adf_modified)
+        pixel_size = s_adf.axes_manager[0].scale
+        pixel_separation = peak_separation/pixel_size
+
+        peaks = get_peak2d_skimage(
+                s_adf_modified, 
+                pixel_separation)[0]
+        self.sub_lattice = Sub_Lattice(
+                peaks, 
+                np.rot90(np.fliplr(s_adf_modified.data)))
+        self.sub_lattice.pixel_size = pixel_size
+        construct_zone_axes_from_sub_lattice(self.sub_lattice)
+
     def test_plot_sub_lattice_monolayer_distance_map(self):
         self.sub_lattice.plot_monolayer_distance_map()
+
+class test_sub_lattice_plotting_atom_list(unittest.TestCase):
+    
+    def setUp(self):
+        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        peak_separation = 0.15
+
+        s_adf = load(
+                my_path +
+                s_adf_filename)
+        s_adf.change_dtype('float64')
+        s_adf_modified = subtract_average_background(s_adf)
+        s_adf_modified = do_pca_on_signal(s_adf_modified)
+        pixel_size = s_adf.axes_manager[0].scale
+        pixel_separation = peak_separation/pixel_size
+
+        peaks = get_peak2d_skimage(
+                s_adf_modified, 
+                pixel_separation)[0]
+        self.sub_lattice = Sub_Lattice(
+                peaks, 
+                np.rot90(np.fliplr(s_adf_modified.data)))
+        self.sub_lattice.pixel_size = pixel_size
+        construct_zone_axes_from_sub_lattice(self.sub_lattice)
 
     def test_plot_sub_lattice_atom_list(self):
         self.sub_lattice.plot_atom_list_on_image_data(
                 image=self.sub_lattice.adf_image)
 
+class test_sub_lattice_plotting_ellipticity(unittest.TestCase):
+    
+    def setUp(self):
+        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        peak_separation = 0.15
+
+        s_adf = load(
+                my_path +
+                s_adf_filename)
+        s_adf.change_dtype('float64')
+        s_adf_modified = subtract_average_background(s_adf)
+        s_adf_modified = do_pca_on_signal(s_adf_modified)
+        pixel_size = s_adf.axes_manager[0].scale
+        pixel_separation = peak_separation/pixel_size
+
+        peaks = get_peak2d_skimage(
+                s_adf_modified, 
+                pixel_separation)[0]
+        self.sub_lattice = Sub_Lattice(
+                peaks, 
+                np.rot90(np.fliplr(s_adf_modified.data)))
+        self.sub_lattice.pixel_size = pixel_size
+        construct_zone_axes_from_sub_lattice(self.sub_lattice)
+
     def test_plot_ellipticity_rotation_complex(self):
         self.sub_lattice.plot_ellipticity_rotation_complex()
-
 
 class test_sub_lattice_interpolation(unittest.TestCase):
 
