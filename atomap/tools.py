@@ -83,7 +83,7 @@ def remove_atoms_from_image_using_2d_gaussian(
     return(subtracted_image)
 
 
-# DENNE SKAL FLYTTES ETTERHVERT
+# Delete this function?
 def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
     y, x = np.ogrid[-centerX:imageSizeX-centerX, -centerY:imageSizeY-centerY]
     mask = x*x + y*y <= radius*radius
