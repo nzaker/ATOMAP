@@ -3,6 +3,7 @@ import hyperspy.api as hs
 import numpy as np
 from skimage.feature import peak_local_max
 from atomap.plotting import plot_feature_density
+import matplotlib.pyplot as plt
 
 def get_peak2d_skimage(image, separation):
     """
@@ -80,8 +81,46 @@ def find_features_by_separation(
 
     return(separation_value_list, peak_list)
 
-# WORK IN PROGRESS
 def plot_feature_separation(
+        image_data,
+        separation_range=(5,30),
+        separation_step=1):
+    """
+    Plot peak positions as a function of peak separation.
+
+    Parameters
+    ----------
+    image_data : 2D numpy array
+    separation_range : tuple, optional
+    separation_step : int, optional
+
+    Examples
+    --------
+    >>>> import hyperspy.api as hs
+    >>>> from atomap.atom_finding_refining import plot_feature_separation
+    >>>> s = hs.load("stem_adf_data.hdf5")
+    >>>> plot_feature_separation(s.data)
+
+    Using all the parameters
+    >>>> plot_feature_separation(s.data, separation_range=(10,50), separation_step=3)
+    """
+    separation_list, peak_list = find_features_by_separation(
+            image_data=image_data,
+            separation_range=separation_range,
+            separation_step=separation_step)
+    for index, (separation, peaks) in enumerate(
+            zip(separation_list, peak_list)):
+        fig, ax = plt.subplots(figsize=(7,7))
+        ax.imshow(image_data)
+        ax.scatter(peaks[:,1], peaks[:,0])
+        ax.set_xlim(0, image_data.shape[1])
+        ax.set_ylim(0, image_data.shape[0])
+        ax.set_axis_off()
+        ax.set_title("Peak separation, " + str(separation) + " pixels")
+        fig.savefig("peak_separation_" + str(separation).zfill(3))
+
+# WORK IN PROGRESS
+def plot_feature_separation_hyperspy_signal(
         image_data,
         separation_range=(5,30),
         separation_step=1):
