@@ -32,6 +32,22 @@ class SubLatticeParameterBase:
             )
 
 
+class GenericSubLattice(SubLatticeParameterBase):
+    def __init__(self):
+        SubLatticeParameterBase.__init__(self)
+        self.color = 'red'
+        self.tag = 'S0'
+        self.image_type = 0
+        self.name = "Sublattice 0"
+        self.sublattice_order = 0
+        self.refinement_config = {
+                'config': [
+                    ['image_data', 1, 'center_of_mass'],
+                    ['image_data', 1, 'gaussian'],
+                    ],
+                'neighbor_distance': 0.35}
+
+
 class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
     def __init__(self):
         SubLatticeParameterBase.__init__(self)
@@ -119,29 +135,18 @@ class PerovskiteOxide110SubLatticeOxygen(SubLatticeParameterBase):
                     },
                 ]
 
-class ModelParameters:
+class ModelParametersBase:
     def __init__(self):
         self.peak_separation = None
         self.name = None
+        
+        self.sub_lattice_list = []
 
     def __repr__(self):
         return '<%s, %s>' % (
             self.__class__.__name__,
             self.name,
             )
-
-
-class PerovskiteOxide110(ModelParameters):
-    def __init__(self):
-        ModelParameters.__init__(self)
-        self.name = "Peroskite 110"
-        self.peak_separation = 0.127
-
-        self.sublattice_list = [
-            PerovskiteOxide110SubLatticeACation(),
-            PerovskiteOxide110SubLatticeBCation(),
-            PerovskiteOxide110SubLatticeOxygen(),
-            ]
 
     def get_sublattice_from_order(self, order_number):
         for sublattice in self.sublattice_list:
@@ -152,6 +157,30 @@ class PerovskiteOxide110(ModelParameters):
     @property
     def number_of_sublattices(self):
         return(len(self.sublattice_list))
+
+
+class GenericStructure(ModelParametersBase):
+    def __init__(self):
+        ModelParametersBase.__init__(self)
+        self.peak_separation = None
+        self.name = 'A structure'
+
+        self.sublattice_list = [
+            GenericSubLattice(),
+        ]
+    
+
+class PerovskiteOxide110(ModelParametersBase):
+    def __init__(self):
+        ModelParametersBase.__init__(self)
+        self.name = "Peroskite 110"
+        self.peak_separation = 0.127
+
+        self.sublattice_list = [
+            PerovskiteOxide110SubLatticeACation(),
+            PerovskiteOxide110SubLatticeBCation(),
+            PerovskiteOxide110SubLatticeOxygen(),
+            ]
 
 
 class SrTiO3_110(PerovskiteOxide110):
@@ -183,15 +212,20 @@ def run_image_filtering(signal, invert_signal=False):
 def make_atom_lattice_from_image(
         image0_filename,
         model_parameters=None,
+        pixel_separation=None,
         image1_filename=None):
     s_image0 = hs.load(image0_filename)
     s_image0_modified = run_image_filtering(s_image0)
 
     if model_parameters is None:
-        model_parameters = PerovskiteOxide110()
+        model_parameters = GenericStructure()
 
     image0_scale = s_image0.axes_manager[0].scale
-    pixel_separation = model_parameters.peak_separation/image0_scale
+    if pixel_separation is None:
+        if model_parameters.peak_separation is None:
+            raise ValueError("pixel_separation is not set. Either set it in the model_parameters.peak_separation or pixel_separation parameter")
+        else:
+            pixel_separation = model_parameters.peak_separation/image0_scale
     initial_atom_position_list = get_peak2d_skimage(
             s_image0_modified,
             separation=pixel_separation)[0]
@@ -294,12 +328,13 @@ def make_atom_lattice_from_image(
             refinement_neighbor_distance)
         construct_zone_axes_from_sub_lattice(sublattice)
 
-        for zone_axis in sublattice_para.zone_axis_list:
-            if zone_axis['number'] <= len(
-                    sublattice.zones_axis_average_distances_names):
-                sublattice.zones_axis_average_distances_names[
-                        zone_axis['number']] =\
-                        zone_axis['name']
+        if hasattr(sublattice_para, 'zone_axis_list'):
+            for zone_axis in sublattice_para.zone_axis_list:
+                if zone_axis['number'] <= len(
+                        sublattice.zones_axis_average_distances_names):
+                    sublattice.zones_axis_average_distances_names[
+                            zone_axis['number']] =\
+                            zone_axis['name']
 
     return(atom_lattice)
 
