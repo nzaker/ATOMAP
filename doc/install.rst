@@ -11,7 +11,7 @@ The recommended way to install Atomap is using PIP, which is a package manager f
 
 .. code-block:: bash
 
-    $ pip install --user ase
+    $ pip install --user atomap
 
 Windows
 -------
