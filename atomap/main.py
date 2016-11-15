@@ -101,6 +101,7 @@ class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
                     },
                 ]
 
+
 class PerovskiteOxide110SubLatticeOxygen(SubLatticeParameterBase):
     def __init__(self):
         SubLatticeParameterBase.__init__(self)
@@ -135,6 +136,7 @@ class PerovskiteOxide110SubLatticeOxygen(SubLatticeParameterBase):
                     },
                 ]
 
+
 class ModelParametersBase:
     def __init__(self):
         self.peak_separation = None
@@ -168,7 +170,7 @@ class GenericStructure(ModelParametersBase):
         self.sublattice_list = [
             GenericSubLattice(),
         ]
-    
+
 
 class PerovskiteOxide110(ModelParametersBase):
     def __init__(self):
