@@ -195,18 +195,18 @@ def find_feature_density(
     return(separation_list, peakN_list)
 
 
-def construct_zone_axes_from_sub_lattice(sub_lattice):
-    tag = sub_lattice.tag
-    sub_lattice.find_nearest_neighbors(nearest_neighbors=15)
-    sub_lattice._make_nearest_neighbor_direction_distance_statistics(
+def construct_zone_axes_from_sublattice(sublattice):
+    tag = sublattice.tag
+    sublattice.find_nearest_neighbors(nearest_neighbors=15)
+    sublattice._make_nearest_neighbor_direction_distance_statistics(
             debug_figname=tag+"_cat_nn.png")
-    sub_lattice._generate_all_atom_plane_list()
-    sub_lattice._sort_atom_planes_by_zone_vector()
-    sub_lattice.plot_all_atom_planes(fignameprefix=tag+"_atom_plane")
+    sublattice._generate_all_atom_plane_list()
+    sublattice._sort_atom_planes_by_zone_vector()
+    sublattice.plot_all_atom_planes(fignameprefix=tag+"_atom_plane")
 
 
-def refine_sub_lattice(
-        sub_lattice,
+def refine_sublattice(
+        sublattice,
         refinement_config_list,
         percent_to_nn):
 
@@ -214,7 +214,7 @@ def refine_sub_lattice(
     for refinement_config in refinement_config_list:
         total_number_of_refinements += refinement_config[1]
 
-    sub_lattice.find_nearest_neighbors()
+    sublattice.find_nearest_neighbors()
 
     current_counts = 1
     for refinement_config in refinement_config_list:
@@ -226,16 +226,16 @@ def refine_sub_lattice(
                     str(current_counts) + "/" + str(
                         total_number_of_refinements))
             if refinement_type == 'gaussian':
-                sub_lattice.refine_atom_positions_using_2d_gaussian(
+                sublattice.refine_atom_positions_using_2d_gaussian(
                         image,
                         rotation_enabled=False,
                         percent_to_nn=percent_to_nn)
-                sub_lattice.refine_atom_positions_using_2d_gaussian(
+                sublattice.refine_atom_positions_using_2d_gaussian(
                         image,
                         rotation_enabled=True,
                         percent_to_nn=percent_to_nn)
             elif refinement_type == 'center_of_mass':
-                sub_lattice.refine_atom_positions_using_center_of_mass(
+                sublattice.refine_atom_positions_using_center_of_mass(
                         image,
                         percent_to_nn=percent_to_nn)
             current_counts += 1

@@ -23,7 +23,7 @@ from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
 
 
-class Sub_Lattice():
+class Sublattice():
     def __init__(self, atom_position_list, adf_image):
         self.atom_list = []
         for atom_position in atom_position_list:
@@ -441,7 +441,7 @@ class Sub_Lattice():
         The property can be anything, for example distance between atoms
         along a zone axis, or ellipticity of the atoms.
 
-        The image data is taken from the sub_lattice, either adf_image or
+        The image data is taken from the sublattice, either adf_image or
         original_adf_image.
 
         Parameters:
@@ -978,7 +978,7 @@ class Sub_Lattice():
 
         Example
         -------
-        >>>> fig = sub_lattice.plot_atom_plane_on_stem_data(atom_planes)
+        >>>> fig = sublattice.plot_atom_plane_on_stem_data(atom_planes)
         >>>> fig.savefig("atom_planes.jpg")
         """
         fig, ax = plt.subplots(figsize=(10, 10))

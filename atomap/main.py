@@ -7,8 +7,8 @@ import numpy as np
 from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
-        refine_sub_lattice,\
-        construct_zone_axes_from_sub_lattice,\
+        refine_sublattice,\
+        construct_zone_axes_from_sublattice,\
         get_peak2d_skimage,\
         normalize_signal
 
@@ -16,10 +16,10 @@ from atomap.tools import\
         remove_atoms_from_image_using_2d_gaussian
 
 from atomap.atom_lattice import Atom_Lattice
-from atomap.sub_lattice import Sub_Lattice
+from atomap.sublattice import Sublattice
 
 
-class SubLatticeParameterBase:
+class SublatticeParameterBase:
     def __init__(self):
         self.color = 'red'
         self.name = "Base Sublattice"
@@ -32,9 +32,9 @@ class SubLatticeParameterBase:
             )
 
 
-class GenericSubLattice(SubLatticeParameterBase):
+class GenericSublattice(SublatticeParameterBase):
     def __init__(self):
-        SubLatticeParameterBase.__init__(self)
+        SublatticeParameterBase.__init__(self)
         self.color = 'red'
         self.tag = 'S0'
         self.image_type = 0
@@ -48,9 +48,9 @@ class GenericSubLattice(SubLatticeParameterBase):
                 'neighbor_distance': 0.35}
 
 
-class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
+class PerovskiteOxide110SublatticeACation(SublatticeParameterBase):
     def __init__(self):
-        SubLatticeParameterBase.__init__(self)
+        SublatticeParameterBase.__init__(self)
         self.name = "A-cation"
         self.tag = "A"
         self.color = 'blue'
@@ -71,9 +71,9 @@ class PerovskiteOxide110SubLatticeACation(SubLatticeParameterBase):
                 'neighbor_distance': 0.35}
 
 
-class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
+class PerovskiteOxide110SublatticeBCation(SublatticeParameterBase):
     def __init__(self):
-        SubLatticeParameterBase.__init__(self)
+        SublatticeParameterBase.__init__(self)
         self.name = "B-cation"
         self.tag = "B"
         self.color = 'green'
@@ -102,9 +102,9 @@ class PerovskiteOxide110SubLatticeBCation(SubLatticeParameterBase):
                 ]
 
 
-class PerovskiteOxide110SubLatticeOxygen(SubLatticeParameterBase):
+class PerovskiteOxide110SublatticeOxygen(SublatticeParameterBase):
     def __init__(self):
-        SubLatticeParameterBase.__init__(self)
+        SublatticeParameterBase.__init__(self)
         self.name = "Oxygen"
         self.tag = "O"
         self.color = 'red'
@@ -142,7 +142,7 @@ class ModelParametersBase:
         self.peak_separation = None
         self.name = None
         
-        self.sub_lattice_list = []
+        self.sublattice_list = []
 
     def __repr__(self):
         return '<%s, %s>' % (
@@ -168,7 +168,7 @@ class GenericStructure(ModelParametersBase):
         self.name = 'A structure'
 
         self.sublattice_list = [
-            GenericSubLattice(),
+            GenericSublattice(),
         ]
 
 
@@ -179,9 +179,9 @@ class PerovskiteOxide110(ModelParametersBase):
         self.peak_separation = 0.127
 
         self.sublattice_list = [
-            PerovskiteOxide110SubLatticeACation(),
-            PerovskiteOxide110SubLatticeBCation(),
-            PerovskiteOxide110SubLatticeOxygen(),
+            PerovskiteOxide110SublatticeACation(),
+            PerovskiteOxide110SublatticeBCation(),
+            PerovskiteOxide110SublatticeOxygen(),
             ]
 
 
@@ -268,11 +268,11 @@ def make_atom_lattice_from_image(
                 break
 
         if sublattice_para.sublattice_order == 0:
-            sublattice = Sub_Lattice(
+            sublattice = Sublattice(
                 initial_atom_position_list,
                 image_data_modified)
         else:
-            temp_sublattice = atom_lattice.get_sub_lattice(
+            temp_sublattice = atom_lattice.get_sublattice(
                     sublattice_para.sublattice_position_sublattice)
             temp_zone_vector_index = temp_sublattice.get_zone_vector_index(
                     sublattice_para.sublattice_position_zoneaxis)
@@ -281,7 +281,7 @@ def make_atom_lattice_from_image(
             atom_list = temp_sublattice.find_missing_atoms_from_zone_vector(
                     zone_vector, new_atom_tag=sublattice_para.tag)
 
-            sublattice = Sub_Lattice(
+            sublattice = Sublattice(
                 atom_list,
                 image_data)
 
@@ -292,18 +292,18 @@ def make_atom_lattice_from_image(
         sublattice.tag = sublattice_para.tag
         sublattice.pixel_size = s_image.axes_manager[0].scale
         sublattice.original_adf_image = image_data
-        atom_lattice.sub_lattice_list.append(sublattice)
+        atom_lattice.sublattice_list.append(sublattice)
 
         for atom in sublattice.atom_list:
             atom.sigma_x = 0.05/sublattice.pixel_size
             atom.sigma_y = 0.05/sublattice.pixel_size
 
         if not(sublattice_para.sublattice_order == 0):
-            construct_zone_axes_from_sub_lattice(sublattice)
+            construct_zone_axes_from_sublattice(sublattice)
             atom_subtract_config = sublattice_para.atom_subtract_config
             image_data = sublattice.adf_image
             for atom_subtract_para in atom_subtract_config:
-                temp_sublattice = atom_lattice.get_sub_lattice(
+                temp_sublattice = atom_lattice.get_sublattice(
                         atom_subtract_para['sublattice'])
                 neighbor_distance = atom_subtract_para['neighbor_distance']
                 image_data = remove_atoms_from_image_using_2d_gaussian(
@@ -324,11 +324,11 @@ def make_atom_lattice_from_image(
             else:
                 refinement_step[0] = sublattice.original_adf_image
 
-        refine_sub_lattice(
+        refine_sublattice(
             sublattice,
             refinement_steps,
             refinement_neighbor_distance)
-        construct_zone_axes_from_sub_lattice(sublattice)
+        construct_zone_axes_from_sublattice(sublattice)
 
         if hasattr(sublattice_para, 'zone_axis_list'):
             for zone_axis in sublattice_para.zone_axis_list:
@@ -383,7 +383,7 @@ def run_atom_lattice_peakfinding_process(
 
     sublattice_0_param = model_parameters.get_sublattice_from_order(0)
 
-    sublattice_0 = Sub_Lattice(
+    sublattice_0 = Sublattice(
             atom_position_list_pca,
             np.rot90(np.fliplr(s_adf_modified.data)))
 
@@ -394,21 +394,21 @@ def run_atom_lattice_peakfinding_process(
     sublattice_0.tag = sublattice_0_param.tag
     sublattice_0.pixel_size = s_adf.axes_manager[0].scale
     sublattice_0.original_adf_image = np.rot90(np.fliplr(s_adf.data))
-    atom_lattice.sub_lattice_list.append(sublattice_0)
+    atom_lattice.sublattice_list.append(sublattice_0)
 
     for atom in sublattice_0.atom_list:
         atom.sigma_x = 0.05/sublattice_0.pixel_size
         atom.sigma_y = 0.05/sublattice_0.pixel_size
 
     print("Refining " + sublattice_0.name)
-    refine_sub_lattice(
+    refine_sublattice(
             sublattice_0,
             [
                 (sublattice_0.original_adf_image, 2, 'gaussian')],
             0.35)
 
     plt.close('all')
-    construct_zone_axes_from_sub_lattice(sublattice_0)
+    construct_zone_axes_from_sublattice(sublattice_0)
 
     plt.ion()
     return(atom_lattice)
@@ -442,7 +442,7 @@ def run_process_for_adf_image_a_cation(
     atom_lattice.path_name = path_name
     atom_lattice.adf_image = np.rot90(np.fliplr(s_adf.data))
 
-    a_sublattice = Sub_Lattice(
+    a_sublattice = Sublattice(
             atom_position_list_pca,
             np.rot90(np.fliplr(s_adf_modified.data)))
 
@@ -452,7 +452,7 @@ def run_process_for_adf_image_a_cation(
     a_sublattice.tag = 'a'
     a_sublattice.pixel_size = s_adf.axes_manager[0].scale
     a_sublattice.original_adf_image = np.rot90(np.fliplr(s_adf.data))
-    atom_lattice.sub_lattice_list.append(a_sublattice)
+    atom_lattice.sublattice_list.append(a_sublattice)
 
     for atom in a_sublattice.atom_list:
         atom.sigma_x = 0.05/a_sublattice.pixel_size
@@ -462,12 +462,12 @@ def run_process_for_adf_image_a_cation(
             figname=a_sublattice.tag+"_atom_refine0_initial.jpg")
 
     print("Refining a atom lattice")
-    refine_sub_lattice(
+    refine_sublattice(
             a_sublattice,
             [
                 (a_sublattice.adf_image, 1, 'center_of_mass')],
             0.50)
-    refine_sub_lattice(
+    refine_sublattice(
             a_sublattice,
             [
                 (
@@ -477,7 +477,7 @@ def run_process_for_adf_image_a_cation(
             0.50)
     a_sublattice.plot_atom_list_on_image_data(
             figname=a_sublattice.tag+"_atom_refine1_com.jpg")
-    refine_sub_lattice(
+    refine_sublattice(
             a_sublattice,
             [
                 (a_sublattice.original_adf_image, 1, 'gaussian')],
@@ -487,7 +487,7 @@ def run_process_for_adf_image_a_cation(
     atom_lattice.save_atom_lattice(
             filename=a_sublattice.save_path + "atom_lattice.hdf5")
     plt.close('all')
-    construct_zone_axes_from_sub_lattice(a_sublattice)
+    construct_zone_axes_from_sublattice(a_sublattice)
 
     return(atom_lattice)
 
@@ -557,7 +557,7 @@ def run_peak_finding_process_for_single_dataset(
     normalized_abf_data = normalized_abf_data/normalized_abf_data.max()
     atom_lattice.inverted_abf_image = np.rot90(np.fliplr(normalized_abf_data))
 
-    a_sublattice = Sub_Lattice(
+    a_sublattice = Sublattice(
             atom_position_list_pca,
             np.rot90(np.fliplr(s_adf_modified.data)))
 
@@ -567,27 +567,27 @@ def run_peak_finding_process_for_single_dataset(
     a_sublattice.tag = 'a'
     a_sublattice.pixel_size = s_adf.axes_manager[0].scale
     a_sublattice.original_adf_image = np.rot90(np.fliplr(s_adf.data))
-    atom_lattice.sub_lattice_list.append(a_sublattice)
+    atom_lattice.sublattice_list.append(a_sublattice)
 
     for atom in a_sublattice.atom_list:
         atom.sigma_x = 0.05/a_sublattice.pixel_size
         atom.sigma_y = 0.05/a_sublattice.pixel_size
 
     print("Refining a atom lattice")
-    refine_sub_lattice(
+    refine_sublattice(
             a_sublattice,
             [
                 (a_sublattice.original_adf_image, 2, 'gaussian')],
             0.35)
 
     plt.close('all')
-    construct_zone_axes_from_sub_lattice(a_sublattice)
+    construct_zone_axes_from_sublattice(a_sublattice)
 
     zone_vector_100 = a_sublattice.zones_axis_average_distances[1]
     b_atom_list = a_sublattice.find_missing_atoms_from_zone_vector(
             zone_vector_100, new_atom_tag='B')
 
-    b_sublattice = Sub_Lattice(
+    b_sublattice = Sublattice(
             b_atom_list,
             np.rot90(np.fliplr(s_adf_modified.data)))
     b_sublattice.save_path = "./" + path_name + "/"
@@ -596,12 +596,12 @@ def run_peak_finding_process_for_single_dataset(
     b_sublattice.tag = 'b'
     b_sublattice.pixel_size = s_adf.axes_manager[0].scale
     b_sublattice.original_adf_image = np.rot90(np.fliplr(s_adf.data))
-    atom_lattice.sub_lattice_list.append(b_sublattice)
+    atom_lattice.sublattice_list.append(b_sublattice)
 
     for atom in b_sublattice.atom_list:
         atom.sigma_x = 0.03/b_sublattice.pixel_size
         atom.sigma_y = 0.03/b_sublattice.pixel_size
-    construct_zone_axes_from_sub_lattice(b_sublattice)
+    construct_zone_axes_from_sublattice(b_sublattice)
     image_atoms_removed = b_sublattice.original_adf_image
     image_atoms_removed = remove_atoms_from_image_using_2d_gaussian(
         image_atoms_removed,
@@ -612,7 +612,7 @@ def run_peak_finding_process_for_single_dataset(
     b_sublattice.adf_image = image_atoms_removed
 
     print("Refining b atom lattice")
-    refine_sub_lattice(
+    refine_sublattice(
             b_sublattice,
             [
                 (image_atoms_removed, 2, 'center_of_mass'),
@@ -625,7 +625,7 @@ def run_peak_finding_process_for_single_dataset(
     o_atom_list = b_sublattice.find_missing_atoms_from_zone_vector(
             zone_vector_110, new_atom_tag='O')
 
-    o_sublattice = Sub_Lattice(
+    o_sublattice = Sublattice(
             o_atom_list, np.rot90(np.fliplr(s_abf_modified.data)))
     o_sublattice.save_path = "./" + path_name + "/"
     o_sublattice.path_name = path_name
@@ -634,7 +634,7 @@ def run_peak_finding_process_for_single_dataset(
     o_sublattice.pixel_size = s_abf.axes_manager[0].scale
     o_sublattice.original_adf_image = np.rot90(np.fliplr(s_abf.data))
 #    o_sublattice.plot_clim = (0.0, 0.2)
-    construct_zone_axes_from_sub_lattice(o_sublattice)
+    construct_zone_axes_from_sublattice(o_sublattice)
     image_atoms_removed = o_sublattice.original_adf_image
     image_atoms_removed = remove_atoms_from_image_using_2d_gaussian(
         image_atoms_removed,
@@ -650,10 +650,10 @@ def run_peak_finding_process_for_single_dataset(
     for atom in o_sublattice.atom_list:
         atom.sigma_x = 0.025/b_sublattice.pixel_size
         atom.sigma_y = 0.025/b_sublattice.pixel_size
-    atom_lattice.sub_lattice_list.append(o_sublattice)
+    atom_lattice.sublattice_list.append(o_sublattice)
 
     print("Refining o atom lattice")
-    refine_sub_lattice(
+    refine_sublattice(
             o_sublattice,
             [
                 (image_atoms_removed, 1, 'center_of_mass'),
@@ -695,7 +695,7 @@ def run_process_for_adf_image_a_cation(
     atom_lattice.path_name = path_name
     atom_lattice.adf_image = np.rot90(np.fliplr(s_adf.data))
 
-    a_sublattice = Sub_Lattice(
+    a_sublattice = Sublattice(
             atom_position_list_pca,
             np.rot90(np.fliplr(s_adf_modified.data)))
 
@@ -705,7 +705,7 @@ def run_process_for_adf_image_a_cation(
     a_sublattice.tag = 'a'
     a_sublattice.pixel_size = s_adf.axes_manager[0].scale
     a_sublattice.original_adf_image = np.rot90(np.fliplr(s_adf.data))
-    atom_lattice.sub_lattice_list.append(a_sublattice)
+    atom_lattice.sublattice_list.append(a_sublattice)
 
     for atom in a_sublattice.atom_list:
         atom.sigma_x = 0.05/a_sublattice.pixel_size
@@ -715,12 +715,12 @@ def run_process_for_adf_image_a_cation(
             figname=a_sublattice.tag+"_atom_refine0_initial.jpg")
 
     print("Refining a atom lattice")
-    refine_sub_lattice(
+    refine_sublattice(
             a_sublattice,
             [
                 (a_sublattice.adf_image, 1, 'center_of_mass')],
             0.50)
-    refine_sub_lattice(
+    refine_sublattice(
             a_sublattice,
             [
                 (
@@ -730,7 +730,7 @@ def run_process_for_adf_image_a_cation(
             0.50)
     a_sublattice.plot_atom_list_on_image_data(
             figname=a_sublattice.tag+"_atom_refine1_com.jpg")
-    refine_sub_lattice(
+    refine_sublattice(
             a_sublattice,
             [
                 (a_sublattice.original_adf_image, 1, 'gaussian')],
@@ -741,7 +741,7 @@ def run_process_for_adf_image_a_cation(
             filename=a_sublattice.save_path +
             "atom_lattice.hdf5")
     plt.close('all')
-    construct_zone_axes_from_sub_lattice(a_sublattice)
+    construct_zone_axes_from_sublattice(a_sublattice)
 
     return(atom_lattice)
 
@@ -774,7 +774,7 @@ def run_process_for_adf_image_a_b_cation(
     atom_lattice.path_name = path_name
     atom_lattice.adf_image = np.rot90(np.fliplr(s_adf.data))
 
-    a_sublattice = Sub_Lattice(
+    a_sublattice = Sublattice(
             atom_position_list_pca,
             np.rot90(np.fliplr(s_adf_modified.data)))
 
@@ -784,7 +784,7 @@ def run_process_for_adf_image_a_b_cation(
     a_sublattice.tag = 'a'
     a_sublattice.pixel_size = s_adf.axes_manager[0].scale
     a_sublattice.original_adf_image = np.rot90(np.fliplr(s_adf.data))
-    atom_lattice.sub_lattice_list.append(a_sublattice)
+    atom_lattice.sublattice_list.append(a_sublattice)
 
     for atom in a_sublattice.atom_list:
         atom.sigma_x = 0.05/a_sublattice.pixel_size
@@ -794,12 +794,12 @@ def run_process_for_adf_image_a_b_cation(
             filename=a_sublattice.save_path +
             "atom_lattice_no_refinement.hdf5")
     print("Refining a atom lattice")
-    refine_sub_lattice(
+    refine_sublattice(
             a_sublattice,
             [
                 (a_sublattice.adf_image, 1, 'center_of_mass')],
             0.25)
-    refine_sub_lattice(
+    refine_sublattice(
             a_sublattice,
             [
                 (
@@ -810,7 +810,7 @@ def run_process_for_adf_image_a_b_cation(
     atom_lattice.save_atom_lattice(
             filename=a_sublattice.save_path +
             "atom_lattice_center_of_mass.hdf5")
-    refine_sub_lattice(
+    refine_sublattice(
             a_sublattice,
             [
                 (a_sublattice.original_adf_image, 1, 'gaussian')],
@@ -819,16 +819,16 @@ def run_process_for_adf_image_a_b_cation(
             filename=a_sublattice.save_path +
             "atom_lattice_2d_model.hdf5")
     plt.close('all')
-    construct_zone_axes_from_sub_lattice(a_sublattice)
+    construct_zone_axes_from_sublattice(a_sublattice)
 
 #    zone_vector_100 = a_sublattice.zones_axis_average_distances[1]
 #    b_atom_list = a_sublattice.find_missing_atoms_from_zone_vector(
 #            zone_vector_100, new_atom_tag='B')
 #
-#    b_sublattice = Sub_Lattice(
+#    b_sublattice = Sublattice(
 #        b_atom_list,
 #        np.rot90(np.fliplr(s_adf_modified.data)))
-#    atom_lattice.sub_lattice_list.append(b_sublattice)
+#    atom_lattice.sublattice_list.append(b_sublattice)
 #    b_sublattice.save_path = "./" + path_name + "/"
 #    b_sublattice.path_name = path_name
 #    b_sublattice.plot_color = 'green'
@@ -845,12 +845,12 @@ def run_process_for_adf_image_a_b_cation(
 #        image_atoms_removed,
 #        a_sublattice,
 #        percent_to_nn=0.35)
-#    construct_zone_axes_from_sub_lattice(b_sublattice)
+#    construct_zone_axes_from_sublattice(b_sublattice)
 #
 #    b_sublattice.adf_image = image_atoms_removed
 #
 #    print("Refining b atom lattice")
-#    refine_sub_lattice(
+#    refine_sublattice(
 #            b_sublattice,
 #            [
 #                (b_sublattice.adf_image, 2, 'gaussian')],

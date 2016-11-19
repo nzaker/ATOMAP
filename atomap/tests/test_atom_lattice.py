@@ -4,11 +4,11 @@ import os
 import unittest
 import numpy as np
 from atomap.atom_lattice import Atom_Lattice
-from atomap.sub_lattice import Sub_Lattice
+from atomap.sublattice import Sublattice
 from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
-        construct_zone_axes_from_sub_lattice,\
+        construct_zone_axes_from_sublattice,\
         get_peak2d_skimage
 from atomap.io import load_atom_lattice_from_hdf5
 from hyperspy.api import load
@@ -21,7 +21,7 @@ class test_create_atom_lattice_object(unittest.TestCase):
         atoms_N = 10
         image_data = np.arange(10000).reshape(100,100)
         peaks = np.arange(20).reshape(atoms_N,2)
-        self.sub_lattice = Sub_Lattice(
+        self.sublattice = Sublattice(
                 peaks, 
                 image_data)
 
@@ -30,13 +30,13 @@ class test_create_atom_lattice_object(unittest.TestCase):
 
     def test_create_empty_atom_lattice_object(self):
         atom_lattice = Atom_Lattice()
-        atom_lattice.sub_lattice_list.append(self.sub_lattice)
+        atom_lattice.sublattice_list.append(self.sublattice)
 
-    def test_plot_all_sub_lattices(self):
+    def test_plot_all_sublattices(self):
         atom_lattice = Atom_Lattice()
-        atom_lattice.adf_image = self.sub_lattice.adf_image
-        atom_lattice.sub_lattice_list.append(self.sub_lattice)
-        atom_lattice.plot_all_sub_lattices()
+        atom_lattice.adf_image = self.sublattice.adf_image
+        atom_lattice.sublattice_list.append(self.sublattice)
+        atom_lattice.plot_all_sublattices()
 
 class test_atom_lattice_object_tools(unittest.TestCase):
 
@@ -44,12 +44,12 @@ class test_atom_lattice_object_tools(unittest.TestCase):
         atoms_N = 10
         image_data = np.arange(10000).reshape(100,100)
         peaks = np.arange(20).reshape(atoms_N,2)
-        sub_lattice = Sub_Lattice(
+        sublattice = Sublattice(
                 peaks, 
                 image_data)
-        sub_lattice.original_adf_image = image_data
+        sublattice.original_adf_image = image_data
         self.atom_lattice = Atom_Lattice()
-        self.atom_lattice.sub_lattice_list.append(sub_lattice)
+        self.atom_lattice.sublattice_list.append(sublattice)
         self.atom_lattice.adf_image = image_data
 
     def test_save_atom_lattice(self):
@@ -82,20 +82,20 @@ class test_atom_lattice_plotting(unittest.TestCase):
         peaks = get_peak2d_skimage(
                 s_adf_modified, 
                 pixel_separation)[0]
-        sub_lattice = Sub_Lattice(
+        sublattice = Sublattice(
                 peaks, 
                 np.rot90(np.fliplr(s_adf_modified.data)))
-        sub_lattice.pixel_size = pixel_size
-        construct_zone_axes_from_sub_lattice(sub_lattice)
+        sublattice.pixel_size = pixel_size
+        construct_zone_axes_from_sublattice(sublattice)
 
         self.atom_lattice = Atom_Lattice()
-        self.atom_lattice.sub_lattice_list.append(sub_lattice)
+        self.atom_lattice.sublattice_list.append(sublattice)
 
-    def test_plot_sub_lattice_monolayer_distance_map(self):
+    def test_plot_sublattice_monolayer_distance_map(self):
         self.atom_lattice.plot_monolayer_distance_map()
 
-    def test_plot_sub_lattice_atom_distance_map(self):
+    def test_plot_sublattice_atom_distance_map(self):
         self.atom_lattice.plot_atom_distance_map()
 
-    def test_plot_sub_lattice_atom_distance_difference_map(self):
+    def test_plot_sublattice_atom_distance_difference_map(self):
         self.atom_lattice.plot_atom_distance_difference_map()

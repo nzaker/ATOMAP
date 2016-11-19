@@ -59,12 +59,12 @@ def _line_profile_coordinates(src, dst, linewidth=1):
 
 # Remove atom from image using 2d gaussian model
 def remove_atoms_from_image_using_2d_gaussian(
-        image, sub_lattice,
+        image, sublattice,
         percent_to_nn=0.40):
     model_image = np.zeros(image.shape)
     X, Y = np.meshgrid(np.arange(
         model_image.shape[1]), np.arange(model_image.shape[0]))
-    for atom in sub_lattice.atom_list:
+    for atom in sublattice.atom_list:
         percent_distance = percent_to_nn
         for i in range(10):
             g = atom.fit_2d_gaussian_with_mask(
@@ -91,27 +91,27 @@ def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
 
 
 def get_atom_planes_square(
-        sub_lattice, atom_plane1, atom_plane2,
+        sublattice, atom_plane1, atom_plane2,
         interface_atom_plane, zone_vector, debug_plot=False):
     """
     Parameters
     ----------
-    sub_lattice : Atomap sub_lattice object
+    sublattice : Atomap sublattice object
     atom_plane1, atom_plane2 : Atomap atom_plane object
     """
     ort_atom_plane1, ort_atom_plane2 = atom_plane1.get_connecting_atom_planes(
             atom_plane2, zone_vector)
 
     if debug_plot:
-        sub_lattice.plot_atom_plane_on_stem_data(
+        sublattice.plot_atom_plane_on_stem_data(
                 [atom_plane1, atom_plane2, ort_atom_plane1, ort_atom_plane2],
                 figname="atom_plane_square_debug.jpg")
 
-    atom_list = sub_lattice.get_atom_list_between_four_atom_planes(
+    atom_list = sublattice.get_atom_list_between_four_atom_planes(
             atom_plane1, atom_plane2, ort_atom_plane1, ort_atom_plane2)
 
     if debug_plot:
-        sub_lattice.plot_atom_list_on_stem_data(
+        sublattice.plot_atom_list_on_stem_data(
                 atom_list,
                 figname="atom_plane_square_atom_list_debug.jpg")
 
@@ -523,10 +523,10 @@ def find_atom_positions_for_an_atom_plane(
 
 def find_atom_positions_for_all_atom_planes(
         image,
-        sub_lattice,
+        sublattice,
         parallel_zone_vector,
         orthogonal_zone_vector):
-    atom_plane_list = sub_lattice.atom_planes_by_zone_vector[
+    atom_plane_list = sublattice.atom_planes_by_zone_vector[
             parallel_zone_vector]
     x_pos_list, y_pos_list, z_pos_list = [], [], []
     for atom_plane_index, atom_plane in enumerate(atom_plane_list):

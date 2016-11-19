@@ -5,10 +5,10 @@ import unittest
 from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
-        construct_zone_axes_from_sub_lattice,\
+        construct_zone_axes_from_sublattice,\
         get_peak2d_skimage
 
-from atomap.sub_lattice import Sub_Lattice
+from atomap.sublattice import Sublattice
 from hyperspy.api import load
 import numpy as np
 
@@ -41,34 +41,34 @@ class test_adf_abf_sto(unittest.TestCase):
                 self.pixel_separation)[0]
 
     def test_find_b_cation_atoms(self):
-        a_sub_lattice = Sub_Lattice(
+        a_sublattice = Sublattice(
                 self.peaks, 
                 np.rot90(np.fliplr(self.s_adf_modified.data)))
-        a_sub_lattice.pixel_size = self.pixel_size
-        construct_zone_axes_from_sub_lattice(a_sub_lattice)
+        a_sublattice.pixel_size = self.pixel_size
+        construct_zone_axes_from_sublattice(a_sublattice)
 
-        zone_vector_100 = a_sub_lattice.zones_axis_average_distances[1]
-        b_atom_list = a_sub_lattice.find_missing_atoms_from_zone_vector(
+        zone_vector_100 = a_sublattice.zones_axis_average_distances[1]
+        b_atom_list = a_sublattice.find_missing_atoms_from_zone_vector(
                 zone_vector_100, new_atom_tag='B')
-        b_sub_lattice = Sub_Lattice(
+        b_sublattice = Sublattice(
                 b_atom_list, np.rot90(
                     np.fliplr(self.s_adf_modified.data)))
-        b_sub_lattice.plot_atom_list_on_image_data(
-                image=b_sub_lattice.adf_image)
-        self.assertEqual(len(b_sub_lattice.atom_list), 221)
+        b_sublattice.plot_atom_list_on_image_data(
+                image=b_sublattice.adf_image)
+        self.assertEqual(len(b_sublattice.atom_list), 221)
 
     def test_find_b_atom_planes(self):
-        a_sub_lattice = Sub_Lattice(
+        a_sublattice = Sublattice(
                 self.peaks, 
                 np.rot90(np.fliplr(self.s_adf_modified.data)))
-        a_sub_lattice.pixel_size = self.pixel_size
-        construct_zone_axes_from_sub_lattice(a_sub_lattice)
+        a_sublattice.pixel_size = self.pixel_size
+        construct_zone_axes_from_sublattice(a_sublattice)
 
-        zone_vector_100 = a_sub_lattice.zones_axis_average_distances[1]
-        b_atom_list = a_sub_lattice.find_missing_atoms_from_zone_vector(
+        zone_vector_100 = a_sublattice.zones_axis_average_distances[1]
+        b_atom_list = a_sublattice.find_missing_atoms_from_zone_vector(
                 zone_vector_100, new_atom_tag='B')
-        b_sub_lattice = Sub_Lattice(
+        b_sublattice = Sublattice(
                 b_atom_list, np.rot90(
                     np.fliplr(self.s_adf_modified.data)))
-        b_sub_lattice.pixel_size = self.pixel_size
-        construct_zone_axes_from_sub_lattice(b_sub_lattice)
+        b_sublattice.pixel_size = self.pixel_size
+        construct_zone_axes_from_sublattice(b_sublattice)
