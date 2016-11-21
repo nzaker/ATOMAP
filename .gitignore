@@ -7,3 +7,4 @@ atomap.egg-info
 *.hdf5
 dist
 manifest
+build

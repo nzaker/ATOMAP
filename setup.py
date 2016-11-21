@@ -4,9 +4,10 @@ setup(
         packages = [
             'atomap',
             'atomap.tests',
+            'atomap.tests.datasets',
             'atomap.external',
             ],
-        version = '0.0.1a1',
+        version = '0.0.1a5',
         description = 'Library for analysing atomic resolution images',
         author = 'Magnus Nord',
         author_email = 'magnunor@gmail.com',
@@ -32,4 +33,10 @@ setup(
             'Intended Audience :: Science/Research',
             'Programming Language :: Python :: 3',
             ],
+        package_data = {
+            'atomap.tests.datasets': [
+                'test_ADF_cropped.hdf5',
+                'test_ABF_cropped.hdf5',
+                'test_atom_lattice.hdf5']
+            }
 )
