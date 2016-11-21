@@ -5,3 +5,5 @@ atomap.egg-info
 *.png
 *.npz
 *.hdf5
+dist
+manifest

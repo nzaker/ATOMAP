@@ -1,0 +1,7 @@
+include LICENSE
+include README.md
+
+# Include data files
+include atomap/tests/datasets/test_ADF_cropped.hdf5
+include atomap/tests/datasets/test_ABF_cropped.hdf5
+include atomap/tests/datasets/test_atom_lattice.hdf5
