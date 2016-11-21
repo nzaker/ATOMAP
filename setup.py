@@ -12,7 +12,7 @@ setup(
         author_email = 'magnunor@gmail.com',
         license = 'GPL v3',
         url = 'http://atomap.org/',
-        download_url = 'https://gitlab.com/atomap/atomap/repository/archive.tar?ref=0.0.1',
+        download_url = 'https://gitlab.com/atomap/atomap/repository/archive.tar?ref=0.0.1a1',
         keywords = [
             'STEM',
             'data analysis'
