@@ -32,12 +32,10 @@ class test_make_simple_sublattice(unittest.TestCase):
 class test_sublattice_construct_refine(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
-        s_adf = load(
-                my_path +
-                s_adf_filename)
+        s_adf = load(s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         self.s_adf_modified = do_pca_on_signal(s_adf_modified)
@@ -88,12 +86,10 @@ class test_sublattice_construct_refine(unittest.TestCase):
 class test_sublattice_processing(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
-        s_adf = load(
-                my_path +
-                s_adf_filename)
+        s_adf = load(s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         s_adf_modified = do_pca_on_signal(s_adf_modified)
@@ -119,12 +115,10 @@ class test_sublattice_processing(unittest.TestCase):
 class test_sublattice_plotting_distance(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
-        s_adf = load(
-                my_path +
-                s_adf_filename)
+        s_adf = load(s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         s_adf_modified = do_pca_on_signal(s_adf_modified)
@@ -146,12 +140,10 @@ class test_sublattice_plotting_distance(unittest.TestCase):
 class test_sublattice_plotting_distance_difference(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
-        s_adf = load(
-                my_path +
-                s_adf_filename)
+        s_adf = load(s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         s_adf_modified = do_pca_on_signal(s_adf_modified)
@@ -173,12 +165,10 @@ class test_sublattice_plotting_distance_difference(unittest.TestCase):
 class test_sublattice_plotting_monolayer_distance(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
-        s_adf = load(
-                my_path +
-                s_adf_filename)
+        s_adf = load(s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         s_adf_modified = do_pca_on_signal(s_adf_modified)
@@ -200,12 +190,10 @@ class test_sublattice_plotting_monolayer_distance(unittest.TestCase):
 class test_sublattice_plotting_atom_list(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
-        s_adf = load(
-                my_path +
-                s_adf_filename)
+        s_adf = load(s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         s_adf_modified = do_pca_on_signal(s_adf_modified)
@@ -228,12 +216,10 @@ class test_sublattice_plotting_atom_list(unittest.TestCase):
 class test_sublattice_plotting_ellipticity(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
-        s_adf = load(
-                my_path +
-                s_adf_filename)
+        s_adf = load(s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         s_adf_modified = do_pca_on_signal(s_adf_modified)

@@ -58,21 +58,17 @@ class test_atom_lattice_object_tools(unittest.TestCase):
                 filename=save_path)
 
     def test_load_atom_lattice(self):
-        hdf5_filename = "/datasets/test_atom_lattice.hdf5"
-        load_atom_lattice_from_hdf5(
-                my_path + hdf5_filename, 
-                construct_zone_axes=False)
+        hdf5_filename = os.path.join(my_path, "datasets", "test_atom_lattice.hdf5")
+        load_atom_lattice_from_hdf5(hdf5_filename, construct_zone_axes=False)
 
 
 class test_atom_lattice_plotting(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = "/datasets/test_ADF_cropped.hdf5"
+        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
-        s_adf = load(
-                my_path +
-                s_adf_filename)
+        s_adf = load(s_adf_filename)
         s_adf.change_dtype('float64')
         s_adf_modified = subtract_average_background(s_adf)
         s_adf_modified = do_pca_on_signal(s_adf_modified)
