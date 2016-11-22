@@ -82,7 +82,7 @@ def find_features_by_separation(
     return(separation_value_list, peak_list)
 
 def plot_feature_separation(
-        image_data,
+        signal,
         separation_range=(5,30),
         separation_step=1):
     """
@@ -90,7 +90,7 @@ def plot_feature_separation(
 
     Parameters
     ----------
-    image_data : 2D numpy array
+    signal : HyperSpy 2D signal
     separation_range : tuple, optional
     separation_step : int, optional
 
@@ -99,11 +99,21 @@ def plot_feature_separation(
     >>>> import hyperspy.api as hs
     >>>> from atomap.atom_finding_refining import plot_feature_separation
     >>>> s = hs.load("stem_adf_data.hdf5")
-    >>>> plot_feature_separation(s.data)
+    >>>> plot_feature_separation(s)
 
     Using all the parameters
-    >>>> plot_feature_separation(s.data, separation_range=(10,50), separation_step=3)
+    >>>> plot_feature_separation(s, separation_range=(10,50), separation_step=3)
     """
+    image_data = signal.data
+
+    # skimage.feature.peak_local_max used in find_features_by_separation
+    # only support 32-bit or higher 
+    if image_data.dtype is np.dtype('float16'):
+        image_data = image_data.astype('float32')
+    if image_data.dtype is np.dtype('int8'):
+        image_data = image_data.astype('int32')
+    if image_data.dtype is np.dtype('int16'):
+        image_data = image_data.astype('int32')
     separation_list, peak_list = find_features_by_separation(
             image_data=image_data,
             separation_range=separation_range,
@@ -117,6 +127,7 @@ def plot_feature_separation(
         ax.set_ylim(0, image_data.shape[0])
         ax.set_axis_off()
         ax.set_title("Peak separation, " + str(separation) + " pixels")
+        fig.tight_layout()
         fig.savefig("peak_separation_" + str(separation).zfill(3))
 
 # WORK IN PROGRESS
