@@ -23,15 +23,29 @@ Installing Atomap itself:
 
     $ pip install --user atomap
 
-`HyperSpy <http://hyperspy.org/>` is also included, due to Atomap relying heavily on the modelling functionality in HyperSpy.
+`HyperSpy <http://hyperspy.org/>`_ is also included, due to Atomap relying heavily on the modelling functionality in HyperSpy.
 
 Windows
 -------
 
-The easiest way to install is by using the `Anaconda environment <https://www.continuum.io/downloads>`.
+The easiest way to install is by using the `Anaconda environment <https://www.continuum.io/downloads>`_.
+After installing the Python 3.5 version of Anaconda, open the *Anaconda prompt* (Start menu - Anaconda3).
+This will open a command line prompt.
+
+.. code-block:: bash
+
+    $ conda install hyperspy
+    $ conda install pyqt=4
+    $ pip install atomap
+
+Alternatively, if the HyperSpy Winpython bundle is installed Atomap can be installed from the *WinPython prompt*:
 
 .. code-block:: bash
 
     $ pip install atomap
 
-Alternatively, if HyperSpy bundle is already installed.
+Getting started
+===============
+
+A tutorial is located here: :ref:`tutorial`.
+
