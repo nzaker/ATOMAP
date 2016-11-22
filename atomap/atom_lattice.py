@@ -50,6 +50,7 @@ class Atom_Lattice():
         ax.set_ylim(0, self.adf_image.shape[0])
         ax.set_xlim(0, self.adf_image.shape[1])
         fig.tight_layout()
+        figname = os.path.join(self.path_name, figname)
         fig.savefig(figname)
 
     def plot_monolayer_distance_map(
