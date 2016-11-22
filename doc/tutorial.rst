@@ -4,6 +4,9 @@
 Tutorial
 ========
 
+Starting Python
+---------------
+
 The first step is starting an interactive Python environment (IPython).
 
 Linux
@@ -25,7 +28,6 @@ Start the interactive Python environment, it should be called either *IPython* o
 This will open a command line prompt.
 This prompt will be referred to as the *IPython terminal*.
 
------------------
 Getting test data
 -----------------
 
@@ -52,7 +54,6 @@ The file should appear in our current folder:
     >>> ls
     test_ADF_cropped.hdf5
 
-----------------------------
 Finding the peak separation
 ----------------------------
 
@@ -106,7 +107,6 @@ For this dataset we chose a peak separation of 19 pixels
 
 This procedure will probably be automated at some point in the future.
 
--------------------------------------
 Running the analysis on a HAADF image
 -------------------------------------
 
@@ -190,7 +190,6 @@ These functions saves the images in the data processing folder mentioned earlier
     >>> sublattice.plot_monolayer_distance_map()
     >>> sublattice.plot_ellipticity_map()
 
---------------------------
 Finding the oxygen columns
 --------------------------
 

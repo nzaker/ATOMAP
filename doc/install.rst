@@ -45,7 +45,8 @@ Alternatively, if the HyperSpy Winpython bundle is installed Atomap can be insta
     $ pip install atomap
 
 Getting started
-===============
+---------------
+
 
 A tutorial is located here: :ref:`tutorial`.
 

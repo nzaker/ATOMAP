@@ -22,12 +22,6 @@ Contents on this webpage
 
    install
    tutorial
-   classes
-   modules
-
-
-Indices and tables
-==================
 
 * :ref:`genindex`
 * :ref:`modindex`
