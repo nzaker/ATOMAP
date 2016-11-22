@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import h5py
+import os
 import numpy as np
 from atomap.atom_finding_refining import\
         construct_zone_axes_from_sublattice

@@ -41,6 +41,7 @@ def plot_zone_vector_and_atom_distance_map(
         atom_plane_marker=None,
         plot_title='',
         vector_to_plot=None,
+        figsize=(10, 20),
         figname="map_data.jpg"):
     """
     atom_list : list of Atom_Position instances
@@ -49,7 +50,9 @@ def plot_zone_vector_and_atom_distance_map(
     if image_data is None:
         raise ValueError("Image data is None, no data to plot")
 
-    fig = plt.figure(figsize=(10, 20))
+    fig = Figure(figsize=figsize)
+    canvas = FigureCanvas(fig)
+
     gs = GridSpec(95, 95)
 
     image_ax = fig.add_subplot(gs[0:45, :])
@@ -123,7 +126,9 @@ def plot_complex_image_map_line_profile_using_interface_plane(
 
     figsize = (10, 18+2*number_of_line_profiles)
 
-    fig = plt.figure(figsize=figsize)
+    fig = Figure(figsize=figsize)
+    canvas = FigureCanvas(fig)
+
     gs = GridSpec(100+10*number_of_line_profiles, 95)
 
     image_ax = fig.add_subplot(gs[0:45, :])
