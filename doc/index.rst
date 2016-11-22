@@ -2,9 +2,10 @@ Welcome to Atomap's documentation!
 ==================================
 
 Atomap is a Python library for analysing atomic resolution
-transmission electron microscopy images.
-
-The code is available under the GNU GPL v3 license.
+scanning transmission electron microscopy images.
+It relies in fitting 2-D Gaussian functions to every atomic
+column in an image, and automatically find all major symmetry
+axes.
 
 Instructions on how to install Atomap are found in the :ref:`install` guide.
 
@@ -12,7 +13,10 @@ There is a :ref:`tutorial` on how to use Atomap.
 
 The source code is found in the `GitLab repository <https://gitlab.com/atomap/atomap/tree/master/>`_.
 
-Report bugs and request features on the `issue tracker <https://gitlab.com/atomap/atomap/issues>`_.
+Atomap is under development and is in alpha, so bugs and errors can be expected.
+Bug reports and feature requests are welcome on the `issue tracker <https://gitlab.com/atomap/atomap/issues>`_.
+
+Atomap is available under the GNU GPL v3 license.
 
 Contents on this webpage
 ------------------------
