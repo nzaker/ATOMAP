@@ -21,7 +21,7 @@ Installing Atomap itself:
 
 .. code-block:: bash
 
-    $ pip install --user atomap
+    $ pip3 install --user atomap
 
 `HyperSpy <http://hyperspy.org/>`_ is also included, due to Atomap relying heavily on the modelling functionality in HyperSpy.
 
@@ -46,7 +46,6 @@ Alternatively, if the HyperSpy Winpython bundle is installed Atomap can be insta
 
 Getting started
 ---------------
-
 
 A tutorial is located here: :ref:`tutorial`.
 
