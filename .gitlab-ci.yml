@@ -18,9 +18,9 @@ pages:
     - pip3 install --user .
     - cd doc
     - make html
+    - ls _build/html
     - cd ..
     - mv doc/_build/html public
-    - mv doc/_build/html/_images public/images
     artifacts:
         paths:
         - public
