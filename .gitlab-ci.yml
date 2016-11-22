@@ -20,6 +20,7 @@ pages:
     - make html
     - cd ..
     - mv doc/_build/html public
+    - mv doc/_build/html/_images public/images
     artifacts:
         paths:
         - public

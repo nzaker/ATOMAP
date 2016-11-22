@@ -7,16 +7,16 @@ setup(
             'atomap.tests.datasets',
             'atomap.external',
             ],
-        version = '0.0.1a5',
+        version = '0.0.2',
         description = 'Library for analysing atomic resolution images',
         author = 'Magnus Nord',
         author_email = 'magnunor@gmail.com',
         license = 'GPL v3',
         url = 'http://atomap.org/',
-        download_url = 'https://gitlab.com/atomap/atomap/repository/archive.tar?ref=0.0.1a1',
+        download_url = 'https://gitlab.com/atomap/atomap/repository/archive.tar?ref=0.0.2',
         keywords = [
             'STEM',
-            'data analysis'
+            'data analysis',
             'microscopy',
             ],
         install_requires = [
