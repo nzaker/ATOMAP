@@ -212,11 +212,17 @@ def run_image_filtering(signal, invert_signal=False):
 
 
 def make_atom_lattice_from_image(
-        image0_filename,
+        s_image0,
         model_parameters=None,
         pixel_separation=None,
-        image1_filename=None):
-    s_image0 = hs.load(image0_filename)
+        s_image1=None):
+
+    image0_filename = s_image0.__dict__['tmp_parameters']['filename']
+    path_name = image0_filename
+    path_name = path_name[0: path_name.rfind(".")]
+    if not os.path.exists(path_name):
+        os.makedirs(path_name)
+
     s_image0_modified = run_image_filtering(s_image0)
 
     if model_parameters is None:
@@ -232,16 +238,11 @@ def make_atom_lattice_from_image(
             s_image0_modified,
             separation=pixel_separation)[0]
 
-    if image1_filename is not None:
-        s_image1 = hs.load(image1_filename)
+    if s_image1 is not None:
         s_image1.data = 1./s_image1.data
         image1_data = np.rot90(np.fliplr(s_image1.data))
 
     #################################
-    path_name = image0_filename
-    path_name = path_name[0: path_name.rfind(".")]
-    if not os.path.exists(path_name):
-        os.makedirs(path_name)
 
     image0_data = np.rot90(np.fliplr(s_image0.data))
     image0_data_modified = np.rot90(np.fliplr(s_image0_modified.data))
@@ -260,7 +261,7 @@ def make_atom_lattice_from_image(
             image_data = image0_data
             image_data_modified = image0_data_modified
         if sublattice_para.image_type == 1:
-            if image1_filename is not None:
+            if s_image1 is not None:
                 s_image = s_image1
                 image_data = image1_data
                 image_data_modified = image1_data
