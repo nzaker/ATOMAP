@@ -219,10 +219,10 @@ def make_atom_lattice_from_image(
 
     image0_filename = s_image0.__dict__['tmp_parameters']['filename']
     path_name = image0_filename
-    path_name = path_name[0: path_name.rfind(".")]
     if not os.path.exists(path_name):
         os.makedirs(path_name)
 
+    s_image0 = s_image0.deepcopy()
     s_image0_modified = run_image_filtering(s_image0)
 
     if model_parameters is None:
@@ -239,6 +239,7 @@ def make_atom_lattice_from_image(
             separation=pixel_separation)[0]
 
     if s_image1 is not None:
+        s_image1 = s_image1.deepcopy()
         s_image1.data = 1./s_image1.data
         image1_data = np.rot90(np.fliplr(s_image1.data))
 
