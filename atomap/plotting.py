@@ -419,7 +419,6 @@ def plot_image_map_line_profile_using_interface_plane(
             cax=colorbar_ax,
             orientation='horizontal')
     fig.savefig(figname)
-    plt.close(fig)
 
 
 def _make_subplot_line_profile(
