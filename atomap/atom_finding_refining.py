@@ -4,6 +4,8 @@ import numpy as np
 from skimage.feature import peak_local_max
 from atomap.plotting import plot_feature_density
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 def get_peak2d_skimage(image, separation):
     """
@@ -120,7 +122,9 @@ def plot_feature_separation(
             separation_step=separation_step)
     for index, (separation, peaks) in enumerate(
             zip(separation_list, peak_list)):
-        fig, ax = plt.subplots(figsize=(7,7))
+        fig = Figure(figsize=(7, 7))
+        canvas = FigureCanvas(fig)
+        ax = fig.add_subplot(111)
         ax.imshow(image_data)
         ax.scatter(peaks[:,1], peaks[:,0])
         ax.set_xlim(0, image_data.shape[1])

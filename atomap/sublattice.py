@@ -7,6 +7,8 @@ import hyperspy.api as hs
 import copy
 import json
 from matplotlib.gridspec import GridSpec
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 from atomap.tools import \
         _get_interpolated2d_from_unregular_data,\
@@ -747,7 +749,10 @@ class Sublattice():
                     [-histogram_range, histogram_range],
                     [-histogram_range, histogram_range]])
         if not (debug_figname == ''):
-            fig, ax = plt.subplots(figsize=(10, 10))
+            fig = Figure(figsize=(7, 7))
+            canvas = FigureCanvas(fig)
+            ax = fig.add_subplot(111)
+
             ax.scatter(x_pos_distances, y_pos_distances)
             ax.set_ylim(-histogram_range, histogram_range)
             ax.set_xlim(-histogram_range, histogram_range)
@@ -981,7 +986,9 @@ class Sublattice():
         >>>> fig = sublattice.plot_atom_plane_on_stem_data(atom_planes)
         >>>> fig.savefig("atom_planes.jpg")
         """
-        fig, ax = plt.subplots(figsize=(10, 10))
+        fig = Figure(figsize=(7, 7))
+        canvas = FigureCanvas(fig)
+        ax = fig.add_subplot(111)
         cax = ax.imshow(self.adf_image)
         if self.plot_clim:
             cax.set_clim(self.plot_clim[0], self.plot_clim[1])
@@ -1162,7 +1169,9 @@ class Sublattice():
     def plot_all_atom_planes(self, fignameprefix="atom_plane"):
         for zone_index, zone_vector in enumerate(
                 self.zones_axis_average_distances):
-            fig, ax = plt.subplots(figsize=(20, 20))
+            fig = Figure(figsize=(10, 10))
+            canvas = FigureCanvas(fig)
+            ax = fig.add_subplot(111)
             cax = ax.imshow(self.adf_image)
             if self.plot_clim:
                 cax.set_clim(self.plot_clim[0], self.plot_clim[1])
