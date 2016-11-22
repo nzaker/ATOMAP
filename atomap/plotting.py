@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.colors import hsv_to_rgb
 from matplotlib import cm
@@ -328,7 +330,9 @@ def plot_image_map_line_profile_using_interface_plane(
 
     figsize = (10, 18+2*number_of_line_profiles)
 
-    fig = plt.figure(figsize=figsize)
+    fig = Figure(figsize=figsize)
+    canvas = FigureCanvas(fig)
+
     gs = GridSpec(95+10*number_of_line_profiles, 95)
 
     image_ax = fig.add_subplot(gs[0:45, :])
@@ -687,7 +691,8 @@ def plot_line_profiles_from_parameter_input(
         x_lim=False,
         figname="line_profile_list.jpg"):
     figsize = (15, len(parameter_list)*3)
-    fig = plt.figure(figsize=figsize)
+    fig = Figure(figsize=figsize)
+    canvas = FigureCanvas(fig)
 
     gs = GridSpec(10*len(parameter_list), 10)
     line_profile_gs_size = 10
