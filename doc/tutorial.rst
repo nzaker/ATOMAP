@@ -184,6 +184,8 @@ Or comma-separated values (CSV) file, which can be opened in spreadsheet softwar
 
 `sublattice` objects also contain a several plotting functions.
 These functions saves the images in the data processing folder mentioned earlier (`atomap_testing/test_ADF_cropped`).
+Since the image is from a SrTiO$_3$ single crystal, there should be no variations in the structure.
+So any variations are due to factors such as scanning noise, drift and possibly bad fitting.
 
 .. code-block:: python
 
