@@ -36,7 +36,7 @@ class Atom_Lattice():
     def plot_all_sublattices(
             self,
             image=None,
-            markersize=2,
+            markersize=4,
             figname="all_sublattice.jpg"):
         if image is None:
             image = self.adf_image
