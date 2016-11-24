@@ -30,7 +30,7 @@ def set_alpha(l,start=15,stop=35):
 	return(alpha)
 
 #Configure figsize and dpi suitable for logo
-fig = plt.figure(figsize=(200/60,200/60), dpi=60)
+fig = plt.figure(figsize=(1.5,1.5), dpi=200)
 
 ax = fig.add_subplot(1, 1, 1, projection='3d')
 
@@ -51,19 +51,19 @@ Z = make_atoms(X,Y)
 surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.bone,linewidth=0, antialiased=False,alpha=0.7,clim=(0,1.1))
 
 #---- Make wireframe ("model part")
-m = np.arange(i0, i1, 0.25)
+m = np.arange(i0, i1, 0.5)
 l = m.size
-n = np.arange(j0,j1, 0.25)
+n = np.arange(j0,j1, 0.5)
 X, Y = np.meshgrid(m,n)
 Z = make_atoms(X,Y)
 
 #makes plot
-alpha_list = set_alpha(l)
+alpha_list = set_alpha(l,start=6,stop=19)
 for k in np.arange(0,l,2):
 	alpha = alpha_list[k]
-	ax.plot(X[k,:], Y[k,:], Z[k,:],color='purple',alpha=alpha)
+	ax.plot(X[k,:], Y[k,:], Z[k,:],color='purple',alpha=alpha,lw=2)
 	for p in np.arange(0,l,2):
-		ax.plot(X[k:k+3,p], Y[k:k+3,p], Z[k:k+3,p],color='pink',alpha=alpha)
+		ax.plot(X[k:k+3,p], Y[k:k+3,p], Z[k:k+3,p],color='pink',alpha=alpha,lw=2)
 
 ax.set_axis_off()
 
