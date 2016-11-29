@@ -7,9 +7,10 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+
 def get_peak2d_skimage(image, separation):
     """
-    Find the most intense features in a HyperSpy signal, where the 
+    Find the most intense features in a HyperSpy signal, where the
     features has to be separated by a minimum distance.
 
     Will work with image stacks.
@@ -23,7 +24,7 @@ def get_peak2d_skimage(image, separation):
 
     Returns
     -------
-    Numpy array, list of the most intense peaks. 
+    Numpy array, list of the most intense peaks.
 
     Example
     -------
@@ -83,9 +84,10 @@ def find_features_by_separation(
 
     return(separation_value_list, peak_list)
 
+
 def plot_feature_separation(
         signal,
-        separation_range=(5,30),
+        separation_range=(5, 30),
         separation_step=1):
     """
     Plot peak positions as a function of peak separation.
@@ -109,7 +111,7 @@ def plot_feature_separation(
     image_data = signal.data
 
     # skimage.feature.peak_local_max used in find_features_by_separation
-    # only support 32-bit or higher 
+    # only support 32-bit or higher
     if image_data.dtype is np.dtype('float16'):
         image_data = image_data.astype('float32')
     if image_data.dtype is np.dtype('int8'):
@@ -126,7 +128,7 @@ def plot_feature_separation(
         canvas = FigureCanvas(fig)
         ax = fig.add_subplot(111)
         ax.imshow(image_data)
-        ax.scatter(peaks[:,1], peaks[:,0])
+        ax.scatter(peaks[:, 1], peaks[:, 0])
         ax.set_xlim(0, image_data.shape[1])
         ax.set_ylim(0, image_data.shape[0])
         ax.set_axis_off()
@@ -134,13 +136,15 @@ def plot_feature_separation(
         fig.tight_layout()
         fig.savefig("peak_separation_" + str(separation).zfill(3))
 
-# WORK IN PROGRESS
+
 def plot_feature_separation_hyperspy_signal(
         image_data,
-        separation_range=(5,30),
+        separation_range=(5, 30),
         separation_step=1):
     """
     Plot the peak positions on in a HyperSpy signal.
+
+    Note: this is currently not working.
     """
     separation_list, peak_list = find_features_by_separation(
             image_data=image_data,
@@ -173,7 +177,7 @@ def plot_feature_separation_hyperspy_signal(
 #    s.add_marker(m)
 
     m = hs.plot.markers.point(
-            x=peak_list[:,1], y=peak_list[:,0], color='red')
+            x=peak_list[:, 1], y=peak_list[:, 0], color='red')
     s.add_marker(m)
 
 #    for index, (marker_x, marker_y) in enumerate(zip(marker_list_x, marker_list_y)):
@@ -181,8 +185,9 @@ def plot_feature_separation_hyperspy_signal(
 #                x=marker_x, y=marker_y, color='red')
 #        s.add_marker(m,
 #                plot_on_signal=True,
-#                plot_marker=True) 
+#                plot_marker=True)
     return(s)
+
 
 def find_feature_density(
         image_data,
