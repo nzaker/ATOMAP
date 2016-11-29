@@ -30,7 +30,7 @@ def set_alpha(l,start=15,stop=35):
 	return(alpha)
 
 #Configure figsize and dpi suitable for logo
-fig = plt.figure(figsize=(1.5,1.5), dpi=200)
+fig = plt.figure(figsize=(1,1), dpi=300)
 
 ax = fig.add_subplot(1, 1, 1, projection='3d')
 
@@ -73,5 +73,6 @@ ax.set_xlim(-5,5)
 ax.set_ylim(-5,5)
 ax.set_zlim(0,1)
 
-fig.subplots_adjust(left=0.01,right=0.99,top=0.99,bottom=0.01)
-fig.savefig('atomaplogo.png',transparent=True,bbox_inches='tight',pad_inches=0)
+fig.subplots_adjust(left=0.0,right=1.0,top=1.0,bottom=0.0)
+fig.savefig('atomaplogo.png',transparent=True,bbox_inches='tight',pad_inches=0, dpi=300)
+fig.savefig('atomaplogo_favicon.png',transparent=True,bbox_inches='tight',pad_inches=0, dpi=64)
