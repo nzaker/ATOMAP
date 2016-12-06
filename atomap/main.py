@@ -1,8 +1,4 @@
 import os
-import copy
-import glob
-import matplotlib.pyplot as plt
-import hyperspy.api as hs
 import numpy as np
 from atomap.atom_finding_refining import\
         subtract_average_background,\
@@ -141,7 +137,6 @@ class ModelParametersBase:
     def __init__(self):
         self.peak_separation = None
         self.name = None
-        
         self.sublattice_list = []
 
     def __repr__(self):
@@ -256,7 +251,7 @@ def make_atom_lattice_from_image(
     for sublattice_index in range(model_parameters.number_of_sublattices):
         sublattice_para = model_parameters.get_sublattice_from_order(
                 sublattice_index)
-        
+
         if sublattice_para.image_type == 0:
             s_image = s_image0
             image_data = image0_data

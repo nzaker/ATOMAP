@@ -136,7 +136,7 @@ class Atom_Position:
             image_data,
             slice_size):
         """
-        Return a square slice of the image data, with the 
+        Return a square slice of the image data, with the
         atom position in the center.
 
         Parameters
@@ -375,7 +375,7 @@ class Atom_Position:
             defines the mask around the atom where the Gaussian will be
             fitted. A smaller value can reduce the effect from
             neighboring atoms, but might also decrease the accuracy of
-            the fitting due to less data to fit to. 
+            the fitting due to less data to fit to.
             Default 0.4 (40%).
         debug_plot : bool, optional
             Make debug figure for every Gaussian fit.

@@ -750,7 +750,7 @@ class Sublattice():
                     [-histogram_range, histogram_range]])
         if not (debug_figname == ''):
             fig = Figure(figsize=(7, 7))
-            canvas = FigureCanvas(fig)
+            FigureCanvas(fig)
             ax = fig.add_subplot(111)
 
             ax.scatter(x_pos_distances, y_pos_distances)
@@ -987,7 +987,7 @@ class Sublattice():
         >>>> fig.savefig("atom_planes.jpg")
         """
         fig = Figure(figsize=(7, 7))
-        canvas = FigureCanvas(fig)
+        FigureCanvas(fig)
         ax = fig.add_subplot(111)
         cax = ax.imshow(self.adf_image)
         if self.plot_clim:
@@ -1170,7 +1170,7 @@ class Sublattice():
         for zone_index, zone_vector in enumerate(
                 self.zones_axis_average_distances):
             fig = Figure(figsize=(10, 10))
-            canvas = FigureCanvas(fig)
+            FigureCanvas(fig)
             ax = fig.add_subplot(111)
             cax = ax.imshow(self.adf_image)
             if self.plot_clim:

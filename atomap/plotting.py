@@ -4,7 +4,6 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.colors import hsv_to_rgb
-from matplotlib import cm
 import copy
 
 from atomap.tools import\
@@ -51,7 +50,7 @@ def plot_zone_vector_and_atom_distance_map(
         raise ValueError("Image data is None, no data to plot")
 
     fig = Figure(figsize=figsize)
-    canvas = FigureCanvas(fig)
+    FigureCanvas(fig)
 
     gs = GridSpec(95, 95)
 
@@ -127,7 +126,7 @@ def plot_complex_image_map_line_profile_using_interface_plane(
     figsize = (10, 18+2*number_of_line_profiles)
 
     fig = Figure(figsize=figsize)
-    canvas = FigureCanvas(fig)
+    FigureCanvas(fig)
 
     gs = GridSpec(100+10*number_of_line_profiles, 95)
 
@@ -306,7 +305,6 @@ def make_color_wheel(ax, rotation=0):
     rgb_array = get_rgb_array(t, r_masked.data)
     rgb_array = np.dstack((rgb_array, np.invert(mask)))
 
-    cmap = cm.get_cmap('hsv')
     ax.imshow(rgb_array, interpolation='quadric', origin='lower')
     ax.set_axis_off()
 
@@ -336,7 +334,7 @@ def plot_image_map_line_profile_using_interface_plane(
     figsize = (10, 18+2*number_of_line_profiles)
 
     fig = Figure(figsize=figsize)
-    canvas = FigureCanvas(fig)
+    FigureCanvas(fig)
 
     gs = GridSpec(95+10*number_of_line_profiles, 95)
 
@@ -541,7 +539,7 @@ def _make_subplot_map_from_complex_regular_grid(
             rotation=0,
             angle_lim=phase_image_lim,
             magnitude_lim=amplitude_image_lim)
-    cax = ax.imshow(
+    ax.imshow(
             np.fliplr(np.rot90(rgb_array, -1)),
             extent=[
                 x_lim[0]*distance_data_scale,
@@ -583,34 +581,6 @@ def _make_subplot_map_from_complex_regular_grid(
     ax.set_ylim(
             amplitude_data[1][0][0]*distance_data_scale,
             amplitude_data[1][0][-1]*distance_data_scale)
-
-
-def _make_line_profile_subplot_from_three_parameter_data(
-        ax,
-        data_list,
-        interface_plane,
-        scale_x=1.0,
-        scale_y=1.0,
-        invert_line_profiles=False):
-
-    line_profile_data = project_position_property_sum_planes(
-        data_list,
-        interface_plane,
-        rebin_data=True)
-
-    line_profile_data = np.array(line_profile_data)
-
-    position = line_profile_data[:, 0]
-    data = line_profile_data[:, 1]
-    if invert_line_profiles:
-        position = position*-1
-
-    _make_subplot_line_profile(
-        ax,
-        position,
-        data,
-        scale_x=scale_x,
-        scale_y=scale_y)
 
 
 def _make_line_profile_subplot_from_three_parameter_data(
@@ -697,7 +667,7 @@ def plot_line_profiles_from_parameter_input(
         figname="line_profile_list.jpg"):
     figsize = (15, len(parameter_list)*3)
     fig = Figure(figsize=figsize)
-    canvas = FigureCanvas(fig)
+    FigureCanvas(fig)
 
     gs = GridSpec(10*len(parameter_list), 10)
     line_profile_gs_size = 10
