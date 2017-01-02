@@ -14,10 +14,12 @@ import numpy as np
 
 my_path = os.path.dirname(__file__)
 
+
 class test_adf_abf_sto(unittest.TestCase):
-    
+
     def setUp(self):
-        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
+        s_adf_filename = os.path.join(
+                my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
         s_adf = load(s_adf_filename)
@@ -27,18 +29,19 @@ class test_adf_abf_sto(unittest.TestCase):
         self.pixel_size = s_adf.axes_manager[0].scale
         self.pixel_separation = peak_separation/self.pixel_size
 
-        s_abf_filename = os.path.join(my_path, "datasets", "test_ABF_cropped.hdf5")
+        s_abf_filename = os.path.join(
+                my_path, "datasets", "test_ABF_cropped.hdf5")
         s_abf = load(s_abf_filename)
         s_abf.change_dtype('float64')
         s_abf_modified = subtract_average_background(s_abf)
 
         self.peaks = get_peak2d_skimage(
-                self.s_adf_modified, 
+                self.s_adf_modified,
                 self.pixel_separation)[0]
 
     def test_find_b_cation_atoms(self):
         a_sublattice = Sublattice(
-                self.peaks, 
+                self.peaks,
                 np.rot90(np.fliplr(self.s_adf_modified.data)))
         a_sublattice.pixel_size = self.pixel_size
         construct_zone_axes_from_sublattice(a_sublattice)
@@ -55,7 +58,7 @@ class test_adf_abf_sto(unittest.TestCase):
 
     def test_find_b_atom_planes(self):
         a_sublattice = Sublattice(
-                self.peaks, 
+                self.peaks,
                 np.rot90(np.fliplr(self.s_adf_modified.data)))
         a_sublattice.pixel_size = self.pixel_size
         construct_zone_axes_from_sublattice(a_sublattice)
