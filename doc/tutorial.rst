@@ -119,7 +119,7 @@ a perovskite oxide structure projected along the [110] direction.
 .. code-block:: python
 
     >>> from atomap.main import make_atom_lattice_from_image
-    >>> from atomap.main import PerovskiteOxide110
+    >>> from atomap.model_parameters import PerovskiteOxide110
     >>> model_parameters = PerovskiteOxide110()
     >>> atom_lattice = make_atom_lattice_from_image(s, model_parameters=model_parameters ,pixel_separation=19)
 
