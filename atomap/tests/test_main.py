@@ -3,7 +3,7 @@ matplotlib.use('Agg')
 import os
 import unittest
 from atomap.main import make_atom_lattice_from_image
-from atomap.main import PerovskiteOxide110
+from atomap.model_parameters import PerovskiteOxide110
 from hyperspy.io import load
 
 my_path = os.path.dirname(__file__)
