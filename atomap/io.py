@@ -5,6 +5,21 @@ from atomap.atom_finding_refining import construct_zone_axes_from_sublattice
 
 
 def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
+    """
+    Load an Atomap HDF5-file, restoring a saved Atom_Lattice.
+
+    Parameters
+    ----------
+    filename : string
+        Filename of the HDF5-file.
+    construct_zone_axes : bool
+        If True, find relations between atomic positions by
+        constructing atomic planes. Default True.
+
+    Returns
+    -------
+    Atomap Atom_Lattice object
+    """
     h5f = h5py.File(filename, 'r')
     atom_lattice = Atom_Lattice()
     for group_name in h5f:
