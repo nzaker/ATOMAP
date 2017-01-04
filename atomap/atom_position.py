@@ -163,6 +163,8 @@ class Atom_Position:
         if y1 > image_data.shape[0]:
             x1 = image_data.shape[0]
 
+        x0, x1, y0, y1 = int(x0), int(x1), int(y0), int(y1)
+        
         data_slice = copy.deepcopy(image_data[y0:y1, x0:x1])
         return(data_slice)
 
