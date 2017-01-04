@@ -14,6 +14,13 @@ class Atom_Lattice():
         self.inverted_abf_image = None
         self.path_name = ""
 
+    def __repr__(self):
+        return '<%s, %s (sublattice(s): %s)>' % (
+            self.__class__.__name__,
+            self.path_name,
+            len(self.sublattice_list),
+            )
+
     def get_sublattice(self, sublattice_id):
         """
         Get a sublattice object from either sublattice index

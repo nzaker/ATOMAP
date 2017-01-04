@@ -22,6 +22,13 @@ class Atom_Plane():
         self.atom_distance_list = self.get_atom_distance_list()
         self._link_atom_to_atom_plane()
 
+    def __repr__(self):
+        return '<%s, %s (atoms:%s)>' % (
+            self.__class__.__name__,
+            self.zone_vector,
+            len(self.atom_list),
+            )
+
     def _link_atom_to_atom_plane(self):
         for atom in self.atom_list:
             atom.atom_planes.append(self)
