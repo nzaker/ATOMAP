@@ -119,9 +119,9 @@ a perovskite oxide structure projected along the [110] direction.
 .. code-block:: python
 
     >>> from atomap.main import make_atom_lattice_from_image
-    >>> from atomap.model_parameters import PerovskiteOxide110
+    >>> from atomap.process_parameters import PerovskiteOxide110
     >>> model_parameters = PerovskiteOxide110()
-    >>> atom_lattice = make_atom_lattice_from_image(s, model_parameters=model_parameters ,pixel_separation=19)
+    >>> atom_lattice = make_atom_lattice_from_image(s, model_parameters=model_parameters, pixel_separation=19)
 
 Depending on the size of the dataset, this can take a while. 
 For the test dataset used here it should take about 1 minute.
@@ -184,13 +184,54 @@ Or comma-separated values (CSV) file, which can be opened in spreadsheet softwar
 
 `sublattice` objects also contain a several plotting functions.
 These functions saves the images in the data processing folder mentioned earlier (`atomap_testing/test_ADF_cropped`).
-Since the image is from a SrTiO$_3$ single crystal, there should be no variations in the structure.
+Since the image is from a SrTiO3 single crystal, there should be no variations in the structure.
 So any variations are due to factors such as scanning noise, drift and possibly bad fitting.
 
 .. code-block:: python
 
     >>> sublattice.plot_monolayer_distance_map()
     >>> sublattice.plot_ellipticity_map()
+
+The `sublattice` objects also contain a list of all the atomic planes and the atomic positions:
+
+.. code-block:: python
+
+    >>> sublattice.atom_plane_list
+    >>> sublattice.atom_list
+
+The `atom_plane` objects contain the atomic columns belonging to the same specific plane.
+Atom plane objects are defined by the direction vector parallel to the atoms in the plane, for example (58.81, -41.99).
+These can be accessed by:
+
+.. code-block:: python
+
+    >>> atom_plane = sublattice.atom_plane_list[0]
+    >>> atom_plane.atom_list
+
+These `atom_position` objects contain information related to a specific atomic column.
+For example:
+
+.. code-block:: python
+
+    >>> atom_position = sublattice.atom_list[0]
+    >>> atom_position.pixel_x
+    >>> atom_position.pixel_y
+    >>> atom_position.sigma_x
+    >>> atom_position.sigma_y
+
+Basic information about the `atom_lattice`, `sublattice`, `atom_plane` and `atom_position` objects can be accessed by simply:
+
+.. code-block:: python
+
+    >>> atom_lattice
+    <Atom_Lattice, test_ADF_cropped (sublattice(s): 2)>
+    >>> sublattice
+    <Sublattice, test_ADF_cropped.A (atoms:237,planes:7)>
+    >>> atom_plane
+    <Atom_Plane, (29.14, -0.18) (atoms:17)>
+    >>> atom_position
+    <Atom_Position,  (x:26.1,y:404.7,sx:4.4,sy:5.1,r:0.2,e:1.2)>
+
 
 Finding the oxygen columns
 --------------------------
