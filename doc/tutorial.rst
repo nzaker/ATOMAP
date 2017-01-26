@@ -12,12 +12,17 @@ The first step is starting an interactive Python environment (IPython).
 Linux
 ^^^^^
 
-Open a terminal and start `ipython`:
+Open a terminal and start `ipython3`:
 
 .. code-block:: bash
 
     $ ipython3
 
+If `ipython3` is not available, try `ipython`:
+
+.. code-block:: bash
+
+    $ ipython
 
 Windows
 ^^^^^^^
@@ -32,6 +37,8 @@ Getting test data
 -----------------
 
 Atomap generates many image files for data visualization, so it is recommended to do all the work in a separate folder.
+The `>>>` used in the documentation means the comment should be typed inside some kind of Python prompt, so do not include these when actually running the code.
+So for the first command below, only `mkdir atomap_testing` should be typed or copied into the IPython terminal.
 In the IPython terminal:
 
 .. code-block:: python
@@ -179,7 +186,6 @@ Or comma-separated values (CSV) file, which can be opened in spreadsheet softwar
 
 .. code-block:: python
 
-    >>> import numpy as np
     >>> np.savetxt("datafile.csv", (sublattice.x_position, sublattice.y_position, sublattice.sigma_x, sublattice.sigma_y, sublattice.ellipticity), delimiter=',')
 
 `sublattice` objects also contain a several plotting functions.
@@ -232,6 +238,21 @@ Basic information about the `atom_lattice`, `sublattice`, `atom_plane` and `atom
     >>> atom_position
     <Atom_Position,  (x:26.1,y:404.7,sx:4.4,sy:5.1,r:0.2,e:1.2)>
 
+The `atom_lattice` object with all the atom positions can be saved:
+
+.. code-block:: python
+
+    >>> atom_lattice.save_atom_lattice()
+
+This will make a HDF5-file in the data processing folder (`atomap_testing/test_ADF_cropped`) called `atom_lattice.hdf5`.
+The `atom_lattice` object can then be restored using:
+
+.. code-block:: python
+
+    >>> from atomap.io import load_atom_lattice_from_hdf5
+    >>> atom_lattice_1 = load_atom_lattice_from_hdf5("test_ADF_cropped/atom_lattice.hdf5")
+
+This is especially useful for large datasets, where refining the atomic positions can take a long time.
 
 Finding the oxygen columns
 --------------------------
@@ -244,5 +265,17 @@ Grab an ABF image acquired simultaneously with the HAADF image:
     >>> urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ABF_cropped.hdf5", "test_ABF_cropped.hdf5") 
     >>> s_abf = hs.load("test_ABF_cropped.hdf5")
     >>> atom_lattice = make_atom_lattice_from_image(s, model_parameters=model_parameters, pixel_separation=19, s_image1=s_abf)
+    >>> atom_lattice
+    <Atom_Lattice, test_ADF_cropped (sublattice(s): 3)>
 
+The oxygen `sublattice` has been added to the `atom_lattice`.
+This new `sublattice` can be visualized using `plot_all_sublattices`, where we use the `markersize` parameter to make the circles indicating the atomic column positions bigger:
+
+.. code-block:: python
+
+    >>> atom_lattice.plot_all_sublattices(markersize=7)
+
+.. image:: images/tutorial/all_sublattice_oxygen.jpg
+    :scale: 50 %
+    :align: center
 
