@@ -26,6 +26,15 @@ class Atom_Position:
         self.amplitude_gaussian = 1.0
         self.amplitude_max_intensity = 1.0
 
+    def __repr__(self):
+        return '<%s, %s (x:%s,y:%s,sx:%s,sy:%s,r:%s,e:%s)>' % (
+            self.__class__.__name__,
+            self.tag,
+            round(self.pixel_x, 1), round(self.pixel_y, 1),
+            round(self.sigma_x, 1), round(self.sigma_y, 1),
+            round(self.rotation, 1), round(self.ellipticity, 1),
+            )
+
     @property
     def sigma_x(self):
         return(self.__sigma_x)
@@ -163,6 +172,8 @@ class Atom_Position:
         if y1 > image_data.shape[0]:
             x1 = image_data.shape[0]
 
+        x0, x1, y0, y1 = int(x0), int(x1), int(y0), int(y1)
+        
         data_slice = copy.deepcopy(image_data[y0:y1, x0:x1])
         return(data_slice)
 

@@ -44,6 +44,15 @@ class Sublattice():
         self.plot_color = 'blue'
         self.path_name = ""
 
+    def __repr__(self):
+        return '<%s, %s.%s (atoms:%s,planes:%s)>' % (
+            self.__class__.__name__,
+            self.path_name,
+            self.tag,
+            len(self.atom_list),
+            len(self.atom_planes_by_zone_vector),
+            )
+
     @property
     def atom_positions(self):
         return([self.x_position, self.y_position])

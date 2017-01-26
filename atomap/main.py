@@ -13,7 +13,7 @@ from atomap.tools import\
 
 from atomap.atom_lattice import Atom_Lattice
 from atomap.sublattice import Sublattice
-import atomap.model_parameters as model_parameters
+import atomap.process_parameters as process_parameters
 
 
 def run_image_filtering(signal, invert_signal=False):
@@ -42,7 +42,7 @@ def make_atom_lattice_from_image(
     s_image0_modified = run_image_filtering(s_image0)
 
     if model_parameters is None:
-        model_parameters = model_parameters.GenericStructure()
+        model_parameters = process_parameters.GenericStructure()
 
     image0_scale = s_image0.axes_manager[0].scale
     if pixel_separation is None:
