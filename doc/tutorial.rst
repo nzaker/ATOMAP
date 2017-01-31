@@ -257,13 +257,16 @@ This is especially useful for large datasets, where refining the atomic position
 Finding the oxygen columns
 --------------------------
 
-Atomap can also find the positions in an Annular Bright Field (ABF) image, by firstly using a HAADF image.
-Grab an ABF image acquired simultaneously with the HAADF image:
+Atomap can also find the positions of oxygen columns in an Annular Bright Field (ABF) image, by firstly using a ADF image.
+We use the same ADF image as earlier, in addition to an ABF image acquired simultaneously:
 
 .. code-block:: python
 
+    >>> urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ADF_cropped.hdf5", "test_ADF_cropped.hdf5") 
+    >>> s = hs.load("test_ADF_cropped.hdf5")
     >>> urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ABF_cropped.hdf5", "test_ABF_cropped.hdf5") 
     >>> s_abf = hs.load("test_ABF_cropped.hdf5")
+    >>> model_parameters = PerovskiteOxide110()
     >>> atom_lattice = make_atom_lattice_from_image(s, model_parameters=model_parameters, pixel_separation=19, s_image1=s_abf)
     >>> atom_lattice
     <Atom_Lattice, test_ADF_cropped (sublattice(s): 3)>
