@@ -34,7 +34,7 @@ class Atom_Lattice():
             return(self.sublattice_list[sublattice_id])
         raise ValueError('Could not find sublattice ' + str(sublattice_id))
 
-    def construct_zone_axes_for_sublattices(self, sublattice_list=None):
+    def _construct_zone_axes_for_sublattices(self, sublattice_list=None):
         if sublattice_list is None:
             sublattice_list = self.sublattice_list
         for sublattice in sublattice_list:

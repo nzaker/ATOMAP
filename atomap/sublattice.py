@@ -563,7 +563,7 @@ class Sublattice():
                 atom_plane=interface_plane,
                 signal_name=sig_name)
 
-    def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
+    def _find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
         atom_position_list = np.array(
                 [self.x_position, self.y_position]).swapaxes(0, 1)
         nearest_neighbor_data = sp.spatial.cKDTree(
@@ -628,7 +628,7 @@ class Sublattice():
         mask = x*x + y*y <= radius*radius
         return(mask)
 
-    def find_perpendicular_vector(self, v):
+    def _find_perpendicular_vector(self, v):
         if v[0] == 0 and v[1] == 0:
             raise ValueError('zero vector')
         return np.cross(v, [1, 0])
@@ -952,7 +952,7 @@ class Sublattice():
             zone_axis_list1.extend(zone_axis_list2[1:])
         return(zone_axis_list1)
 
-    def find_missing_atoms_from_zone_vector(
+    def _find_missing_atoms_from_zone_vector(
             self, zone_vector, new_atom_tag=''):
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
 

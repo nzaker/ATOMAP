@@ -217,7 +217,7 @@ def find_feature_density(
 
 def construct_zone_axes_from_sublattice(sublattice):
     tag = sublattice.tag
-    sublattice.find_nearest_neighbors(nearest_neighbors=15)
+    sublattice._find_nearest_neighbors(nearest_neighbors=15)
     sublattice._make_nearest_neighbor_direction_distance_statistics(
             debug_figname=tag+"_cat_nn.png")
     sublattice._generate_all_atom_plane_list()
@@ -234,7 +234,7 @@ def refine_sublattice(
     for refinement_config in refinement_config_list:
         total_number_of_refinements += refinement_config[1]
 
-    sublattice.find_nearest_neighbors()
+    sublattice._find_nearest_neighbors()
 
     current_counts = 1
     for refinement_config in refinement_config_list:

@@ -47,7 +47,7 @@ class test_adf_abf_sto(unittest.TestCase):
         construct_zone_axes_from_sublattice(a_sublattice)
 
         zone_vector_100 = a_sublattice.zones_axis_average_distances[1]
-        b_atom_list = a_sublattice.find_missing_atoms_from_zone_vector(
+        b_atom_list = a_sublattice._find_missing_atoms_from_zone_vector(
                 zone_vector_100, new_atom_tag='B')
         b_sublattice = Sublattice(
                 b_atom_list, np.rot90(
@@ -64,7 +64,7 @@ class test_adf_abf_sto(unittest.TestCase):
         construct_zone_axes_from_sublattice(a_sublattice)
 
         zone_vector_100 = a_sublattice.zones_axis_average_distances[1]
-        b_atom_list = a_sublattice.find_missing_atoms_from_zone_vector(
+        b_atom_list = a_sublattice._find_missing_atoms_from_zone_vector(
                 zone_vector_100, new_atom_tag='B')
         b_sublattice = Sublattice(
                 b_atom_list, np.rot90(
