@@ -215,14 +215,15 @@ def find_feature_density(
     return(separation_list, peakN_list)
 
 
-def construct_zone_axes_from_sublattice(sublattice):
+def construct_zone_axes_from_sublattice(sublattice, debug_plot=False):
     tag = sublattice.tag
     sublattice._find_nearest_neighbors(nearest_neighbors=15)
     sublattice._make_nearest_neighbor_direction_distance_statistics(
-            debug_figname=tag+"_cat_nn.png")
+            debug_plot=debug_plot)
     sublattice._generate_all_atom_plane_list()
     sublattice._sort_atom_planes_by_zone_vector()
-    sublattice.plot_all_atom_planes(fignameprefix=tag+"_atom_plane")
+    if debug_plot:
+        sublattice.plot_all_atom_planes(fignameprefix=tag+"_atom_plane")
 
 
 def refine_sublattice(

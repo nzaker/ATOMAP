@@ -738,7 +738,7 @@ class Sublattice():
     def _make_nearest_neighbor_direction_distance_statistics(
             self,
             nearest_neighbor_histogram_max=0.8,
-            debug_figname=''):
+            debug_plot=False):
         x_pos_distances = []
         y_pos_distances = []
         for atom in self.atom_list:
@@ -757,7 +757,7 @@ class Sublattice():
                 range=[
                     [-histogram_range, histogram_range],
                     [-histogram_range, histogram_range]])
-        if not (debug_figname == ''):
+        if debug_plot:
             fig = Figure(figsize=(7, 7))
             FigureCanvas(fig)
             ax = fig.add_subplot(111)
@@ -765,7 +765,7 @@ class Sublattice():
             ax.scatter(x_pos_distances, y_pos_distances)
             ax.set_ylim(-histogram_range, histogram_range)
             ax.set_xlim(-histogram_range, histogram_range)
-            fig.savefig(self.save_path + debug_figname)
+            fig.savefig(self.save_path + self.tag + "_cat_nn.png")
 
         hist_scale = direction_distance_intensity_hist[1][1] -\
             direction_distance_intensity_hist[1][0]

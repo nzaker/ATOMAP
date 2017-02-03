@@ -51,7 +51,8 @@ def make_atom_lattice_from_image(
         s_image0,
         model_parameters=None,
         pixel_separation=None,
-        s_image1=None):
+        s_image1=None,
+        debug_plot=False):
 
     image0_filename = _get_signal_name(s_image0)
 
@@ -135,13 +136,14 @@ def make_atom_lattice_from_image(
         sublattice.pixel_size = s_image.axes_manager[0].scale
         sublattice.original_adf_image = image_data
         atom_lattice.sublattice_list.append(sublattice)
-
+        if debug_plot:
+            sublattice.plot_atom_list_on_image_data(
+                    figname=sublattice.tag + "_initial_position.jpg")
         for atom in sublattice.atom_list:
             atom.sigma_x = 0.05/sublattice.pixel_size
             atom.sigma_y = 0.05/sublattice.pixel_size
-
         if not(sublattice_para.sublattice_order == 0):
-            construct_zone_axes_from_sublattice(sublattice)
+            construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot)
             atom_subtract_config = sublattice_para.atom_subtract_config
             image_data = sublattice.adf_image
             for atom_subtract_para in atom_subtract_config:
@@ -170,7 +172,7 @@ def make_atom_lattice_from_image(
             sublattice,
             refinement_steps,
             refinement_neighbor_distance)
-        construct_zone_axes_from_sublattice(sublattice)
+        construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot)
 
         if hasattr(sublattice_para, 'zone_axis_list'):
             for zone_axis in sublattice_para.zone_axis_list:
