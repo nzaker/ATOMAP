@@ -17,7 +17,7 @@ class Atom_Position:
         self.start_atom = []
         self.end_atom = []
         self.atom_planes = []
-        self.tag = ''
+        self._tag = ''
         self.old_pixel_x_list = []
         self.old_pixel_y_list = []
         self.sigma_x = 1.0
@@ -29,7 +29,7 @@ class Atom_Position:
     def __repr__(self):
         return '<%s, %s (x:%s,y:%s,sx:%s,sy:%s,r:%s,e:%s)>' % (
             self.__class__.__name__,
-            self.tag,
+            self._tag,
             round(self.pixel_x, 1), round(self.pixel_y, 1),
             round(self.sigma_x, 1), round(self.sigma_y, 1),
             round(self.rotation, 1), round(self.ellipticity, 1),

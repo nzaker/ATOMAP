@@ -128,17 +128,17 @@ def make_atom_lattice_from_image(
                 atom_list,
                 image_data)
 
-        sublattice.save_path = "./" + path_name + "/"
+        sublattice._save_path = "./" + path_name + "/"
         sublattice.path_name = path_name
-        sublattice.plot_color = sublattice_para.color
+        sublattice._plot_color = sublattice_para.color
         sublattice.name = sublattice_para.name
-        sublattice.tag = sublattice_para.tag
+        sublattice._tag = sublattice_para.tag
         sublattice.pixel_size = s_image.axes_manager[0].scale
         sublattice.original_adf_image = image_data
         atom_lattice.sublattice_list.append(sublattice)
         if debug_plot:
             sublattice.plot_atom_list_on_image_data(
-                    figname=sublattice.tag + "_initial_position.jpg")
+                    figname=sublattice._tag + "_initial_position.jpg")
         for atom in sublattice.atom_list:
             atom.sigma_x = 0.05/sublattice.pixel_size
             atom.sigma_y = 0.05/sublattice.pixel_size

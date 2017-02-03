@@ -216,7 +216,7 @@ def find_feature_density(
 
 
 def construct_zone_axes_from_sublattice(sublattice, debug_plot=False):
-    tag = sublattice.tag
+    tag = sublattice._tag
     sublattice._find_nearest_neighbors(nearest_neighbors=15)
     sublattice._make_nearest_neighbor_direction_distance_statistics(
             debug_plot=debug_plot)

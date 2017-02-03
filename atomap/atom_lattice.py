@@ -50,7 +50,7 @@ class Atom_Lattice():
         fig, ax = plt.subplots(figsize=(10, 10))
         ax.imshow(self.adf_image)
         for sublattice in self.sublattice_list:
-            color = sublattice.plot_color
+            color = sublattice._plot_color
             for atom in sublattice.atom_list:
                 ax.plot(
                         atom.pixel_x, atom.pixel_y,
@@ -104,7 +104,7 @@ class Atom_Lattice():
 
         h5f = h5py.File(filename, 'w')
         for sublattice in self.sublattice_list:
-            subgroup_name = sublattice.tag + "_sublattice"
+            subgroup_name = sublattice._tag + "_sublattice"
             modified_image_data = sublattice.adf_image
             original_image_data = sublattice.original_adf_image
 
@@ -151,10 +151,10 @@ class Atom_Lattice():
                     compression='gzip')
 
             h5f[subgroup_name].attrs['pixel_size'] = sublattice.pixel_size
-            h5f[subgroup_name].attrs['tag'] = sublattice.tag
+            h5f[subgroup_name].attrs['tag'] = sublattice._tag
             h5f[subgroup_name].attrs['path_name'] = sublattice.path_name
-            h5f[subgroup_name].attrs['save_path'] = sublattice.save_path
-            h5f[subgroup_name].attrs['plot_color'] = sublattice.plot_color
+            h5f[subgroup_name].attrs['save_path'] = sublattice._save_path
+            h5f[subgroup_name].attrs['plot_color'] = sublattice._plot_color
 
             # HDF5 does not supporting saving a list of strings, so converting
             # them to bytes
