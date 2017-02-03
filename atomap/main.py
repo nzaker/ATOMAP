@@ -68,7 +68,10 @@ def make_atom_lattice_from_image(
     image0_scale = s_image0.axes_manager[0].scale
     if pixel_separation is None:
         if model_parameters.peak_separation is None:
-            raise ValueError("pixel_separation is not set. Either set it in the model_parameters.peak_separation or pixel_separation parameter")
+            raise ValueError(
+                    "pixel_separation is not set.\
+                    Either set it in the model_parameters.peak_separation\
+                    or pixel_separation parameter")
         else:
             pixel_separation = model_parameters.peak_separation/image0_scale
     initial_atom_position_list = get_peak2d_skimage(
