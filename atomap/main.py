@@ -27,13 +27,34 @@ def run_image_filtering(signal, invert_signal=False):
     return(signal_modified)
 
 
+def _get_signal_name(signal):
+    filename = None
+    signal_dict = signal.__dict__
+    if 'metadata' in signal_dict:
+        if 'General' in signal_dict['metadata']:
+            if 'title' in signal_dict['metadata']['General']:
+                temp_title = signal_dict['metadata']['General']['title']
+                if not temp_title == '':
+                    filename = temp_title
+    if filename is None:
+        if 'tmp_parameters' in signal_dict:
+            if 'filename' in signal_dict['tmp_parameters']:
+                temp_filename = signal_dict['tmp_parameters']['filename']
+                if not temp_filename == '':
+                    filename = temp_filename
+    if filename is None:
+        filename = 'signal'
+    return(filename)
+
+
 def make_atom_lattice_from_image(
         s_image0,
         model_parameters=None,
         pixel_separation=None,
         s_image1=None):
 
-    image0_filename = s_image0.__dict__['tmp_parameters']['filename']
+    image0_filename = _get_signal_name(s_image0)
+
     path_name = image0_filename
     if not os.path.exists(path_name):
         os.makedirs(path_name)
