@@ -172,7 +172,8 @@ def make_atom_lattice_from_image(
             sublattice,
             refinement_steps,
             refinement_neighbor_distance)
-        construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot)
+        if sublattice_para.sublattice_order == 0:
+            construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot)
 
         if hasattr(sublattice_para, 'zone_axis_list'):
             for zone_axis in sublattice_para.zone_axis_list:
