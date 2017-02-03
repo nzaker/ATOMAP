@@ -53,7 +53,7 @@ Firstly we need to download some test datasets from the Atomap repository:
     >>> import urllib.request
     >>> urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ADF_cropped.hdf5", "test_ADF_cropped.hdf5")
 
-This will grab a data file with a High Angle Annular Dark Field image of SrTiO3 projected along the [110] zone axis.
+This will grab a data file with a High Angle Annular Dark Field image of |SrTiO3| projected along the [110] zone axis.
 The file should appear in our current folder:
 
 .. code-block:: python
@@ -190,7 +190,7 @@ Or comma-separated values (CSV) file, which can be opened in spreadsheet softwar
 
 `sublattice` objects also contain a several plotting functions.
 These functions saves the images in the data processing folder mentioned earlier (`atomap_testing/test_ADF_cropped`).
-Since the image is from a SrTiO3 single crystal, there should be no variations in the structure.
+Since the image is from a |SrTiO3| single crystal, there should be no variations in the structure.
 So any variations are due to factors such as scanning noise, drift and possibly bad fitting.
 
 .. code-block:: python
@@ -282,3 +282,4 @@ This new `sublattice` can be visualized using `plot_all_sublattices`, where we u
     :scale: 50 %
     :align: center
 
+.. |SrTiO3| replace:: SrTiO\ :sub:`3`
