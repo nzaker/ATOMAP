@@ -312,7 +312,7 @@ class Atom_Position:
         closest_neighbor = self.get_closest_neighbor()
 
         slice_size = closest_neighbor * percent_to_nn * 2
-        data_slice = self.get_image_slice_around_atom(
+        data_slice = self._get_image_slice_around_atom(
                 image_data, slice_size)
         slice_radius = slice_size/2
 
