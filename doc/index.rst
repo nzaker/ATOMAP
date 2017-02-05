@@ -26,8 +26,10 @@ Contents on this webpage
 
    install
    tutorial
+   api_documentation
+
+
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
 
