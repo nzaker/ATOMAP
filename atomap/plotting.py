@@ -654,7 +654,7 @@ def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_planes(
             atom_list=sublattice.atom_list,
             clim=clim,
             plot_title=plot_title,
-            figname=sublattice.save_path + "oxygen_position_100.jpg")
+            figname=sublattice._save_path + "oxygen_position_100.jpg")
 
 
 # Parameter list in the form of [position, data]

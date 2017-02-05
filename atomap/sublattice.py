@@ -38,17 +38,17 @@ class Sublattice():
         self.original_adf_image = None
         self.atom_planes_by_zone_vector = {}
         self.plot_clim = None
-        self.tag = ''
-        self.save_path = "./"
+        self._tag = ''
+        self._save_path = "./"
         self.pixel_size = 1.0
-        self.plot_color = 'blue'
+        self._plot_color = 'blue'
         self.path_name = ""
 
     def __repr__(self):
         return '<%s, %s.%s (atoms:%s,planes:%s)>' % (
             self.__class__.__name__,
             self.path_name,
-            self.tag,
+            self._tag,
             len(self.atom_list),
             len(self.atom_planes_by_zone_vector),
             )
@@ -430,7 +430,7 @@ class Sublattice():
             color_bar_markers=color_bar_markers,
             rotate_atom_plane_list_90_degrees=True,
             prune_outer_values=prune_outer_values,
-            figname=self.save_path + self.tag + "_" + figname)
+            figname=self._save_path + self._tag + "_" + figname)
 
     def plot_property_map_and_profile(
             self,
@@ -538,7 +538,7 @@ class Sublattice():
             clim=clim,
             rotate_atom_plane_list_90_degrees=True,
             prune_outer_values=prune_outer_values,
-            figname=self.save_path + self.tag + "_" + figname)
+            figname=self._save_path + self._tag + "_" + figname)
 
         if save_signal:
             save_signal_figname = figname[: -4]
@@ -546,16 +546,16 @@ class Sublattice():
                     'position': (
                         line_profile_data_list[:, 0] *
                         data_scale).tolist(),
-                    self.tag + '_position_difference': (
+                    self._tag + '_position_difference': (
                         line_profile_data_list[:, 1] *
                         data_scale).tolist()}
 
-            json_filename = self.save_path + self.tag +\
+            json_filename = self._save_path + self._tag +\
                 save_signal_figname + "_line_profile.json"
             with open(json_filename, 'w') as fp:
                 json.dump(line_profile_dict, fp)
 
-            sig_name = self.save_path + self.tag +\
+            sig_name = self._save_path + self._tag +\
                 "_" + save_signal_figname + ".hdf5"
             self.save_map_from_datalist(
                 data_map,
@@ -563,7 +563,7 @@ class Sublattice():
                 atom_plane=interface_plane,
                 signal_name=sig_name)
 
-    def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
+    def _find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
         atom_position_list = np.array(
                 [self.x_position, self.y_position]).swapaxes(0, 1)
         nearest_neighbor_data = sp.spatial.cKDTree(
@@ -628,7 +628,7 @@ class Sublattice():
         mask = x*x + y*y <= radius*radius
         return(mask)
 
-    def find_perpendicular_vector(self, v):
+    def _find_perpendicular_vector(self, v):
         if v[0] == 0 and v[1] == 0:
             raise ValueError('zero vector')
         return np.cross(v, [1, 0])
@@ -738,7 +738,7 @@ class Sublattice():
     def _make_nearest_neighbor_direction_distance_statistics(
             self,
             nearest_neighbor_histogram_max=0.8,
-            debug_figname=''):
+            debug_plot=False):
         x_pos_distances = []
         y_pos_distances = []
         for atom in self.atom_list:
@@ -757,7 +757,7 @@ class Sublattice():
                 range=[
                     [-histogram_range, histogram_range],
                     [-histogram_range, histogram_range]])
-        if not (debug_figname == ''):
+        if debug_plot:
             fig = Figure(figsize=(7, 7))
             FigureCanvas(fig)
             ax = fig.add_subplot(111)
@@ -765,7 +765,7 @@ class Sublattice():
             ax.scatter(x_pos_distances, y_pos_distances)
             ax.set_ylim(-histogram_range, histogram_range)
             ax.set_xlim(-histogram_range, histogram_range)
-            fig.savefig(self.save_path + debug_figname)
+            fig.savefig(self._save_path + self._tag + "_cat_nn.png")
 
         hist_scale = direction_distance_intensity_hist[1][1] -\
             direction_distance_intensity_hist[1][0]
@@ -786,13 +786,13 @@ class Sublattice():
                     round((cluster[1]-bins[1]/2)*hist_scale, 2))
             shifted_clusters.append(temp_cluster)
 
-        self.shortest_atom_distance = self._find_shortest_vector(
+        self._shortest_atom_distance = self._find_shortest_vector(
                 shifted_clusters)
         shifted_clusters = self._sort_vectors_by_length(shifted_clusters)
 
         shifted_clusters = self._remove_parallel_vectors(
                 shifted_clusters,
-                tolerance=self.shortest_atom_distance/3.)
+                tolerance=self._shortest_atom_distance/3.)
 
         hr_histogram = np.histogram2d(
                 x_pos_distances,
@@ -908,7 +908,7 @@ class Sublattice():
 
     def _find_atomic_columns_from_atom(
             self, start_atom, zone_vector, atom_range_factor=0.5):
-        atom_range = atom_range_factor*self.shortest_atom_distance
+        atom_range = atom_range_factor*self._shortest_atom_distance
         end_of_atom_plane = False
         zone_axis_list1 = [start_atom]
         while not end_of_atom_plane:
@@ -952,7 +952,7 @@ class Sublattice():
             zone_axis_list1.extend(zone_axis_list2[1:])
         return(zone_axis_list1)
 
-    def find_missing_atoms_from_zone_vector(
+    def _find_missing_atoms_from_zone_vector(
             self, zone_vector, new_atom_tag=''):
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
 
@@ -968,7 +968,7 @@ class Sublattice():
                 new_atom_y = previous_atom.pixel_y -\
                     difference_vector[1]*0.5
                 new_atom = Atom_Position(new_atom_x, new_atom_y)
-                new_atom.tag = new_atom_tag
+                new_atom._tag = new_atom_tag
                 temp_new_atom_list.append(new_atom)
                 new_atom_list.append((new_atom_x, new_atom_y))
             new_atom_plane_list.append(temp_new_atom_list)
@@ -1009,7 +1009,7 @@ class Sublattice():
         ax.set_xlim(0, self.adf_image.shape[1])
         if figname is not None:
             fig.tight_layout()
-            fig.savefig(self.save_path + figname)
+            fig.savefig(self._save_path + figname)
         return(fig)
 
     def plot_atom_list_on_image_data(
@@ -1080,7 +1080,7 @@ class Sublattice():
         ax.set_ylim(0, image.shape[0])
         ax.set_xlim(0, image.shape[1])
         fig.tight_layout()
-        fig.savefig(self.save_path + figname, dpi=figdpi)
+        fig.savefig(self._save_path + figname, dpi=figdpi)
         return(fig)
 
     def _add_zero_position_to_data_list_from_atom_list(
@@ -1139,7 +1139,7 @@ class Sublattice():
         rot_ax.imshow(image_data, alpha=0.0)
         rot_ax.set_xlim(min(x_pos_list), max(x_pos_list))
         rot_ax.set_ylim(min(y_pos_list), max(y_pos_list))
-        figname = self.save_path + self.tag + "_rotation"
+        figname = self._save_path + self._tag + "_rotation"
         fig.tight_layout()
         fig.savefig(figname + ".png", dpi=200)
 
@@ -1199,7 +1199,7 @@ class Sublattice():
             ax.set_title(str(zone_index) + " , " + str(zone_vector))
             fig.tight_layout()
             fig.savefig(
-                    self.save_path +
+                    self._save_path +
                     fignameprefix +
                     str(zone_index) + ".jpg")
 
@@ -1583,7 +1583,7 @@ class Sublattice():
             ax.set_xlim(0, self.adf_image.shape[1])
             fig.tight_layout()
             fig.savefig(
-                    self.save_path +
+                    self._save_path +
                     "debug_plot_start_end_atoms_zone" +
                     str(zone_index) + ".jpg")
 
@@ -1615,7 +1615,7 @@ class Sublattice():
         relative_ax.set_xlabel("Refinement step")
 
         fig.tight_layout()
-        fig.savefig(self.save_path + self.tag + "_" + figname)
+        fig.savefig(self._save_path + self._tag + "_" + figname)
 
     def plot_parameter_line_profiles(
             self,
@@ -1661,7 +1661,7 @@ class Sublattice():
 
             zone_vector_name = self.zones_axis_average_distances_names[
                     zone_vector_number]
-            ylabel = self.tag + ", " + zone_vector_name + \
+            ylabel = self._tag + ", " + zone_vector_name + \
                 "\nPosition deviation, [nm]"
             ax.set_ylabel(ylabel)
 
@@ -1708,7 +1708,7 @@ class Sublattice():
 
         fig.tight_layout()
         if figname is None:
-            figname = self.save_path + self.tag + "_lattice_line_profiles.jpg"
+            figname = self._save_path + self._tag + "_lattice_line_profiles.jpg"
         fig.savefig(figname, dpi=100)
 
     def get_zone_vector_mean_angle(self, zone_vector):

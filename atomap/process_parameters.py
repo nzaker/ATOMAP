@@ -1,3 +1,6 @@
+color_name_list = ['red', 'blue', 'green', 'purple', 'cyan', 'yellow']
+
+
 class SublatticeParameterBase:
     def __init__(self):
         self.color = 'red'
@@ -19,12 +22,26 @@ class GenericSublattice(SublatticeParameterBase):
         self.image_type = 0
         self.name = "Sublattice 0"
         self.sublattice_order = 0
+        self.zone_axis_list = [
+                {'number': 0, 'name': '0'},
+                {'number': 1, 'name': '1'},
+                {'number': 2, 'name': '2'},
+                {'number': 3, 'name': '3'},
+                {'number': 4, 'name': '4'},
+                {'number': 5, 'name': '5'},
+                ]
         self.refinement_config = {
                 'config': [
                     ['image_data', 1, 'center_of_mass'],
                     ['image_data', 1, 'gaussian'],
                     ],
                 'neighbor_distance': 0.35}
+        self.atom_subtract_config = [
+                {
+                    'sublattice': 'S0',
+                    'neighbor_distance': 0.35,
+                    },
+                ]
 
 
 class PerovskiteOxide110SublatticeACation(SublatticeParameterBase):
@@ -137,6 +154,40 @@ class ModelParametersBase:
     @property
     def number_of_sublattices(self):
         return(len(self.sublattice_list))
+
+    def add_sublattice_config(self, sublattice_config_object):
+        name_list = []
+        color_list = []
+        sublattice_order_list = []
+        tag_list = []
+        for sublattice in self.sublattice_list:
+            color_list.append(sublattice.color)
+            sublattice_order_list.append(sublattice.sublattice_order)
+            name_list.append(sublattice.name)
+            tag_list.append(sublattice.tag)
+        sublattice_config_object.sublattice_order = max(
+                sublattice_order_list) + 1
+
+        if sublattice_config_object.color in color_list:
+            for color in color_name_list:
+                if not (color in color_list):
+                    sublattice_config_object.color = color
+
+        if sublattice_config_object.name in name_list:
+            for i in range(20):
+                name = "Sublattice " + str(i)
+                if not (name in name_list):
+                    sublattice_config_object.name = name
+                    break
+
+        if sublattice_config_object.tag in tag_list:
+            for i in range(20):
+                tag = "Sublattice " + str(i)
+                if not (tag in tag_list):
+                    sublattice_config_object.tag = tag
+                    break
+
+        self.sublattice_list.append(sublattice_config_object)
 
 
 class GenericStructure(ModelParametersBase):

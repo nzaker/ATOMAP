@@ -54,19 +54,19 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
                     atom.rotation = rotation
 
             sublattice.pixel_size = sublattice_set.attrs['pixel_size']
-            sublattice.tag = sublattice_set.attrs['tag']
+            sublattice._tag = sublattice_set.attrs['tag']
             sublattice.path_name = sublattice_set.attrs['path_name']
-            sublattice.save_path = sublattice_set.attrs['save_path']
-            sublattice.plot_color = sublattice_set.attrs['plot_color']
+            sublattice._save_path = sublattice_set.attrs['save_path']
+            sublattice._plot_color = sublattice_set.attrs['plot_color']
 
-            if type(sublattice.tag) == bytes:
-                sublattice.tag = sublattice.tag.decode()
+            if type(sublattice._tag) == bytes:
+                sublattice._tag = sublattice._tag.decode()
             if type(sublattice.path_name) == bytes:
                 sublattice.path_name = sublattice.path_name.decode()
-            if type(sublattice.save_path) == bytes:
-                sublattice.save_path = sublattice.save_path.decode()
-            if type(sublattice.plot_color) == bytes:
-                sublattice.plot_color = sublattice.plot_color.decode()
+            if type(sublattice._save_path) == bytes:
+                sublattice._save_path = sublattice._save_path.decode()
+            if type(sublattice._plot_color) == bytes:
+                sublattice._plot_color = sublattice._plot_color.decode()
 
             atom_lattice.sublattice_list.append(sublattice)
 

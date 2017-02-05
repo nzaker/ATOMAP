@@ -27,13 +27,35 @@ def run_image_filtering(signal, invert_signal=False):
     return(signal_modified)
 
 
+def _get_signal_name(signal):
+    filename = None
+    signal_dict = signal.__dict__
+    if 'metadata' in signal_dict:
+        if 'General' in signal_dict['metadata']:
+            if 'title' in signal_dict['metadata']['General']:
+                temp_title = signal_dict['metadata']['General']['title']
+                if not temp_title == '':
+                    filename = temp_title
+    if filename is None:
+        if 'tmp_parameters' in signal_dict:
+            if 'filename' in signal_dict['tmp_parameters']:
+                temp_filename = signal_dict['tmp_parameters']['filename']
+                if not temp_filename == '':
+                    filename = temp_filename
+    if filename is None:
+        filename = 'signal'
+    return(filename)
+
+
 def make_atom_lattice_from_image(
         s_image0,
         model_parameters=None,
         pixel_separation=None,
-        s_image1=None):
+        s_image1=None,
+        debug_plot=False):
 
-    image0_filename = s_image0.__dict__['tmp_parameters']['filename']
+    image0_filename = _get_signal_name(s_image0)
+
     path_name = image0_filename
     if not os.path.exists(path_name):
         os.makedirs(path_name)
@@ -47,7 +69,10 @@ def make_atom_lattice_from_image(
     image0_scale = s_image0.axes_manager[0].scale
     if pixel_separation is None:
         if model_parameters.peak_separation is None:
-            raise ValueError("pixel_separation is not set. Either set it in the model_parameters.peak_separation or pixel_separation parameter")
+            raise ValueError(
+                    "pixel_separation is not set.\
+                    Either set it in the model_parameters.peak_separation\
+                    or pixel_separation parameter")
         else:
             pixel_separation = model_parameters.peak_separation/image0_scale
     initial_atom_position_list = get_peak2d_skimage(
@@ -96,28 +121,29 @@ def make_atom_lattice_from_image(
                     sublattice_para.sublattice_position_zoneaxis)
             zone_vector = temp_sublattice.zones_axis_average_distances[
                     temp_zone_vector_index]
-            atom_list = temp_sublattice.find_missing_atoms_from_zone_vector(
+            atom_list = temp_sublattice._find_missing_atoms_from_zone_vector(
                     zone_vector, new_atom_tag=sublattice_para.tag)
 
             sublattice = Sublattice(
                 atom_list,
                 image_data)
 
-        sublattice.save_path = "./" + path_name + "/"
+        sublattice._save_path = "./" + path_name + "/"
         sublattice.path_name = path_name
-        sublattice.plot_color = sublattice_para.color
+        sublattice._plot_color = sublattice_para.color
         sublattice.name = sublattice_para.name
-        sublattice.tag = sublattice_para.tag
+        sublattice._tag = sublattice_para.tag
         sublattice.pixel_size = s_image.axes_manager[0].scale
         sublattice.original_adf_image = image_data
         atom_lattice.sublattice_list.append(sublattice)
-
+        if debug_plot:
+            sublattice.plot_atom_list_on_image_data(
+                    figname=sublattice._tag + "_initial_position.jpg")
         for atom in sublattice.atom_list:
             atom.sigma_x = 0.05/sublattice.pixel_size
             atom.sigma_y = 0.05/sublattice.pixel_size
-
         if not(sublattice_para.sublattice_order == 0):
-            construct_zone_axes_from_sublattice(sublattice)
+            construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot)
             atom_subtract_config = sublattice_para.atom_subtract_config
             image_data = sublattice.adf_image
             for atom_subtract_para in atom_subtract_config:
@@ -146,7 +172,8 @@ def make_atom_lattice_from_image(
             sublattice,
             refinement_steps,
             refinement_neighbor_distance)
-        construct_zone_axes_from_sublattice(sublattice)
+        if sublattice_para.sublattice_order == 0:
+            construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot)
 
         if hasattr(sublattice_para, 'zone_axis_list'):
             for zone_axis in sublattice_para.zone_axis_list:
