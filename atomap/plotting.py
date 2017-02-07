@@ -43,6 +43,8 @@ def plot_zone_vector_and_atom_distance_map(
         figsize=(10, 20),
         figname="map_data.jpg"):
     """
+    Parameters
+    ----------
     atom_list : list of Atom_Position instances
     extra_marker_list : two arrays of x and y [[x_values], [y_values]]
     """
@@ -118,6 +120,8 @@ def plot_complex_image_map_line_profile_using_interface_plane(
         prune_outer_values=False,
         figname="map_data.jpg"):
     """
+    Parameters
+    ----------
     atom_list : list of Atom_Position instances
     extra_marker_list : two arrays of x and y [[x_values], [y_values]]
     """
@@ -326,6 +330,8 @@ def plot_image_map_line_profile_using_interface_plane(
         prune_outer_values=False,
         figname="map_data.jpg"):
     """
+    Parameters
+    ----------
     atom_list : list of Atom_Position instances
     extra_marker_list : two arrays of x and y [[x_values], [y_values]]
     """
