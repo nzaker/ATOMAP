@@ -109,10 +109,10 @@ class Atom_Plane():
 
         Example
         -------
-        >>>> pos_distance = atom_plane.position_distance_to_neighbor()
-        >>>> x_pos = pos_distance[0]
-        >>>> y_pos = pos_distance[1]
-        >>>> distance = pos_distance[2]
+        >>> pos_distance = atom_plane.position_distance_to_neighbor()
+        >>> x_pos = pos_distance[0]
+        >>> y_pos = pos_distance[1]
+        >>> distance = pos_distance[2]
         """
         atom_distances = []
         if len(self.atom_list) < 2:

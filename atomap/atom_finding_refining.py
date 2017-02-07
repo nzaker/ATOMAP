@@ -29,9 +29,9 @@ def get_peak2d_skimage(image, separation):
     Example
     -------
     If s is a single image
-    >>>> peaks = get_peak2d_skimage(s, 5)
-    >>>> peak_x = peaks[0][:,0]
-    >>>> peak_y = peaks[0][:,1]
+    >>> peaks = get_peak2d_skimage(s, 5)
+    >>> peak_x = peaks[0][:,0]
+    >>> peak_y = peaks[0][:,1]
     """
     peaks = np.zeros([image.axes_manager.navigation_size+1, ], dtype=object)
     for z, indices in zip(
@@ -98,15 +98,15 @@ def plot_feature_separation(
     separation_range : tuple, optional
     separation_step : int, optional
 
-    Examples
-    --------
-    >>>> import hyperspy.api as hs
-    >>>> from atomap.atom_finding_refining import plot_feature_separation
-    >>>> s = hs.load("stem_adf_data.hdf5")
-    >>>> plot_feature_separation(s)
+    Example
+    -------
+    >>> import hyperspy.api as hs
+    >>> from atomap.atom_finding_refining import plot_feature_separation
+    >>> s = hs.load("stem_adf_data.hdf5")
+    >>> plot_feature_separation(s)
 
     Using all the parameters
-    >>>> plot_feature_separation(s, separation_range=(10,50), separation_step=3)
+    >>> plot_feature_separation(s, separation_range=(10,50), separation_step=3)
     """
     image_data = signal.data
 
