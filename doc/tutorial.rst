@@ -96,6 +96,7 @@ Go to this folder and open one of the images, which should look like:
 The requirements for the peak separation are:
     1. With an optimal peak separation, only atoms from one sublattice should be marked.
     2. In addition, all the atoms from the first sublattice should be marked.
+
 So the peak separations shown in the two images above is not good.
 
 It should look something like this:
