@@ -29,6 +29,8 @@ class GenericSublattice(SublatticeParameterBase):
                 {'number': 3, 'name': '3'},
                 {'number': 4, 'name': '4'},
                 {'number': 5, 'name': '5'},
+                {'number': 6, 'name': '6'},
+                {'number': 7, 'name': '7'},
                 ]
         self.refinement_config = {
                 'config': [
