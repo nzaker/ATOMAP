@@ -5,7 +5,10 @@ Atomap is a Python library for analysing atomic resolution
 scanning transmission electron microscopy images.
 It relies in fitting 2-D Gaussian functions to every atomic
 column in an image, and automatically find all major symmetry
-axes.
+axes. The full procedure is explained in the article 
+`Atomap: a new software tool for the automated analysis of
+atomic resolution images using two-dimensional
+Gaussian fitting <https://dx.doi.org/10.1186/s40679-017-0042-5>`_.
 
 Instructions on how to install Atomap are found in the :ref:`install` guide.
 
@@ -26,8 +29,8 @@ Contents on this webpage
 
    install
    tutorial
+   structures_without_config_files
    api_documentation
-
 
 
 * :ref:`genindex`

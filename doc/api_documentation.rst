@@ -31,6 +31,44 @@ Atom position
     :members:
     :undoc-members:
 
+Process parameters
+==================
+.. autoclass:: atomap.process_parameters.ModelParametersBase
+    :members:
+    :undoc-members:
+
+.. autoclass:: atomap.process_parameters.GenericStructure
+    :members:
+    :undoc-members:
+
+.. autoclass:: atomap.process_parameters.PerovskiteOxide110
+    :members:
+    :undoc-members:
+
+.. autoclass:: atomap.process_parameters.SrTiO3_110
+    :members:
+    :undoc-members:
+
+.. autoclass:: atomap.process_parameters.SublatticeParameterBase
+    :members:
+    :undoc-members:
+
+.. autoclass:: atomap.process_parameters.GenericSublattice
+    :members:
+    :undoc-members:
+
+.. autoclass:: atomap.process_parameters.PerovskiteOxide110SublatticeACation
+    :members:
+    :undoc-members:
+
+.. autoclass:: atomap.process_parameters.PerovskiteOxide110SublatticeBCation
+    :members:
+    :undoc-members:
+
+.. autoclass:: atomap.process_parameters.PerovskiteOxide110SublatticeOxygen
+    :members:
+    :undoc-members:
+
 Modules
 -------
 
