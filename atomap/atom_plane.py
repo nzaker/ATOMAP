@@ -109,10 +109,10 @@ class Atom_Plane():
 
         Example
         -------
-        >>>> pos_distance = atom_plane.position_distance_to_neighbor()
-        >>>> x_pos = pos_distance[0]
-        >>>> y_pos = pos_distance[1]
-        >>>> distance = pos_distance[2]
+        >>> pos_distance = atom_plane.position_distance_to_neighbor()
+        >>> x_pos = pos_distance[0]
+        >>> y_pos = pos_distance[1]
+        >>> distance = pos_distance[2]
         """
         atom_distances = []
         if len(self.atom_list) < 2:
@@ -335,8 +335,8 @@ class Atom_Plane():
     def _plot_debug_atom_plane(self):
         fig, ax = plt.subplots(figsize=(10, 10))
         cax = ax.imshow(self.atom_lattice.adf_image)
-        if self.atom_lattice.plot_clim:
-            clim = self.atom_lattice.plot_clim
+        if self.atom_lattice._plot_clim:
+            clim = self.atom_lattice._plot_clim
             cax.set_clim(clim[0], clim[1])
         for atom_index, atom in enumerate(self.atom_list):
             ax.plot(atom.pixel_x, atom.pixel_y, 'o', color='blue')

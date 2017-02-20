@@ -608,16 +608,17 @@ def project_position_property_sum_planes(
 
     Returns
     -------
-    Numpy array, [[position, property]].
+    Data list : Numpy Array
+        Array in the form [[position, property]].
 
     Example
     -------
-    >>>> data = project_position_property_sum_planes(
+    >>> data = project_position_property_sum_planes(
             input_data,
             interface_plane)
-    >>>> positions = data[:,0]
-    >>>> property_values = data[:,0]
-    >>>> plt.plot(positions, property_values)
+    >>> positions = data[:,0]
+    >>> property_values = data[:,0]
+    >>> plt.plot(positions, property_values)
     """
     x_pos_list = input_data_list[:, 0]
     y_pos_list = input_data_list[:, 1]

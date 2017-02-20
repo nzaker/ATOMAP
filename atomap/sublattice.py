@@ -37,7 +37,7 @@ class Sublattice():
         self.adf_image = adf_image
         self.original_adf_image = None
         self.atom_planes_by_zone_vector = {}
-        self.plot_clim = None
+        self._plot_clim = None
         self._tag = ''
         self._save_path = "./"
         self.pixel_size = 1.0
@@ -145,10 +145,12 @@ class Sublattice():
         in zone_vector0 and zone_vector1.
         Default will return the angles in radians.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         zone_vector0 : tuple
+            Vector for the first zone.
         zone_vector1 : tuple
+            Vector for the second zone.
         degrees : bool, optional
             If True, will return the angles in degrees.
             Default False.
@@ -191,7 +193,7 @@ class Sublattice():
         To avoid this problem use the function
         get_monolayer_distance_list_from_zone_vector.
 
-        Parameter:
+        Parameters
         ----------
         zone_vector : tuple
             Zone vector for the system
@@ -227,7 +229,7 @@ class Sublattice():
         To get the distance between atoms, use the function
         get_atom_distance_list_from_zone_vector.
 
-        Parameter:
+        Parameters
         ----------
         zone_vector : tuple
             Zone vector for the system
@@ -251,7 +253,7 @@ class Sublattice():
         Get distance difference between atoms in atoms planes
         belonging to a zone axis.
 
-        Parameter:
+        Parameters
         ----------
         zone_vector : tuple
             Zone vector for the system
@@ -319,7 +321,7 @@ class Sublattice():
         regularly spaced grid, useful for making data work
         with plotting using imshow.
 
-        Parameters:
+        Parameters
         -----------
         x_list : list of numbers
             x-positions
@@ -455,7 +457,7 @@ class Sublattice():
         The image data is taken from the sublattice, either adf_image or
         original_adf_image.
 
-        Parameters:
+        Parameters
         -----------
         x_list : 1-D list of numbers
         y_list : 1-D list of numbers
@@ -703,7 +705,8 @@ class Sublattice():
 
         Returns
         -------
-        Tuple: (x_position, y_position). Where both are numpy arrays.
+        Position : tuple
+            (x_position, y_position). Where both are numpy arrays.
 
         Example
         -------
@@ -992,15 +995,15 @@ class Sublattice():
 
         Example
         -------
-        >>>> fig = sublattice.plot_atom_plane_on_stem_data(atom_planes)
-        >>>> fig.savefig("atom_planes.jpg")
+        >>> fig = sublattice.plot_atom_plane_on_stem_data(atom_planes)
+        >>> fig.savefig("atom_planes.jpg")
         """
         fig = Figure(figsize=(7, 7))
         FigureCanvas(fig)
         ax = fig.add_subplot(111)
         cax = ax.imshow(self.adf_image)
-        if self.plot_clim:
-            cax.set_clim(self.plot_clim[0], self.plot_clim[1])
+        if self._plot_clim:
+            cax.set_clim(self._plot_clim[0], self._plot_clim[1])
         for atom_plane in atom_plane_list:
             x_pos = atom_plane.get_x_position_list()
             y_pos = atom_plane.get_y_position_list()
@@ -1027,7 +1030,7 @@ class Sublattice():
         """
         Plot atom positions on the image data.
 
-        Parameters:
+        Parameters
         -----------
         atom_list : list of Atom objects, optional
             Atom positions to plot. If no list is given,
@@ -1062,8 +1065,8 @@ class Sublattice():
         if fig is None:
             fig, ax = plt.subplots(figsize=figsize)
         cax = ax.imshow(image, interpolation='nearest')
-        if self.plot_clim:
-            cax.set_clim(self.plot_clim[0], self.plot_clim[1])
+        if self._plot_clim:
+            cax.set_clim(self._plot_clim[0], self._plot_clim[1])
         for atom_index, atom in enumerate(atom_list):
             ax.plot(
                     atom.pixel_x,
@@ -1094,7 +1097,7 @@ class Sublattice():
         Add zero value properties to position and property list.
         Useful to visualizing oxygen tilt pattern.
 
-        Parameters:
+        Parameters
         -----------
         x_list : list of numbers
         y_list : list of numbers
@@ -1182,8 +1185,8 @@ class Sublattice():
             FigureCanvas(fig)
             ax = fig.add_subplot(111)
             cax = ax.imshow(self.adf_image)
-            if self.plot_clim:
-                cax.set_clim(self.plot_clim[0], self.plot_clim[1])
+            if self._plot_clim:
+                cax.set_clim(self._plot_clim[0], self._plot_clim[1])
             for atom_plane_index, atom_plane in enumerate(
                     self.atom_planes_by_zone_vector[zone_vector]):
                 x_pos = atom_plane.get_x_position_list()
@@ -1557,8 +1560,8 @@ class Sublattice():
                 self.zones_axis_average_distances):
             fig, ax = plt.subplots(figsize=(10, 10))
             cax = ax.imshow(self.adf_image)
-            if self.plot_clim:
-                cax.set_clim(self.plot_clim[0], self.plot_clim[1])
+            if self._plot_clim:
+                cax.set_clim(self._plot_clim[0], self._plot_clim[1])
             for atom_index, atom in enumerate(self.atom_list):
                 if zone_vector in atom.start_atom:
                     ax.plot(

@@ -29,6 +29,7 @@ Contents on this webpage
 
    install
    tutorial
+   single_sublattice_no_atom_planes
    structures_without_config_files
    api_documentation
 

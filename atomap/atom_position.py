@@ -97,16 +97,19 @@ class Atom_Position:
         in radians, or between another atom and the
         horizontal axis.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         atom0 : Atom Position object
+            The first atom.
         atom1 : Atom Position object, optional
             If atom1 is not specified, the angle between
             itself, atom0 and the horizontal axis will be
             returned.
 
-        Returns:
-        Angle in radians
+        Returns
+        -------
+        Angle : float
+            Angle in radians
         """
         vector0 = np.array([
             atom0.pixel_x - self.pixel_x,
