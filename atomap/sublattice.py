@@ -37,7 +37,7 @@ class Sublattice():
         self.adf_image = adf_image
         self.original_adf_image = None
         self.atom_planes_by_zone_vector = {}
-        self.plot_clim = None
+        self._plot_clim = None
         self._tag = ''
         self._save_path = "./"
         self.pixel_size = 1.0
@@ -1002,8 +1002,8 @@ class Sublattice():
         FigureCanvas(fig)
         ax = fig.add_subplot(111)
         cax = ax.imshow(self.adf_image)
-        if self.plot_clim:
-            cax.set_clim(self.plot_clim[0], self.plot_clim[1])
+        if self._plot_clim:
+            cax.set_clim(self._plot_clim[0], self._plot_clim[1])
         for atom_plane in atom_plane_list:
             x_pos = atom_plane.get_x_position_list()
             y_pos = atom_plane.get_y_position_list()
@@ -1065,8 +1065,8 @@ class Sublattice():
         if fig is None:
             fig, ax = plt.subplots(figsize=figsize)
         cax = ax.imshow(image, interpolation='nearest')
-        if self.plot_clim:
-            cax.set_clim(self.plot_clim[0], self.plot_clim[1])
+        if self._plot_clim:
+            cax.set_clim(self._plot_clim[0], self._plot_clim[1])
         for atom_index, atom in enumerate(atom_list):
             ax.plot(
                     atom.pixel_x,
@@ -1185,8 +1185,8 @@ class Sublattice():
             FigureCanvas(fig)
             ax = fig.add_subplot(111)
             cax = ax.imshow(self.adf_image)
-            if self.plot_clim:
-                cax.set_clim(self.plot_clim[0], self.plot_clim[1])
+            if self._plot_clim:
+                cax.set_clim(self._plot_clim[0], self._plot_clim[1])
             for atom_plane_index, atom_plane in enumerate(
                     self.atom_planes_by_zone_vector[zone_vector]):
                 x_pos = atom_plane.get_x_position_list()
@@ -1560,8 +1560,8 @@ class Sublattice():
                 self.zones_axis_average_distances):
             fig, ax = plt.subplots(figsize=(10, 10))
             cax = ax.imshow(self.adf_image)
-            if self.plot_clim:
-                cax.set_clim(self.plot_clim[0], self.plot_clim[1])
+            if self._plot_clim:
+                cax.set_clim(self._plot_clim[0], self._plot_clim[1])
             for atom_index, atom in enumerate(self.atom_list):
                 if zone_vector in atom.start_atom:
                     ax.plot(
