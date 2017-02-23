@@ -6,6 +6,7 @@ from atomap.plotting import plot_feature_density
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
+from copy import deepcopy
 
 
 def get_peak2d_skimage(image, separation):
@@ -65,6 +66,13 @@ def find_features_by_separation(
     -------
     tuple, (separation_list, peak_list)
     """
+    if image_data.dtype is np.dtype('float16'):
+        image_data = image_data.astype('float32')
+    if image_data.dtype is np.dtype('int8'):
+        image_data = image_data.astype('int32')
+    if image_data.dtype is np.dtype('int16'):
+        image_data = image_data.astype('int32')
+
     if separation_range is None:
         min_separation = 3
         max_separation = int(np.array(image_data.shape).min()/5)
@@ -112,12 +120,6 @@ def plot_feature_separation(
 
     # skimage.feature.peak_local_max used in find_features_by_separation
     # only support 32-bit or higher
-    if image_data.dtype is np.dtype('float16'):
-        image_data = image_data.astype('float32')
-    if image_data.dtype is np.dtype('int8'):
-        image_data = image_data.astype('int32')
-    if image_data.dtype is np.dtype('int16'):
-        image_data = image_data.astype('int32')
     separation_list, peak_list = find_features_by_separation(
             image_data=image_data,
             separation_range=separation_range,
@@ -137,55 +139,64 @@ def plot_feature_separation(
         fig.savefig("peak_separation_" + str(separation).zfill(3))
 
 
-def plot_feature_separation_hyperspy_signal(
-        image_data,
+def get_feature_separation_signal(
+        signal,
         separation_range=(5, 30),
         separation_step=1):
     """
-    Plot the peak positions on in a HyperSpy signal.
+    Plot the peak positions on in a HyperSpy signal, as a function
+    of peak separation.
 
-    Note: this is currently not working.
+    Parameters
+    ----------
+    signal : HyperSpy signal 2D
+    separation_range : tuple, optional, default (5, 30)
+    separation_step : int, optional, default 1 
+
+    Example
+    -------
+    >>> import hyperspy.api as hs
+    >>> from atomap.atom_finding_refining import get_feature_separation_signal
+    >>> s = hs.signals.Signal2D(np.random.random((500, 500))
+    >>> s1 = get_feature_separation_signal(s)
+
     """
+    image_data = deepcopy(signal.data)
     separation_list, peak_list = find_features_by_separation(
             image_data=image_data,
             separation_range=separation_range,
             separation_step=separation_step)
 
-    s = hs.signals.Signal2D([image_data]*len(separation_list))
-    peak_list = np.array(peak_list)
+    scale_x = signal.axes_manager[0].scale
+    scale_y = signal.axes_manager[1].scale
+    offset_x = signal.axes_manager[0].offset
+    offset_y = signal.axes_manager[1].offset
+
+    s = hs.stack([signal]*len(separation_list))
+    s.axes_manager.navigation_axes[0].offset = separation_list[0]
+    s.axes_manager.navigation_axes[0].scale = separation_step
+    s.axes_manager.navigation_axes[0].name = "Feature separation, [Pixels]"
+    s.axes_manager.navigation_axes[0].unit = "Pixels"
 
     max_peaks = 0
     for peaks in peak_list:
         if len(peaks) > max_peaks:
             max_peaks = len(peaks)
 
-    marker_list_x = np.ones((len(peak_list), max_peaks))
-    marker_list_y = np.ones((len(peak_list), max_peaks))
+    marker_list_x = np.ones((len(peak_list), max_peaks))*-100
+    marker_list_y = np.ones((len(peak_list), max_peaks))*-100
 
-#    print(peak_list.shape)
-#    for index, peaks in enumerate(peak_list):
-#        marker_list_x[index, 0:len(peaks)] = copy.deepcopy(peaks[:,1])
-#        marker_list_y[index, 0:len(peaks)] = copy.deepcopy(peaks[:,0])
-#    print(marker_list_x.shape)
-#    print(marker_list_y.shape)
+    for index, peaks in enumerate(peak_list):
+        marker_list_x[index, 0:len(peaks)] = (peaks[:,1]*scale_x)+offset_x
+        marker_list_y[index, 0:len(peaks)] = (peaks[:,0]*scale_y)+offset_y
 
-#    s.axes_manager.navigation_axes[0].offset = separation_list[0]
-#    s.axes_manager.navigation_axes[0].scale = separation_step
+    marker_list = []
+    for i in range(marker_list_x.shape[1]):
+        m = hs.markers.point(
+                x=marker_list_x[:,i], y=marker_list_y[:,i], color='red')
+        marker_list.append(m)
 
-#    m = hs.plot.markers.point(
-#            x=marker_list_x, y=marker_list_y, color='red')
-#    s.add_marker(m)
-
-    m = hs.plot.markers.point(
-            x=peak_list[:, 1], y=peak_list[:, 0], color='red')
-    s.add_marker(m)
-
-#    for index, (marker_x, marker_y) in enumerate(zip(marker_list_x, marker_list_y)):
-#        m = hs.plot.markers.point(
-#                x=marker_x, y=marker_y, color='red')
-#        s.add_marker(m,
-#                plot_on_signal=True,
-#                plot_marker=True)
+    s.add_marker(marker_list, permanent=True, plot_marker=False)
     return(s)
 
 
