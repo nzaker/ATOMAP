@@ -24,7 +24,7 @@ class test_make_simple_sublattice(unittest.TestCase):
 
     def test_make_sublattice(self):
         sublattice = Sublattice(
-                self.peaks, 
+                self.peaks,
                 self.image_data)
         self.assertEqual(len(sublattice.atom_list), self.atoms_N)
 
@@ -43,17 +43,17 @@ class test_sublattice_construct_refine(unittest.TestCase):
         self.pixel_separation = peak_separation/self.pixel_size
 
         self.peaks = get_peak2d_skimage(
-                self.s_adf_modified, 
+                self.s_adf_modified,
                 self.pixel_separation)[0]
 
     def test_make_sublattice(self):
         sublattice = Sublattice(
-                self.peaks, 
+                self.peaks,
                 np.rot90(np.fliplr(self.s_adf_modified.data)))
 
     def test_make_construct_zone_axes(self):
         sublattice = Sublattice(
-                self.peaks, 
+                self.peaks,
                 np.rot90(np.fliplr(self.s_adf_modified.data)))
         sublattice.pixel_size = self.pixel_size
         construct_zone_axes_from_sublattice(sublattice)
@@ -70,11 +70,11 @@ class test_sublattice_construct_refine(unittest.TestCase):
 
     def test_center_of_mass_refine(self):
         sublattice = Sublattice(
-                self.peaks, 
+                self.peaks,
                 np.rot90(np.fliplr(self.s_adf_modified.data)))
         sublattice.pixel_size = self.pixel_size
         refine_sublattice(
-                sublattice, 
+                sublattice,
                 [
                     (sublattice.adf_image, 1, 'center_of_mass')],
                 0.25)
@@ -84,7 +84,7 @@ class test_sublattice_construct_refine(unittest.TestCase):
 
 
 class test_sublattice_processing(unittest.TestCase):
-    
+
     def setUp(self):
         s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
@@ -97,10 +97,10 @@ class test_sublattice_processing(unittest.TestCase):
         pixel_separation = peak_separation/pixel_size
 
         peaks = get_peak2d_skimage(
-                s_adf_modified, 
+                s_adf_modified,
                 pixel_separation)[0]
         self.sublattice = Sublattice(
-                peaks, 
+                peaks,
                 np.rot90(np.fliplr(s_adf_modified.data)))
         self.sublattice.pixel_size = pixel_size
         construct_zone_axes_from_sublattice(self.sublattice)
@@ -151,10 +151,10 @@ class test_sublattice_plotting_distance_difference(unittest.TestCase):
         pixel_separation = peak_separation/pixel_size
 
         peaks = get_peak2d_skimage(
-                s_adf_modified, 
+                s_adf_modified,
                 pixel_separation)[0]
         self.sublattice = Sublattice(
-                peaks, 
+                peaks,
                 np.rot90(np.fliplr(s_adf_modified.data)))
         self.sublattice.pixel_size = pixel_size
         construct_zone_axes_from_sublattice(self.sublattice)
@@ -179,7 +179,7 @@ class test_sublattice_plotting_monolayer_distance(unittest.TestCase):
                 s_adf_modified, 
                 pixel_separation)[0]
         self.sublattice = Sublattice(
-                peaks, 
+                peaks,
                 np.rot90(np.fliplr(s_adf_modified.data)))
         self.sublattice.pixel_size = pixel_size
         construct_zone_axes_from_sublattice(self.sublattice)
@@ -204,7 +204,7 @@ class test_sublattice_plotting_atom_list(unittest.TestCase):
                 s_adf_modified, 
                 pixel_separation)[0]
         self.sublattice = Sublattice(
-                peaks, 
+                peaks,
                 np.rot90(np.fliplr(s_adf_modified.data)))
         self.sublattice.pixel_size = pixel_size
         construct_zone_axes_from_sublattice(self.sublattice)
@@ -227,16 +227,48 @@ class test_sublattice_plotting_ellipticity(unittest.TestCase):
         pixel_separation = peak_separation/pixel_size
 
         peaks = get_peak2d_skimage(
-                s_adf_modified, 
+                s_adf_modified,
                 pixel_separation)[0]
         self.sublattice = Sublattice(
-                peaks, 
+                peaks,
                 np.rot90(np.fliplr(s_adf_modified.data)))
         self.sublattice.pixel_size = pixel_size
         construct_zone_axes_from_sublattice(self.sublattice)
 
     def test_plot_ellipticity_rotation_complex(self):
         self.sublattice.plot_ellipticity_rotation_complex()
+
+
+class test_sublattice_get_signal(unittest.TestCase):
+
+    def setUp(self):
+        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
+        peak_separation = 0.15
+
+        s_adf = load(s_adf_filename)
+        s_adf.change_dtype('float64')
+        s_adf_modified = subtract_average_background(s_adf)
+        s_adf_modified = do_pca_on_signal(s_adf_modified)
+        pixel_size = s_adf.axes_manager[0].scale
+        pixel_separation = peak_separation/pixel_size
+
+        peaks = get_peak2d_skimage(
+                s_adf_modified,
+                pixel_separation)[0]
+        self.sublattice = Sublattice(
+                peaks,
+                np.rot90(np.fliplr(s_adf_modified.data)))
+        self.sublattice.pixel_size = pixel_size
+        construct_zone_axes_from_sublattice(self.sublattice)
+
+    def test_ellipticity(self):
+        self.sublattice.get_ellipticity_signal()
+
+    def test_distance_difference(self):
+        zone_vector = self.sublattice.zones_axis_average_distances[0]
+        s = self.sublattice.get_atom_distance_difference_signal_map(
+                [zone_vector])
+
 
 class test_sublattice_interpolation(unittest.TestCase):
 
