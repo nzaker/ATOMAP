@@ -5,6 +5,7 @@ from scipy import interpolate
 from scipy import ndimage
 import matplotlib.pyplot as plt
 import hyperspy.api as hs
+from hyperspy.signals import Signal2D
 
 
 # From Vidars HyperSpy repository
@@ -710,3 +711,10 @@ def _get_average_distance_between_points(peak_position_list):
             distance_between_peak_list.append(temp_distance)
     average_distance = np.array(distance_between_peak_list).mean()
     return(average_distance)
+
+
+def array2signal(numpy_array, scale=1.0):
+    signal = Signal2D(numpy_array)
+    signal.axes_manager[-1].scale = scale
+    signal.axes_manager[-2].scale = scale
+    return signal
