@@ -1,4 +1,6 @@
-from atomap.atom_finding_refining import plot_feature_separation
+from atomap.atom_finding_refining import (
+        plot_feature_separation,
+        get_feature_separation_signal)
 import hyperspy.api as hs
 from atomap.main import (make_atom_lattice_from_image,
         make_atom_lattice_single_sublattice_from_image)
