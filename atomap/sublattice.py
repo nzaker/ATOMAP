@@ -13,12 +13,15 @@ from matplotlib.figure import Figure
 from atomap.tools import \
         _get_interpolated2d_from_unregular_data,\
         _get_clim_from_data,\
-        project_position_property_sum_planes
+        project_position_property_sum_planes,\
+        array2signal
 
 from atomap.plotting import \
         plot_image_map_line_profile_using_interface_plane,\
         plot_complex_image_map_line_profile_using_interface_plane,\
-        _make_line_profile_subplot_from_three_parameter_data
+        _make_line_profile_subplot_from_three_parameter_data,\
+        _make_atom_plane_marker_list
+
 from atomap.atom_finding_refining import get_peak2d_skimage
 
 from atomap.atom_position import Atom_Position
@@ -433,6 +436,47 @@ class Sublattice():
             rotate_atom_plane_list_90_degrees=True,
             prune_outer_values=prune_outer_values,
             figname=self._save_path + self._tag + "_" + figname)
+
+    def _get_property_map_signal(
+            self,
+            x_list,
+            y_list,
+            z_list,
+            interface_plane=None,
+            data_scale_z=1.0,
+            add_zero_value_sublattice=None,
+            upscale_map=2):
+        data_scale = self.pixel_size
+
+        if interface_plane is None:
+            zone_vector = self.zones_axis_average_distances[0]
+            middle_atom_plane_index = int(len(
+                self.atom_planes_by_zone_vector[zone_vector])/2)
+            interface_plane = self.atom_planes_by_zone_vector[
+                    zone_vector][middle_atom_plane_index]
+
+        line_profile_data_list = self.property_position_projection(
+            interface_plane=interface_plane,
+            property_list=z_list,
+            x_position=x_list,
+            y_position=y_list)
+        line_profile_data_list = line_profile_data_list.swapaxes(0, 1)
+
+        if not(add_zero_value_sublattice is None):
+            self._add_zero_position_to_data_list_from_atom_list(
+                x_list,
+                y_list,
+                z_list,
+                add_zero_value_sublattice.x_position,
+                add_zero_value_sublattice.y_position,
+                upscale=upscale_map)
+
+        data_map = self._get_regular_grid_from_unregular_property(
+            x_list,
+            y_list,
+            z_list)
+        signal = array2signal(data_map[2], self.pixel_size/upscale_map)
+        return signal
 
     def plot_property_map_and_profile(
             self,
@@ -1015,6 +1059,40 @@ class Sublattice():
             fig.savefig(self._save_path + figname)
         return(fig)
 
+    def get_atom_planes_on_image_signal(
+            self, atom_plane_list, image=None):
+        """
+        Get atom_planes signal as lines on the adf_image.
+
+        Parameters
+        ----------
+        atom_plane_list : list of atom_plane objects
+            atom_planes to be plotted on the image contained in
+        image : 2D Array, optional
+
+        Returns
+        -------
+        HyperSpy signal2D object
+
+        Example
+        -------
+        >>> zone_vector = sublatticeA.zones_axis_average_distances[0]
+        >>> atom_planes = sublatticeA.atom_planes_by_zone_vector[zone_vector]
+        >>> s = sublattice.get_atom_plane_on_image_signal(atom_planes)
+        >>> s.plot(plot_markers=True)
+        """
+        if image is None:
+            image = self.original_adf_image
+
+        marker_list = []
+        for atom_plane in atom_plane_list:
+            atom_plane_markers = _make_atom_plane_marker_list(
+                    atom_plane, scale=self.pixel_size, color='red')
+            marker_list.extend(atom_plane_markers)
+        signal = array2signal(image, self.pixel_size)
+        signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        return signal
+
     def plot_atom_list_on_image_data(
             self,
             atom_list=None,
@@ -1404,6 +1482,20 @@ class Sublattice():
         data_list = np.array([list_x, list_y, list_z])
         return(data_list)
 
+    def get_ellipticity_signal(
+            self,
+            interface_plane=None,
+            upscale_map=2.0,
+            data_scale_z=1.0):
+        signal = self._get_property_map_signal(
+            self.x_position,
+            self.y_position,
+            self.ellipticity,
+            interface_plane=interface_plane,
+            data_scale_z=data_scale_z,
+            upscale_map=upscale_map)
+        return signal
+
     def plot_ellipticity_map(
             self,
             interface_plane=None,
@@ -1425,6 +1517,40 @@ class Sublattice():
             prune_outer_values=prune_outer_values,
             invert_line_profile=invert_line_profile,
             figname=figname)
+
+    def get_atom_distance_difference_signal_map(
+            self,
+            zone_vector_list=None,
+            interface_plane=None,
+            data_scale_z=1.0,
+            prune_outer_values=False,
+            invert_line_profile=False,
+            add_zero_value_sublattice=None,
+            upscale_map=2):
+
+        zone_vector_index_list = self._get_zone_vector_index_list(
+                zone_vector_list)
+
+        signal_list = []
+        for zone_index, zone_vector in zone_vector_index_list:
+            signal_title = 'Distance difference {}'.format(zone_index)
+
+            data_list = self.get_atom_distance_difference_from_zone_vector(
+                    zone_vector)
+            signal = self._get_property_map_signal(
+                data_list[0],
+                data_list[1],
+                data_list[2],
+                interface_plane=interface_plane,
+                data_scale_z=data_scale_z,
+                add_zero_value_sublattice=add_zero_value_sublattice,
+                upscale_map=upscale_map)
+            signal.metadata.General.Title = signal_title
+            signal_list.append(signal)
+        if len(signal_list) == 1:
+            return(signal_list[0])
+        else:
+            return(signal_list)
 
     def plot_atom_distance_difference_map(
             self,
