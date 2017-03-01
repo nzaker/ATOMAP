@@ -1021,44 +1021,6 @@ class Sublattice():
             new_atom_plane_list.append(temp_new_atom_list)
         return(new_atom_list)
 
-    def plot_atom_plane_on_stem_data(
-            self, atom_plane_list, figname=None):
-        """
-        Plot atom_planes as lines on the adf_image.
-
-        Parameters
-        ----------
-        atom_plane_list : list of atom_plane objects
-            atom_planes to be plotted on the image contained in
-        figname : string, optional
-            Name of the saved figure, default "atom_plane_plot.jpg".
-
-        Returns
-        -------
-        matplotlib figure object
-
-        Example
-        -------
-        >>> fig = sublattice.plot_atom_plane_on_stem_data(atom_planes)
-        >>> fig.savefig("atom_planes.jpg")
-        """
-        fig = Figure(figsize=(7, 7))
-        FigureCanvas(fig)
-        ax = fig.add_subplot(111)
-        cax = ax.imshow(self.adf_image)
-        if self._plot_clim:
-            cax.set_clim(self._plot_clim[0], self._plot_clim[1])
-        for atom_plane in atom_plane_list:
-            x_pos = atom_plane.get_x_position_list()
-            y_pos = atom_plane.get_y_position_list()
-            ax.plot(x_pos, y_pos, 'o', color='blue')
-        ax.set_ylim(0, self.adf_image.shape[0])
-        ax.set_xlim(0, self.adf_image.shape[1])
-        if figname is not None:
-            fig.tight_layout()
-            fig.savefig(self._save_path + figname)
-        return(fig)
-
     def get_atom_planes_on_image_signal(
             self, atom_plane_list, image=None):
         """
