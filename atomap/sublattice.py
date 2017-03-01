@@ -1045,7 +1045,6 @@ class Sublattice():
         """
         if image is None:
             image = self.original_adf_image
-
         marker_list = []
         for atom_plane in atom_plane_list:
             atom_plane_markers = _make_atom_plane_marker_list(
@@ -1054,6 +1053,61 @@ class Sublattice():
         signal = array2signal(image, self.pixel_size)
         signal.add_marker(marker_list, permanent=True, plot_marker=False)
         return signal
+
+    def get_all_atom_planes_by_zone_vector_signal(
+            self,
+            zone_vector_list=None,
+            image=None):
+        """
+        Get a overview of atomic planes for some or all zone vectors.
+
+        Parameters
+        ----------
+        zone_vector_list : optional
+            List of zone vectors for visualizing atomic planes.
+            Default is visualizing all the zone vectors.
+        image : 2D Array, optional
+
+        Returns
+        -------
+        HyperSpy signal2D object if given a single zone vector,
+        list of HyperSpy signal2D if given a list (or none) of zone vectors.
+
+        Example
+        -------
+        Getting a list signals showing the atomic planes for all the 
+        zone vectors
+        >>> s_list = sublattice.get_all_atom_planes_by_zone_vector_signal()
+        >>> s_list[1].plot(plot_markers=True)
+
+        Single signal from one zone vector
+        >>> zone_vector = sublattice.zones_axis_average_distances[0]
+        >>> s = sublattice.get_all_atom_planes_by_zone_vector_signal(zone_vector)
+        >>> s.plot(plot_markers=True)
+
+        Several zone vectors
+        >>> zone_vectors = sublattice.zones_axis_average_distances[0:3]
+        >>> s_list = sublattice.get_all_atom_planes_by_zone_vector_signal(zone_vectors)
+        >>> s_list[1].plot(plot_markers=True)
+
+        Different image
+        >>> s_list = sublattice0.get_all_atom_planes_by_zone_vector_signal(image=sublattice1.original_adf_image)
+        >>> s_list[1].plot(plot_markers=True)
+        """
+        if zone_vector_list is None:
+            zone_vector_list = self.zones_axis_average_distances
+        signal_list = []
+        for zone_vector in zone_vector_list:
+            atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
+            signal = self.get_atom_planes_on_image_signal(
+                    atom_plane_list,
+                    image=image)
+            signal_list.append(signal)
+            title = 'Zone vector: {}'.format(zone_vector)
+            signal.metadata.General.title = title
+        if len(signal_list) == 1:
+            signal_list = signal_list[0]
+        return signal_list
 
     def plot_atom_list_on_image_data(
             self,
