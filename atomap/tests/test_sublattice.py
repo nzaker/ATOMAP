@@ -83,162 +83,6 @@ class test_sublattice_construct_refine(unittest.TestCase):
                 figname="com_test.jpg")
 
 
-class test_sublattice_processing(unittest.TestCase):
-
-    def setUp(self):
-        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
-        peak_separation = 0.15
-
-        s_adf = load(s_adf_filename)
-        s_adf.change_dtype('float64')
-        s_adf_modified = subtract_average_background(s_adf)
-        s_adf_modified = do_pca_on_signal(s_adf_modified)
-        pixel_size = s_adf.axes_manager[0].scale
-        pixel_separation = peak_separation/pixel_size
-
-        peaks = get_peak2d_skimage(
-                s_adf_modified,
-                pixel_separation)[0]
-        self.sublattice = Sublattice(
-                peaks,
-                np.rot90(np.fliplr(s_adf_modified.data)))
-        self.sublattice.pixel_size = pixel_size
-        construct_zone_axes_from_sublattice(self.sublattice)
-
-    def test_zone_vector_mean_angle(self):
-        zone_vector = self.sublattice.zones_axis_average_distances[0]
-        mean_angle = self.sublattice.get_zone_vector_mean_angle(zone_vector)
-
-    def test_get_nearest_neighbor_directions(self):
-        self.sublattice.get_nearest_neighbor_directions()
-
-class test_sublattice_plotting_distance(unittest.TestCase):
-    
-    def setUp(self):
-        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
-        peak_separation = 0.15
-
-        s_adf = load(s_adf_filename)
-        s_adf.change_dtype('float64')
-        s_adf_modified = subtract_average_background(s_adf)
-        s_adf_modified = do_pca_on_signal(s_adf_modified)
-        pixel_size = s_adf.axes_manager[0].scale
-        pixel_separation = peak_separation/pixel_size
-
-        peaks = get_peak2d_skimage(
-                s_adf_modified, 
-                pixel_separation)[0]
-        self.sublattice = Sublattice(
-                peaks, 
-                np.rot90(np.fliplr(s_adf_modified.data)))
-        self.sublattice.pixel_size = pixel_size
-        construct_zone_axes_from_sublattice(self.sublattice)
-
-    def test_plot_sublattice_atom_distance_map(self):
-        self.sublattice.plot_atom_distance_map()
-
-class test_sublattice_plotting_distance_difference(unittest.TestCase):
-    
-    def setUp(self):
-        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
-        peak_separation = 0.15
-
-        s_adf = load(s_adf_filename)
-        s_adf.change_dtype('float64')
-        s_adf_modified = subtract_average_background(s_adf)
-        s_adf_modified = do_pca_on_signal(s_adf_modified)
-        pixel_size = s_adf.axes_manager[0].scale
-        pixel_separation = peak_separation/pixel_size
-
-        peaks = get_peak2d_skimage(
-                s_adf_modified,
-                pixel_separation)[0]
-        self.sublattice = Sublattice(
-                peaks,
-                np.rot90(np.fliplr(s_adf_modified.data)))
-        self.sublattice.pixel_size = pixel_size
-        construct_zone_axes_from_sublattice(self.sublattice)
-
-    def test_plot_sublattice_atom_distance_difference_map(self):
-        self.sublattice.plot_atom_distance_difference_map()
-
-class test_sublattice_plotting_monolayer_distance(unittest.TestCase):
-    
-    def setUp(self):
-        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
-        peak_separation = 0.15
-
-        s_adf = load(s_adf_filename)
-        s_adf.change_dtype('float64')
-        s_adf_modified = subtract_average_background(s_adf)
-        s_adf_modified = do_pca_on_signal(s_adf_modified)
-        pixel_size = s_adf.axes_manager[0].scale
-        pixel_separation = peak_separation/pixel_size
-
-        peaks = get_peak2d_skimage(
-                s_adf_modified, 
-                pixel_separation)[0]
-        self.sublattice = Sublattice(
-                peaks,
-                np.rot90(np.fliplr(s_adf_modified.data)))
-        self.sublattice.pixel_size = pixel_size
-        construct_zone_axes_from_sublattice(self.sublattice)
-
-    def test_plot_sublattice_monolayer_distance_map(self):
-        self.sublattice.plot_monolayer_distance_map()
-
-class test_sublattice_plotting_atom_list(unittest.TestCase):
-    
-    def setUp(self):
-        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
-        peak_separation = 0.15
-
-        s_adf = load(s_adf_filename)
-        s_adf.change_dtype('float64')
-        s_adf_modified = subtract_average_background(s_adf)
-        s_adf_modified = do_pca_on_signal(s_adf_modified)
-        pixel_size = s_adf.axes_manager[0].scale
-        pixel_separation = peak_separation/pixel_size
-
-        peaks = get_peak2d_skimage(
-                s_adf_modified, 
-                pixel_separation)[0]
-        self.sublattice = Sublattice(
-                peaks,
-                np.rot90(np.fliplr(s_adf_modified.data)))
-        self.sublattice.pixel_size = pixel_size
-        construct_zone_axes_from_sublattice(self.sublattice)
-
-    def test_plot_sublattice_atom_list(self):
-        self.sublattice.plot_atom_list_on_image_data(
-                image=self.sublattice.adf_image)
-
-class test_sublattice_plotting_ellipticity(unittest.TestCase):
-    
-    def setUp(self):
-        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
-        peak_separation = 0.15
-
-        s_adf = load(s_adf_filename)
-        s_adf.change_dtype('float64')
-        s_adf_modified = subtract_average_background(s_adf)
-        s_adf_modified = do_pca_on_signal(s_adf_modified)
-        pixel_size = s_adf.axes_manager[0].scale
-        pixel_separation = peak_separation/pixel_size
-
-        peaks = get_peak2d_skimage(
-                s_adf_modified,
-                pixel_separation)[0]
-        self.sublattice = Sublattice(
-                peaks,
-                np.rot90(np.fliplr(s_adf_modified.data)))
-        self.sublattice.pixel_size = pixel_size
-        construct_zone_axes_from_sublattice(self.sublattice)
-
-    def test_plot_ellipticity_rotation_complex(self):
-        self.sublattice.plot_ellipticity_rotation_complex()
-
-
 class test_sublattice_get_signal(unittest.TestCase):
 
     def setUp(self):
@@ -258,6 +102,7 @@ class test_sublattice_get_signal(unittest.TestCase):
         self.sublattice = Sublattice(
                 peaks,
                 np.rot90(np.fliplr(s_adf_modified.data)))
+        self.sublattice.original_adf_image = np.rot90(np.fliplr(s_adf.data))
         self.sublattice.pixel_size = pixel_size
         construct_zone_axes_from_sublattice(self.sublattice)
 
@@ -268,6 +113,45 @@ class test_sublattice_get_signal(unittest.TestCase):
         zone_vector = self.sublattice.zones_axis_average_distances[0]
         s = self.sublattice.get_atom_distance_difference_signal_map(
                 [zone_vector])
+
+    def test_atomplanes_from_zone_vector_signals(self):
+        sublattice = self.sublattice
+        s_list = sublattice.get_all_atom_planes_by_zone_vector_signal()
+        self.assertEqual(
+                len(s_list),
+                len(sublattice.zones_axis_average_distances))
+
+    def test_atomap_plane_on_image_signal(self):
+        sublattice = self.sublattice
+        atom_planes = sublattice.atom_plane_list[10:20]
+        number_of_atom_planes = 0
+        for atom_plane in atom_planes:
+            number_of_atom_planes += len(atom_plane.atom_list) - 1
+        s = sublattice.get_atom_planes_on_image_signal(atom_planes)
+        self.assertEqual(number_of_atom_planes, len(s.metadata.Markers))
+
+    def test_plot_ellipticity_rotation_complex(self):
+        self.sublattice.plot_ellipticity_rotation_complex()
+
+    def test_plot_sublattice_atom_list(self):
+        self.sublattice.plot_atom_list_on_image_data(
+                image=self.sublattice.adf_image)
+
+    def test_plot_sublattice_monolayer_distance_map(self):
+        self.sublattice.plot_monolayer_distance_map()
+
+    def test_plot_sublattice_atom_distance_difference_map(self):
+        self.sublattice.plot_atom_distance_difference_map()
+
+    def test_plot_sublattice_atom_distance_map(self):
+        self.sublattice.plot_atom_distance_map()
+
+    def test_zone_vector_mean_angle(self):
+        zone_vector = self.sublattice.zones_axis_average_distances[0]
+        mean_angle = self.sublattice.get_zone_vector_mean_angle(zone_vector)
+
+    def test_get_nearest_neighbor_directions(self):
+        self.sublattice.get_nearest_neighbor_directions()
 
 
 class test_sublattice_interpolation(unittest.TestCase):
@@ -287,3 +171,5 @@ class test_sublattice_interpolation(unittest.TestCase):
                 x_list, y_list, z_list)
         z_interpolate = output[2]
         self.assertTrue(not z_interpolate.any())
+
+
