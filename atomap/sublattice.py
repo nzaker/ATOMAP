@@ -468,8 +468,7 @@ class Sublattice():
                 y_list,
                 z_list,
                 add_zero_value_sublattice.x_position,
-                add_zero_value_sublattice.y_position,
-                upscale=upscale_map)
+                add_zero_value_sublattice.y_position)
 
         data_map = self._get_regular_grid_from_unregular_property(
             x_list,
