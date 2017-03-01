@@ -1498,16 +1498,45 @@ class Sublattice():
 
     def get_ellipticity_signal(
             self,
-            interface_plane=None,
             upscale_map=2.0,
-            data_scale_z=1.0):
+            atom_plane_list=None):
+        """
+        Get a HyperSpy signal showing the magnitude of the ellipticity
+        for the sublattice.
+
+        Parameters
+        ----------
+        upscale_map : number, default 2.0
+            Amount of upscaling compared to the original image given
+            to Atomap. Note, a high value here can greatly increase
+            the memory use for large images.
+        interface_plane : List of Atomap AtomPlane object, optional
+            If a list of AtomPlanes are given, the plane positions
+            will be added to the signal as permanent markers. Which
+            can be visualized using s.plot(plot_markers=True).
+            Useful for showing the location of for example an interface.
+
+        Returns
+        -------
+        HyperSpy 2D signal
+
+        Examples
+        --------
+        >>> s_elli = sublattice.get_ellipticity_signal()
+        >>> s_elli.plot()
+
+        Include an atom plane, which is added to the signal as a marker
+        >>> atom_plane_list = [sublattice.atom_plane_list[10]]
+        >>> s_elli = sublattice.get_ellipticity_signal(atom_plane_list=atom_plane_list)
+        >>> s_elli.plot(plot_markers=True)
+        """
         signal = self._get_property_map_signal(
             self.x_position,
             self.y_position,
             self.ellipticity,
-            interface_plane=interface_plane,
-            data_scale_z=data_scale_z,
             upscale_map=upscale_map)
+        title = 'Sublattice {} ellipticity'.format(self._tag)
+        signal.metadata.General.title = title
         return signal
 
     def plot_ellipticity_map(
