@@ -325,7 +325,7 @@ class Sublattice():
         with plotting using imshow.
 
         Parameters
-        -----------
+        ----------
         x_list : list of numbers
             x-positions
         y_list : list of numbers
@@ -501,7 +501,7 @@ class Sublattice():
         original_adf_image.
 
         Parameters
-        -----------
+        ----------
         x_list : 1-D list of numbers
         y_list : 1-D list of numbers
         z_list : 1-D list of numbers
@@ -525,7 +525,6 @@ class Sublattice():
         invert_line_profile : bool, optional
             Reverts the spatial direction the line profile
             is plotted. Default False
-
         figname : string, optional
             Postfix in the image filename.
         """
@@ -1124,7 +1123,7 @@ class Sublattice():
         Plot atom positions on the image data.
 
         Parameters
-        -----------
+        ----------
         atom_list : list of Atom objects, optional
             Atom positions to plot. If no list is given,
             will use the atom_list.
@@ -1147,8 +1146,8 @@ class Sublattice():
         figname : string, optional
             Name of the figure.
 
-        Returns:
-        --------
+        Returns
+        -------
         Matplotlib figure object
         """
         if image is None:
@@ -1191,7 +1190,7 @@ class Sublattice():
         Useful to visualizing oxygen tilt pattern.
 
         Parameters
-        -----------
+        ----------
         x_list : list of numbers
         y_list : list of numbers
         z_list : list of numbers
@@ -1860,7 +1859,7 @@ class Sublattice():
         specific zone vector and the horizontal axis. For each
         atom plane the angle between all the atoms, its
         neighbor and horizontal axis is calculated.
-        #The mean of these angles for all the atom
+        The mean of these angles for all the atom
         planes is returned.
         """
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
