@@ -154,6 +154,12 @@ class test_sublattice_get_signal(unittest.TestCase):
     def test_get_nearest_neighbor_directions(self):
         self.sublattice.get_nearest_neighbor_directions()
 
+    def test_get_property_linescan_signal(self):
+        self.sublattice._get_property_linescan_signal(
+                self.sublattice.x_position,
+                self.sublattice.y_position,
+                self.sublattice.ellipticity)
+
 
 class test_sublattice_interpolation(unittest.TestCase):
 
