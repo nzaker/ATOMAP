@@ -14,7 +14,7 @@ from atomap.tools import \
         _get_interpolated2d_from_unregular_data,\
         _get_clim_from_data,\
         project_position_property_sum_planes,\
-        array2signal
+        array2signal2d, array2signal1d
 
 from atomap.plotting import \
         plot_image_map_line_profile_using_interface_plane,\
@@ -474,8 +474,49 @@ class Sublattice():
             x_list,
             y_list,
             z_list)
-        signal = array2signal(data_map[2], self.pixel_size/upscale_map)
+        signal = array2signal2d(data_map[2], self.pixel_size/upscale_map)
         return signal
+
+    def _get_property_linescan_signal(
+            self,
+            x_list,
+            y_list,
+            z_list,
+            interface_plane=None,
+            data_scale_z=1.0,
+            invert_line_profile=False,
+            interpolate_value=50):
+
+        if interface_plane is None:
+            zone_vector = self.zones_axis_average_distances[0]
+            middle_atom_plane_index = int(len(
+                self.atom_planes_by_zone_vector[zone_vector])/2)
+            interface_plane = self.atom_planes_by_zone_vector[
+                    zone_vector][middle_atom_plane_index]
+
+        line_profile_data_list = self.property_position_projection(
+            interface_plane=interface_plane,
+            property_list=z_list,
+            x_position=x_list,
+            y_position=y_list)
+
+        x_new = np.linspace(
+                line_profile_data_list[0,0],
+                line_profile_data_list[0,-1],
+                interpolate_value*len(line_profile_data_list[0]))
+        y_new = np.interp(
+                x_new,
+                line_profile_data_list[0],
+                line_profile_data_list[1],
+                )*data_scale_z
+
+        if invert_line_profile:
+            x_new *= -1
+
+        data_scale =  x_new[1]-x_new[0]
+        signal = array2signal1d(y_new, scale=data_scale)
+        
+        return signal, line_profile_data_list
 
     def plot_property_map_and_profile(
             self,
