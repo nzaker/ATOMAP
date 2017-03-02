@@ -127,7 +127,8 @@ class test_sublattice_get_signal(unittest.TestCase):
         number_of_atom_planes = 0
         for atom_plane in atom_planes:
             number_of_atom_planes += len(atom_plane.atom_list) - 1
-        s = sublattice.get_atom_planes_on_image_signal(atom_planes)
+        s = sublattice.get_atom_planes_on_image_signal(
+                atom_planes, add_numbers=False)
         self.assertEqual(number_of_atom_planes, len(s.metadata.Markers))
 
     def test_plot_ellipticity_rotation_complex(self):
