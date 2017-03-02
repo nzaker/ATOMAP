@@ -20,7 +20,7 @@ from atomap.plotting import \
         plot_image_map_line_profile_using_interface_plane,\
         plot_complex_image_map_line_profile_using_interface_plane,\
         _make_line_profile_subplot_from_three_parameter_data,\
-        _make_atom_plane_marker_list
+        _make_atom_planes_marker_list
 
 from atomap.atom_finding_refining import get_peak2d_skimage
 
@@ -1061,7 +1061,7 @@ class Sublattice():
         return(new_atom_list)
 
     def get_atom_planes_on_image_signal(
-            self, atom_plane_list, image=None):
+            self, atom_plane_list, image=None, add_numbers=True, color='red'):
         """
         Get atom_planes signal as lines on the adf_image.
 
@@ -1070,6 +1070,11 @@ class Sublattice():
         atom_plane_list : list of atom_plane objects
             atom_planes to be plotted on the image contained in
         image : 2D Array, optional
+        add_numbers : bool, optional, default True
+            If True, will the number of the atom plane at the end of the
+            atom plane line. Useful for finding the index of the atom plane.
+        color : string, optional, default red
+            The color of the lines and text used to show the atom planes.
 
         Returns
         -------
@@ -1084,19 +1089,21 @@ class Sublattice():
         """
         if image is None:
             image = self.original_adf_image
-        marker_list = []
-        for atom_plane in atom_plane_list:
-            atom_plane_markers = _make_atom_plane_marker_list(
-                    atom_plane, scale=self.pixel_size, color='red')
-            marker_list.extend(atom_plane_markers)
-        signal = array2signal(image, self.pixel_size)
+        marker_list = _make_atom_planes_marker_list(
+                atom_plane_list,
+                add_numbers=add_numbers,
+                scale=self.pixel_size,
+                color=color)
+        signal = array2signal2d(image, self.pixel_size)
         signal.add_marker(marker_list, permanent=True, plot_marker=False)
         return signal
 
     def get_all_atom_planes_by_zone_vector_signal(
             self,
             zone_vector_list=None,
-            image=None):
+            image=None,
+            add_numbers=True,
+            color='red'):
         """
         Get a overview of atomic planes for some or all zone vectors.
 
@@ -1106,6 +1113,11 @@ class Sublattice():
             List of zone vectors for visualizing atomic planes.
             Default is visualizing all the zone vectors.
         image : 2D Array, optional
+        add_numbers : bool, optional, default True
+            If True, will the number of the atom plane at the end of the
+            atom plane line. Useful for finding the index of the atom plane.
+        color : string, optional, default red
+            The color of the lines and text used to show the atom planes.
 
         Returns
         -------

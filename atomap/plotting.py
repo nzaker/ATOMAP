@@ -6,6 +6,7 @@ from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.colors import hsv_to_rgb
 import copy
 from hyperspy.drawing._markers.line_segment import LineSegment
+from hyperspy.drawing._markers.text import Text
 
 from atomap.tools import\
         _get_clim_from_data,\
@@ -731,7 +732,27 @@ def plot_feature_density(
     fig.savefig("feature_density.png", dpi=200)
 
 
-def _make_atom_plane_marker_list(atom_plane, scale=1., color='red'):
+def _make_atom_planes_marker_list(
+        atom_plane_list, scale=1., add_numbers=True, color='red'):
+    marker_list = []
+    for i, atom_plane in enumerate(atom_plane_list):
+        atom_plane_markers = _make_single_atom_plane_marker_list(
+            atom_plane, scale=scale, color='red')
+        marker_list.extend(atom_plane_markers)
+        if add_numbers:
+            marker = Text(
+                    x=atom_plane.start_atom.pixel_x*scale,
+                    y=atom_plane.start_atom.pixel_y*scale,
+                    text=str(i),
+                    color=color,
+                    va='top',
+                    ha='right')
+            marker_list.append(marker)
+    return marker_list
+
+
+def _make_single_atom_plane_marker_list(
+        atom_plane, scale=1., color='red'):
     marker_list = []
     for i in range(len(atom_plane.atom_list[1:])):
         x1 = atom_plane.atom_list[i].pixel_x*scale
