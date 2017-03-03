@@ -20,8 +20,7 @@ from atomap.plotting import \
         plot_image_map_line_profile_using_interface_plane,\
         plot_complex_image_map_line_profile_using_interface_plane,\
         _make_line_profile_subplot_from_three_parameter_data,\
-        _make_atom_planes_marker_list
-
+        _make_atom_planes_marker_list, _make_atom_planes_marker_list
 from atomap.atom_finding_refining import get_peak2d_skimage
 
 from atomap.atom_position import Atom_Position
@@ -442,26 +441,11 @@ class Sublattice():
             x_list,
             y_list,
             z_list,
-            interface_plane=None,
+            atom_plane_list=None,
             data_scale_z=1.0,
             add_zero_value_sublattice=None,
             upscale_map=2):
         data_scale = self.pixel_size
-
-        if interface_plane is None:
-            zone_vector = self.zones_axis_average_distances[0]
-            middle_atom_plane_index = int(len(
-                self.atom_planes_by_zone_vector[zone_vector])/2)
-            interface_plane = self.atom_planes_by_zone_vector[
-                    zone_vector][middle_atom_plane_index]
-
-        line_profile_data_list = self.property_position_projection(
-            interface_plane=interface_plane,
-            property_list=z_list,
-            x_position=x_list,
-            y_position=y_list)
-        line_profile_data_list = line_profile_data_list.swapaxes(0, 1)
-
         if not(add_zero_value_sublattice is None):
             self._add_zero_position_to_data_list_from_atom_list(
                 x_list,
@@ -469,12 +453,16 @@ class Sublattice():
                 z_list,
                 add_zero_value_sublattice.x_position,
                 add_zero_value_sublattice.y_position)
-
         data_map = self._get_regular_grid_from_unregular_property(
             x_list,
             y_list,
             z_list)
-        signal = array2signal2d(data_map[2], self.pixel_size/upscale_map)
+        signal = array2signal2d(
+                data_map[2], self.pixel_size/upscale_map, rotate_flip=True)
+        if atom_plane_list is not None:
+            marker_list = _make_atom_planes_marker_list(
+                    atom_plane_list, scale=data_scale, add_numbers=False)
+            signal.add_marker(marker_list, permanent=True, plot_marker=False)
         return signal
 
     def _get_property_linescan_signal(
@@ -1563,7 +1551,7 @@ class Sublattice():
             Amount of upscaling compared to the original image given
             to Atomap. Note, a high value here can greatly increase
             the memory use for large images.
-        interface_plane : List of Atomap AtomPlane object, optional
+        atom_plane_list : List of Atomap AtomPlane object, optional
             If a list of AtomPlanes are given, the plane positions
             will be added to the signal as permanent markers. Which
             can be visualized using s.plot(plot_markers=True).
@@ -1587,6 +1575,7 @@ class Sublattice():
             self.x_position,
             self.y_position,
             self.ellipticity,
+            atom_plane_list=atom_plane_list,
             upscale_map=upscale_map)
         title = 'Sublattice {} ellipticity'.format(self._tag)
         signal.metadata.General.title = title
