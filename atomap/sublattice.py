@@ -465,29 +465,59 @@ class Sublattice():
             signal.add_marker(marker_list, permanent=True, plot_marker=False)
         return signal
 
-    def _get_property_linescan_signal(
+    def _get_property_line_profile_signal(
             self,
             x_list,
             y_list,
             z_list,
-            interface_plane=None,
+            atom_plane,
             data_scale_z=1.0,
             invert_line_profile=False,
             interpolate_value=50):
+        """
+        Project a 2 dimensional property to a plane, and get
+        values as a function of distance from this plane.
+        The function will attempt to combine the data points from
+        the same monolayer, to get the property values as a function
+        of each monolayer. The data will be returned as an interpolation
+        of these values, since HyperSpy signals currently does not support
+        non-linear axes.
 
-        if interface_plane is None:
-            zone_vector = self.zones_axis_average_distances[0]
-            middle_atom_plane_index = int(len(
-                self.atom_planes_by_zone_vector[zone_vector])/2)
-            interface_plane = self.atom_planes_by_zone_vector[
-                    zone_vector][middle_atom_plane_index]
+        Parameters
+        ----------
+        x_list, y_list : Numpy 1D array
+            x and y positions for z_list property value.
+        z_list : Numpy 1D array
+            The property value. x_list, y_list and z_list must have
+            the same size.
+        atom_plane : Atomap AtomPlane object
+            The plane the data is projected onto.
+        data_scale_z : number, optional
+            For scaling the values in the z_list
+        invert_line_profile : bool, optional, default False
+            If True, will invert the x-axis values
+        interpolate_value : int, default 50
+            The amount of data points between in monolayer, due to
+            HyperSpy signals not supporting non-linear axes.
+        
+        Returns
+        -------
+        HyperSpy signal1D
 
+        Example
+        -------
+        >>> x = sublattice.x_position
+        >>> y = sublattice.x_position
+        >>> z = sublattice.ellipticity
+        >>> plane = sublattice.atom_plane_list[20]
+        >>> s = sublattice._get_property_line_profile_signal(x, y, z, plane)
+        >>> s.plot()
+        """
         line_profile_data_list = self.property_position_projection(
-            interface_plane=interface_plane,
+            interface_plane=atom_plane,
             property_list=z_list,
             x_position=x_list,
             y_position=y_list)
-
         x_new = np.linspace(
                 line_profile_data_list[0,0],
                 line_profile_data_list[0,-1],
@@ -497,12 +527,10 @@ class Sublattice():
                 line_profile_data_list[0],
                 line_profile_data_list[1],
                 )*data_scale_z
-
         if invert_line_profile:
             x_new *= -1
-
         data_scale =  x_new[1]-x_new[0]
-        signal = array2signal1d(y_new, scale=data_scale)
+        signal = array2signal1d(y_new, scale=data_scale/interpolate_value)
         
         return signal, line_profile_data_list
 
@@ -1606,7 +1634,7 @@ class Sublattice():
     def get_atom_distance_difference_signal_map(
             self,
             zone_vector_list=None,
-            interface_plane=None,
+            atom_plane_list=None,
             data_scale_z=1.0,
             prune_outer_values=False,
             invert_line_profile=False,
@@ -1626,7 +1654,7 @@ class Sublattice():
                 data_list[0],
                 data_list[1],
                 data_list[2],
-                interface_plane=interface_plane,
+                atom_plane_list=atom_plane_list,
                 data_scale_z=data_scale_z,
                 add_zero_value_sublattice=add_zero_value_sublattice,
                 upscale_map=upscale_map)
