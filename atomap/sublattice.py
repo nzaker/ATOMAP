@@ -471,6 +471,7 @@ class Sublattice():
             y_list,
             z_list,
             atom_plane,
+            data_scale_xy=1.0,
             data_scale_z=1.0,
             invert_line_profile=False,
             interpolate_value=50):
@@ -492,6 +493,8 @@ class Sublattice():
             the same size.
         atom_plane : Atomap AtomPlane object
             The plane the data is projected onto.
+        data_scale_xy : number, optional
+            For scaling the x_list and y_list values.
         data_scale_z : number, optional
             For scaling the values in the z_list
         invert_line_profile : bool, optional, default False
@@ -517,7 +520,8 @@ class Sublattice():
             interface_plane=atom_plane,
             property_list=z_list,
             x_position=x_list,
-            y_position=y_list)
+            y_position=y_list,
+            scale_xy=data_scale_xy)
         x_new = np.linspace(
                 line_profile_data_list[0,0],
                 line_profile_data_list[0,-1],
@@ -530,9 +534,14 @@ class Sublattice():
         if invert_line_profile:
             x_new *= -1
         data_scale =  x_new[1]-x_new[0]
-        signal = array2signal1d(y_new, scale=data_scale/interpolate_value)
+        offset = x_new[0]
+        signal = array2signal1d(
+                y_new,
+                scale=data_scale,
+                offset=offset,
+                )
         
-        return signal, line_profile_data_list
+        return signal
 
     def plot_property_map_and_profile(
             self,

@@ -713,9 +713,10 @@ def _get_average_distance_between_points(peak_position_list):
     return(average_distance)
 
 
-def array2signal1d(array, scale=1.0):
+def array2signal1d(array, scale=1.0, offset=0.0):
     signal = Signal1D(array)
     signal.axes_manager[-1].scale = scale
+    signal.axes_manager[-1].offset = offset
     return signal
 
 
