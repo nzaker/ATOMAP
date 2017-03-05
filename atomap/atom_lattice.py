@@ -61,42 +61,6 @@ class Atom_Lattice():
         figname = os.path.join(self.path_name, figname)
         fig.savefig(figname)
 
-    def plot_monolayer_distance_map(
-            self,
-            sublattice_list=None,
-            interface_plane=None,
-            max_number_of_zone_vectors=5):
-        plt.ioff()
-        if sublattice_list is None:
-            sublattice_list = self.sublattice_list
-        for sublattice in sublattice_list:
-            sublattice.plot_monolayer_distance_map(
-                interface_plane=interface_plane)
-
-    def plot_atom_distance_map(
-            self,
-            sublattice_list=None,
-            interface_plane=None,
-            max_number_of_zone_vectors=5):
-        plt.ioff()
-        if sublattice_list is None:
-            sublattice_list = self.sublattice_list
-        for sublattice in sublattice_list:
-            sublattice.plot_atom_distance_map(
-                interface_plane=interface_plane)
-
-    def plot_atom_distance_difference_map(
-            self,
-            sublattice_list=None,
-            interface_plane=None,
-            max_number_of_zone_vectors=5):
-        plt.ioff()
-        if sublattice_list is None:
-            sublattice_list = self.sublattice_list
-        for sublattice in sublattice_list:
-            sublattice.plot_atom_distance_difference_map(
-                interface_plane=interface_plane)
-
     def save_atom_lattice(self, filename=None):
         if filename is None:
             path = self.path_name
