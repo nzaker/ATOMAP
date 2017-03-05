@@ -20,7 +20,8 @@ from atomap.plotting import \
         plot_image_map_line_profile_using_interface_plane,\
         plot_complex_image_map_line_profile_using_interface_plane,\
         _make_line_profile_subplot_from_three_parameter_data,\
-        _make_atom_planes_marker_list, _make_atom_planes_marker_list
+        _make_atom_planes_marker_list, _make_atom_planes_marker_list,\
+        _make_atom_position_marker_list
 from atomap.atom_finding_refining import get_peak2d_skimage
 
 from atomap.atom_position import Atom_Position
@@ -1184,6 +1185,75 @@ class Sublattice():
         if len(signal_list) == 1:
             signal_list = signal_list[0]
         return signal_list
+
+    def get_atom_list_on_image(
+            self,
+            atom_list=None,
+            image=None,
+            color='red',
+            add_numbers=False,
+            markersize=20):
+        """
+        Plot atom positions on the image data.
+
+        Parameters
+        ----------
+        atom_list : list of Atom objects, optional
+            Atom positions to plot. If no list is given,
+            will use the atom_list.
+        image : 2-D numpy array, optional
+            Image data for plotting. If none is given, will use
+            the original_adf_image.
+        color : string, default 'red'
+        add_numbers : bool, default False
+            Plot the number of the atom beside each atomic
+            position in the plot. Useful for locating
+            misfitted atoms.
+        markersize : number, default 20
+            Size of the atom position markers
+
+        Returns
+        -------
+        HyperSpy 2D-signal
+            The atom positions as permanent markers stored in the metadata.
+
+        Examples
+        --------
+        >>> sublattice = atom_lattice.sublattice_list[0]
+        >>> s = sublattice.get_atom_list_on_image()
+        >>> s.plot(plot_markers=True)
+
+        Number all the atoms
+        >>> sublattice = atom_lattice.sublattice_list[0]
+        >>> s = sublattice.get_atom_list_on_image(add_numbers=True)
+        >>> s.plot(plot_markers=True)
+
+        Plot a subset of the atom positions
+        >>> sublattice = atom_lattice.sublattice_list[0]
+        >>> atom_list = sublattice.atom_list[0:20]
+        >>> s = sublattice.get_atom_list_on_image(atom_list=atom_list, add_numbers=True)
+        >>> s.plot(plot_markers=True)
+
+        Saving the signal as HyperSpy HDF5 file, which saves the atom
+        positions as permanent markers.
+        >>> sublattice = atom_lattice.sublattice_list[0]
+        >>> s = sublattice.get_atom_list_on_image()
+        >>> s.save("sublattice_atom_positions.hdf5")
+        """
+        if image is None:
+            image = self.original_adf_image
+        if atom_list is None:
+            atom_list = self.atom_list
+        marker_list = _make_atom_position_marker_list(
+                atom_list,
+                scale=self.pixel_size,
+                color=color,
+                markersize=markersize,
+                add_numbers=add_numbers)
+        signal = array2signal2d(image, self.pixel_size)
+        signal.add_marker(marker_list, permanent=True, plot_marker=False)
+
+        return signal
 
     def plot_atom_list_on_image_data(
             self,

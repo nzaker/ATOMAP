@@ -6,6 +6,7 @@ from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from matplotlib.colors import hsv_to_rgb
 import copy
 from hyperspy.drawing._markers.line_segment import LineSegment
+from hyperspy.drawing._markers.point import Point
 from hyperspy.drawing._markers.text import Text
 
 from atomap.tools import\
@@ -743,6 +744,30 @@ def _make_atom_planes_marker_list(
             marker = Text(
                     x=atom_plane.start_atom.pixel_x*scale,
                     y=atom_plane.start_atom.pixel_y*scale,
+                    text=str(i),
+                    color=color,
+                    va='top',
+                    ha='right')
+            marker_list.append(marker)
+    return marker_list
+
+
+def _make_atom_position_marker_list(
+        atom_position_list,
+        scale=1.,
+        markersize=20,
+        add_numbers=True,
+        color='red'):
+    marker_list = []
+    for i, atom_position in enumerate(atom_position_list):
+        x = atom_position.pixel_x*scale
+        y = atom_position.pixel_y*scale
+        marker = Point(x=x, y=y, color=color, size=markersize)
+        marker_list.append(marker)
+        if add_numbers:
+            marker = Text(
+                    x=x,
+                    y=y,
                     text=str(i),
                     color=color,
                     va='top',
