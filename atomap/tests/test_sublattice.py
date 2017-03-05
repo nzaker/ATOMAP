@@ -180,5 +180,3 @@ class test_sublattice_interpolation(unittest.TestCase):
                 x_list, y_list, z_list)
         z_interpolate = output[2]
         self.assertTrue(not z_interpolate.any())
-
-
