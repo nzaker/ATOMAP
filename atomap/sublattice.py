@@ -1255,77 +1255,6 @@ class Sublattice():
 
         return signal
 
-    def plot_atom_list_on_image_data(
-            self,
-            atom_list=None,
-            image=None,
-            plot_atom_numbers=False,
-            markersize=2,
-            fontsize=12,
-            figsize=(10, 10),
-            figdpi=200,
-            figname="atom_plot.jpg",
-            ax=None,
-            fig=None):
-        """
-        Plot atom positions on the image data.
-
-        Parameters
-        ----------
-        atom_list : list of Atom objects, optional
-            Atom positions to plot. If no list is given,
-            will use the atom_list.
-        image : 2-D numpy array, optional
-            Image data for plotting. If none is given, will use
-            the original_adf_image.
-        plot_atom_numbers : bool, optional
-            Plot the number of the atom beside each atomic
-            position in the plot. Useful for locating
-            misfitted atoms. Default False.
-        markersize : number, optional
-            Size of the atom position markers
-        fontsize : int, optional
-            If plot_atom_numbers is True, this will set
-            the fontsize.
-        figsize : tuple, optional
-            Size of the figure in inches. Default (10, 10)
-        figdpi : number, optional
-            Pixels per inch for the figure. Default 200.
-        figname : string, optional
-            Name of the figure.
-
-        Returns
-        -------
-        Matplotlib figure object
-        """
-        if image is None:
-            image = self.original_adf_image
-        if atom_list is None:
-            atom_list = self.atom_list
-        if fig is None:
-            fig, ax = plt.subplots(figsize=figsize)
-        cax = ax.imshow(image, interpolation='nearest')
-        if self._plot_clim:
-            cax.set_clim(self._plot_clim[0], self._plot_clim[1])
-        for atom_index, atom in enumerate(atom_list):
-            ax.plot(
-                    atom.pixel_x,
-                    atom.pixel_y,
-                    'o', markersize=markersize,
-                    color='blue')
-            if plot_atom_numbers:
-                ax.text(
-                        atom.pixel_x,
-                        atom.pixel_y,
-                        str(atom_index),
-                        fontsize=fontsize,
-                        color='red')
-        ax.set_ylim(0, image.shape[0])
-        ax.set_xlim(0, image.shape[1])
-        fig.tight_layout()
-        fig.savefig(self._save_path + figname, dpi=figdpi)
-        return(fig)
-
     def _add_zero_position_to_data_list_from_atom_list(
             self,
             x_list,
@@ -1417,34 +1346,6 @@ class Sublattice():
             invert_line_profile=invert_line_profile,
             add_color_wheel=add_color_wheel,
             figname=figname)
-
-    def plot_all_atom_planes(self, fignameprefix="atom_plane"):
-        for zone_index, zone_vector in enumerate(
-                self.zones_axis_average_distances):
-            fig = Figure(figsize=(10, 10))
-            FigureCanvas(fig)
-            ax = fig.add_subplot(111)
-            cax = ax.imshow(self.adf_image)
-            if self._plot_clim:
-                cax.set_clim(self._plot_clim[0], self._plot_clim[1])
-            for atom_plane_index, atom_plane in enumerate(
-                    self.atom_planes_by_zone_vector[zone_vector]):
-                x_pos = atom_plane.get_x_position_list()
-                y_pos = atom_plane.get_y_position_list()
-                ax.plot(x_pos, y_pos, lw=3, color='blue')
-                ax.text(
-                        atom_plane.start_atom.pixel_x,
-                        atom_plane.start_atom.pixel_y,
-                        str(atom_plane_index),
-                        color='red')
-            ax.set_ylim(0, self.adf_image.shape[0])
-            ax.set_xlim(0, self.adf_image.shape[1])
-            ax.set_title(str(zone_index) + " , " + str(zone_vector))
-            fig.tight_layout()
-            fig.savefig(
-                    self._save_path +
-                    fignameprefix +
-                    str(zone_index) + ".jpg")
 
     def get_atom_column_amplitude_gaussian2d(
             self,
@@ -1688,29 +1589,7 @@ class Sublattice():
         signal.metadata.General.title = title
         return signal
 
-    def plot_ellipticity_map(
-            self,
-            interface_plane=None,
-            save_signal=False,
-            data_scale_z=1.0,
-            prune_outer_values=False,
-            invert_line_profile=False,
-            figname="ellipticity.jpg"):
-        """
-        Plot a map and line profile of the ellipticity.
-        """
-        self.plot_property_map_and_profile(
-            self.x_position,
-            self.y_position,
-            self.ellipticity,
-            interface_plane=interface_plane,
-            data_scale_z=data_scale_z,
-            save_signal=save_signal,
-            prune_outer_values=prune_outer_values,
-            invert_line_profile=invert_line_profile,
-            figname=figname)
-
-    def get_atom_distance_difference_signal_map(
+    def get_monolayer_distance_map(
             self,
             zone_vector_list=None,
             atom_plane_list=None,
@@ -1719,15 +1598,12 @@ class Sublattice():
             invert_line_profile=False,
             add_zero_value_sublattice=None,
             upscale_map=2):
-
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
-
         signal_list = []
         for zone_index, zone_vector in zone_vector_index_list:
-            signal_title = 'Distance difference {}'.format(zone_index)
-
-            data_list = self.get_atom_distance_difference_from_zone_vector(
+            signal_title = 'Monolayer distance {}'.format(zone_index)
+            data_list = self.get_monolayer_distance_list_from_zone_vector(
                     zone_vector)
             signal = self._get_property_map_signal(
                 data_list[0],
@@ -1744,96 +1620,70 @@ class Sublattice():
         else:
             return(signal_list)
 
-    def plot_atom_distance_difference_map(
+    def get_atom_distance_map(
             self,
             zone_vector_list=None,
-            interface_plane=None,
-            save_signal=False,
+            atom_plane_list=None,
             data_scale_z=1.0,
             prune_outer_values=False,
             invert_line_profile=False,
             add_zero_value_sublattice=None,
-            figname="atom_distance_difference.jpg"):
-        """
-        Plot a map and line profile of the difference between atoms.
-        """
-        zone_vector_index_list = self._get_zone_vector_index_list(
-                zone_vector_list)
-
-        for zone_index, zone_vector in zone_vector_index_list:
-            tempname = "zone" + str(zone_index) + "_" + figname
-
-            data_list = self.get_atom_distance_difference_from_zone_vector(
-                    zone_vector)
-            self.plot_property_map_and_profile(
-                data_list[0],
-                data_list[1],
-                data_list[2],
-                interface_plane=interface_plane,
-                data_scale_z=data_scale_z,
-                save_signal=save_signal,
-                prune_outer_values=prune_outer_values,
-                invert_line_profile=invert_line_profile,
-                add_zero_value_sublattice=add_zero_value_sublattice,
-                figname=tempname)
-
-    def plot_monolayer_distance_map(
-            self,
-            zone_vector_list=None,
-            interface_plane=None,
-            save_signal=False,
-            data_scale_z=1.0,
-            prune_outer_values=False,
-            invert_line_profile=False,
-            figname="monolayer_distance.jpg"):
+            upscale_map=2):
 
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
 
+        signal_list = []
         for zone_index, zone_vector in zone_vector_index_list:
-            tempname = "zone" + str(zone_index) + "_" + figname
-
-            data_list = self.get_monolayer_distance_list_from_zone_vector(
-                    zone_vector)
-            self.plot_property_map_and_profile(
-                data_list[0],
-                data_list[1],
-                data_list[2],
-                interface_plane=interface_plane,
-                data_scale_z=data_scale_z,
-                save_signal=save_signal,
-                prune_outer_values=prune_outer_values,
-                invert_line_profile=invert_line_profile,
-                figname=tempname)
-
-    def plot_atom_distance_map(
-            self,
-            zone_vector_list=None,
-            interface_plane=None,
-            save_signal=False,
-            data_scale_z=1.0,
-            prune_outer_values=False,
-            invert_line_profile=False,
-            figname="atom_distance.jpg"):
-
-        zone_vector_index_list = self._get_zone_vector_index_list(
-                zone_vector_list)
-
-        for zone_index, zone_vector in zone_vector_index_list:
-            tempname = "zone" + str(zone_index) + "_" + figname
-
+            signal_title = 'Atom distance {}'.format(zone_index)
             data_list = self.get_atom_distance_list_from_zone_vector(
                     zone_vector)
-            self.plot_property_map_and_profile(
+
+            signal = self._get_property_map_signal(
                 data_list[0],
                 data_list[1],
                 data_list[2],
-                interface_plane=interface_plane,
+                atom_plane_list=atom_plane_list,
                 data_scale_z=data_scale_z,
-                save_signal=save_signal,
-                prune_outer_values=prune_outer_values,
-                invert_line_profile=invert_line_profile,
-                figname=tempname)
+                add_zero_value_sublattice=add_zero_value_sublattice,
+                upscale_map=upscale_map)
+            signal.metadata.General.Title = signal_title
+            signal_list.append(signal)
+        if len(signal_list) == 1:
+            return(signal_list[0])
+        else:
+            return(signal_list)
+
+    def get_atom_distance_difference_map(
+            self,
+            zone_vector_list=None,
+            atom_plane_list=None,
+            data_scale_z=1.0,
+            prune_outer_values=False,
+            invert_line_profile=False,
+            add_zero_value_sublattice=None,
+            upscale_map=2):
+        zone_vector_index_list = self._get_zone_vector_index_list(
+                zone_vector_list)
+        signal_list = []
+        for zone_index, zone_vector in zone_vector_index_list:
+            signal_title = 'Distance difference {}'.format(zone_index)
+            data_list = self.get_atom_distance_difference_from_zone_vector(
+                    zone_vector)
+            signal = self._get_property_map_signal(
+                data_list[0],
+                data_list[1],
+                data_list[2],
+                atom_plane_list=atom_plane_list,
+                data_scale_z=data_scale_z,
+                add_zero_value_sublattice=add_zero_value_sublattice,
+                upscale_map=upscale_map)
+            signal.metadata.General.Title = signal_title
+            signal_list.append(signal)
+        if len(signal_list) == 1:
+            return(signal_list[0])
+        else:
+            return(signal_list)
 
     def get_atom_model(self):
         model_image = np.zeros(self.adf_image.shape)
