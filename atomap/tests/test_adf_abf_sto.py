@@ -52,8 +52,6 @@ class test_adf_abf_sto(unittest.TestCase):
         b_sublattice = Sublattice(
                 b_atom_list, np.rot90(
                     np.fliplr(self.s_adf_modified.data)))
-        b_sublattice.plot_atom_list_on_image_data(
-                image=b_sublattice.adf_image)
         self.assertEqual(len(b_sublattice.atom_list), 221)
 
     def test_find_b_atom_planes(self):

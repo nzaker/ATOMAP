@@ -78,9 +78,6 @@ class test_sublattice_construct_refine(unittest.TestCase):
                 [
                     (sublattice.adf_image, 1, 'center_of_mass')],
                 0.25)
-        sublattice.plot_atom_list_on_image_data(
-                image=sublattice.adf_image,
-                figname="com_test.jpg")
 
 
 class test_sublattice_get_signal(unittest.TestCase):
@@ -111,7 +108,7 @@ class test_sublattice_get_signal(unittest.TestCase):
 
     def test_distance_difference(self):
         zone_vector = self.sublattice.zones_axis_average_distances[0]
-        s = self.sublattice.get_atom_distance_difference_signal_map(
+        s = self.sublattice.get_atom_distance_difference_map(
                 [zone_vector])
 
     def test_atomplanes_from_zone_vector_signals(self):
@@ -134,18 +131,17 @@ class test_sublattice_get_signal(unittest.TestCase):
     def test_plot_ellipticity_rotation_complex(self):
         self.sublattice.plot_ellipticity_rotation_complex()
 
-    def test_plot_sublattice_atom_list(self):
-        self.sublattice.plot_atom_list_on_image_data(
-                image=self.sublattice.adf_image)
+    def test_get_atom_list(self):
+        self.sublattice.get_atom_list_on_image()
 
-    def test_plot_sublattice_monolayer_distance_map(self):
-        self.sublattice.plot_monolayer_distance_map()
+    def test_get_monolayer_distance_map(self):
+        self.sublattice.get_monolayer_distance_map()
 
-    def test_plot_sublattice_atom_distance_difference_map(self):
-        self.sublattice.plot_atom_distance_difference_map()
+    def test_get_atom_distance_difference_map(self):
+        self.sublattice.get_atom_distance_difference_map()
 
-    def test_plot_sublattice_atom_distance_map(self):
-        self.sublattice.plot_atom_distance_map()
+    def test_get_atom_distance_map(self):
+        self.sublattice.get_atom_distance_map()
 
     def test_zone_vector_mean_angle(self):
         zone_vector = self.sublattice.zones_axis_average_distances[0]

@@ -60,38 +60,3 @@ class test_atom_lattice_object_tools(unittest.TestCase):
     def test_load_atom_lattice(self):
         hdf5_filename = os.path.join(my_path, "datasets", "test_atom_lattice.hdf5")
         load_atom_lattice_from_hdf5(hdf5_filename, construct_zone_axes=False)
-
-
-class test_atom_lattice_plotting(unittest.TestCase):
-    
-    def setUp(self):
-        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
-        peak_separation = 0.15
-
-        s_adf = load(s_adf_filename)
-        s_adf.change_dtype('float64')
-        s_adf_modified = subtract_average_background(s_adf)
-        s_adf_modified = do_pca_on_signal(s_adf_modified)
-        pixel_size = s_adf.axes_manager[0].scale
-        pixel_separation = peak_separation/pixel_size
-
-        peaks = get_peak2d_skimage(
-                s_adf_modified, 
-                pixel_separation)[0]
-        sublattice = Sublattice(
-                peaks, 
-                np.rot90(np.fliplr(s_adf_modified.data)))
-        sublattice.pixel_size = pixel_size
-        construct_zone_axes_from_sublattice(sublattice)
-
-        self.atom_lattice = Atom_Lattice()
-        self.atom_lattice.sublattice_list.append(sublattice)
-
-    def test_plot_sublattice_monolayer_distance_map(self):
-        self.atom_lattice.plot_monolayer_distance_map()
-
-    def test_plot_sublattice_atom_distance_map(self):
-        self.atom_lattice.plot_atom_distance_map()
-
-    def test_plot_sublattice_atom_distance_difference_map(self):
-        self.atom_lattice.plot_atom_distance_difference_map()
