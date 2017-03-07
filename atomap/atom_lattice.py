@@ -4,7 +4,8 @@ import os
 import numpy as np
 from atomap.atom_finding_refining import\
         construct_zone_axes_from_sublattice
-
+from atomap.plotting import _make_atom_position_marker_list
+from atomap.tools import array2signal2d
 
 class Atom_Lattice():
 
@@ -40,26 +41,27 @@ class Atom_Lattice():
         for sublattice in sublattice_list:
             construct_zone_axes_from_sublattice(sublattice)
 
-    def plot_all_sublattices(
+    def get_sublattice_atom_list_on_image(
             self,
             image=None,
-            markersize=4,
-            figname="all_sublattice.jpg"):
+            color='red',
+            add_numbers=False,
+            markersize=20):
         if image is None:
             image = self.adf_image
-        fig, ax = plt.subplots(figsize=(10, 10))
-        ax.imshow(self.adf_image)
+        marker_list = []
+        scale = self.sublattice_list[0].pixel_size
         for sublattice in self.sublattice_list:
-            color = sublattice._plot_color
-            for atom in sublattice.atom_list:
-                ax.plot(
-                        atom.pixel_x, atom.pixel_y,
-                        'o', markersize=markersize, color=color)
-        ax.set_ylim(0, self.adf_image.shape[0])
-        ax.set_xlim(0, self.adf_image.shape[1])
-        fig.tight_layout()
-        figname = os.path.join(self.path_name, figname)
-        fig.savefig(figname)
+            marker_list.extend(_make_atom_position_marker_list(
+                    sublattice.atom_list,
+                    scale=scale,
+                    color=sublattice._plot_color,
+                    markersize=markersize,
+                    add_numbers=add_numbers))
+        signal = array2signal2d(image, scale)
+        signal.add_marker(marker_list, permanent=True, plot_marker=False)
+
+        return signal
 
     def save_atom_lattice(self, filename=None):
         if filename is None:
