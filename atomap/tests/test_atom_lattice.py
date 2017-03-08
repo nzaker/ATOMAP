@@ -32,7 +32,7 @@ class test_create_atom_lattice_object(unittest.TestCase):
         atom_lattice = Atom_Lattice()
         atom_lattice.sublattice_list.append(self.sublattice)
 
-    def test_get_sublattice_atom_list_on_image((self):
+    def test_get_sublattice_atom_list_on_image(self):
         atom_lattice = Atom_Lattice()
         atom_lattice.adf_image = self.sublattice.adf_image
         atom_lattice.sublattice_list.append(self.sublattice)
