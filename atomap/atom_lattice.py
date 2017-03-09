@@ -63,7 +63,23 @@ class Atom_Lattice():
 
         return signal
 
-    def save_atom_lattice(self, filename=None):
+    def save(self, filename=None):
+        """
+        Save the AtomLattice object as an HDF5 file.
+        This will store the information about the individual atomic
+        positions, like the pixel position, sigma and rotation.
+        The input image(s) and modified version of these will also
+        be saved.
+
+        Parameters
+        ----------
+        filename : string, optional
+
+        Examples
+        --------
+        >>> atom_lattice.save("test.hdf5")
+        >>> atom_lattice1 = am.load_atom_lattice_from_hdf5("test.hdf5")
+        """
         if filename is None:
             path = self.path_name
             filename = path + "/" + "atom_lattice.hdf5"

@@ -55,7 +55,7 @@ class test_atom_lattice_object_tools(unittest.TestCase):
 
     def test_save_atom_lattice(self):
         save_path = "test_atomic_lattice_save.hdf5"
-        self.atom_lattice.save_atom_lattice(
+        self.atom_lattice.save(
                 filename=save_path)
 
     def test_load_atom_lattice(self):
