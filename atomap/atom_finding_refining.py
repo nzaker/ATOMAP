@@ -142,7 +142,10 @@ def plot_feature_separation(
 def get_feature_separation_signal(
         signal,
         separation_range=(5, 30),
-        separation_step=1):
+        separation_step=1,
+        pca=False,
+        subtract_background=False,
+        normalize_intensity=False):
     """
     Plot the peak positions on in a HyperSpy signal, as a function
     of peak separation.
@@ -152,6 +155,9 @@ def get_feature_separation_signal(
     signal : HyperSpy signal 2D
     separation_range : tuple, optional, default (5, 30)
     separation_step : int, optional, default 1 
+    pca : bool, default False
+    subtract_background : bool, default False
+    normalize_intensity : bool, default False
 
     Example
     -------
@@ -161,6 +167,13 @@ def get_feature_separation_signal(
     >>> s1 = get_feature_separation_signal(s)
 
     """
+    if pca:
+        signal = do_pca_on_signal(signal)
+    if subtract_background:
+        signal = subtract_average_background(signal)
+    if normalize_intensity:
+        signal = normalize_signal(signal)
+
     image_data = deepcopy(signal.data)
     separation_list, peak_list = find_features_by_separation(
             image_data=image_data,
