@@ -34,6 +34,7 @@ class GenericSublattice(SublatticeParameterBase):
                 ]
         self.refinement_config = {
                 'config': [
+                    ['image_data_modified', 1, 'center_of_mass'],
                     ['image_data', 1, 'center_of_mass'],
                     ['image_data', 1, 'gaussian'],
                     ],
