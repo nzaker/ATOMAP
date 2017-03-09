@@ -511,7 +511,7 @@ class Sublattice():
         Example
         -------
         >>> x = sublattice.x_position
-        >>> y = sublattice.x_position
+        >>> y = sublattice.y_position
         >>> z = sublattice.ellipticity
         >>> plane = sublattice.atom_plane_list[20]
         >>> s = sublattice._get_property_line_profile_signal(x, y, z, plane)
