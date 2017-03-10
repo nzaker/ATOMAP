@@ -9,6 +9,7 @@ import json
 from matplotlib.gridspec import GridSpec
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
+from hyperspy.drawing._markers.point import Point
 
 from atomap.tools import \
         _get_interpolated2d_from_unregular_data,\
@@ -475,6 +476,7 @@ class Sublattice():
             data_scale_xy=1.0,
             data_scale_z=1.0,
             invert_line_profile=False,
+            add_markers=True,
             interpolate_value=50):
         """
         Project a 2 dimensional property to a plane, and get
@@ -522,7 +524,8 @@ class Sublattice():
             property_list=z_list,
             x_position=x_list,
             y_position=y_list,
-            scale_xy=data_scale_xy)
+            scale_xy=data_scale_xy,
+            scale_z=data_scale_z)
         x_new = np.linspace(
                 line_profile_data_list[0,0],
                 line_profile_data_list[0,-1],
@@ -531,7 +534,7 @@ class Sublattice():
                 x_new,
                 line_profile_data_list[0],
                 line_profile_data_list[1],
-                )*data_scale_z
+                )
         if invert_line_profile:
             x_new *= -1
         data_scale =  x_new[1]-x_new[0]
@@ -539,8 +542,14 @@ class Sublattice():
         signal = array2signal1d(
                 y_new,
                 scale=data_scale,
-                offset=offset,
-                )
+                offset=offset)
+        if add_markers:
+            x_list = line_profile_data_list[0]*-1
+            y_list = line_profile_data_list[1]
+            marker_list = []
+            for x, y in zip(x_list, y_list):
+                marker_list.append(Point(x, y))
+            signal.add_marker(marker_list, permanent=True, plot_marker=False)
         
         return signal
 
