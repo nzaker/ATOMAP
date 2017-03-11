@@ -35,8 +35,8 @@ class test_atom_plane_marker_plotting(unittest.TestCase):
                     Atom_Position(2, 4),
                     ]
             zone_vector = (1, 2)
-            atom_list[0].start_atom = [zone_vector]
-            atom_list[1].end_atom = [zone_vector]
+            atom_list[0]._start_atom = [zone_vector]
+            atom_list[1]._end_atom = [zone_vector]
             atom_plane = Atom_Plane(
                     atom_list, (1, 2), atom_lattice)
             atom_plane_list.append(atom_plane)

@@ -1047,7 +1047,7 @@ class Sublattice():
                 zone_axis_list1.append(atoms_within_distance[0][1])
             if zone_axis_list1[-1] is atom:
                 end_of_atom_plane = True
-                atom.end_atom.append(zone_vector)
+                atom._end_atom.append(zone_vector)
 
         zone_vector2 = (-1*zone_vector[0], -1*zone_vector[1])
         start_of_atom_plane = False
@@ -1067,7 +1067,7 @@ class Sublattice():
                 zone_axis_list2.append(atoms_within_distance[0][1])
             if zone_axis_list2[-1] is atom:
                 start_of_atom_plane = True
-                atom.start_atom.append(zone_vector)
+                atom._start_atom.append(zone_vector)
 
         if not (len(zone_axis_list2) == 1):
             zone_axis_list1.extend(zone_axis_list2[1:])
@@ -1774,7 +1774,7 @@ class Sublattice():
             if self._plot_clim:
                 cax.set_clim(self._plot_clim[0], self._plot_clim[1])
             for atom_index, atom in enumerate(self.atom_list):
-                if zone_vector in atom.start_atom:
+                if zone_vector in atom._start_atom:
                     ax.plot(
                             atom.pixel_x,
                             atom.pixel_y,
@@ -1784,7 +1784,7 @@ class Sublattice():
                             atom.pixel_y,
                             str(atom_index))
             for atom_index, atom in enumerate(self.atom_list):
-                if zone_vector in atom.end_atom:
+                if zone_vector in atom._end_atom:
                     ax.plot(
                             atom.pixel_x,
                             atom.pixel_y,

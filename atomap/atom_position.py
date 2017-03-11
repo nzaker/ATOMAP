@@ -14,8 +14,8 @@ class Atom_Position:
         self.pixel_y = y
         self.nearest_neighbor_list = None
         self.in_atomic_plane = []
-        self.start_atom = []
-        self.end_atom = []
+        self._start_atom = []
+        self._end_atom = []
         self.atom_planes = []
         self._tag = ''
         self.old_pixel_x_list = []

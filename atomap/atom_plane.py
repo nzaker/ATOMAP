@@ -47,13 +47,13 @@ class Atom_Plane():
 
     def _find_start_atom(self):
         for atom in self.atom_list:
-            if self.zone_vector in atom.start_atom:
+            if self.zone_vector in atom._start_atom:
                 self.start_atom = atom
                 break
 
     def _find_end_atom(self):
         for atom in self.atom_list:
-            if self.zone_vector in atom.end_atom:
+            if self.zone_vector in atom._end_atom:
                 self.end_atom = atom
                 break
 
