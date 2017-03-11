@@ -1554,7 +1554,22 @@ class Sublattice():
         data_list = np.array([list_x, list_y, list_z])
         return(data_list)
 
-    def get_ellipticity_signal(
+    def get_ellipticity_line_profile(
+            self,
+            atom_plane,
+            invert_line_profile=False,
+            interpolate_value=50):
+        signal = self._get_property_line_profile_signal(
+            self.x_position,
+            self.y_position,
+            self.ellipticity,
+            atom_plane,
+            data_scale_xy=self.pixel_size,
+            invert_line_profile=invert_line_profile,
+            interpolate_value=interpolate_value)
+        return signal
+
+    def get_ellipticity_map(
             self,
             upscale_map=2.0,
             atom_plane_list=None):
@@ -1580,12 +1595,12 @@ class Sublattice():
 
         Examples
         --------
-        >>> s_elli = sublattice.get_ellipticity_signal()
+        >>> s_elli = sublattice.get_ellipticity_map()
         >>> s_elli.plot()
 
         Include an atom plane, which is added to the signal as a marker
         >>> atom_plane_list = [sublattice.atom_plane_list[10]]
-        >>> s_elli = sublattice.get_ellipticity_signal(atom_plane_list=atom_plane_list)
+        >>> s_elli = sublattice.get_ellipticity_map(atom_plane_list=atom_plane_list)
         >>> s_elli.plot(plot_markers=True)
         """
         signal = self._get_property_map_signal(
@@ -1596,6 +1611,25 @@ class Sublattice():
             upscale_map=upscale_map)
         title = 'Sublattice {} ellipticity'.format(self._tag)
         signal.metadata.General.title = title
+        return signal
+
+    def get_monolayer_distance_line_profile(
+            self,
+            zone_vector,
+            atom_plane,
+            invert_line_profile=False,
+            interpolate_value=50):
+        data_list = self.get_monolayer_distance_list_from_zone_vector(
+                zone_vector)
+        signal = self._get_property_line_profile_signal(
+                data_list[0],
+                data_list[1],
+                data_list[2],
+                atom_plane,
+                data_scale_xy=self.pixel_size,
+                data_scale_z=self.pixel_size,
+                invert_line_profile=invert_line_profile,
+                interpolate_value=interpolate_value)
         return signal
 
     def get_monolayer_distance_map(

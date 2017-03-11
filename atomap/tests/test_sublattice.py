@@ -103,8 +103,12 @@ class test_sublattice_get_signal(unittest.TestCase):
         self.sublattice.pixel_size = pixel_size
         construct_zone_axes_from_sublattice(self.sublattice)
 
-    def test_ellipticity(self):
-        self.sublattice.get_ellipticity_signal()
+    def test_ellipticity_map(self):
+        self.sublattice.get_ellipticity_map()
+
+    def test_ellipticity_line_line_profile(self):
+        plane = self.sublattice.atom_plane_list[3]
+        self.sublattice.get_ellipticity_line_profile(plane)
 
     def test_distance_difference(self):
         zone_vector = self.sublattice.zones_axis_average_distances[0]
@@ -133,6 +137,12 @@ class test_sublattice_get_signal(unittest.TestCase):
 
     def test_get_atom_list(self):
         self.sublattice.get_atom_list_on_image()
+
+    def test_get_monolayer_distance_line_profile(self):
+        sublattice = self.sublattice
+        zone_vector = sublattice.zones_axis_average_distances[0]
+        plane = sublattice.atom_planes_by_zone_vector[zone_vector][0]
+        sublattice.get_monolayer_distance_line_profile(zone_vector, plane)
 
     def test_get_monolayer_distance_map(self):
         self.sublattice.get_monolayer_distance_map()
