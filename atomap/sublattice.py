@@ -287,7 +287,7 @@ class Sublattice():
         data_list = np.swapaxes(data_list, 0, 1)
         return(data_list)
 
-    def property_position_projection(
+    def _property_position_projection(
             self,
             interface_plane,
             property_list,
@@ -375,14 +375,14 @@ class Sublattice():
             interface_plane = self.atom_planes_by_zone_vector[
                     zone_vector][middle_atom_plane_index]
 
-        amplitude_data_projected = self.property_position_projection(
+        amplitude_data_projected = self._property_position_projection(
             interface_plane=interface_plane,
             property_list=amplitude_list,
             x_position=x_list,
             y_position=y_list)
         amplitude_data_projected = amplitude_data_projected.swapaxes(0, 1)
 
-        phase_data_projected = self.property_position_projection(
+        phase_data_projected = self._property_position_projection(
             interface_plane=interface_plane,
             property_list=phase_list,
             x_position=x_list,
@@ -519,7 +519,7 @@ class Sublattice():
         >>> s = sublattice._get_property_line_profile_signal(x, y, z, plane)
         >>> s.plot()
         """
-        line_profile_data_list = self.property_position_projection(
+        line_profile_data_list = self._property_position_projection(
             interface_plane=atom_plane,
             property_list=z_list,
             x_position=x_list,
@@ -614,7 +614,7 @@ class Sublattice():
             interface_plane = self.atom_planes_by_zone_vector[
                     zone_vector][middle_atom_plane_index]
 
-        line_profile_data_list = self.property_position_projection(
+        line_profile_data_list = self._property_position_projection(
             interface_plane=interface_plane,
             property_list=z_list,
             x_position=x_list,
