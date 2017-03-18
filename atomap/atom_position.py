@@ -241,6 +241,7 @@ class Atom_Position:
 
         data_slice_max = data_slice.max()
         self.amplitude_max_intensity = data_slice_max
+        plt.ion()
 
         return(data_slice_max)
 
@@ -301,6 +302,7 @@ class Atom_Position:
                     data)
 
         self.amplitude_gaussian = g.A.value
+        plt.ion()
         return(g)
 
     def fit_2d_gaussian_with_mask(
@@ -362,6 +364,7 @@ class Atom_Position:
         # If the Gaussian centre is located outside the masked region,
         # return False
         dislocation = math.hypot(g.centre_x.value, g.centre_y.value)
+        plt.ion()
         if dislocation > slice_radius:
             return(False)
         else:
