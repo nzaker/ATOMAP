@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import h5py
 import os
 import numpy as np
@@ -6,6 +5,7 @@ from atomap.atom_finding_refining import\
         construct_zone_axes_from_sublattice
 from atomap.plotting import _make_atom_position_marker_list
 from atomap.tools import array2signal2d
+
 
 class Atom_Lattice():
 
@@ -80,74 +80,7 @@ class Atom_Lattice():
         >>> atom_lattice.save("test.hdf5")
         >>> atom_lattice1 = am.load_atom_lattice_from_hdf5("test.hdf5")
         """
+        from atomap.io import save_atom_lattice_to_hdf5
         if filename is None:
-            filename = path + "_atom_lattice.hdf5"
-
-        h5f = h5py.File(filename, 'w')
-        for sublattice in self.sublattice_list:
-            subgroup_name = sublattice._tag + "_sublattice"
-            modified_image_data = sublattice.adf_image
-            original_image_data = sublattice.original_adf_image
-
-            # Atom position data
-            atom_positions = np.array([
-                sublattice.x_position,
-                sublattice.y_position]).swapaxes(0, 1)
-
-#            atom_positions = np.array(sublattice._get_atom_position_list())
-            sigma_x = np.array(sublattice.sigma_x)
-            sigma_y = np.array(sublattice.sigma_y)
-            rotation = np.array(sublattice.rotation)
-
-            h5f.create_dataset(
-                    subgroup_name + "/modified_image_data",
-                    data=modified_image_data,
-                    chunks=True,
-                    compression='gzip')
-            h5f.create_dataset(
-                    subgroup_name + "/original_image_data",
-                    data=original_image_data,
-                    chunks=True,
-                    compression='gzip')
-
-            h5f.create_dataset(
-                    subgroup_name + "/atom_positions",
-                    data=atom_positions,
-                    chunks=True,
-                    compression='gzip')
-            h5f.create_dataset(
-                    subgroup_name + "/sigma_x",
-                    data=sigma_x,
-                    chunks=True,
-                    compression='gzip')
-            h5f.create_dataset(
-                    subgroup_name + "/sigma_y",
-                    data=sigma_y,
-                    chunks=True,
-                    compression='gzip')
-            h5f.create_dataset(
-                    subgroup_name + "/rotation",
-                    data=rotation,
-                    chunks=True,
-                    compression='gzip')
-
-            h5f[subgroup_name].attrs['pixel_size'] = sublattice.pixel_size
-            h5f[subgroup_name].attrs['tag'] = sublattice._tag
-            h5f[subgroup_name].attrs['plot_color'] = sublattice._plot_color
-
-            # HDF5 does not supporting saving a list of strings, so converting
-            # them to bytes
-            zone_axis_names = sublattice.zones_axis_average_distances_names
-            zone_axis_names_byte = []
-            for zone_axis_name in zone_axis_names:
-                zone_axis_names_byte.append(zone_axis_name.encode())
-            h5f[subgroup_name].attrs[
-                    'zone_axis_names_byte'] = zone_axis_names_byte
-
-        h5f.create_dataset(
-            "image_data0",
-            data=self.adf_image,
-            chunks=True,
-            compression='gzip')
-
-        h5f.close()
+            filename = self.name + "_atom_lattice.hdf5"
+        save_atom_lattice_to_hdf5(self, filename)
