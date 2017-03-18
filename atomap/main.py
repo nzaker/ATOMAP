@@ -88,9 +88,7 @@ def make_atom_lattice_single_sublattice_from_image(
                     ],
                 'neighbor_distance': 0.35}
 
-    path_name = image_filename
-    if not os.path.exists(path_name):
-        os.makedirs(path_name)
+    name = image_filename
 
     s_image = s_image.deepcopy()
     s_image_modified = run_image_filtering(s_image)
@@ -102,9 +100,8 @@ def make_atom_lattice_single_sublattice_from_image(
     image_data = np.rot90(np.fliplr(s_image.data))
     image_data_modified = np.rot90(np.fliplr(s_image_modified.data))
 
-    atom_lattice = Atom_Lattice()
+    atom_lattice = Atom_Lattice(name=name)
     atom_lattice.original_filename = image_filename
-    atom_lattice.path_name = path_name
     atom_lattice.adf_image = image_data
 
     s_image = s_image
@@ -114,8 +111,6 @@ def make_atom_lattice_single_sublattice_from_image(
     sublattice = Sublattice(
         initial_atom_position_list,
         image_data_modified)
-    sublattice._save_path = "./" + path_name + "/"
-    sublattice.path_name = path_name
     sublattice._plot_color = "red"
     sublattice.name = "Sublattice0"
     sublattice._tag = "S0"
@@ -148,9 +143,7 @@ def make_atom_lattice_from_image(
 
     image0_filename = _get_signal_name(s_image0)
 
-    path_name = image0_filename
-    if not os.path.exists(path_name):
-        os.makedirs(path_name)
+    name = image0_filename
 
     s_image0 = s_image0.deepcopy()
     s_image0_modified = run_image_filtering(s_image0)
@@ -181,9 +174,8 @@ def make_atom_lattice_from_image(
     image0_data = np.rot90(np.fliplr(s_image0.data))
     image0_data_modified = np.rot90(np.fliplr(s_image0_modified.data))
 
-    atom_lattice = Atom_Lattice()
+    atom_lattice = Atom_Lattice(name=name)
     atom_lattice.original_filename = image0_filename
-    atom_lattice.path_name = path_name
     atom_lattice.adf_image = image0_data
 
     for sublattice_index in range(model_parameters.number_of_sublattices):
@@ -220,8 +212,6 @@ def make_atom_lattice_from_image(
                 atom_list,
                 image_data)
 
-        sublattice._save_path = "./" + path_name + "/"
-        sublattice.path_name = path_name
         sublattice._plot_color = sublattice_para.color
         sublattice.name = sublattice_para.name
         sublattice._tag = sublattice_para.tag

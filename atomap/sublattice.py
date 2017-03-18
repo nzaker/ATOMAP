@@ -43,15 +43,12 @@ class Sublattice():
         self.atom_planes_by_zone_vector = {}
         self._plot_clim = None
         self._tag = ''
-        self._save_path = "./"
         self.pixel_size = 1.0
         self._plot_color = 'blue'
-        self.path_name = ""
 
     def __repr__(self):
-        return '<%s, %s.%s (atoms:%s,planes:%s)>' % (
+        return '<%s, %s (atoms:%s,planes:%s)>' % (
             self.__class__.__name__,
-            self.path_name,
             self._tag,
             len(self.atom_list),
             len(self.atom_planes_by_zone_vector),
@@ -669,7 +666,7 @@ class Sublattice():
             ax.scatter(x_pos_distances, y_pos_distances)
             ax.set_ylim(-histogram_range, histogram_range)
             ax.set_xlim(-histogram_range, histogram_range)
-            fig.savefig(self._save_path + self._tag + "_cat_nn.png")
+            fig.savefig(self._tag + "_cat_nn.png")
 
         hist_scale = direction_distance_intensity_hist[1][1] -\
             direction_distance_intensity_hist[1][0]
@@ -1564,7 +1561,6 @@ class Sublattice():
             ax.set_xlim(0, self.adf_image.shape[1])
             fig.tight_layout()
             fig.savefig(
-                    self._save_path +
                     "debug_plot_start_end_atoms_zone" +
                     str(zone_index) + ".jpg")
 
@@ -1596,7 +1592,7 @@ class Sublattice():
         relative_ax.set_xlabel("Refinement step")
 
         fig.tight_layout()
-        fig.savefig(self._save_path + self._tag + "_" + figname)
+        fig.savefig(self._tag + "_" + figname)
 
     def get_zone_vector_mean_angle(self, zone_vector):
         """Get the mean angle between the atoms planes with a

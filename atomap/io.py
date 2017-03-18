@@ -55,16 +55,10 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
 
             sublattice.pixel_size = sublattice_set.attrs['pixel_size']
             sublattice._tag = sublattice_set.attrs['tag']
-            sublattice.path_name = sublattice_set.attrs['path_name']
-            sublattice._save_path = sublattice_set.attrs['save_path']
             sublattice._plot_color = sublattice_set.attrs['plot_color']
 
             if type(sublattice._tag) == bytes:
                 sublattice._tag = sublattice._tag.decode()
-            if type(sublattice.path_name) == bytes:
-                sublattice.path_name = sublattice.path_name.decode()
-            if type(sublattice._save_path) == bytes:
-                sublattice._save_path = sublattice._save_path.decode()
             if type(sublattice._plot_color) == bytes:
                 sublattice._plot_color = sublattice._plot_color.decode()
 
@@ -84,8 +78,11 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
         if group_name == 'image_data0':
             atom_lattice.adf_image = h5f[group_name][:]
 
-    atom_lattice.path_name = h5f.attrs['path_name']
-    if type(atom_lattice.path_name) == bytes:
-        atom_lattice.path_name = atom_lattice.path_name.decode()
+    if 'name' in h5f.attrs.keys():
+        atom_lattice.name = h5f.attrs['name']
+    elif 'path_name' in h5f.attrs.keys():
+        atom_lattice.name = h5f.attrs['path_name']
+    if type(atom_lattice.name) == bytes:
+        atom_lattice.name = atom_lattice.name.decode()
     h5f.close()
     return(atom_lattice)

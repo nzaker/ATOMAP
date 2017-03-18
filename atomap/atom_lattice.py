@@ -9,16 +9,16 @@ from atomap.tools import array2signal2d
 
 class Atom_Lattice():
 
-    def __init__(self):
+    def __init__(self, name=""):
         self.sublattice_list = []
         self.adf_image = None
         self.inverted_abf_image = None
-        self.path_name = ""
+        self.name = name
 
     def __repr__(self):
         return '<%s, %s (sublattice(s): %s)>' % (
             self.__class__.__name__,
-            self.path_name,
+            self.name,
             len(self.sublattice_list),
             )
 
@@ -81,8 +81,7 @@ class Atom_Lattice():
         >>> atom_lattice1 = am.load_atom_lattice_from_hdf5("test.hdf5")
         """
         if filename is None:
-            path = self.path_name
-            filename = path + "/" + "atom_lattice.hdf5"
+            filename = path + "_atom_lattice.hdf5"
 
         h5f = h5py.File(filename, 'w')
         for sublattice in self.sublattice_list:
@@ -134,8 +133,6 @@ class Atom_Lattice():
 
             h5f[subgroup_name].attrs['pixel_size'] = sublattice.pixel_size
             h5f[subgroup_name].attrs['tag'] = sublattice._tag
-            h5f[subgroup_name].attrs['path_name'] = sublattice.path_name
-            h5f[subgroup_name].attrs['save_path'] = sublattice._save_path
             h5f[subgroup_name].attrs['plot_color'] = sublattice._plot_color
 
             # HDF5 does not supporting saving a list of strings, so converting
@@ -152,6 +149,5 @@ class Atom_Lattice():
             data=self.adf_image,
             chunks=True,
             compression='gzip')
-        h5f.attrs['path_name'] = self.path_name
 
         h5f.close()
