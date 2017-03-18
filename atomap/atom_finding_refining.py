@@ -93,53 +93,7 @@ def find_features_by_separation(
     return(separation_value_list, peak_list)
 
 
-def plot_feature_separation(
-        signal,
-        separation_range=(5, 30),
-        separation_step=1):
-    """
-    Plot peak positions as a function of peak separation.
-
-    Parameters
-    ----------
-    signal : HyperSpy 2D signal
-    separation_range : tuple, optional
-    separation_step : int, optional
-
-    Example
-    -------
-    >>> import hyperspy.api as hs
-    >>> from atomap.atom_finding_refining import plot_feature_separation
-    >>> s = hs.load("stem_adf_data.hdf5")
-    >>> plot_feature_separation(s)
-
-    Using all the parameters
-    >>> plot_feature_separation(s, separation_range=(10,50), separation_step=3)
-    """
-    image_data = signal.data
-
-    # skimage.feature.peak_local_max used in find_features_by_separation
-    # only support 32-bit or higher
-    separation_list, peak_list = find_features_by_separation(
-            image_data=image_data,
-            separation_range=separation_range,
-            separation_step=separation_step)
-    for index, (separation, peaks) in enumerate(
-            zip(separation_list, peak_list)):
-        fig = Figure(figsize=(7, 7))
-        canvas = FigureCanvas(fig)
-        ax = fig.add_subplot(111)
-        ax.imshow(image_data)
-        ax.scatter(peaks[:, 1], peaks[:, 0])
-        ax.set_xlim(0, image_data.shape[1])
-        ax.set_ylim(0, image_data.shape[0])
-        ax.set_axis_off()
-        ax.set_title("Peak separation, " + str(separation) + " pixels")
-        fig.tight_layout()
-        fig.savefig("peak_separation_" + str(separation).zfill(3))
-
-
-def get_feature_separation_signal(
+def get_feature_separation(
         signal,
         separation_range=(5, 30),
         separation_step=1,
@@ -162,9 +116,9 @@ def get_feature_separation_signal(
     Example
     -------
     >>> import hyperspy.api as hs
-    >>> from atomap.atom_finding_refining import get_feature_separation_signal
+    >>> from atomap.atom_finding_refining import get_feature_separation
     >>> s = hs.signals.Signal2D(np.random.random((500, 500))
-    >>> s1 = get_feature_separation_signal(s)
+    >>> s1 = get_feature_separation(s)
 
     """
     if pca:
