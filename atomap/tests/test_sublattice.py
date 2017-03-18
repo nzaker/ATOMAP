@@ -132,9 +132,6 @@ class test_sublattice_get_signal(unittest.TestCase):
                 atom_planes, add_numbers=False)
         self.assertEqual(number_of_atom_planes, len(s.metadata.Markers))
 
-    def test_plot_ellipticity_rotation_complex(self):
-        self.sublattice.plot_ellipticity_rotation_complex()
-
     def test_get_atom_list(self):
         self.sublattice.get_atom_list_on_image()
 
