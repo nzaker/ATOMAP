@@ -271,7 +271,7 @@ class Sublattice():
                 z_list.extend(data[:, 2])
         return(x_list, y_list, z_list)
 
-    def property_position(
+    def _property_position(
             self,
             property_list,
             x_position=None,
@@ -336,7 +336,7 @@ class Sublattice():
             atoms, ellipticity or angle between atoms.
         """
 
-        data_list = self.property_position(
+        data_list = self._property_position(
             z_list,
             x_position=x_list,
             y_position=y_list)
@@ -1649,7 +1649,7 @@ class Sublattice():
             line_profile_index += 1
 
         for index, parameter in enumerate(parameter_list):
-            data_list = self.property_position(parameter)
+            data_list = self._property_position(parameter)
 
             ax = fig.add_subplot(
                     gs[
