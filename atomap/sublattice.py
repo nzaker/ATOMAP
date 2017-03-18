@@ -342,7 +342,7 @@ class Sublattice():
 
         return(new_data)
 
-    def _get_property_map_signal(
+    def _get_property_map(
             self,
             x_list,
             y_list,
@@ -371,7 +371,7 @@ class Sublattice():
             signal.add_marker(marker_list, permanent=True, plot_marker=False)
         return signal
 
-    def _get_property_line_profile_signal(
+    def _get_property_line_profile(
             self,
             x_list,
             y_list,
@@ -420,7 +420,7 @@ class Sublattice():
         >>> y = sublattice.y_position
         >>> z = sublattice.ellipticity
         >>> plane = sublattice.atom_plane_list[20]
-        >>> s = sublattice._get_property_line_profile_signal(x, y, z, plane)
+        >>> s = sublattice._get_property_line_profile(x, y, z, plane)
         >>> s.plot()
         """
         line_profile_data_list = self._property_position_projection(
@@ -868,7 +868,7 @@ class Sublattice():
             new_atom_plane_list.append(temp_new_atom_list)
         return(new_atom_list)
 
-    def get_atom_planes_on_image_signal(
+    def get_atom_planes_on_image(
             self, atom_plane_list, image=None, add_numbers=True, color='red'):
         """
         Get atom_planes signal as lines on the adf_image.
@@ -892,7 +892,7 @@ class Sublattice():
         -------
         >>> zone_vector = sublatticeA.zones_axis_average_distances[0]
         >>> atom_planes = sublatticeA.atom_planes_by_zone_vector[zone_vector]
-        >>> s = sublattice.get_atom_plane_on_image_signal(atom_planes)
+        >>> s = sublattice.get_atom_plane_on_image(atom_planes)
         >>> s.plot(plot_markers=True)
         """
         if image is None:
@@ -906,7 +906,7 @@ class Sublattice():
         signal.add_marker(marker_list, permanent=True, plot_marker=False)
         return signal
 
-    def get_all_atom_planes_by_zone_vector_signal(
+    def get_all_atom_planes_by_zone_vector(
             self,
             zone_vector_list=None,
             image=None,
@@ -936,22 +936,22 @@ class Sublattice():
         -------
         Getting a list signals showing the atomic planes for all the
         zone vectors
-        >>> s_list = sublattice.get_all_atom_planes_by_zone_vector_signal()
+        >>> s_list = sublattice.get_all_atom_planes_by_zone_vector()
         >>> s_list[1].plot(plot_markers=True)
 
         Single signal from one zone vector
         >>> zone_vec = sublattice.zones_axis_average_distances[0]
-        >>> s = sublattice.get_all_atom_planes_by_zone_vector_signal(zone_vec)
+        >>> s = sublattice.get_all_atom_planes_by_zone_vector(zone_vec)
         >>> s.plot(plot_markers=True)
 
         Several zone vectors
         >>> zone_vec = sublattice.zones_axis_average_distances[0:3]
-        >>> s_list = sublattice.get_all_atom_planes_by_zone_vector_signal(zone_vec)
+        >>> s_list = sublattice.get_all_atom_planes_by_zone_vector(zone_vec)
         >>> s_list[1].plot(plot_markers=True)
 
         Different image
         >>> image = sublattice1.original_adf_image
-        >>> s_list = sublattice0.get_all_atom_planes_by_zone_vector_signal(image=image)
+        >>> s_list = sublattice0.get_all_atom_planes_by_zone_vector(image=image)
         >>> s_list[1].plot(plot_markers=True)
         """
         if zone_vector_list is None:
@@ -959,7 +959,7 @@ class Sublattice():
         signal_list = []
         for zone_vector in zone_vector_list:
             atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
-            signal = self.get_atom_planes_on_image_signal(
+            signal = self.get_atom_planes_on_image(
                     atom_plane_list,
                     image=image)
             signal_list.append(signal)
@@ -1191,7 +1191,7 @@ class Sublattice():
             atom_plane,
             invert_line_profile=False,
             interpolate_value=50):
-        signal = self._get_property_line_profile_signal(
+        signal = self._get_property_line_profile(
             self.x_position,
             self.y_position,
             self.ellipticity,
@@ -1235,7 +1235,7 @@ class Sublattice():
         >>> s_elli = sublattice.get_ellipticity_map(atom_plane_list=atom_planes)
         >>> s_elli.plot(plot_markers=True)
         """
-        signal = self._get_property_map_signal(
+        signal = self._get_property_map(
             self.x_position,
             self.y_position,
             self.ellipticity,
@@ -1253,7 +1253,7 @@ class Sublattice():
             interpolate_value=50):
         data_list = self.get_monolayer_distance_list_from_zone_vector(
                 zone_vector)
-        signal = self._get_property_line_profile_signal(
+        signal = self._get_property_line_profile(
                 data_list[0],
                 data_list[1],
                 data_list[2],
@@ -1280,7 +1280,7 @@ class Sublattice():
             signal_title = 'Monolayer distance {}'.format(zone_index)
             data_list = self.get_monolayer_distance_list_from_zone_vector(
                     zone_vector)
-            signal = self._get_property_map_signal(
+            signal = self._get_property_map(
                 data_list[0],
                 data_list[1],
                 data_list[2],
@@ -1314,7 +1314,7 @@ class Sublattice():
             data_list = self.get_atom_distance_list_from_zone_vector(
                     zone_vector)
 
-            signal = self._get_property_map_signal(
+            signal = self._get_property_map(
                 data_list[0],
                 data_list[1],
                 data_list[2],
@@ -1345,7 +1345,7 @@ class Sublattice():
             signal_title = 'Distance difference {}'.format(zone_index)
             data_list = self.get_atom_distance_difference_from_zone_vector(
                     zone_vector)
-            signal = self._get_property_map_signal(
+            signal = self._get_property_map(
                 data_list[0],
                 data_list[1],
                 data_list[2],

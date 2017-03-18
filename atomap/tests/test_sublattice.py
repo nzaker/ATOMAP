@@ -115,20 +115,20 @@ class test_sublattice_get_signal(unittest.TestCase):
         s = self.sublattice.get_atom_distance_difference_map(
                 [zone_vector])
 
-    def test_atomplanes_from_zone_vector_signals(self):
+    def test_atomplanes_from_zone_vector(self):
         sublattice = self.sublattice
-        s_list = sublattice.get_all_atom_planes_by_zone_vector_signal()
+        s_list = sublattice.get_all_atom_planes_by_zone_vector()
         self.assertEqual(
                 len(s_list),
                 len(sublattice.zones_axis_average_distances))
 
-    def test_atomap_plane_on_image_signal(self):
+    def test_atomap_plane_on_image(self):
         sublattice = self.sublattice
         atom_planes = sublattice.atom_plane_list[10:20]
         number_of_atom_planes = 0
         for atom_plane in atom_planes:
             number_of_atom_planes += len(atom_plane.atom_list) - 1
-        s = sublattice.get_atom_planes_on_image_signal(
+        s = sublattice.get_atom_planes_on_image(
                 atom_planes, add_numbers=False)
         self.assertEqual(number_of_atom_planes, len(s.metadata.Markers))
 
@@ -157,9 +157,9 @@ class test_sublattice_get_signal(unittest.TestCase):
     def test_get_nearest_neighbor_directions(self):
         self.sublattice.get_nearest_neighbor_directions()
 
-    def test_get_property_line_profile_signal(self):
+    def test_get_property_line_profile(self):
         plane = self.sublattice.atom_plane_list[3]
-        self.sublattice._get_property_line_profile_signal(
+        self.sublattice._get_property_line_profile(
                 self.sublattice.x_position,
                 self.sublattice.y_position,
                 self.sublattice.ellipticity,
