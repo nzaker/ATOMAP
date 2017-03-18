@@ -5,24 +5,18 @@ import math
 from scipy import ndimage
 import hyperspy.api as hs
 import copy
-import json
-from matplotlib.gridspec import GridSpec
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from hyperspy.drawing._markers.point import Point
 
-from atomap.tools import \
-        _get_interpolated2d_from_unregular_data,\
-        _get_clim_from_data,\
-        project_position_property_sum_planes,\
-        array2signal2d, array2signal1d
+from atomap.tools import (
+        _get_interpolated2d_from_unregular_data,
+        project_position_property_sum_planes,
+        array2signal2d, array2signal1d)
 
-from atomap.plotting import \
-        plot_image_map_line_profile_using_interface_plane,\
-        plot_complex_image_map_line_profile_using_interface_plane,\
-        _make_line_profile_subplot_from_three_parameter_data,\
-        _make_atom_planes_marker_list, _make_atom_planes_marker_list,\
-        _make_atom_position_marker_list, _make_arrow_marker_list
+from atomap.plotting import (
+        _make_atom_planes_marker_list, _make_atom_position_marker_list,
+        _make_arrow_marker_list)
 from atomap.atom_finding_refining import get_peak2d_skimage
 
 from atomap.atom_position import Atom_Position
@@ -415,7 +409,7 @@ class Sublattice():
         interpolate_value : int, default 50
             The amount of data points between in monolayer, due to
             HyperSpy signals not supporting non-linear axes.
-        
+
         Returns
         -------
         HyperSpy signal1D
@@ -437,8 +431,8 @@ class Sublattice():
             scale_xy=data_scale_xy,
             scale_z=data_scale_z)
         x_new = np.linspace(
-                line_profile_data_list[0,0],
-                line_profile_data_list[0,-1],
+                line_profile_data_list[0, 0],
+                line_profile_data_list[0, -1],
                 interpolate_value*len(line_profile_data_list[0]))
         y_new = np.interp(
                 x_new,
@@ -447,7 +441,7 @@ class Sublattice():
                 )
         if invert_line_profile:
             x_new *= -1
-        data_scale =  x_new[1]-x_new[0]
+        data_scale = x_new[1]-x_new[0]
         offset = x_new[0]
         signal = array2signal1d(
                 y_new,
@@ -460,7 +454,6 @@ class Sublattice():
             for x, y in zip(x_list, y_list):
                 marker_list.append(Point(x, y))
             signal.add_marker(marker_list, permanent=True, plot_marker=False)
-        
         return signal
 
     def _find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
@@ -941,23 +934,24 @@ class Sublattice():
 
         Example
         -------
-        Getting a list signals showing the atomic planes for all the 
+        Getting a list signals showing the atomic planes for all the
         zone vectors
         >>> s_list = sublattice.get_all_atom_planes_by_zone_vector_signal()
         >>> s_list[1].plot(plot_markers=True)
 
         Single signal from one zone vector
-        >>> zone_vector = sublattice.zones_axis_average_distances[0]
-        >>> s = sublattice.get_all_atom_planes_by_zone_vector_signal(zone_vector)
+        >>> zone_vec = sublattice.zones_axis_average_distances[0]
+        >>> s = sublattice.get_all_atom_planes_by_zone_vector_signal(zone_vec)
         >>> s.plot(plot_markers=True)
 
         Several zone vectors
-        >>> zone_vectors = sublattice.zones_axis_average_distances[0:3]
-        >>> s_list = sublattice.get_all_atom_planes_by_zone_vector_signal(zone_vectors)
+        >>> zone_vec = sublattice.zones_axis_average_distances[0:3]
+        >>> s_list = sublattice.get_all_atom_planes_by_zone_vector_signal(zone_vec)
         >>> s_list[1].plot(plot_markers=True)
 
         Different image
-        >>> s_list = sublattice0.get_all_atom_planes_by_zone_vector_signal(image=sublattice1.original_adf_image)
+        >>> image = sublattice1.original_adf_image
+        >>> s_list = sublattice0.get_all_atom_planes_by_zone_vector_signal(image=image)
         >>> s_list[1].plot(plot_markers=True)
         """
         if zone_vector_list is None:
@@ -1097,9 +1091,6 @@ class Sublattice():
         """
         if image is None:
             image = self.original_adf_image
-        property_list = []
-        x_pos_list, y_pos_list = [], []
-        x_rot_list, y_rot_list = [], []
         elli_list = []
         for atom in self.atom_list:
             elli_rot = atom.get_ellipticity_vector()
@@ -1240,8 +1231,8 @@ class Sublattice():
         >>> s_elli.plot()
 
         Include an atom plane, which is added to the signal as a marker
-        >>> atom_plane_list = [sublattice.atom_plane_list[10]]
-        >>> s_elli = sublattice.get_ellipticity_map(atom_plane_list=atom_plane_list)
+        >>> atom_planes = [sublattice.atom_plane_list[10]]
+        >>> s_elli = sublattice.get_ellipticity_map(atom_plane_list=atom_planes)
         >>> s_elli.plot(plot_markers=True)
         """
         signal = self._get_property_map_signal(
