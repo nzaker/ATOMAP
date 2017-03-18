@@ -168,6 +168,19 @@ class test_sublattice_get_signal(unittest.TestCase):
                 self.sublattice.ellipticity,
                 atom_plane=plane)
 
+    def test_get_ellipticity_vector(self):
+        sublattice = self.sublattice
+        s0 = sublattice.get_ellipticity_vector(
+                color='blue',
+                vector_scale=20)
+        self.assertEqual(len(sublattice.atom_list), len(s0.metadata.Markers))
+        plane = sublattice.atom_plane_list[3]
+        s1 = sublattice.get_ellipticity_vector(
+                sublattice.adf_image,
+                atom_plane_list=[plane],
+                color='red',
+                vector_scale=10)
+
 
 class test_sublattice_interpolation(unittest.TestCase):
 

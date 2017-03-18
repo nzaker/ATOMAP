@@ -503,7 +503,7 @@ class Atom_Position:
 
     def get_ellipticity_vector(self):
         elli = self.ellipticity - 1
-        rot = self.get_rotation_vector()
+        rot = self.get_ellipticity_rotation_vector()
         vector = (elli*rot[0], elli*rot[1])
         return(vector)
 
@@ -512,6 +512,11 @@ class Atom_Position:
         vector = (
                 math.cos(rot),
                 math.sin(rot))
+        return(vector)
+
+    def get_ellipticity_rotation_vector(self):
+        rot = self.rotation_ellipticity
+        vector = (math.cos(rot), math.sin(rot))
         return(vector)
 
     def get_pixel_distance_from_another_atom(self, atom):

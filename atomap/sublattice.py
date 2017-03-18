@@ -22,7 +22,7 @@ from atomap.plotting import \
         plot_complex_image_map_line_profile_using_interface_plane,\
         _make_line_profile_subplot_from_three_parameter_data,\
         _make_atom_planes_marker_list, _make_atom_planes_marker_list,\
-        _make_atom_position_marker_list
+        _make_atom_position_marker_list, _make_arrow_marker_list
 from atomap.atom_finding_refining import get_peak2d_skimage
 
 from atomap.atom_position import Atom_Position
@@ -1287,42 +1287,58 @@ class Sublattice():
         y_list.extend(zero_position_y_list)
         z_list.extend(np.zeros_like(zero_position_x_list))
 
-    def plot_rotation(self, interface_plane=None, clim=None, figname=''):
-        x_pos_list, y_pos_list, x_rot_list, y_rot_list = [], [], [], []
+    def get_ellipticity_vector(
+            self,
+            image=None,
+            atom_plane_list=None,
+            vector_scale=1.0,
+            color='red'):
+        """
+        Visualize the ellipticity and direction of the atomic columns
+        using markers in a HyperSpy signal.
+
+        Parameters
+        ----------
+        image : 2-D Numpy array, optional
+        atom_plane_list : list of AtomPlane instances
+        vector_scale : scaling of the vector
+        color : string
+
+        Returns
+        -------
+        HyperSpy 2D-signal with the ellipticity vectors as
+        permanent markers
+
+        Examples
+        --------
+        >>> sublattice0 = atom_lattice.sublattice_list[0]
+        >>> s = sublattice0.get_ellipticity_vector(vector_scale=20)
+        >>> s.plot(plot_markers=True)
+        """
+        if image is None:
+            image = self.original_adf_image
+        property_list = []
+        x_pos_list, y_pos_list = [], []
+        x_rot_list, y_rot_list = [], []
+        elli_list = []
         for atom in self.atom_list:
-            x_pos_list.append(atom.pixel_x)
-            y_pos_list.append(atom.pixel_y)
-            rot = atom.get_rotation_vector()
-            x_rot_list.append(rot[0])
-            y_rot_list.append(rot[1])
-
-        image_data = self.original_adf_image
-
-        fig, axarr = plt.subplots(2, 1, figsize=(10, 20))
-
-        image_ax = axarr[0]
-        rot_ax = axarr[1]
-
-        image_ax.imshow(image_data)
-        image_ax.set_ylim(0, image_data.shape[0])
-        image_ax.set_xlim(0, image_data.shape[1])
-
-        rot_ax.quiver(
-                x_pos_list,
-                y_pos_list,
-                x_rot_list,
-                y_rot_list,
-                scale=40.0,
-                headwidth=0.0,
-                headlength=0.0,
-                headaxislength=0.0,
-                pivot='middle')
-        rot_ax.imshow(image_data, alpha=0.0)
-        rot_ax.set_xlim(min(x_pos_list), max(x_pos_list))
-        rot_ax.set_ylim(min(y_pos_list), max(y_pos_list))
-        figname = self._save_path + self._tag + "_rotation"
-        fig.tight_layout()
-        fig.savefig(figname + ".png", dpi=200)
+            elli_rot = atom.get_ellipticity_vector()
+            elli_list.append([
+                    atom.pixel_x,
+                    atom.pixel_y,
+                    elli_rot[0]*vector_scale,
+                    elli_rot[1]*vector_scale,
+                    ])
+        signal = array2signal2d(image, self.pixel_size)
+        marker_list = _make_arrow_marker_list(
+                elli_list,
+                scale=self.pixel_size,
+                color=color)
+        if atom_plane_list is not None:
+            marker_list.extend(_make_atom_planes_marker_list(
+                    atom_plane_list, scale=self.pixel_size, add_numbers=False))
+        signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        return signal
 
     def plot_ellipticity_rotation_complex(
             self,

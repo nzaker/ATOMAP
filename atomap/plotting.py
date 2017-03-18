@@ -787,3 +787,25 @@ def _make_single_atom_plane_marker_list(
         marker = LineSegment(x1=x1, y1=y1, x2=x2, y2=y2, color=color)
         marker_list.append(marker)
     return(marker_list)
+
+
+def _make_arrow_marker_list(arrow_data_list, scale=1., color='red'):
+    marker_list = []
+    for arrow_data in arrow_data_list:
+        x, y, vecX, vecY = arrow_data
+        marker = _make_single_marker_arrow(
+                x, y, vecX, vecY, scale=scale, color=color)
+        marker_list.append(marker)
+    return marker_list
+
+
+def _make_single_marker_arrow(x, y, vecX, vecY, scale=1., color='red'):
+    x1, x2 = x+vecX/2, x-vecX/2
+    y1, y2 = y-vecY/2, y+vecY/2
+    marker = LineSegment(
+            x1=x1*scale,
+            y1=y1*scale,
+            x2=x2*scale,
+            y2=y2*scale,
+            color=color)
+    return marker
