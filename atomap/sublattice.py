@@ -950,8 +950,8 @@ class Sublattice():
         >>> s_list[1].plot(plot_markers=True)
 
         Different image
-        >>> image = sublattice1.original_adf_image
-        >>> s_list = sublattice0.get_all_atom_planes_by_zone_vector(image=image)
+        >>> im = sublattice1.original_adf_image
+        >>> s_list = sublattice0.get_all_atom_planes_by_zone_vector(image=im)
         >>> s_list[1].plot(plot_markers=True)
         """
         if zone_vector_list is None:
@@ -1013,8 +1013,8 @@ class Sublattice():
 
         Plot a subset of the atom positions
         >>> sublattice = atom_lattice.sublattice_list[0]
-        >>> atom_list = sublattice.atom_list[0:20]
-        >>> s = sublattice.get_atom_list_on_image(atom_list=atom_list, add_numbers=True)
+        >>> atoms = sublattice.atom_list[0:20]
+        >>> s = sublattice.get_atom_list_on_image(atom_list=atoms, add_numbers=True)
         >>> s.plot(plot_markers=True)
 
         Saving the signal as HyperSpy HDF5 file, which saves the atom
@@ -1231,8 +1231,8 @@ class Sublattice():
         >>> s_elli.plot()
 
         Include an atom plane, which is added to the signal as a marker
-        >>> atom_planes = [sublattice.atom_plane_list[10]]
-        >>> s_elli = sublattice.get_ellipticity_map(atom_plane_list=atom_planes)
+        >>> atom_plane = [sublattice.atom_plane_list[10]]
+        >>> s_elli = sublattice.get_ellipticity_map(atom_plane_list=atom_plane)
         >>> s_elli.plot(plot_markers=True)
         """
         signal = self._get_property_map(
