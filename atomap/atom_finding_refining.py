@@ -2,10 +2,6 @@ from scipy.ndimage.filters import gaussian_filter
 import hyperspy.api as hs
 import numpy as np
 from skimage.feature import peak_local_max
-from atomap.plotting import plot_feature_density
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
 from copy import deepcopy
 
 
@@ -108,7 +104,7 @@ def get_feature_separation(
     ----------
     signal : HyperSpy signal 2D
     separation_range : tuple, optional, default (5, 30)
-    separation_step : int, optional, default 1 
+    separation_step : int, optional, default 1
     pca : bool, default False
     subtract_background : bool, default False
     normalize_intensity : bool, default False
@@ -154,13 +150,13 @@ def get_feature_separation(
     marker_list_y = np.ones((len(peak_list), max_peaks))*-100
 
     for index, peaks in enumerate(peak_list):
-        marker_list_x[index, 0:len(peaks)] = (peaks[:,1]*scale_x)+offset_x
-        marker_list_y[index, 0:len(peaks)] = (peaks[:,0]*scale_y)+offset_y
+        marker_list_x[index, 0:len(peaks)] = (peaks[:, 1]*scale_x)+offset_x
+        marker_list_y[index, 0:len(peaks)] = (peaks[:, 0]*scale_y)+offset_y
 
     marker_list = []
     for i in range(marker_list_x.shape[1]):
         m = hs.markers.point(
-                x=marker_list_x[:,i], y=marker_list_y[:,i], color='red')
+                x=marker_list_x[:, i], y=marker_list_y[:, i], color='red')
         marker_list.append(m)
 
     s.add_marker(marker_list, permanent=True, plot_marker=False)
