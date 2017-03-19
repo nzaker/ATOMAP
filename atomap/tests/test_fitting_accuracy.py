@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import unittest
 from atomap.testing_tools import make_artifical_atomic_signal
 from atomap.testing_tools import find_atom_position_match
