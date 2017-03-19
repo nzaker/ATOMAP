@@ -173,12 +173,10 @@ class Atom_Position:
         if x1 > image_data.shape[1]:
             x1 = image_data.shape[1]
         if y1 > image_data.shape[0]:
-            x1 = image_data.shape[0]
-
+            y1 = image_data.shape[0]
         x0, x1, y0, y1 = int(x0), int(x1), int(y0), int(y1)
-        
         data_slice = copy.deepcopy(image_data[y0:y1, x0:x1])
-        return(data_slice)
+        return data_slice, x0, y0
 
     def _plot_gaussian2d_debug(
             self,
@@ -232,16 +230,14 @@ class Atom_Position:
             percent_to_nn=0.40):
         """ If the Gaussian is centered outside the masked area,
         this function returns False"""
-        plt.ioff()
         closest_neighbor = self.get_closest_neighbor()
 
         slice_size = closest_neighbor * percent_to_nn * 2
-        data_slice = self._get_image_slice_around_atom(
+        data_slice, x0, y0 = self._get_image_slice_around_atom(
                 image_data, slice_size)
 
         data_slice_max = data_slice.max()
         self.amplitude_max_intensity = data_slice_max
-        plt.ion()
 
         return(data_slice_max)
 
@@ -257,7 +253,7 @@ class Atom_Position:
         closest_neighbor = self.get_closest_neighbor()
 
         slice_size = closest_neighbor * percent_to_nn * 2
-        data_slice = self._get_image_slice_around_atom(
+        data_slice, x0, y0 = self._get_image_slice_around_atom(
                 image_data, slice_size)
         slice_radius = slice_size/2
 
@@ -274,16 +270,16 @@ class Atom_Position:
         mask = np.invert(mask)
         data[mask] = 0
         g = Gaussian2D(
-                centre_x=0.0,
-                centre_y=0.0,
+                centre_x=self.pixel_x,
+                centre_y=self.pixel_y,
                 sigma_x=self.sigma_x,
                 sigma_y=self.sigma_y,
                 rotation=self.rotation,
                 A=data_slice_max)
 
         s = hs.signals.Signal2D(data)
-        s.axes_manager[0].offset = -slice_radius
-        s.axes_manager[1].offset = -slice_radius
+        s.axes_manager[0].offset = x0
+        s.axes_manager[1].offset = y0
         s = hs.stack([s]*2)
         m = s.create_model()
         m.append(g)
@@ -302,7 +298,6 @@ class Atom_Position:
                     data)
 
         self.amplitude_gaussian = g.A.value
-        plt.ion()
         return(g)
 
     def fit_2d_gaussian_with_mask(
@@ -310,15 +305,15 @@ class Atom_Position:
             image_data,
             rotation_enabled=True,
             percent_to_nn=0.40,
-            debug_plot=False):
+            debug=False):
         """ If the Gaussian is centered outside the masked area,
         this function returns False"""
-        plt.ioff()
         closest_neighbor = self.get_closest_neighbor()
 
         slice_size = closest_neighbor * percent_to_nn * 2
-        data_slice = self._get_image_slice_around_atom(
+        data_slice, x0, y0 = self._get_image_slice_around_atom(
                 image_data, slice_size)
+
         slice_radius = slice_size/2
 
         data_slice -= data_slice.min()
@@ -335,8 +330,8 @@ class Atom_Position:
         mask = np.invert(mask)
         data[mask] = 0
         g = Gaussian2D(
-                centre_x=0.0,
-                centre_y=0.0,
+                centre_x=self.pixel_x,
+                centre_y=self.pixel_y,
                 sigma_x=self.sigma_x,
                 sigma_y=self.sigma_y,
                 rotation=self.rotation,
@@ -348,14 +343,14 @@ class Atom_Position:
             g.rotation.free = False
 
         s = hs.signals.Signal2D(data)
-        s.axes_manager[0].offset = -slice_radius
-        s.axes_manager[1].offset = -slice_radius
+        s.axes_manager[0].offset = x0
+        s.axes_manager[1].offset = y0
         s = hs.stack([s]*2)
         m = s.create_model()
         m.append(g)
         m.fit()
 
-        if debug_plot:
+        if debug:
             self._plot_gaussian2d_debug(
                     slice_radius,
                     g,
@@ -363,13 +358,12 @@ class Atom_Position:
 
         # If the Gaussian centre is located outside the masked region,
         # return False
-        dislocation = math.hypot(g.centre_x.value, g.centre_y.value)
-        plt.ion()
+        dislocation = math.hypot(
+                g.centre_x.value-self.pixel_x,
+                g.centre_y.value-self.pixel_y)
         if dislocation > slice_radius:
             return(False)
         else:
-            g.centre_x.value += self.pixel_x
-            g.centre_y.value += self.pixel_y
             return(g)
 
     def refine_position_using_2d_gaussian(
@@ -377,7 +371,7 @@ class Atom_Position:
             image_data,
             rotation_enabled=True,
             percent_to_nn=0.40,
-            debug_plot=False):
+            debug=False):
         """
         Parameters
         ----------
@@ -405,7 +399,7 @@ class Atom_Position:
                 image_data,
                 rotation_enabled=rotation_enabled,
                 percent_to_nn=percent_to_nn,
-                debug_plot=debug_plot)
+                debug=debug)
             if g is False:
                 print("Fitting missed")
                 if i == 9:

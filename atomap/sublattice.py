@@ -558,13 +558,13 @@ class Sublattice():
             image_data,
             percent_to_nn=0.40,
             rotation_enabled=True,
-            debug_plot=False):
+            debug=False):
         for atom in self.atom_list:
             atom.refine_position_using_2d_gaussian(
                     image_data,
                     rotation_enabled=rotation_enabled,
                     percent_to_nn=percent_to_nn,
-                    debug_plot=debug_plot)
+                    debug=debug)
 
     def refine_atom_positions_using_center_of_mass(
             self, image_data, percent_to_nn=0.25):
