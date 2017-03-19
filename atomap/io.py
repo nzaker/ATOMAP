@@ -65,14 +65,14 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
 
             atom_lattice.sublattice_list.append(sublattice)
 
-            if construct_zone_axes:
-                construct_zone_axes_from_sublattice(sublattice)
-
-            if 'pixel_separation' in sublattice_set.keys():
+            if 'pixel_separation' in sublattice_set.attrs.keys():
                 sublattice._pixel_separation = sublattice_set.attrs[
                         'pixel_separation']
             else:
                 sublattice._pixel_separation = 0.8/sublattice.pixel_size
+
+            if construct_zone_axes:
+                construct_zone_axes_from_sublattice(sublattice)
 
             if 'zone_axis_names_byte' in sublattice_set.keys():
                 zone_axis_list_byte = sublattice_set.attrs[
