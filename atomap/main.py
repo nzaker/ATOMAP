@@ -263,10 +263,11 @@ def make_atom_lattice_from_image(
 
         if hasattr(sublattice_para, 'zone_axis_list'):
             for zone_axis in sublattice_para.zone_axis_list:
-                if zone_axis['number'] <= len(
+                if zone_axis['number'] < len(
                         sublattice.zones_axis_average_distances_names):
                     sublattice.zones_axis_average_distances_names[
-                            zone_axis['number']] =\
-                            zone_axis['name']
+                            zone_axis['number']] = zone_axis['name']
+                else:
+                    break
 
     return(atom_lattice)
