@@ -39,6 +39,7 @@ class Sublattice():
         self._tag = ''
         self.pixel_size = 1.0
         self._plot_color = 'blue'
+        self._pixel_separation = 10
 
     def __repr__(self):
         return '<%s, %s (atoms:%s,planes:%s)>' % (
@@ -631,7 +632,7 @@ class Sublattice():
 
     def _make_nearest_neighbor_direction_distance_statistics(
             self,
-            nearest_neighbor_histogram_max=0.8,
+            pixel_separation_factor=5,
             debug_plot=False):
         x_pos_distances = []
         y_pos_distances = []
@@ -643,7 +644,7 @@ class Sublattice():
                     y_pos_distances.append(distance[1])
 
         bins = (50, 50)
-        histogram_range = nearest_neighbor_histogram_max/self.pixel_size
+        histogram_range = self._pixel_separation*pixel_separation_factor
         direction_distance_intensity_hist = np.histogram2d(
                 x_pos_distances,
                 y_pos_distances,

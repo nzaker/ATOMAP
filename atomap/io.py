@@ -68,6 +68,12 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
             if construct_zone_axes:
                 construct_zone_axes_from_sublattice(sublattice)
 
+            if 'pixel_separation' in sublattice_set.keys():
+                sublattice._pixel_separation = sublattice_set.attrs[
+                        'pixel_separation']
+            else:
+                sublattice._pixel_separation = 0.8/sublattice.pixel_size
+
             if 'zone_axis_names_byte' in sublattice_set.keys():
                 zone_axis_list_byte = sublattice_set.attrs[
                         'zone_axis_names_byte']
@@ -83,6 +89,10 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
         atom_lattice.name = h5f.attrs['name']
     elif 'path_name' in h5f.attrs.keys():
         atom_lattice.name = h5f.attrs['path_name']
+    if 'pixel_separation' in h5f.attrs.keys():
+        atom_lattice._pixel_separation = h5f.attrs['pixel_separation']
+    else:
+        atom_lattice._pixel_separation = 0.8/sublattice.pixel_size
     if type(atom_lattice.name) == bytes:
         atom_lattice.name = atom_lattice.name.decode()
     h5f.close()
@@ -139,6 +149,8 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename):
                     compression='gzip')
 
             h5f[subgroup_name].attrs['pixel_size'] = sublattice.pixel_size
+            h5f[subgroup_name].attrs[
+                    'pixel_separation'] = sublattice._pixel_separation
             h5f[subgroup_name].attrs['tag'] = sublattice._tag
             h5f[subgroup_name].attrs['plot_color'] = sublattice._plot_color
 
@@ -157,5 +169,6 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename):
             chunks=True,
             compression='gzip')
         h5f.attrs['name'] = atom_lattice.name
+        h5f.attrs['pixel_separation'] = atom_lattice._pixel_separation
 
         h5f.close()

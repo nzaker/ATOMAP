@@ -14,6 +14,7 @@ class Atom_Lattice():
         self.adf_image = None
         self.inverted_abf_image = None
         self.name = name
+        self._pixel_separation = 10
 
     def __repr__(self):
         return '<%s, %s (sublattice(s): %s)>' % (

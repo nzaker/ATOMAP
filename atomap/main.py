@@ -103,6 +103,7 @@ def make_atom_lattice_single_sublattice_from_image(
     atom_lattice = Atom_Lattice(name=name)
     atom_lattice.original_filename = image_filename
     atom_lattice.adf_image = image_data
+    atom_lattice._pixel_separation = pixel_separation
 
     s_image = s_image
     image_data = image_data
@@ -115,6 +116,7 @@ def make_atom_lattice_single_sublattice_from_image(
     sublattice.name = "Sublattice0"
     sublattice._tag = "S0"
     sublattice.pixel_size = s_image.axes_manager[0].scale
+    sublattice._pixel_separation = pixel_separation
     sublattice.original_adf_image = image_data
     atom_lattice.sublattice_list.append(sublattice)
 
@@ -177,6 +179,7 @@ def make_atom_lattice_from_image(
     atom_lattice = Atom_Lattice(name=name)
     atom_lattice.original_filename = image0_filename
     atom_lattice.adf_image = image0_data
+    atom_lattice._pixel_separation = pixel_separation
 
     for sublattice_index in range(model_parameters.number_of_sublattices):
         sublattice_para = model_parameters.get_sublattice_from_order(
@@ -216,14 +219,15 @@ def make_atom_lattice_from_image(
         sublattice.name = sublattice_para.name
         sublattice._tag = sublattice_para.tag
         sublattice.pixel_size = s_image.axes_manager[0].scale
+        sublattice._pixel_separation = pixel_separation
         sublattice.original_adf_image = image_data
         atom_lattice.sublattice_list.append(sublattice)
         if debug_plot:
             sublattice.plot_atom_list_on_image_data(
                     figname=sublattice._tag + "_initial_position.jpg")
         for atom in sublattice.atom_list:
-            atom.sigma_x = 0.05/sublattice.pixel_size
-            atom.sigma_y = 0.05/sublattice.pixel_size
+            atom.sigma_x = sublattice._pixel_separation/10.
+            atom.sigma_y = sublattice._pixel_separation/10.
         if not(sublattice_para.sublattice_order == 0):
             construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot)
             atom_subtract_config = sublattice_para.atom_subtract_config
