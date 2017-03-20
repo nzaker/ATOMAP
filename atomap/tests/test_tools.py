@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import unittest
 from atomap.tools import array2signal1d, array2signal2d
 import numpy as np
