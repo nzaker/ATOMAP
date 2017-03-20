@@ -50,9 +50,6 @@ class test_stats(unittest.TestCase):
     def test_plot_amplitude_sigma_scatter(self):
         plot_amplitude_sigma_scatter(self.sublattice)
 
-    def test_plot_amplitude_sigma_hist2d(self):
-        plot_amplitude_sigma_hist2d(self.sublattice)
-
     def test_get_atom_list_atom_sigma_range(self):
         atom_list = get_atom_list_atom_sigma_range(self.sublattice, (1., 3.))
         self.assertEqual(len(atom_list), self.atoms_N)

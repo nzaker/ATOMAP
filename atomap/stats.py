@@ -1,7 +1,8 @@
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+from hyperspy.drawing._markers.point import Point
+import matplotlib.gridspec as gridspec
 
 
 def get_atom_list_atom_sigma_range(
@@ -20,12 +21,13 @@ def plot_atom_column_hist_sigma_maps(
         bins=10,
         markersize=1):
     counts, bin_sizes = np.histogram(sublattice.sigma_average, bins=bins)
-    fig, axarr = plt.subplots(
-            1, len(bin_sizes),
-            figsize=(5*len(bin_sizes), 5))
-    ax_hist = axarr[0]
+    fig = Figure(figsize=(7*len(bin_sizes), 7))
+    FigureCanvas(fig)
+    gs_list = gridspec.GridSpec(1, len(bin_sizes))
+    ax_hist = fig.add_subplot(gs_list[0, 0])
     ax_hist.hist(sublattice.sigma_average, bins=bins)
-    for index, ax in enumerate(axarr[1:]):
+    for index in range(len(bin_sizes)-1):
+        ax = fig.add_subplot(gs_list[index+1])
         ax.imshow(sublattice.original_adf_image)
         atom_list = sublattice.get_atom_list_atom_sigma_range(
                 (bin_sizes[index], bin_sizes[index+1]))
@@ -45,12 +47,13 @@ def plot_atom_column_hist_amplitude_gauss2d_maps(
         markersize=1):
     counts, bin_sizes = np.histogram(
             sublattice.atom_amplitude_gaussian2d, bins=bins)
-    fig, axarr = plt.subplots(
-            1, len(bin_sizes),
-            figsize=(5*len(bin_sizes), 5))
-    ax_hist = axarr[0]
+    fig = Figure(figsize=(7*len(bin_sizes), 7))
+    FigureCanvas(fig)
+    gs_list = gridspec.GridSpec(1, len(bin_sizes))
+    ax_hist = fig.add_subplot(gs_list[0, 0])
     ax_hist.hist(sublattice.atom_amplitude_gaussian2d, bins=bins)
-    for index, ax in enumerate(axarr[1:]):
+    for index in range(len(bin_sizes)-1):
+        ax = fig.add_subplot(gs_list[index+1])
         ax.imshow(sublattice.original_adf_image)
         atom_list = sublattice.get_atom_list_atom_amplitude_gauss2d_range(
                 (bin_sizes[index], bin_sizes[index+1]))
@@ -65,7 +68,9 @@ def plot_atom_column_hist_amplitude_gauss2d_maps(
 def plot_atom_column_histogram_sigma(
         sublattice,
         bins=20):
-    fig, ax = plt.subplots()
+    fig = Figure(figsize=(7, 7))
+    FigureCanvas(fig)
+    ax = fig.add_subplot(111)
     ax.hist(
             sublattice.sigma_average,
             bins=bins)
@@ -79,7 +84,9 @@ def plot_atom_column_histogram_amplitude_gauss2d(
         sublattice,
         bins=20,
         xlim=None):
-    fig, ax = plt.subplots()
+    fig = Figure(figsize=(7, 7))
+    FigureCanvas(fig)
+    ax = fig.add_subplot(111)
     ax.hist(
             sublattice.atom_amplitude_gaussian2d,
             bins=bins)
@@ -94,7 +101,9 @@ def plot_atom_column_histogram_amplitude_gauss2d(
 def plot_atom_column_histogram_max_intensity(
         sublattice,
         bins=20):
-    fig, ax = plt.subplots()
+    fig = Figure(figsize=(7, 7))
+    FigureCanvas(fig)
+    ax = fig.add_subplot(111)
     ax.hist(
             sublattice.atom_amplitude_max_intensity,
             bins=bins)
@@ -105,7 +114,9 @@ def plot_atom_column_histogram_max_intensity(
 
 
 def plot_amplitude_sigma_scatter(sublattice):
-    fig, ax = plt.subplots(figsize=(5, 5))
+    fig = Figure(figsize=(7, 7))
+    FigureCanvas(fig)
+    ax = fig.add_subplot(111)
     ax.scatter(sublattice.sigma_average, sublattice.atom_amplitude_gaussian2d)
     ax.set_xlabel("Average sigma")
     ax.set_ylabel("Amplitude")
@@ -116,7 +127,9 @@ def plot_amplitude_sigma_scatter(sublattice):
 def plot_amplitude_sigma_hist2d(
         sublattice,
         bins=30):
-    fig, ax = plt.subplots(figsize=(5, 5))
+    fig = Figure(figsize=(7, 7))
+    FigureCanvas(fig)
+    ax = fig.add_subplot(111)
     ax.hist2d(
             sublattice.sigma_average,
             sublattice.atom_amplitude_gaussian2d,
