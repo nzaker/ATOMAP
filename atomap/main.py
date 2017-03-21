@@ -260,11 +260,10 @@ def make_atom_lattice_from_image(
             refinement_neighbor_distance)
         if sublattice_para.sublattice_order == 0:
             construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot)
-
         if hasattr(sublattice_para, 'zone_axis_list'):
             for zone_axis in sublattice_para.zone_axis_list:
                 if zone_axis['number'] < len(
-                        sublattice.zones_axis_average_distances_names):
+                        sublattice.zones_axis_average_distances):
                     sublattice.zones_axis_average_distances_names[
                             zone_axis['number']] = zone_axis['name']
                 else:

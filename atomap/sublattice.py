@@ -632,7 +632,7 @@ class Sublattice():
 
     def _make_nearest_neighbor_direction_distance_statistics(
             self,
-            pixel_separation_factor=5,
+            pixel_separation_factor=7,
             debug_plot=False):
         x_pos_distances = []
         y_pos_distances = []
@@ -643,7 +643,7 @@ class Sublattice():
                     x_pos_distances.append(distance[0])
                     y_pos_distances.append(distance[1])
 
-        bins = (50, 50)
+        bins = (70, 70)
         histogram_range = self._pixel_separation*pixel_separation_factor
         direction_distance_intensity_hist = np.histogram2d(
                 x_pos_distances,
