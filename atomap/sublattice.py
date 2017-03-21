@@ -1269,10 +1269,6 @@ class Sublattice():
             self,
             zone_vector_list=None,
             atom_plane_list=None,
-            data_scale_z=1.0,
-            prune_outer_values=False,
-            invert_line_profile=False,
-            add_zero_value_sublattice=None,
             upscale_map=2):
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
@@ -1286,8 +1282,6 @@ class Sublattice():
                 data_list[1],
                 data_list[2],
                 atom_plane_list=atom_plane_list,
-                data_scale_z=data_scale_z,
-                add_zero_value_sublattice=add_zero_value_sublattice,
                 upscale_map=upscale_map)
             signal.metadata.General.Title = signal_title
             signal_list.append(signal)
@@ -1329,6 +1323,25 @@ class Sublattice():
             return(signal_list[0])
         else:
             return(signal_list)
+
+    def get_atom_distance_difference_line_profile(
+            self,
+            zone_vector,
+            atom_plane,
+            invert_line_profile=False,
+            interpolate_value=50):
+        data_list = self.get_atom_distance_difference_from_zone_vector(
+                zone_vector)
+        signal = self._get_property_line_profile(
+                data_list[0],
+                data_list[1],
+                data_list[2],
+                atom_plane,
+                data_scale_xy=self.pixel_size,
+                data_scale_z=self.pixel_size,
+                invert_line_profile=invert_line_profile,
+                interpolate_value=interpolate_value)
+        return signal
 
     def get_atom_distance_difference_map(
             self,

@@ -144,6 +144,12 @@ class test_sublattice_get_signal(unittest.TestCase):
     def test_get_monolayer_distance_map(self):
         self.sublattice.get_monolayer_distance_map()
 
+    def test_get_atom_distance_difference_line_profile(self):
+        sublattice = self.sublattice
+        zone_vector = sublattice.zones_axis_average_distances[0]
+        plane = sublattice.atom_planes_by_zone_vector[zone_vector][0]
+        sublattice.get_atom_distance_difference_line_profile(zone_vector, plane)
+
     def test_get_atom_distance_difference_map(self):
         self.sublattice.get_atom_distance_difference_map()
 
