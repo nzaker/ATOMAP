@@ -363,8 +363,17 @@ class Atom_Position:
                 g.centre_y.value-self.pixel_y)
         if dislocation > slice_radius:
             return(False)
-        else:
-            return(g)
+
+        # If sigma aspect ratio is too large, assume the fitting is bad
+        max_sigma = max((abs(g.sigma_x.value), abs(g.sigma_y.value)))
+        min_sigma = min((abs(g.sigma_x.value), abs(g.sigma_y.value)))
+        sigma_ratio = max_sigma/min_sigma
+        print(g.sigma_x.value, g.sigma_y.value, sigma_ratio)
+        if sigma_ratio > 5:
+            print(sigma_ratio)
+            return(False)
+
+        return(g)
 
     def refine_position_using_2d_gaussian(
             self,
