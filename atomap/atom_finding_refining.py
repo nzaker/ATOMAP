@@ -189,11 +189,27 @@ def find_feature_density(
     return(separation_list, peakN_list)
 
 
-def construct_zone_axes_from_sublattice(sublattice, debug_plot=False):
+def construct_zone_axes_from_sublattice(
+        sublattice, debug_plot=False, zone_axis_para_list=False):
     tag = sublattice._tag
     sublattice._find_nearest_neighbors(nearest_neighbors=15)
     sublattice._make_nearest_neighbor_direction_distance_statistics(
             debug_plot=debug_plot)
+
+    if zone_axis_para_list is not False:
+        zone_axes = []
+        zone_axes_names = []
+        for zone_axis_para in zone_axis_para_list:
+            if zone_axis_para['number'] < len(
+                    sublattice.zones_axis_average_distances):
+                index = zone_axis_para['number']
+                zone_axes.append(
+                        sublattice.zones_axis_average_distances[index])
+                zone_axes_names.append(
+                        zone_axis_para['name'])
+        sublattice.zones_axis_average_distances = zone_axes
+        sublattice.zones_axis_average_distances_names = zone_axes_names
+
     sublattice._generate_all_atom_plane_list()
     sublattice._sort_atom_planes_by_zone_vector()
     if debug_plot:

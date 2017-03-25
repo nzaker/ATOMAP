@@ -215,6 +215,10 @@ def make_atom_lattice_from_image(
                 atom_list,
                 image_data)
 
+        zone_axis_para_list = False
+        if hasattr(sublattice_para, 'zone_axis_list'):
+            zone_axis_para_list = sublattice_para.zone_axis_list
+
         sublattice._plot_color = sublattice_para.color
         sublattice.name = sublattice_para.name
         sublattice._tag = sublattice_para.tag
@@ -229,7 +233,8 @@ def make_atom_lattice_from_image(
             atom.sigma_x = sublattice._pixel_separation/10.
             atom.sigma_y = sublattice._pixel_separation/10.
         if not(sublattice_para.sublattice_order == 0):
-            construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot)
+            construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot,
+                    zone_axis_para_list=zone_axis_para_list)
             atom_subtract_config = sublattice_para.atom_subtract_config
             image_data = sublattice.image
             for atom_subtract_para in atom_subtract_config:
@@ -258,15 +263,10 @@ def make_atom_lattice_from_image(
             sublattice,
             refinement_steps,
             refinement_neighbor_distance)
+
         if sublattice_para.sublattice_order == 0:
-            construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot)
-        if hasattr(sublattice_para, 'zone_axis_list'):
-            for zone_axis in sublattice_para.zone_axis_list:
-                if zone_axis['number'] < len(
-                        sublattice.zones_axis_average_distances):
-                    sublattice.zones_axis_average_distances_names[
-                            zone_axis['number']] = zone_axis['name']
-                else:
-                    break
+            construct_zone_axes_from_sublattice(
+                    sublattice, debug_plot=debug_plot,
+                    zone_axis_para_list=zone_axis_para_list)
 
     return(atom_lattice)
