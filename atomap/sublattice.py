@@ -16,7 +16,8 @@ from atomap.tools import (
 
 from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
-        _make_arrow_marker_list)
+        _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
+        _make_zone_vector_text_marker_list)
 from atomap.atom_finding_refining import get_peak2d_skimage
 
 from atomap.atom_position import Atom_Position
@@ -981,20 +982,24 @@ class Sublattice():
         >>> s_list = sublattice0.get_all_atom_planes_by_zone_vector(image=im)
         >>> s_list[1].plot(plot_markers=True)
         """
+        if image is None:
+            image = self.original_image
         if zone_vector_list is None:
             zone_vector_list = self.zones_axis_average_distances
         signal_list = []
+        atom_plane_list = []
         for zone_vector in zone_vector_list:
-            atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
-            signal = self.get_atom_planes_on_image(
-                    atom_plane_list,
-                    image=image)
-            signal_list.append(signal)
-            title = 'Zone vector: {}'.format(zone_vector)
-            signal.metadata.General.title = title
-        if len(signal_list) == 1:
-            signal_list = signal_list[0]
-        return signal_list
+            atom_plane_list.append(
+                    self.atom_planes_by_zone_vector[zone_vector])
+        marker_list = _make_multidim_atom_plane_marker_list(
+                atom_plane_list, scale=self.pixel_size)
+
+        signal = array2signal2d(image, self.pixel_size)
+        signal = hs.stack([signal]*len(zone_vector_list))
+        signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        signal.metadata.General.title = "Atom planes by zone vector"
+
+        return signal
 
     def get_atom_list_on_image(
             self,
@@ -1298,9 +1303,8 @@ class Sublattice():
             upscale_map=2):
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
-        number = len(zone_vector_index_list)
+        zone_vector_list = []
         signal_list = []
-        text_marker_list = []
         for zone_index, zone_vector in zone_vector_index_list:
             signal_title = 'Monolayer distance {}'.format(zone_index)
             data_list = self.get_monolayer_distance_list_from_zone_vector(
@@ -1312,11 +1316,7 @@ class Sublattice():
                 upscale_map=upscale_map)
             signal.metadata.General.Title = signal_title
             signal_list.append(signal)
-            x, y = [-1000]*number, [-1000]*number
-            x[zone_index] = 1
-            y[zone_index] = 1
-            text_marker_list.append(hs.markers.text(
-                    x, y, text=str(zone_vector), size=20, color='red'))
+            zone_vector_list.append(zone_vector)
 
         if len(signal_list) == 1:
             signal = signal_list[0]
@@ -1326,7 +1326,10 @@ class Sublattice():
             marker_list = _make_atom_planes_marker_list(
                     atom_plane_list, scale=data_scale, add_numbers=False)
             signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        text_marker_list = _make_zone_vector_text_marker_list(zone_vector_list)
         signal.add_marker(text_marker_list, permanent=True, plot_marker=False)
+        title = 'Sublattice {} monolayer distance'.format(self._tag)
+        signal.metadata.General.title = title
         return signal
 
     def get_atom_distance_map(
@@ -1342,9 +1345,8 @@ class Sublattice():
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
 
-        number = len(zone_vector_index_list)
         signal_list = []
-        text_marker_list = []
+        zone_vector_list = []
         for zone_index, zone_vector in zone_vector_index_list:
             signal_title = 'Atom distance {}'.format(zone_index)
             data_list = self.get_atom_distance_list_from_zone_vector(
@@ -1359,11 +1361,7 @@ class Sublattice():
                 upscale_map=upscale_map)
             signal.metadata.General.Title = signal_title
             signal_list.append(signal)
-            x, y = [-1000]*number, [-1000]*number
-            x[zone_index] = 1
-            y[zone_index] = 1
-            text_marker_list.append(hs.markers.text(
-                    x, y, text=str(zone_vector), size=20, color='red'))
+            zone_vector_list.append(zone_vector)
 
         if len(signal_list) == 1:
             signal = signal_list[0]
@@ -1373,7 +1371,10 @@ class Sublattice():
             marker_list = _make_atom_planes_marker_list(
                     atom_plane_list, scale=data_scale, add_numbers=False)
             signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        text_marker_list = _make_zone_vector_text_marker_list(zone_vector_list)
         signal.add_marker(text_marker_list, permanent=True, plot_marker=False)
+        title = 'Sublattice {} atom distance'.format(self._tag)
+        signal.metadata.General.title = title
         return signal
 
     def get_atom_distance_difference_line_profile(
@@ -1406,11 +1407,9 @@ class Sublattice():
             upscale_map=2):
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
-        number = len(zone_vector_index_list)
+        zone_vector_list = []
         signal_list = []
-        text_marker_list = []
         for zone_index, zone_vector in zone_vector_index_list:
-            signal_title = 'Distance difference {}'.format(zone_index)
             data_list = self.get_atom_distance_difference_from_zone_vector(
                     zone_vector)
             if len(data_list[2]) is not 0:
@@ -1421,14 +1420,8 @@ class Sublattice():
                     data_scale_z=data_scale_z,
                     add_zero_value_sublattice=add_zero_value_sublattice,
                     upscale_map=upscale_map)
-                signal.metadata.General.Title = signal_title
                 signal_list.append(signal)
-
-                x, y = [-1000]*number, [-1000]*number
-                x[zone_index] = 1
-                y[zone_index] = 1
-                text_marker_list.append(hs.markers.text(
-                        x, y, text=str(zone_vector), size=20, color='red'))
+                zone_vector_list.append(zone_vector)
 
         if len(signal_list) == 1:
             signal = signal_list[0]
@@ -1438,7 +1431,10 @@ class Sublattice():
             marker_list = _make_atom_planes_marker_list(
                     atom_plane_list, scale=data_scale, add_numbers=False)
             signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        text_marker_list = _make_zone_vector_text_marker_list(zone_vector_list)
         signal.add_marker(text_marker_list, permanent=True, plot_marker=False)
+        title = 'Sublattice {} atom distance difference'.format(self._tag)
+        signal.metadata.General.title = title
         return signal
 
     def get_atom_model(self):
