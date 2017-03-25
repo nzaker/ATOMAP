@@ -553,6 +553,32 @@ class Sublattice():
             atom_plane_list.sort(
                     key=dict(zip(atom_plane_list, closest_atom_list)).get)
 
+    def _remove_bad_zone_vectors(self):
+        zone_vector_delete_list = []
+        for zone_vector in self.atom_planes_by_zone_vector:
+            atom_planes = self.atom_planes_by_zone_vector[zone_vector]
+            counter_atoms = 0
+            for atom_plane in atom_planes:
+                number_of_atoms = len(atom_plane.atom_list)
+                if number_of_atoms == 2:
+                    counter_atoms += 1
+            ratio = counter_atoms/len(atom_planes)
+            if ratio > 0.6:
+                atom_planes_delete_list = []
+                for atom_plane in atom_planes:
+                    for atom in atom_plane.atom_list:
+                        atom.in_atomic_plane.remove(atom_plane)
+                    atom_planes_delete_list.append(atom_plane)
+                for i, v in enumerate(self.zones_axis_average_distances):
+                    if v == zone_vector:
+                        self.zones_axis_average_distances_names.pop(i)
+                zone_vector_delete_list.append(zone_vector)
+                self.zones_axis_average_distances.remove(zone_vector)
+                for atom_plane in atom_planes_delete_list:
+                    self.atom_plane_list.remove(atom_plane)
+        for zone_vector in zone_vector_delete_list:
+            del self.atom_planes_by_zone_vector[zone_vector]
+
     def refine_atom_positions_using_2d_gaussian(
             self,
             image_data,

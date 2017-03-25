@@ -212,6 +212,7 @@ def construct_zone_axes_from_sublattice(
 
     sublattice._generate_all_atom_plane_list()
     sublattice._sort_atom_planes_by_zone_vector()
+    sublattice._remove_bad_zone_vectors()
     if debug_plot:
         sublattice.plot_all_atom_planes(fignameprefix=tag+"_atom_plane")
 
