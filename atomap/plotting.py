@@ -828,3 +828,20 @@ def _make_single_marker_arrow(x, y, vecX, vecY, scale=1., color='red'):
             y2=y2*scale,
             color=color)
     return marker
+
+
+def _make_zone_vector_text_marker_list(
+        zone_vector_list, x=1, y=1, scale=1., color='red'):
+    number = len(zone_vector_list)
+    marker_list = []
+    if len(zone_vector_list) == 1:
+        marker_list.append(
+                Text(x, y, text=str(zone_vector_list[0]), size=20, color=color))
+    else:
+        for index, zone_vector in enumerate(zone_vector_list):
+            xP, yP = [-1000]*number, [-1000]*number
+            xP[index] = x
+            yP[index] = y
+            marker = Text(xP, yP, text=str(zone_vector), size=20, color=color)
+            marker_list.append(marker)
+    return marker_list
