@@ -368,9 +368,7 @@ class Atom_Position:
         max_sigma = max((abs(g.sigma_x.value), abs(g.sigma_y.value)))
         min_sigma = min((abs(g.sigma_x.value), abs(g.sigma_y.value)))
         sigma_ratio = max_sigma/min_sigma
-        print(g.sigma_x.value, g.sigma_y.value, sigma_ratio)
         if sigma_ratio > 5:
-            print(sigma_ratio)
             return(False)
 
         return(g)
