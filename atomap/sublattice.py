@@ -1307,14 +1307,19 @@ class Sublattice():
                 data_list[0],
                 data_list[1],
                 data_list[2],
-                atom_plane_list=atom_plane_list,
                 upscale_map=upscale_map)
             signal.metadata.General.Title = signal_title
             signal_list.append(signal)
+
         if len(signal_list) == 1:
-            return(signal_list[0])
+            signal = signal_list[0]
         else:
-            return(signal_list)
+            signal = hs.stack(signal_list)
+        if atom_plane_list is not None:
+            marker_list = _make_atom_planes_marker_list(
+                    atom_plane_list, scale=data_scale, add_numbers=False)
+            signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        return signal
 
     def get_atom_distance_map(
             self,
@@ -1339,16 +1344,21 @@ class Sublattice():
                 data_list[0],
                 data_list[1],
                 data_list[2],
-                atom_plane_list=atom_plane_list,
                 data_scale_z=data_scale_z,
                 add_zero_value_sublattice=add_zero_value_sublattice,
                 upscale_map=upscale_map)
             signal.metadata.General.Title = signal_title
             signal_list.append(signal)
+
         if len(signal_list) == 1:
-            return(signal_list[0])
+            signal = signal_list[0]
         else:
-            return(signal_list)
+            signal = hs.stack(signal_list)
+        if atom_plane_list is not None:
+            marker_list = _make_atom_planes_marker_list(
+                    atom_plane_list, scale=data_scale, add_numbers=False)
+            signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        return signal
 
     def get_atom_distance_difference_line_profile(
             self,
@@ -1385,20 +1395,27 @@ class Sublattice():
             signal_title = 'Distance difference {}'.format(zone_index)
             data_list = self.get_atom_distance_difference_from_zone_vector(
                     zone_vector)
-            signal = self._get_property_map(
-                data_list[0],
-                data_list[1],
-                data_list[2],
-                atom_plane_list=atom_plane_list,
-                data_scale_z=data_scale_z,
-                add_zero_value_sublattice=add_zero_value_sublattice,
-                upscale_map=upscale_map)
-            signal.metadata.General.Title = signal_title
-            signal_list.append(signal)
+            print(len(data_list[2]))
+            if len(data_list[2]) is not 0:
+                signal = self._get_property_map(
+                    data_list[0],
+                    data_list[1],
+                    data_list[2],
+                    data_scale_z=data_scale_z,
+                    add_zero_value_sublattice=add_zero_value_sublattice,
+                    upscale_map=upscale_map)
+                signal.metadata.General.Title = signal_title
+                signal_list.append(signal)
+
         if len(signal_list) == 1:
-            return(signal_list[0])
+            signal = signal_list[0]
         else:
-            return(signal_list)
+            signal = hs.stack(signal_list)
+        if atom_plane_list is not None:
+            marker_list = _make_atom_planes_marker_list(
+                    atom_plane_list, scale=data_scale, add_numbers=False)
+            signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        return signal
 
     def get_atom_model(self):
         model_image = np.zeros(self.image.shape)
