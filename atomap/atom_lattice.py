@@ -12,7 +12,6 @@ class Atom_Lattice():
     def __init__(self, name=""):
         self.sublattice_list = []
         self.image0 = None
-        self.inverted_abf_image = None
         self.name = name
         self._pixel_separation = 10
         self._original_filename = ''
