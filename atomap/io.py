@@ -33,7 +33,7 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
             sublattice = Sublattice(
                 atom_position_array,
                 modified_image_data)
-            sublattice.original_adf_image = original_image_data
+            sublattice.original_image = original_image_data
 
             if 'sigma_x' in sublattice_set.keys():
                 sigma_x_array = sublattice_set['sigma_x'][:]
@@ -83,7 +83,7 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
                 sublattice.zones_axis_average_distances_names = zone_axis_list
 
         if group_name == 'image_data0':
-            atom_lattice.adf_image = h5f[group_name][:]
+            atom_lattice.image0 = h5f[group_name][:]
 
     if 'name' in h5f.attrs.keys():
         atom_lattice.name = h5f.attrs['name']
@@ -103,8 +103,8 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename):
         h5f = h5py.File(filename, 'w')
         for sublattice in atom_lattice.sublattice_list:
             subgroup_name = sublattice._tag + "_sublattice"
-            modified_image_data = sublattice.adf_image
-            original_image_data = sublattice.original_adf_image
+            modified_image_data = sublattice.image
+            original_image_data = sublattice.original_image
 
             # Atom position data
             atom_positions = np.array([
@@ -165,7 +165,7 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename):
 
         h5f.create_dataset(
             "image_data0",
-            data=atom_lattice.adf_image,
+            data=atom_lattice.image0,
             chunks=True,
             compression='gzip')
         h5f.attrs['name'] = atom_lattice.name

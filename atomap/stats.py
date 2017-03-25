@@ -28,15 +28,15 @@ def plot_atom_column_hist_sigma_maps(
     ax_hist.hist(sublattice.sigma_average, bins=bins)
     for index in range(len(bin_sizes)-1):
         ax = fig.add_subplot(gs_list[index+1])
-        ax.imshow(sublattice.original_adf_image)
+        ax.imshow(sublattice.original_image)
         atom_list = sublattice.get_atom_list_atom_sigma_range(
                 (bin_sizes[index], bin_sizes[index+1]))
         for atom in atom_list:
             ax.plot(
                     atom.pixel_x, atom.pixel_y,
                     'o', markersize=markersize)
-        ax.set_ylim(0, sublattice.adf_image.shape[0])
-        ax.set_xlim(0, sublattice.adf_image.shape[1])
+        ax.set_ylim(0, sublattice.image.shape[0])
+        ax.set_xlim(0, sublattice.image.shape[1])
     fig.tight_layout()
     return fig
 
@@ -54,13 +54,13 @@ def plot_atom_column_hist_amplitude_gauss2d_maps(
     ax_hist.hist(sublattice.atom_amplitude_gaussian2d, bins=bins)
     for index in range(len(bin_sizes)-1):
         ax = fig.add_subplot(gs_list[index+1])
-        ax.imshow(sublattice.original_adf_image)
+        ax.imshow(sublattice.original_image)
         atom_list = sublattice.get_atom_list_atom_amplitude_gauss2d_range(
                 (bin_sizes[index], bin_sizes[index+1]))
         for atom in atom_list:
             ax.plot(atom.pixel_x, atom.pixel_y, 'o', markersize=markersize)
-        ax.set_ylim(0, sublattice.adf_image.shape[0])
-        ax.set_xlim(0, sublattice.adf_image.shape[1])
+        ax.set_ylim(0, sublattice.image.shape[0])
+        ax.set_xlim(0, sublattice.image.shape[1])
     fig.tight_layout()
     return fig
 

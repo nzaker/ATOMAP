@@ -101,8 +101,8 @@ def make_atom_lattice_single_sublattice_from_image(
     image_data_modified = np.rot90(np.fliplr(s_image_modified.data))
 
     atom_lattice = Atom_Lattice(name=name)
-    atom_lattice.original_filename = image_filename
-    atom_lattice.adf_image = image_data
+    atom_lattice._original_filename = image_filename
+    atom_lattice.image0 = image_data
     atom_lattice._pixel_separation = pixel_separation
 
     s_image = s_image
@@ -117,16 +117,16 @@ def make_atom_lattice_single_sublattice_from_image(
     sublattice._tag = "S0"
     sublattice.pixel_size = s_image.axes_manager[0].scale
     sublattice._pixel_separation = pixel_separation
-    sublattice.original_adf_image = image_data
+    sublattice.original_image = image_data
     atom_lattice.sublattice_list.append(sublattice)
 
     for refinement_step in refinement_config['config']:
         if refinement_step[0] == 'image_data':
-            refinement_step[0] = sublattice.original_adf_image
+            refinement_step[0] = sublattice.original_image
         elif refinement_step[0] == 'image_data_modified':
-            refinement_step[0] = sublattice.adf_image
+            refinement_step[0] = sublattice.image
         else:
-            refinement_step[0] = sublattice.original_adf_image
+            refinement_step[0] = sublattice.original_image
 
     refine_sublattice(
         sublattice,
@@ -177,8 +177,8 @@ def make_atom_lattice_from_image(
     image0_data_modified = np.rot90(np.fliplr(s_image0_modified.data))
 
     atom_lattice = Atom_Lattice(name=name)
-    atom_lattice.original_filename = image0_filename
-    atom_lattice.adf_image = image0_data
+    atom_lattice._original_filename = image0_filename
+    atom_lattice.image0 = image0_data
     atom_lattice._pixel_separation = pixel_separation
 
     for sublattice_index in range(model_parameters.number_of_sublattices):
@@ -220,7 +220,7 @@ def make_atom_lattice_from_image(
         sublattice._tag = sublattice_para.tag
         sublattice.pixel_size = s_image.axes_manager[0].scale
         sublattice._pixel_separation = pixel_separation
-        sublattice.original_adf_image = image_data
+        sublattice.original_image = image_data
         atom_lattice.sublattice_list.append(sublattice)
         if debug_plot:
             sublattice.plot_atom_list_on_image_data(
@@ -231,7 +231,7 @@ def make_atom_lattice_from_image(
         if not(sublattice_para.sublattice_order == 0):
             construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot)
             atom_subtract_config = sublattice_para.atom_subtract_config
-            image_data = sublattice.adf_image
+            image_data = sublattice.image
             for atom_subtract_para in atom_subtract_config:
                 temp_sublattice = atom_lattice.get_sublattice(
                         atom_subtract_para['sublattice'])
@@ -240,19 +240,19 @@ def make_atom_lattice_from_image(
                     image_data,
                     temp_sublattice,
                     percent_to_nn=neighbor_distance)
-            sublattice.adf_image = image_data
-            sublattice.original_adf_image = image_data
+            sublattice.image = image_data
+            sublattice.original_image = image_data
 
         refinement_config = sublattice_para.refinement_config
         refinement_neighbor_distance = refinement_config['neighbor_distance']
         refinement_steps = refinement_config['config']
         for refinement_step in refinement_steps:
             if refinement_step[0] == 'image_data':
-                refinement_step[0] = sublattice.original_adf_image
+                refinement_step[0] = sublattice.original_image
             elif refinement_step[0] == 'image_data_modified':
-                refinement_step[0] = sublattice.adf_image
+                refinement_step[0] = sublattice.image
             else:
-                refinement_step[0] = sublattice.original_adf_image
+                refinement_step[0] = sublattice.original_image
 
         refine_sublattice(
             sublattice,

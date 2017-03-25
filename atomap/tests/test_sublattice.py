@@ -76,7 +76,7 @@ class test_sublattice_construct_refine(unittest.TestCase):
         refine_sublattice(
                 sublattice,
                 [
-                    (sublattice.adf_image, 1, 'center_of_mass')],
+                    (sublattice.image, 1, 'center_of_mass')],
                 0.25)
 
 
@@ -99,7 +99,7 @@ class test_sublattice_get_signal(unittest.TestCase):
         self.sublattice = Sublattice(
                 peaks,
                 np.rot90(np.fliplr(s_adf_modified.data)))
-        self.sublattice.original_adf_image = np.rot90(np.fliplr(s_adf.data))
+        self.sublattice.original_image = np.rot90(np.fliplr(s_adf.data))
         self.sublattice.pixel_size = pixel_size
         construct_zone_axes_from_sublattice(self.sublattice)
 
@@ -179,7 +179,7 @@ class test_sublattice_get_signal(unittest.TestCase):
         self.assertEqual(len(sublattice.atom_list), len(s0.metadata.Markers))
         plane = sublattice.atom_plane_list[3]
         s1 = sublattice.get_ellipticity_vector(
-                sublattice.adf_image,
+                sublattice.image,
                 atom_plane_list=[plane],
                 color='red',
                 vector_scale=10)

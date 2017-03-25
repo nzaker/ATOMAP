@@ -24,7 +24,7 @@ class test_stats(unittest.TestCase):
         sublattice = Sublattice(
                 peaks,
                 image_data)
-        sublattice.original_adf_image = image_data
+        sublattice.original_image = image_data
         for atom in sublattice.atom_list:
             atom.sigma_x = 2.
             atom.sigma_y = 2.

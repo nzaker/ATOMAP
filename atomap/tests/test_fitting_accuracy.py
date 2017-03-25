@@ -31,9 +31,9 @@ class test_fitting_accuracy(unittest.TestCase):
                 pixel_separation=90)
         sublattice = atom_lattice.sublattice_list[0]
         sublattice.refine_atom_positions_using_center_of_mass(
-                sublattice.original_adf_image)
+                sublattice.original_image)
         sublattice.refine_atom_positions_using_center_of_mass(
-                sublattice.original_adf_image)
+                sublattice.original_image)
         atom_list = sublattice.atom_list
         match_list = find_atom_position_match(
                 g_list, atom_list, scale=sublattice.pixel_size, delta=3)

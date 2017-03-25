@@ -24,7 +24,7 @@ from atomap.atom_plane import Atom_Plane
 
 
 class Sublattice():
-    def __init__(self, atom_position_list, adf_image):
+    def __init__(self, atom_position_list, image):
         self.atom_list = []
         for atom_position in atom_position_list:
             atom = Atom_Position(atom_position[0], atom_position[1])
@@ -32,8 +32,8 @@ class Sublattice():
         self.zones_axis_average_distances = None
         self.zones_axis_average_distances_names = []
         self.atom_plane_list = []
-        self.adf_image = adf_image
-        self.original_adf_image = None
+        self.image = image
+        self.original_image = None
         self.atom_planes_by_zone_vector = {}
         self._plot_clim = None
         self._tag = ''
@@ -333,8 +333,8 @@ class Sublattice():
             x_position=x_list,
             y_position=y_list)
 
-        interpolate_x_lim = (0, self.adf_image.shape[1])
-        interpolate_y_lim = (0, self.adf_image.shape[0])
+        interpolate_x_lim = (0, self.image.shape[1])
+        interpolate_y_lim = (0, self.image.shape[0])
         new_data = _get_interpolated2d_from_unregular_data(
             data_list,
             new_x_lim=interpolate_x_lim,
@@ -872,7 +872,7 @@ class Sublattice():
     def get_atom_planes_on_image(
             self, atom_plane_list, image=None, add_numbers=True, color='red'):
         """
-        Get atom_planes signal as lines on the adf_image.
+        Get atom_planes signal as lines on the image.
 
         Parameters
         ----------
@@ -897,7 +897,7 @@ class Sublattice():
         >>> s.plot(plot_markers=True)
         """
         if image is None:
-            image = self.original_adf_image
+            image = self.original_image
         marker_list = _make_atom_planes_marker_list(
                 atom_plane_list,
                 add_numbers=add_numbers,
@@ -951,7 +951,7 @@ class Sublattice():
         >>> s_list[1].plot(plot_markers=True)
 
         Different image
-        >>> im = sublattice1.original_adf_image
+        >>> im = sublattice1.original_image
         >>> s_list = sublattice0.get_all_atom_planes_by_zone_vector(image=im)
         >>> s_list[1].plot(plot_markers=True)
         """
@@ -987,7 +987,7 @@ class Sublattice():
             will use the atom_list.
         image : 2-D numpy array, optional
             Image data for plotting. If none is given, will use
-            the original_adf_image.
+            the original_image.
         color : string, default 'red'
         add_numbers : bool, default False
             Plot the number of the atom beside each atomic
@@ -1025,7 +1025,7 @@ class Sublattice():
         >>> s.save("sublattice_atom_positions.hdf5")
         """
         if image is None:
-            image = self.original_adf_image
+            image = self.original_image
         if atom_list is None:
             atom_list = self.atom_list
         marker_list = _make_atom_position_marker_list(
@@ -1091,7 +1091,7 @@ class Sublattice():
         >>> s.plot(plot_markers=True)
         """
         if image is None:
-            image = self.original_adf_image
+            image = self.original_image
         elli_list = []
         for atom in self.atom_list:
             elli_rot = atom.get_ellipticity_vector()
@@ -1117,7 +1117,7 @@ class Sublattice():
             image=None,
             percent_to_nn=0.40):
         if image is None:
-            image = self.original_adf_image
+            image = self.original_image
 
         percent_distance = percent_to_nn
         for atom in self.atom_list:
@@ -1130,7 +1130,7 @@ class Sublattice():
             image=None,
             percent_to_nn=0.40):
         if image is None:
-            image = self.original_adf_image
+            image = self.original_image
 
         percent_distance = percent_to_nn
         for atom in self.atom_list:
@@ -1375,7 +1375,7 @@ class Sublattice():
             return(signal_list)
 
     def get_atom_model(self):
-        model_image = np.zeros(self.adf_image.shape)
+        model_image = np.zeros(self.image.shape)
         X, Y = np.meshgrid(np.arange(
             model_image.shape[1]), np.arange(model_image.shape[0]))
 
@@ -1416,7 +1416,7 @@ class Sublattice():
         for zone_index, zone_vector in enumerate(
                 self.zones_axis_average_distances):
             fig, ax = plt.subplots(figsize=(10, 10))
-            cax = ax.imshow(self.adf_image)
+            cax = ax.imshow(self.image)
             if self._plot_clim:
                 cax.set_clim(self._plot_clim[0], self._plot_clim[1])
             for atom_index, atom in enumerate(self.atom_list):
@@ -1439,8 +1439,8 @@ class Sublattice():
                             atom.pixel_x,
                             atom.pixel_y,
                             str(atom_index))
-            ax.set_ylim(0, self.adf_image.shape[0])
-            ax.set_xlim(0, self.adf_image.shape[1])
+            ax.set_ylim(0, self.image.shape[0])
+            ax.set_xlim(0, self.image.shape[1])
             fig.tight_layout()
             fig.savefig(
                     "debug_plot_start_end_atoms_zone" +

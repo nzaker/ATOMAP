@@ -11,10 +11,11 @@ class Atom_Lattice():
 
     def __init__(self, name=""):
         self.sublattice_list = []
-        self.adf_image = None
+        self.image0 = None
         self.inverted_abf_image = None
         self.name = name
         self._pixel_separation = 10
+        self._original_filename = ''
 
     def __repr__(self):
         return '<%s, %s (sublattice(s): %s)>' % (
@@ -49,7 +50,7 @@ class Atom_Lattice():
             add_numbers=False,
             markersize=20):
         if image is None:
-            image = self.adf_image
+            image = self.image0
         marker_list = []
         scale = self.sublattice_list[0].pixel_size
         for sublattice in self.sublattice_list:

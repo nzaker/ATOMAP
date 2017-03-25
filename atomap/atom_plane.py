@@ -334,15 +334,15 @@ class Atom_Plane():
 
     def _plot_debug_atom_plane(self):
         fig, ax = plt.subplots(figsize=(10, 10))
-        cax = ax.imshow(self.atom_lattice.adf_image)
+        cax = ax.imshow(self.atom_lattice.image0)
         if self.atom_lattice._plot_clim:
             clim = self.atom_lattice._plot_clim
             cax.set_clim(clim[0], clim[1])
         for atom_index, atom in enumerate(self.atom_list):
             ax.plot(atom.pixel_x, atom.pixel_y, 'o', color='blue')
             ax.text(atom.pixel_x, atom.pixel_y, str(atom_index))
-        ax.set_ylim(0, self.atom_lattice.adf_image.shape[0])
-        ax.set_xlim(0, self.atom_lattice.adf_image.shape[1])
+        ax.set_ylim(0, self.atom_lattice.image0.shape[0])
+        ax.set_xlim(0, self.atom_lattice.image0.shape[1])
         fig.tight_layout()
         fig.savefig("debug_plot_atom_plane.jpg")
 

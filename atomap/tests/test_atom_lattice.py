@@ -34,7 +34,7 @@ class test_create_atom_lattice_object(unittest.TestCase):
 
     def test_get_sublattice_atom_list_on_image(self):
         atom_lattice = Atom_Lattice()
-        atom_lattice.adf_image = self.sublattice.adf_image
+        atom_lattice.image0 = self.sublattice.image
         atom_lattice.sublattice_list.append(self.sublattice)
         atom_lattice.get_sublattice_atom_list_on_image()
 
@@ -48,10 +48,10 @@ class test_atom_lattice_object_tools(unittest.TestCase):
         sublattice = Sublattice(
                 peaks, 
                 image_data)
-        sublattice.original_adf_image = image_data
+        sublattice.original_image = image_data
         self.atom_lattice = Atom_Lattice()
         self.atom_lattice.sublattice_list.append(sublattice)
-        self.atom_lattice.adf_image = image_data
+        self.atom_lattice.image0 = image_data
 
     def test_save_atom_lattice(self):
         save_path = "test_atomic_lattice_save.hdf5"
