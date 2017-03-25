@@ -1298,7 +1298,9 @@ class Sublattice():
             upscale_map=2):
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
+        number = len(zone_vector_index_list)
         signal_list = []
+        text_marker_list = []
         for zone_index, zone_vector in zone_vector_index_list:
             signal_title = 'Monolayer distance {}'.format(zone_index)
             data_list = self.get_monolayer_distance_list_from_zone_vector(
@@ -1310,6 +1312,11 @@ class Sublattice():
                 upscale_map=upscale_map)
             signal.metadata.General.Title = signal_title
             signal_list.append(signal)
+            x, y = [-1000]*number, [-1000]*number
+            x[zone_index] = 1
+            y[zone_index] = 1
+            text_marker_list.append(hs.markers.text(
+                    x, y, text=str(zone_vector), size=20, color='red'))
 
         if len(signal_list) == 1:
             signal = signal_list[0]
@@ -1319,6 +1326,7 @@ class Sublattice():
             marker_list = _make_atom_planes_marker_list(
                     atom_plane_list, scale=data_scale, add_numbers=False)
             signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        signal.add_marker(text_marker_list, permanent=True, plot_marker=False)
         return signal
 
     def get_atom_distance_map(
@@ -1334,7 +1342,9 @@ class Sublattice():
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
 
+        number = len(zone_vector_index_list)
         signal_list = []
+        text_marker_list = []
         for zone_index, zone_vector in zone_vector_index_list:
             signal_title = 'Atom distance {}'.format(zone_index)
             data_list = self.get_atom_distance_list_from_zone_vector(
@@ -1349,6 +1359,11 @@ class Sublattice():
                 upscale_map=upscale_map)
             signal.metadata.General.Title = signal_title
             signal_list.append(signal)
+            x, y = [-1000]*number, [-1000]*number
+            x[zone_index] = 1
+            y[zone_index] = 1
+            text_marker_list.append(hs.markers.text(
+                    x, y, text=str(zone_vector), size=20, color='red'))
 
         if len(signal_list) == 1:
             signal = signal_list[0]
@@ -1358,6 +1373,7 @@ class Sublattice():
             marker_list = _make_atom_planes_marker_list(
                     atom_plane_list, scale=data_scale, add_numbers=False)
             signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        signal.add_marker(text_marker_list, permanent=True, plot_marker=False)
         return signal
 
     def get_atom_distance_difference_line_profile(
@@ -1390,12 +1406,13 @@ class Sublattice():
             upscale_map=2):
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
+        number = len(zone_vector_index_list)
         signal_list = []
+        text_marker_list = []
         for zone_index, zone_vector in zone_vector_index_list:
             signal_title = 'Distance difference {}'.format(zone_index)
             data_list = self.get_atom_distance_difference_from_zone_vector(
                     zone_vector)
-            print(len(data_list[2]))
             if len(data_list[2]) is not 0:
                 signal = self._get_property_map(
                     data_list[0],
@@ -1407,6 +1424,12 @@ class Sublattice():
                 signal.metadata.General.Title = signal_title
                 signal_list.append(signal)
 
+                x, y = [-1000]*number, [-1000]*number
+                x[zone_index] = 1
+                y[zone_index] = 1
+                text_marker_list.append(hs.markers.text(
+                        x, y, text=str(zone_vector), size=20, color='red'))
+
         if len(signal_list) == 1:
             signal = signal_list[0]
         else:
@@ -1415,6 +1438,7 @@ class Sublattice():
             marker_list = _make_atom_planes_marker_list(
                     atom_plane_list, scale=data_scale, add_numbers=False)
             signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        signal.add_marker(text_marker_list, permanent=True, plot_marker=False)
         return signal
 
     def get_atom_model(self):
