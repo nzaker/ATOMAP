@@ -776,6 +776,25 @@ def _make_atom_position_marker_list(
     return marker_list
 
 
+def _make_multidim_atom_plane_marker_list(
+        atom_plane_zone_list, scale=1., color='red'):
+    marker_list = []
+    for i, atom_plane_list in enumerate(atom_plane_zone_list):
+        for atom_plane in atom_plane_list:
+            for j in range(len(atom_plane.atom_list[1:])):
+                x1 = [-1000]*len(atom_plane_zone_list)
+                y1 = [-1000]*len(atom_plane_zone_list)
+                x2 = [-1000]*len(atom_plane_zone_list)
+                y2 = [-1000]*len(atom_plane_zone_list)
+                x1[i] = atom_plane.atom_list[j].pixel_x*scale
+                y1[i] = atom_plane.atom_list[j].pixel_y*scale
+                x2[i] = atom_plane.atom_list[j+1].pixel_x*scale
+                y2[i] = atom_plane.atom_list[j+1].pixel_y*scale
+                marker = LineSegment(x1=x1, y1=y1, x2=x2, y2=y2, color=color)
+                marker_list.append(marker)
+    return marker_list
+
+
 def _make_single_atom_plane_marker_list(
         atom_plane, scale=1., color='red'):
     marker_list = []
