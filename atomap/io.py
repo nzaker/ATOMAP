@@ -84,6 +84,8 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
 
         if group_name == 'image_data0':
             atom_lattice.image0 = h5f[group_name][:]
+        if group_name == 'image_data1':
+            atom_lattice.image1 = h5f[group_name][:]
 
     if 'name' in h5f.attrs.keys():
         atom_lattice.name = h5f.attrs['name']
@@ -168,6 +170,12 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename):
             data=atom_lattice.image0,
             chunks=True,
             compression='gzip')
+        if hasattr(atom_lattice, 'image1'):
+            h5f.create_dataset(
+                "image_data1",
+                data=atom_lattice.image1,
+                chunks=True,
+                compression='gzip')
         h5f.attrs['name'] = atom_lattice.name
         h5f.attrs['pixel_separation'] = atom_lattice._pixel_separation
 
