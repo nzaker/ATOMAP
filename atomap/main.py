@@ -13,7 +13,7 @@ from atomap.tools import\
 
 from atomap.atom_lattice import Atom_Lattice
 from atomap.sublattice import Sublattice
-import atomap.process_parameters as process_parameters
+import atomap.process_parameters as pp
 
 
 def run_image_filtering(signal, invert_signal=False):
@@ -138,7 +138,7 @@ def make_atom_lattice_single_sublattice_from_image(
 
 def make_atom_lattice_from_image(
         s_image0,
-        model_parameters=None,
+        process_parameter=None,
         pixel_separation=None,
         s_image1=None,
         debug_plot=False):
@@ -150,18 +150,18 @@ def make_atom_lattice_from_image(
     s_image0 = s_image0.deepcopy()
     s_image0_modified = run_image_filtering(s_image0)
 
-    if model_parameters is None:
-        model_parameters = process_parameters.GenericStructure()
+    if process_parameter is None:
+        process_parameter = pp.GenericStructure()
 
     image0_scale = s_image0.axes_manager[0].scale
     if pixel_separation is None:
-        if model_parameters.peak_separation is None:
+        if process_parameter.peak_separation is None:
             raise ValueError(
                     "pixel_separation is not set.\
-                    Either set it in the model_parameters.peak_separation\
+                    Either set it in the process_parameter.peak_separation\
                     or pixel_separation parameter")
         else:
-            pixel_separation = model_parameters.peak_separation/image0_scale
+            pixel_separation = process_parameter.peak_separation/image0_scale
     initial_atom_position_list = get_peak2d_skimage(
             s_image0_modified,
             separation=pixel_separation)[0]
@@ -181,8 +181,8 @@ def make_atom_lattice_from_image(
     atom_lattice.image0 = image0_data
     atom_lattice._pixel_separation = pixel_separation
 
-    for sublattice_index in range(model_parameters.number_of_sublattices):
-        sublattice_para = model_parameters.get_sublattice_from_order(
+    for sublattice_index in range(process_parameter.number_of_sublattices):
+        sublattice_para = process_parameter.get_sublattice_from_order(
                 sublattice_index)
 
         if sublattice_para.image_type == 0:

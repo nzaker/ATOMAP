@@ -28,15 +28,15 @@ class test_make_atom_lattice_from_image(unittest.TestCase):
                 my_path, "datasets", "test_ADF_cropped.hdf5")
         self.s_adf = load(s_adf_filename)
         self.pixel_separation = 19
-        self.model_parameters = PerovskiteOxide110()
+        self.process_parameter = PerovskiteOxide110()
 
     def test_adf_image(self):
         s_adf = self.s_adf
         pixel_separation = self.pixel_separation
-        model_parameters = self.model_parameters
+        process_parameter = self.process_parameter
         make_atom_lattice_from_image(
                 s_adf,
-                model_parameters=model_parameters,
+                process_parameter=process_parameter,
                 pixel_separation=pixel_separation)
 
 
