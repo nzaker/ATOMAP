@@ -450,7 +450,10 @@ class Sublattice():
                 scale=data_scale,
                 offset=offset)
         if add_markers:
-            x_list = line_profile_data_list[0]*-1
+            if invert_line_profile:
+                x_list = line_profile_data_list[0]*-1
+            else:
+                x_list = line_profile_data_list[0]
             y_list = line_profile_data_list[1]
             marker_list = []
             for x, y in zip(x_list, y_list):
