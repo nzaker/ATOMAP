@@ -210,7 +210,7 @@ class GenericStructure(ModelParametersBase):
 class PerovskiteOxide110(ModelParametersBase):
     def __init__(self):
         ModelParametersBase.__init__(self)
-        self.name = "Peroskite 110"
+        self.name = "Perovskite 110"
         self.peak_separation = 0.127
 
         self.sublattice_list = [
