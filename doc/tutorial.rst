@@ -1,5 +1,10 @@
 .. _tutorial:
 
+.. note::
+
+    2017/03/29: This tutorial is for Atomap version 0.0.6, which is not the most
+    recent version.
+
 ========
 Tutorial
 ========
