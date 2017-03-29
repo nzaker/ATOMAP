@@ -23,6 +23,8 @@ from atomap.atom_finding_refining import get_peak2d_skimage
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
 
+from atomap.external.add_marker import add_marker
+
 
 class Sublattice():
     def __init__(self, atom_position_list, image):
@@ -370,7 +372,7 @@ class Sublattice():
         if atom_plane_list is not None:
             marker_list = _make_atom_planes_marker_list(
                     atom_plane_list, scale=data_scale, add_numbers=False)
-            signal.add_marker(marker_list, permanent=True, plot_marker=False)
+            add_marker(signal, marker_list, permanent=True, plot_marker=False)
         return signal
 
     def _get_property_line_profile(
@@ -458,7 +460,7 @@ class Sublattice():
             marker_list = []
             for x, y in zip(x_list, y_list):
                 marker_list.append(Point(x, y))
-            signal.add_marker(marker_list, permanent=True, plot_marker=False)
+            add_marker(signal, marker_list, permanent=True, plot_marker=False)
         return signal
 
     def _find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
@@ -934,7 +936,7 @@ class Sublattice():
                 scale=self.pixel_size,
                 color=color)
         signal = array2signal2d(image, self.pixel_size)
-        signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        add_marker(signal, marker_list, permanent=True, plot_marker=False)
         return signal
 
     def get_all_atom_planes_by_zone_vector(
@@ -997,7 +999,7 @@ class Sublattice():
                 atom_plane_list, scale=self.pixel_size)
         signal = array2signal2d(image, self.pixel_size)
         signal = hs.stack([signal]*len(zone_vector_list))
-        signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        add_marker(signal, marker_list, permanent=True, plot_marker=False)
         signal.metadata.General.title = "Atom planes by zone vector"
         signal_ax0 = signal.axes_manager.signal_axes[0]
         signal_ax1 = signal.axes_manager.signal_axes[1]
@@ -1005,7 +1007,7 @@ class Sublattice():
         y = signal_ax1.index2value(int(image.shape[1]*0.1))
         text_marker_list = _make_zone_vector_text_marker_list(
                 zone_vector_list, x=x, y=y)
-        signal.add_marker(text_marker_list, permanent=True, plot_marker=False)
+        add_marker(signal, text_marker_list, permanent=True, plot_marker=False)
         return signal
 
     def get_atom_list_on_image(
@@ -1073,7 +1075,7 @@ class Sublattice():
                 markersize=markersize,
                 add_numbers=add_numbers)
         signal = array2signal2d(image, self.pixel_size)
-        signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        add_marker(signal, marker_list, permanent=True, plot_marker=False)
 
         return signal
 
@@ -1147,7 +1149,7 @@ class Sublattice():
         if atom_plane_list is not None:
             marker_list.extend(_make_atom_planes_marker_list(
                     atom_plane_list, scale=self.pixel_size, add_numbers=False))
-        signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        add_marker(signal, marker_list, permanent=True, plot_marker=False)
         return signal
 
     def get_atom_column_amplitude_gaussian2d(
@@ -1332,14 +1334,14 @@ class Sublattice():
         if atom_plane_list is not None:
             marker_list = _make_atom_planes_marker_list(
                     atom_plane_list, scale=data_scale, add_numbers=False)
-            signal.add_marker(marker_list, permanent=True, plot_marker=False)
+            add_marker(signal, marker_list, permanent=True, plot_marker=False)
         signal_ax0 = signal.axes_manager.signal_axes[0]
         signal_ax1 = signal.axes_manager.signal_axes[1]
         x = signal_ax0.index2value(int(signal_ax0.high_index*0.1))
         y = signal_ax1.index2value(int(signal_ax1.high_index*0.1))
         text_marker_list = _make_zone_vector_text_marker_list(
                 zone_vector_list, x=x, y=y)
-        signal.add_marker(text_marker_list, permanent=True, plot_marker=False)
+        add_marker(signal, text_marker_list, permanent=True, plot_marker=False)
         title = 'Sublattice {} monolayer distance'.format(self._tag)
         signal.metadata.General.title = title
         return signal
@@ -1382,14 +1384,14 @@ class Sublattice():
         if atom_plane_list is not None:
             marker_list = _make_atom_planes_marker_list(
                     atom_plane_list, scale=data_scale, add_numbers=False)
-            signal.add_marker(marker_list, permanent=True, plot_marker=False)
+            add_marker(signal, marker_list, permanent=True, plot_marker=False)
         signal_ax0 = signal.axes_manager.signal_axes[0]
         signal_ax1 = signal.axes_manager.signal_axes[1]
         x = signal_ax0.index2value(int(signal_ax0.high_index*0.1))
         y = signal_ax1.index2value(int(signal_ax1.high_index*0.1))
         text_marker_list = _make_zone_vector_text_marker_list(
                 zone_vector_list, x=x, y=y)
-        signal.add_marker(text_marker_list, permanent=True, plot_marker=False)
+        add_marker(signal, text_marker_list, permanent=True, plot_marker=False)
         title = 'Sublattice {} atom distance'.format(self._tag)
         signal.metadata.General.title = title
         return signal
@@ -1447,14 +1449,14 @@ class Sublattice():
         if atom_plane_list is not None:
             marker_list = _make_atom_planes_marker_list(
                     atom_plane_list, scale=data_scale, add_numbers=False)
-            signal.add_marker(marker_list, permanent=True, plot_marker=False)
+            add_marker(signal, marker_list, permanent=True, plot_marker=False)
         signal_ax0 = signal.axes_manager.signal_axes[0]
         signal_ax1 = signal.axes_manager.signal_axes[1]
         x = signal_ax0.index2value(int(signal_ax0.high_index*0.1))
         y = signal_ax1.index2value(int(signal_ax1.high_index*0.1))
         text_marker_list = _make_zone_vector_text_marker_list(
                 zone_vector_list, x=x, y=y)
-        signal.add_marker(text_marker_list, permanent=True, plot_marker=False)
+        add_marker(signal, text_marker_list, permanent=True, plot_marker=False)
         title = 'Sublattice {} atom distance difference'.format(self._tag)
         signal.metadata.General.title = title
         return signal
