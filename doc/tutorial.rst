@@ -64,54 +64,53 @@ The file should appear in our current folder:
 Finding the peak separation
 ----------------------------
 
-For Atomap to do its analysis two parameters are needed: the peak separation for the first sublattice, and a calibrated dataset.
-Getting the peak separation is done using the `plot_feature_separation` function:
+For Atomap to do its analysis the smallest peak separation has to be specified.
+Getting this separation is done using the `get_feature_separation` function, which returns a HyperSpy signal:
 
 .. code-block:: python
 
     >>> import hyperspy.api as hs
+    >>> import atomap.api as am
     >>> s = hs.load("test_ADF_cropped.hdf5")
-    >>> from atomap.atom_finding_refining import plot_feature_separation
-    >>> plot_feature_separation(s) 
+    >>> s_peaks = am.get_feature_separation(s)
+    >>> s_peaks.plot(plot_markers=True)
 
-This will generate several image files called *peak_separation_XYZ.png* in the folder we created earlier.
-The *XYZ* refer to the peak separation between the features in the image.
-The path to this folder will vary depending on what operating system you are using, and can be retrieved by:
+This should open two figures like shown below:
 
-.. code-block:: python
-
-    >>> pwd
-
-In Windows this will output something like *C:\\Users\\YOURUSERNAME\\Documents\\atomap_testing*.
-And in Linux this output will (probably) be something like *'/home/magnunor/Desktop/atomap_testing'*.
-Go to this folder and open one of the images, which should look like:
-
-.. image:: images/tutorial/peak_separation_bad_0.png
+.. image:: images/tutorial/peak_separation_initial.jpg
     :scale: 50 %
     :align: center
-.. image:: images/tutorial/peak_separation_bad_1.png
+.. image:: images/tutorial/peak_separation_initial_nav.png
     :scale: 50 %
     :align: center
+
+The first figure window shows the where the peak finding function has located a peak, the second
+figure windows shows the minimum feature separation in pixels. Use the left-right arrow keys to change
+the minimum feature separation.
 
 The requirements for the peak separation are:
     1. With an optimal peak separation, only atoms from one sublattice should be marked.
     2. In addition, all the atoms from the first sublattice should be marked.
 
-So the peak separations shown in the two images above is not good.
+So the peak separation shown in the figure above is not good.
 
 It should look something like this:
 
-.. image:: images/tutorial/peak_separation_good.png
+.. image:: images/tutorial/peak_separation_good.jpg
     :scale: 50 %
     :align: center
 
 Note, requirement 2 does not extend to the edges, so this would also work:
 
-.. image:: images/tutorial/peak_separation_good_edges.png
+.. image:: images/tutorial/peak_separation_ok.jpg
     :scale: 50 %
     :align: center
 
-For this dataset we chose a peak separation of 19 pixels
+For this dataset, a feature separation of 16 pixels is chosen:
+
+.. image:: images/tutorial/peak_separation_good_nav.jpg
+    :scale: 50 %
+    :align: center
 
 This procedure will probably be automated at some point in the future.
 
@@ -119,17 +118,16 @@ Running the analysis on a HAADF image
 -------------------------------------
 
 The next step is running the actual processing using the `make_atom_lattice_from_image`,
-using the predefined model parameter `PerovskiteOxide110`, and the same signal `s` as earlier.
+using the predefined process parameter `PerovskiteOxide110`, and the same signal `s` as earlier.
 
-The model parameter `PerovskiteOxide110` contain various parameters and names for processing
+The process parameter `PerovskiteOxide110` contain various parameters and names for processing
 a perovskite oxide structure projected along the [110] direction.
 
 .. code-block:: python
 
-    >>> from atomap.main import make_atom_lattice_from_image
     >>> from atomap.process_parameters import PerovskiteOxide110
-    >>> model_parameters = PerovskiteOxide110()
-    >>> atom_lattice = make_atom_lattice_from_image(s, model_parameters=model_parameters, pixel_separation=19)
+    >>> process_parameter = PerovskiteOxide110()
+    >>> atom_lattice = am.make_atom_lattice_from_image(s, process_parameter=process_parameter, pixel_separation=16)
 
 Depending on the size of the dataset, this can take a while. 
 For the test dataset used here it should take about 1 minute.
@@ -138,25 +136,19 @@ The processing will:
     1. Locate the most intense atomic columns (Strontium).
     2. Refine the position using center of mass.
     3. Refine the position using 2-D Gaussian distributions
-    4. Find all the major symmetry axes using nearest neighbor statistics
+    4. Find the translation symmetry using nearest neighbor statistics, and construct atomic planes using this symmetry.
     5. Locate the second most intense atomic columns (Titanium), using the parameters defined in the model parameters
     6. "Subtract" the intensity of the Strontium from the HAADF image
     7. Refine the position of the Titanium using center of mass
     8. Refine the position of the Titanium using 2-D Gaussian distributions
-    9. Find all the major symmetry axes for the Titanium using nearest neighbor statistics
-
-Various debugging images are saved in a folder in the same location as the image file.
-So with the `test_ADF_cropped.hdf5` data file, the folder will be `atomap_testing/test_ADF_cropped`.
+    9. Construct atomic planes in the same way as for the first sublattice.
 
 This returns an `atom_lattice` object, which contains several utility functions.
-For example `plot_all_sublattices`, which plots all the atom column positions
-on the image:
+For example `get_sublattice_atom_list_on_image` returns a HyperSpy signal which shows all the located atomic positions.
 
 .. code-block:: python
 
-    >>> atom_lattice.plot_all_sublattices()
-
-This is saved as an image file ("all_sublattice.jpg").
+    >>> atom_lattice.get_sublattice_atom_list_on_image().plot(plot_markers=True)
 
 Sublattices can be accessed using `atom_lattice.sublattice_list`:
 
@@ -190,14 +182,21 @@ Or comma-separated values (CSV) file, which can be opened in spreadsheet softwar
     >>> np.savetxt("datafile.csv", (sublattice.x_position, sublattice.y_position, sublattice.sigma_x, sublattice.sigma_y, sublattice.ellipticity), delimiter=',')
 
 `sublattice` objects also contain a several plotting functions.
-These functions saves the images in the data processing folder mentioned earlier (`atomap_testing/test_ADF_cropped`).
 Since the image is from a |SrTiO3| single crystal, there should be no variations in the structure.
 So any variations are due to factors such as scanning noise, drift and possibly bad fitting.
 
 .. code-block:: python
 
-    >>> sublattice.plot_monolayer_distance_map()
-    >>> sublattice.plot_ellipticity_map()
+    >>> s_monolayer = sublattice.get_monolayer_distance_map()
+    >>> s_monolayer.plot(plot_markers=True)
+    >>> s_elli = sublattice.get_ellipticity_map()
+    >>> s_elli.plot(plot_markers=True)
+
+These signals can be saved by using the inbuilt `save` function in the signals.
+
+.. code-block:: python
+
+    >>> s_monolayer.save("monolayer_distances.hdf5")
 
 The `sublattice` objects also contain a list of all the atomic planes and the atomic positions:
 
@@ -243,15 +242,14 @@ The `atom_lattice` object with all the atom positions can be saved:
 
 .. code-block:: python
 
-    >>> atom_lattice.save_atom_lattice()
+    >>> atom_lattice.save()
 
-This will make a HDF5-file in the data processing folder (`atomap_testing/test_ADF_cropped`) called `atom_lattice.hdf5`.
+This will make a HDF5-file in the current working directory.
 The `atom_lattice` object can then be restored using:
 
 .. code-block:: python
 
-    >>> from atomap.io import load_atom_lattice_from_hdf5
-    >>> atom_lattice_1 = load_atom_lattice_from_hdf5("test_ADF_cropped/atom_lattice.hdf5")
+    >>> atom_lattice_1 = am.load_atom_lattice_from_hdf5("test_ADF_cropped/atom_lattice.hdf5")
 
 This is especially useful for large datasets, where refining the atomic positions can take a long time.
 
