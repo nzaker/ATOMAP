@@ -183,7 +183,7 @@ Or comma-separated values (CSV) file, which can be opened in spreadsheet softwar
 
 `sublattice` objects also contain a several plotting functions.
 Since the image is from a |SrTiO3| single crystal, there should be no variations in the structure.
-So any variations are due to factors such as scanning noise, drift and possibly bad fitting.
+So any variations are due to factors such as scanning noise, sample drift and possibly bad fitting.
 
 .. code-block:: python
 
@@ -198,12 +198,11 @@ These signals can be saved by using the inbuilt `save` function in the signals.
 
     >>> s_monolayer.save("monolayer_distances.hdf5")
 
-The `sublattice` objects also contain a list of all the atomic planes and the atomic positions:
+The `sublattice` objects also contain a list of all the atomic planes:
 
 .. code-block:: python
 
     >>> sublattice.atom_plane_list
-    >>> sublattice.atom_list
 
 The `atom_plane` objects contain the atomic columns belonging to the same specific plane.
 Atom plane objects are defined by the direction vector parallel to the atoms in the plane, for example (58.81, -41.99).
@@ -214,16 +213,24 @@ These can be accessed by:
     >>> atom_plane = sublattice.atom_plane_list[0]
     >>> atom_plane.atom_list
 
-These `atom_position` objects contain information related to a specific atomic column.
+The atom planes can be plotted by using the `get_all_atom_planes_by_zone_vector` function:
+
+.. code-block:: python
+
+    >>> sublattice.get_all_atom_planes_by_zone_vector().plot(plot_markers=True)
+
+The `atom_position` objects contain information related to a specific atomic column.
 For example:
 
 .. code-block:: python
 
+    >>> sublattice.atom_list
     >>> atom_position = sublattice.atom_list[0]
     >>> atom_position.pixel_x
     >>> atom_position.pixel_y
     >>> atom_position.sigma_x
     >>> atom_position.sigma_y
+    >>> sublattice.get_atom_list_on_image().plot(plot_markers=True)
 
 Basic information about the `atom_lattice`, `sublattice`, `atom_plane` and `atom_position` objects can be accessed by simply:
 
@@ -249,14 +256,14 @@ The `atom_lattice` object can then be restored using:
 
 .. code-block:: python
 
-    >>> atom_lattice_1 = am.load_atom_lattice_from_hdf5("test_ADF_cropped/atom_lattice.hdf5")
+    >>> atom_lattice_1 = am.load_atom_lattice_from_hdf5("test_ADF_cropped_atom_lattice.hdf5")
 
 This is especially useful for large datasets, where refining the atomic positions can take a long time.
 
 Finding the oxygen columns
 --------------------------
 
-Atomap can also find the positions of oxygen columns in an Annular Bright Field (ABF) image, by firstly using a ADF image.
+Atomap can also find the positions of oxygen columns in an Annular Bright Field (ABF) image, by firstly using an ADF image.
 We use the same ADF image as earlier, in addition to an ABF image acquired simultaneously:
 
 .. code-block:: python
@@ -265,17 +272,17 @@ We use the same ADF image as earlier, in addition to an ABF image acquired simul
     >>> s = hs.load("test_ADF_cropped.hdf5")
     >>> urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ABF_cropped.hdf5", "test_ABF_cropped.hdf5")
     >>> s_abf = hs.load("test_ABF_cropped.hdf5")
-    >>> model_parameters = PerovskiteOxide110()
-    >>> atom_lattice = make_atom_lattice_from_image(s, model_parameters=model_parameters, pixel_separation=19, s_image1=s_abf)
+    >>> process_parameter = PerovskiteOxide110()
+    >>> atom_lattice = am.make_atom_lattice_from_image(s, process_parameter=process_parameter, pixel_separation=19, s_image1=s_abf)
     >>> atom_lattice
     <Atom_Lattice, test_ADF_cropped (sublattice(s): 3)>
 
 The oxygen `sublattice` has been added to the `atom_lattice`.
-This new `sublattice` can be visualized using `plot_all_sublattices`, where we use the `markersize` parameter to make the circles indicating the atomic column positions bigger:
+This new `sublattice` can be visualized using `get_sublattice_atom_list_on_image`:
 
 .. code-block:: python
 
-    >>> atom_lattice.plot_all_sublattices(markersize=7)
+    >>> atom_lattice.get_sublattice_atom_list_on_image().plot(plot_markers=True)
 
 .. image:: images/tutorial/all_sublattice_oxygen.jpg
     :scale: 50 %
