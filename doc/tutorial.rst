@@ -3,7 +3,7 @@
 .. note::
 
     2017/03/29: This tutorial is for Atomap version 0.0.6, which is not the most
-    recent version.
+    recent version. See https://gitlab.com/atomap/atomap_demos/blob/master/notebook_example/Atomap.ipynb for an up to date tutorial.
 
 ========
 Tutorial
