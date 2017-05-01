@@ -21,6 +21,9 @@ Bug reports and feature requests are welcome on the `issue tracker <https://gitl
 
 Atomap is available under the GNU GPL v3 license.
 
+If you publish scientific articles using Atomap, please consider citing the article `Atomap: a new software tool for the automated analysis of
+atomic resolution images using two-dimensional Gaussian fitting <https://dx.doi.org/10.1186/s40679-017-0042-5>`_.
+
 Contents on this webpage
 ------------------------
 
