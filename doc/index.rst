@@ -10,6 +10,14 @@ axes. The full procedure is explained in the article
 atomic resolution images using two-dimensional
 Gaussian fitting <https://dx.doi.org/10.1186/s40679-017-0042-5>`_.
 
+.. figure:: images/index/elli_figure.jpg
+    :scale: 45 %
+    :align: center
+    :target: https://ascimaging.springeropen.com/articles/10.1186/s40679-017-0042-5#Fig6
+
+    Measuring the ellipticity of atomic columns. `More info <https://ascimaging.springeropen.com/articles/10.1186/s40679-017-0042-5#Fig6>`_
+
+
 Instructions on how to install Atomap are found in the :ref:`install` guide.
 
 There is a :ref:`tutorial` on how to use Atomap.
@@ -23,6 +31,14 @@ Atomap is available under the GNU GPL v3 license.
 
 If you publish scientific articles using Atomap, please consider citing the article `Atomap: a new software tool for the automated analysis of
 atomic resolution images using two-dimensional Gaussian fitting <https://dx.doi.org/10.1186/s40679-017-0042-5>`_.
+
+.. figure:: images/index/oxygen_superstructure_figure.jpg
+    :scale: 50 %
+    :align: center
+    :target: https://ascimaging.springeropen.com/articles/10.1186/s40679-017-0042-5#Fig5
+
+    Mapping the variation in distance between oxygen columns. `More information <https://ascimaging.springeropen.com/articles/10.1186/s40679-017-0042-5#Fig5>`_
+
 
 Contents on this webpage
 ------------------------
