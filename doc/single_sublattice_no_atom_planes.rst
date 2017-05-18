@@ -37,13 +37,13 @@ So these work:
     >>> sublattice.sigma_y
     >>> sublattice.ellipticity
     >>> sublattice.rotation
-    >>> sublattice.sublattice.plot_atom_list_on_image_data()
+    >>> sublattice.get_atom_list_on_image().plot(plot_markers=True)
 
 While these do not work, since they rely on how the atom positions
 relate to each other (distance, angle, ...):
 
 .. code-block:: python
 
-    >>> sublattice.plot_atom_distance_map()
-    >>> sublattice.plot_atom_distance_difference_map()
+    >>> sublattice.get_monolayer_distance_map().plot(plot_markers=True)
+    >>> sublattice.get_atom_distance_difference_map().plot(plot_markers=True)
 

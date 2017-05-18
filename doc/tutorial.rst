@@ -1,5 +1,6 @@
 .. _tutorial:
 
+
 ========
 Tutorial
 ========
@@ -36,7 +37,6 @@ This prompt will be referred to as the *IPython terminal*.
 Getting test data
 -----------------
 
-Atomap generates many image files for data visualization, so it is recommended to do all the work in a separate folder.
 The `>>>` used in the documentation means the comment should be typed inside some kind of Python prompt, so do not include these when actually running the code.
 So for the first command below, only `mkdir atomap_testing` should be typed or copied into the IPython terminal.
 In the IPython terminal:
@@ -80,12 +80,9 @@ This should open two figures like shown below:
 .. image:: images/tutorial/peak_separation_initial.jpg
     :scale: 50 %
     :align: center
-.. image:: images/tutorial/peak_separation_initial_nav.png
-    :scale: 50 %
-    :align: center
 
-The first figure window shows the where the peak finding function has located a peak, the second
-figure windows shows the minimum feature separation in pixels. Use the left-right arrow keys to change
+The right figure shows where the peak finding function has located a peak, the left
+figure shows the minimum feature separation in pixels on the x-axis. Use the left-right arrow keys to change
 the minimum feature separation.
 
 The requirements for the peak separation are:
@@ -106,11 +103,7 @@ Note, requirement 2 does not extend to the edges, so this would also work:
     :scale: 50 %
     :align: center
 
-For this dataset, a feature separation of 16 pixels is chosen:
-
-.. image:: images/tutorial/peak_separation_good_nav.jpg
-    :scale: 50 %
-    :align: center
+For this dataset, a feature separation of 16 pixels is chosen.
 
 This procedure will probably be automated at some point in the future.
 
@@ -125,8 +118,7 @@ a perovskite oxide structure projected along the [110] direction.
 
 .. code-block:: python
 
-    >>> from atomap.process_parameters import PerovskiteOxide110
-    >>> process_parameter = PerovskiteOxide110()
+    >>> process_parameter = am.process_parameters.PerovskiteOxide110()
     >>> atom_lattice = am.make_atom_lattice_from_image(s, process_parameter=process_parameter, pixel_separation=16)
 
 Depending on the size of the dataset, this can take a while. 
@@ -149,6 +141,10 @@ For example `get_sublattice_atom_list_on_image` returns a HyperSpy signal which 
 .. code-block:: python
 
     >>> atom_lattice.get_sublattice_atom_list_on_image().plot(plot_markers=True)
+
+.. image:: images/tutorial/atomlattice_plot_atoms.jpg
+    :scale: 50 %
+    :align: center
 
 Sublattices can be accessed using `atom_lattice.sublattice_list`:
 
@@ -213,11 +209,15 @@ These can be accessed by:
     >>> atom_plane = sublattice.atom_plane_list[0]
     >>> atom_plane.atom_list
 
-The atom planes can be plotted by using the `get_all_atom_planes_by_zone_vector` function:
+The atom planes can be plotted by using the `get_all_atom_planes_by_zone_vector` function, where the zone vector is changed by using the left-right arrow keys:
 
 .. code-block:: python
 
     >>> sublattice.get_all_atom_planes_by_zone_vector().plot(plot_markers=True)
+
+.. image:: images/tutorial/atomic_planes.jpg
+    :scale: 50 %
+    :align: center
 
 The `atom_position` objects contain information related to a specific atomic column.
 For example:
@@ -272,8 +272,8 @@ We use the same ADF image as earlier, in addition to an ABF image acquired simul
     >>> s = hs.load("test_ADF_cropped.hdf5")
     >>> urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ABF_cropped.hdf5", "test_ABF_cropped.hdf5")
     >>> s_abf = hs.load("test_ABF_cropped.hdf5")
-    >>> process_parameter = PerovskiteOxide110()
-    >>> atom_lattice = am.make_atom_lattice_from_image(s, process_parameter=process_parameter, pixel_separation=19, s_image1=s_abf)
+    >>> process_parameter = am.process_parameters.PerovskiteOxide110()
+    >>> atom_lattice = am.make_atom_lattice_from_image(s, process_parameter=process_parameter, pixel_separation=16, s_image1=s_abf)
     >>> atom_lattice
     <Atom_Lattice, test_ADF_cropped (sublattice(s): 3)>
 
@@ -289,3 +289,9 @@ This new `sublattice` can be visualized using `get_sublattice_atom_list_on_image
     :align: center
 
 .. |SrTiO3| replace:: SrTiO\ :sub:`3`
+
+
+Jupyter Notebook
+----------------
+
+There is also a tutorial in the form of a Jupyter Notebook, which covers similar topics as in this tutorial: https://gitlab.com/atomap/atomap_demos/blob/master/notebook_example/Atomap.ipynb
