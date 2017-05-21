@@ -745,7 +745,7 @@ class Fingerprinter:
     ----------
     fingerprint_ : array, shape = (n_clusters,)
         The main result. The contents of fingerprint_ can be described as
-        the relative distances to the generalized neighborhood.
+        the relative distances to neighbours in the generalized neighborhood.
     cluster_centers_ : array, shape = (n_clusters, n_dimensions)
         The cluster center coordinates from which the fingerprint was produced.
     cluster_algo_.labels_ : array, shape = (n_points,)
@@ -800,8 +800,8 @@ class Fingerprinter:
         dist = np.linalg.norm(means, axis=-1)
         dist.sort()
 
-        # Divide distances by the closest one to map distances to get rid of any dependence
-        # on the image scale, i.e. produce unitless distances or distance ratios.
+        # Divide distances by the closest one to get rid of any dependence on
+        # the image scale, i.e. produce distance ratios that are unitless.
         dist /= dist[0]
 
         assert dist.shape == (n_clusters,)

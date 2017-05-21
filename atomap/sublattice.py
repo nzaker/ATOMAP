@@ -712,7 +712,7 @@ class Sublattice():
 
         # Produce a mask that selects all elements except the diagonal
         # i.e. distance vectors from an atom to itself.
-        mask = ~np.diag([True]*offset.shape[-1])
+        mask = ~np.diag([True]*n_atoms)
         assert mask.shape == (n_atoms, n_atoms)
 
         # Remove the diagonal and flatten
