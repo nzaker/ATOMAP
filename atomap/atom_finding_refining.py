@@ -5,45 +5,49 @@ from skimage.feature import peak_local_max
 from copy import deepcopy
 
 
-def get_peak2d_skimage(image, separation):
+def get_atom_positions(
+        signal,
+        separation=5,
+        threshold_rel=None):
     """
     Find the most intense features in a HyperSpy signal, where the
     features has to be separated by a minimum distance.
 
-    Will work with image stacks.
-
     Parameters
     ----------
-    image : HyperSpy 2D signal
-        Can be in the form of an image stack.
+    signal : HyperSpy 2D signal
     separation : number
         Minimum separation between the features.
 
     Returns
     -------
-    Numpy array, list of the most intense peaks.
+    NumPy array, list of the most intense atom positions.
 
     Example
     -------
-    If s is a single image
-    >>> peaks = get_peak2d_skimage(s, 5)
-    >>> peak_x = peaks[0][:,0]
-    >>> peak_y = peaks[0][:,1]
+    If s is a single signal
+    >>> atom_positions = get_atom_positions(s, 5)
+    >>> peak_x = atom_positions[:,0]
+    >>> peak_y = atom_positions[:,1]
     """
-    peaks = np.zeros([image.axes_manager.navigation_size+1, ], dtype=object)
-    for z, indices in zip(
-            image._iterate_signal(),
-            image.axes_manager._array_indices_generator()):
-            peaks[indices] = peak_local_max(
-                z,
-                min_distance=int(separation))
-    return(peaks)
+    temp_positions = peak_local_max(
+            image=signal.data,
+            min_distance=int(separation),
+            threshold_rel=threshold_rel,
+            indices=True)
+
+    # The X- and Y-axes are switched in HyperSpy compared to NumPy
+    # so we need to flip them here
+    atom_positions = np.fliplr(temp_positions)
+    return(atom_positions)
 
 
 def find_features_by_separation(
         image_data,
         separation_range=None,
-        separation_step=1):
+        separation_step=1,
+        threshold_rel=None,
+        ):
     """
     Do peak finding with a varying amount of peak separation
     constrained.
@@ -82,7 +86,11 @@ def find_features_by_separation(
     separation_value_list = []
     peak_list = []
     for separation in separation_list:
-        peaks = peak_local_max(image_data, separation)
+        peaks = peak_local_max(
+                image=image_data,
+                min_distance=separation,
+                threshold_rel=threshold_rel,
+                indices=True)
         separation_value_list.append(separation)
         peak_list.append(peaks)
 
@@ -95,7 +103,9 @@ def get_feature_separation(
         separation_step=1,
         pca=False,
         subtract_background=False,
-        normalize_intensity=False):
+        normalize_intensity=False,
+        threshold_rel=None,
+        ):
     """
     Plot the peak positions on in a HyperSpy signal, as a function
     of peak separation.
@@ -128,7 +138,8 @@ def get_feature_separation(
     separation_list, peak_list = find_features_by_separation(
             image_data=image_data,
             separation_range=separation_range,
-            separation_step=separation_step)
+            separation_step=separation_step,
+            threshold_rel=threshold_rel)
 
     scale_x = signal.axes_manager[0].scale
     scale_y = signal.axes_manager[1].scale

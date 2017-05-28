@@ -18,7 +18,8 @@ from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
         _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
         _make_zone_vector_text_marker_list)
-from atomap.atom_finding_refining import get_peak2d_skimage
+from atomap.atom_finding_refining import (
+        get_atom_positions, construct_zone_axes_from_sublattice)
 
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
@@ -27,7 +28,19 @@ from atomap.external.add_marker import add_marker
 
 
 class Sublattice():
-    def __init__(self, atom_position_list, image):
+    def __init__(
+            self,
+            atom_position_list,
+            image,
+            original_image=None,
+            ):
+        """
+        Parameters
+        ----------
+        atom_position_list : NumPy array
+            In the form [[x0, y0], [x1, y1], [x2, y2], ... ]
+        image : 2D NumPy array
+        """
         self.atom_list = []
         for atom_position in atom_position_list:
             atom = Atom_Position(atom_position[0], atom_position[1])
@@ -36,7 +49,10 @@ class Sublattice():
         self.zones_axis_average_distances_names = []
         self.atom_plane_list = []
         self.image = image
-        self.original_image = None
+        if original_image is None:
+            self.original_image = image
+        else:
+            self.original_image = original_image
         self.atom_planes_by_zone_vector = {}
         self._plot_clim = None
         self._tag = ''
@@ -703,8 +719,9 @@ class Sublattice():
         s_direction_distance.axes_manager[1].offset = -bins[1]/2
         s_direction_distance.axes_manager[0].scale = hist_scale
         s_direction_distance.axes_manager[1].scale = hist_scale
-        clusters = get_peak2d_skimage(
-                s_direction_distance, separation=1)[0]
+        clusters = get_atom_positions(
+                s_direction_distance, separation=1)
+        clusters = np.fliplr(clusters)
 
         shifted_clusters = []
         for cluster in clusters:
@@ -1578,3 +1595,9 @@ class Sublattice():
             angle_list.extend(temp_angle_list)
         mean_angle = np.array(angle_list).mean()
         return(mean_angle)
+
+    def construct_zone_axes(self, debug_plot=False, zone_axis_para_list=False):
+        construct_zone_axes_from_sublattice(
+                self,
+                debug_plot=debug_plot,
+                zone_axis_para_list=zone_axis_para_list)

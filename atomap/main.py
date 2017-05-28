@@ -5,7 +5,7 @@ from atomap.atom_finding_refining import\
         do_pca_on_signal,\
         refine_sublattice,\
         construct_zone_axes_from_sublattice,\
-        get_peak2d_skimage,\
+        get_atom_positions,\
         normalize_signal
 
 from atomap.tools import\
@@ -93,9 +93,9 @@ def make_atom_lattice_single_sublattice_from_image(
     s_image = s_image.deepcopy()
     s_image_modified = run_image_filtering(s_image)
 
-    initial_atom_position_list = get_peak2d_skimage(
+    initial_atom_position_list = get_atom_positions(
             s_image_modified,
-            separation=pixel_separation)[0]
+            separation=pixel_separation)
 
     image_data = np.rot90(np.fliplr(s_image.data))
     image_data_modified = np.rot90(np.fliplr(s_image_modified.data))
@@ -162,19 +162,19 @@ def make_atom_lattice_from_image(
                     or pixel_separation parameter")
         else:
             pixel_separation = process_parameter.peak_separation/image0_scale
-    initial_atom_position_list = get_peak2d_skimage(
+    initial_atom_position_list = get_atom_positions(
             s_image0_modified,
-            separation=pixel_separation)[0]
+            separation=pixel_separation)
 
     if s_image1 is not None:
         s_image1 = s_image1.deepcopy()
         s_image1.data = 1./s_image1.data
-        image1_data = np.rot90(np.fliplr(s_image1.data))
+        image1_data = s_image1.data
 
     #################################
 
-    image0_data = np.rot90(np.fliplr(s_image0.data))
-    image0_data_modified = np.rot90(np.fliplr(s_image0_modified.data))
+    image0_data = s_image0.data
+    image0_data_modified = s_image0_modified.data
 
     atom_lattice = Atom_Lattice(name=name)
     atom_lattice._original_filename = image0_filename
