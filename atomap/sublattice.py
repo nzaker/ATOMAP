@@ -19,7 +19,8 @@ from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
         _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
         _make_zone_vector_text_marker_list)
-from atomap.atom_finding_refining import get_peak2d_skimage
+from atomap.atom_finding_refining import (
+        get_atom_positions, construct_zone_axes_from_sublattice)
 
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
@@ -28,7 +29,19 @@ from atomap.external.add_marker import add_marker
 
 
 class Sublattice():
-    def __init__(self, atom_position_list, image):
+    def __init__(
+            self,
+            atom_position_list,
+            image,
+            original_image=None,
+            ):
+        """
+        Parameters
+        ----------
+        atom_position_list : NumPy array
+            In the form [[x0, y0], [x1, y1], [x2, y2], ... ]
+        image : 2D NumPy array
+        """
         self.atom_list = []
         for atom_position in atom_position_list:
             atom = Atom_Position(atom_position[0], atom_position[1])
@@ -37,13 +50,16 @@ class Sublattice():
         self.zones_axis_average_distances_names = []
         self.atom_plane_list = []
         self.image = image
-        self.original_image = None
+        if original_image is None:
+            self.original_image = image
+        else:
+            self.original_image = original_image
         self.atom_planes_by_zone_vector = {}
         self._plot_clim = None
         self._tag = ''
         self.pixel_size = 1.0
         self._plot_color = 'blue'
-        self._pixel_separation = 10
+        self._pixel_separation = 0.0
 
     def __repr__(self):
         return '<%s, %s (atoms:%s,planes:%s)>' % (
@@ -464,6 +480,41 @@ class Sublattice():
             add_marker(signal, marker_list, permanent=True, plot_marker=False)
         return signal
 
+    def _get_pixel_separation(self, nearest_neighbors=2, leafsize=100):
+        """
+        Get the pixel separation by finding the distance between each atom
+        and its two closest neighbors. From this distance list the median
+        distance is found and divided by 2. This gives the distance used
+        by for example atom_finding_refining.get_atom_positions
+
+        Parameters
+        ----------
+        nearest_neighbor : int, optional, default 2
+
+        Returns
+        -------
+        pixel_separation, int
+        """
+        atom_position_list = np.array(
+                [self.x_position, self.y_position]).swapaxes(0, 1)
+        nearest_neighbor_data = sp.spatial.cKDTree(
+                atom_position_list,
+                leafsize=leafsize)
+        distance_list = []
+        for atom in self.atom_list:
+            nn_data_list = nearest_neighbor_data.query(
+                    atom.get_pixel_position(),
+                    nearest_neighbors)
+            nn_link_list = []
+            # Skipping the first element,
+            # since it points to the atom itself
+            for nn_link in nn_data_list[1][1:]:
+                distance = atom.get_pixel_distance_from_another_atom(
+                        self.atom_list[nn_link])
+                distance_list.append(distance)
+        pixel_separation = np.median(distance_list)/2
+        return(pixel_separation)
+
     def _find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
         atom_position_list = np.array(
                 [self.x_position, self.y_position]).swapaxes(0, 1)
@@ -721,115 +772,26 @@ class Sublattice():
 
         return nn
 
-    def _make_nearest_neighbor_direction_distance_statistics(
-            self,
-            pixel_separation_factor=7,
-            debug_plot=False):
-        x_pos_distances = []
-        y_pos_distances = []
-        for atom in self.atom_list:
-            for neighbor_atom in atom.nearest_neighbor_list:
-                distance = atom.get_pixel_difference(neighbor_atom)
-                if not ((distance[0] == 0) and (distance[1] == 0)):
-                    x_pos_distances.append(distance[0])
-                    y_pos_distances.append(distance[1])
+    def _make_translation_symmetry(self, pixel_separation_factor=7):
+        pixel_radius = self._pixel_separation*pixel_separation_factor
+        fp_2d = self.get_fingerprint_2d(pixel_radius=pixel_radius)
+        clusters = []
+        for zone_vector in fp_2d:
+            cluster = (
+                    float(format(zone_vector[0], '.2f')),
+                    float(format(zone_vector[1], '.2f')))
+            clusters.append(cluster)
+        clusters = self._sort_vectors_by_length(clusters)
+        clusters = self._remove_parallel_vectors(
+                clusters,
+                tolerance=self._pixel_separation/1.5)
 
-        bins = (70, 70)
-        histogram_range = self._pixel_separation*pixel_separation_factor
-        direction_distance_intensity_hist = np.histogram2d(
-                x_pos_distances,
-                y_pos_distances,
-                bins=bins,
-                range=[
-                    [-histogram_range, histogram_range],
-                    [-histogram_range, histogram_range]])
-        if debug_plot:
-            fig = Figure(figsize=(7, 7))
-            FigureCanvas(fig)
-            ax = fig.add_subplot(111)
+        new_zone_vector_name_list = []
+        for zone_vector in clusters:
+            new_zone_vector_name_list.append(str(tuple(zone_vector)))
 
-            ax.scatter(x_pos_distances, y_pos_distances)
-            ax.set_ylim(-histogram_range, histogram_range)
-            ax.set_xlim(-histogram_range, histogram_range)
-            fig.savefig(self._tag + "_cat_nn.png")
-
-        hist_scale = direction_distance_intensity_hist[1][1] -\
-            direction_distance_intensity_hist[1][0]
-
-        s_direction_distance = hs.signals.Signal2D(
-            direction_distance_intensity_hist[0])
-        s_direction_distance.axes_manager[0].offset = -bins[0]/2
-        s_direction_distance.axes_manager[1].offset = -bins[1]/2
-        s_direction_distance.axes_manager[0].scale = hist_scale
-        s_direction_distance.axes_manager[1].scale = hist_scale
-        clusters = get_peak2d_skimage(
-                s_direction_distance, separation=1)[0]
-
-        shifted_clusters = []
-        for cluster in clusters:
-            temp_cluster = (
-                    round((cluster[0]-bins[0]/2)*hist_scale, 2),
-                    round((cluster[1]-bins[1]/2)*hist_scale, 2))
-            shifted_clusters.append(temp_cluster)
-
-        self._shortest_atom_distance = self._find_shortest_vector(
-                shifted_clusters)
-        shifted_clusters = self._sort_vectors_by_length(shifted_clusters)
-
-        shifted_clusters = self._remove_parallel_vectors(
-                shifted_clusters,
-                tolerance=self._shortest_atom_distance/3.)
-
-        hr_histogram = np.histogram2d(
-                x_pos_distances,
-                y_pos_distances,
-                bins=(250, 250),
-                range=[
-                    [-histogram_range, histogram_range],
-                    [-histogram_range, histogram_range]])
-
-        new_zone_vector_list = self._refine_zone_vector_positions(
-                shifted_clusters,
-                hr_histogram,
-                distance_percent=0.5)
-
-        self.zones_axis_average_distances = new_zone_vector_list
-
-        for new_zone_vector in new_zone_vector_list:
-            self.zones_axis_average_distances_names.append(
-                str(new_zone_vector))
-
-    def _refine_zone_vector_positions(
-            self,
-            zone_vector_list,
-            histogram,
-            distance_percent=0.5):
-        """ Refine zone vector positions using center of mass """
-        scale = histogram[1][1] - histogram[1][0]
-        offset = histogram[1][0]
-        closest_distance = math.hypot(
-                zone_vector_list[0][0],
-                zone_vector_list[0][1])*distance_percent/scale
-
-        new_zone_vector_list = []
-        for zone_vector in zone_vector_list:
-            zone_vector_x = (zone_vector[0]-offset)/scale
-            zone_vector_y = (zone_vector[1]-offset)/scale
-            circular_mask = self._make_circular_mask(
-                    zone_vector_x,
-                    zone_vector_y,
-                    histogram[0].shape[0],
-                    histogram[0].shape[1],
-                    closest_distance)
-            center_of_mass = ndimage.measurements.center_of_mass(
-                    circular_mask*histogram[0])
-
-            new_x_pos = float(
-                    format(center_of_mass[0]*scale+offset, '.2f'))
-            new_y_pos = float(
-                    format(center_of_mass[1]*scale+offset, '.2f'))
-            new_zone_vector_list.append((new_x_pos, new_y_pos))
-        return(new_zone_vector_list)
+        self.zones_axis_average_distances = clusters
+        self.zones_axis_average_distances_names = new_zone_vector_name_list
 
     def _sort_vectors_by_length(self, old_vector_list):
         vector_list = copy.deepcopy(old_vector_list)
@@ -851,17 +813,21 @@ class Sublattice():
         return(shortest_atom_distance)
 
     def _remove_parallel_vectors(self, old_vector_list, tolerance=7):
+        """
+        Remove parallel and antiparallel zone vectors.
+        """
         vector_list = copy.deepcopy(old_vector_list)
         element_prune_list = []
         for zone_index, zone_vector in enumerate(vector_list):
-            opposite_vector = (-1*zone_vector[0], -1*zone_vector[1])
-            for temp_index, temp_zone_vector in enumerate(
-                    vector_list[zone_index+1:]):
-                dist_x = temp_zone_vector[0]-opposite_vector[0]
-                dist_y = temp_zone_vector[1]-opposite_vector[1]
-                distance = math.hypot(dist_x, dist_y)
-                if distance < tolerance:
-                    element_prune_list.append(zone_index+temp_index+1)
+            for n in range(-4, 5):
+                n_vector = (n*zone_vector[0], n*zone_vector[1])
+                for temp_index, temp_zone_vector in enumerate(
+                        vector_list[zone_index+1:]):
+                    dist_x = temp_zone_vector[0]-n_vector[0]
+                    dist_y = temp_zone_vector[1]-n_vector[1]
+                    distance = math.hypot(dist_x, dist_y)
+                    if distance < tolerance:
+                        element_prune_list.append(zone_index+temp_index+1)
         element_prune_list = list(set(element_prune_list))
         element_prune_list.sort()
         element_prune_list.reverse()
@@ -894,7 +860,7 @@ class Sublattice():
 
     def _find_atomic_columns_from_atom(
             self, start_atom, zone_vector, atom_range_factor=0.5):
-        atom_range = atom_range_factor*self._shortest_atom_distance
+        atom_range = atom_range_factor*self._pixel_separation
         end_of_atom_plane = False
         zone_axis_list1 = [start_atom]
         while not end_of_atom_plane:
@@ -1638,15 +1604,21 @@ class Sublattice():
         mean_angle = np.array(angle_list).mean()
         return(mean_angle)
 
-    def get_fingerprint(self, pixel_radius=100):
+    def construct_zone_axes(self, debug_plot=False, zone_axis_para_list=False):
+        construct_zone_axes_from_sublattice(
+                self,
+                debug_plot=debug_plot,
+                zone_axis_para_list=zone_axis_para_list)
+
+    def _get_fingerprint(self, pixel_radius=100):
         """
-        Produce a distance-fingerprint of the sublattice.
+        Produce a Fingerprint class object.
 
         Example
         -------
         >>> fp = sublattice.get_fingerprint()
-        >>> import matplotlib.pyplot as plt
-        >>> plt.plot(fp, marker='o')
+        >>> fp_distance = fp.fingerprint_
+        >>> fp_vector = fp.cluster_centers_
         """
 
         n_atoms = len(self.atom_list)
@@ -1671,4 +1643,30 @@ class Sublattice():
         fingerprinter = Fingerprinter()
         fingerprinter.fit(nn.T)
 
+        return fingerprinter
+
+    def get_fingerprint_2d(self, pixel_radius=100):
+        """
+        Produce a distance and direction fingerprint of the sublattice.
+
+        Example
+        -------
+        >>> fp = sublattice.get_fingerprint_2d()
+        >>> import matplotlib.pyplot as plt
+        >>> plt.scatter(fp[:,0], fp[:,1], marker='o')
+        """
+        fingerprinter = self._get_fingerprint(pixel_radius=pixel_radius)
+        return fingerprinter.cluster_centers_
+
+    def get_fingerprint_1d(self, pixel_radius=100):
+        """
+        Produce a distance fingerprint of the sublattice.
+
+        Example
+        -------
+        >>> fp = sublattice.get_fingerprint_1d()
+        >>> import matplotlib.pyplot as plt
+        >>> plt.plot(fp, marker='o')
+        """
+        fingerprinter = self._get_fingerprint(pixel_radius=pixel_radius)
         return fingerprinter.fingerprint_

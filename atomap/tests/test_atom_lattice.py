@@ -8,8 +8,7 @@ from atomap.sublattice import Sublattice
 from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
-        construct_zone_axes_from_sublattice,\
-        get_peak2d_skimage
+        construct_zone_axes_from_sublattice
 from atomap.io import load_atom_lattice_from_hdf5
 from hyperspy.api import load
 

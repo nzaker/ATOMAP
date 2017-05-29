@@ -1,8 +1,8 @@
 from hyperspy.signals import Signal2D
 from atomap.external.gaussian2d import Gaussian2D
 import numpy as np
+from numpy.random import normal
 import math
-
 
 def make_artifical_atomic_signal(
         x, y, sigma_x=None, sigma_y=None, A=None, rotation=None,
@@ -67,6 +67,29 @@ def make_artifical_atomic_signal(
     signal = model.as_signal()
     signal.metadata.General.title = "artificial_signal"
     return signal, gaussian_list
+
+
+def make_vector_test_gaussian(x, y, standard_deviation=1, n=30):
+    point_list = []
+    for i in range(n):
+        g_x = normal(x, scale=standard_deviation)
+        g_y = normal(y, scale=standard_deviation)
+        point_list.append([g_x, g_y])
+    point_list = np.array(point_list)
+    return(point_list)
+
+
+def make_nn_test_dataset(xN=3, yN=3, xS=9, yS=9, std=0.3, n=50):
+    point_list = np.array([[],[]]).T
+    for ix in range(-xN, xN+1):
+        for iy in range(-yN, yN+1):
+            if (ix == 0) and (iy == 0):
+                pass
+            else:
+                gaussian_list = make_vector_test_gaussian(
+                        ix*xS, iy*yS, standard_deviation=std, n=n)
+                point_list = np.vstack((point_list, gaussian_list))
+    return(point_list)
 
 
 def find_atom_position_match(component_list, atom_list, delta=3, scale=1.):

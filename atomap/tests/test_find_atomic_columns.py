@@ -5,7 +5,7 @@ import unittest
 from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
-        get_peak2d_skimage
+        get_atom_positions
 from hyperspy.api import load
 import matplotlib.pyplot as plt
 
@@ -24,7 +24,7 @@ class test_finding_columns_skimage(unittest.TestCase):
         self.pixel_separation = peak_separation/s_adf.axes_manager[0].scale
 
     def test_find_number_of_columns(self):
-        peaks = get_peak2d_skimage(
+        peaks = get_atom_positions(
                 self.s_adf_modified, 
-                self.pixel_separation)[0]
+                self.pixel_separation)
         self.assertEqual(len(peaks), 238)
