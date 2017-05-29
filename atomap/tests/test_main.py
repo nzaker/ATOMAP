@@ -13,15 +13,6 @@ from hyperspy.signals import Signal2D
 my_path = os.path.dirname(__file__)
 
 
-class test_make_atom_lattice_single_sublattice_from_image(unittest.TestCase):
-    def test_default(self):
-        s_adf_filename = os.path.join(
-            my_path, "datasets", "test_ADF_cropped.hdf5")
-        pixel_separation = 19
-        s = load(s_adf_filename)
-        make_atom_lattice_single_sublattice_from_image(s, pixel_separation)
-
-
 class test_make_atom_lattice_from_image(unittest.TestCase):
     def setUp(self):
         s_adf_filename = os.path.join(
