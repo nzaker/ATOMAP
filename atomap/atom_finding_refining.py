@@ -3,12 +3,17 @@ import hyperspy.api as hs
 import numpy as np
 from skimage.feature import peak_local_max
 from copy import deepcopy
+import math
 
 
 def get_atom_positions(
         signal,
         separation=5,
-        threshold_rel=None):
+        threshold_rel=0.02,
+        pca=False,
+        subtract_background=False,
+        normalize_intensity=False,
+        remove_too_close_atoms=True):
     """
     Find the most intense features in a HyperSpy signal, where the
     features has to be separated by a minimum distance.
@@ -18,6 +23,16 @@ def get_atom_positions(
     signal : HyperSpy 2D signal
     separation : number
         Minimum separation between the features.
+    threshold_rel : float, default 0.02
+    pca : bool, default False
+        Do PCA on the signal before doing the peak finding.
+    subtract_background : bool, default False
+        Subtract the average background from the signal before
+        doing the peak finding.
+    normalize_intensity : bool, default False
+    remove_too_close_atoms : bool, default True
+        Will attempt to find and remove atoms which are too close to
+        eachother, i.e. less than separation.
 
     Returns
     -------
@@ -30,6 +45,13 @@ def get_atom_positions(
     >>> peak_x = atom_positions[:,0]
     >>> peak_y = atom_positions[:,1]
     """
+    if pca:
+        signal = do_pca_on_signal(signal)
+    if subtract_background:
+        signal = subtract_average_background(signal)
+    if normalize_intensity:
+        signal = normalize_signal(signal)
+
     image_data = signal.data
     if image_data.dtype is np.dtype('float16'):
         image_data = image_data.astype('float32')
@@ -47,14 +69,38 @@ def get_atom_positions(
     # The X- and Y-axes are switched in HyperSpy compared to NumPy
     # so we need to flip them here
     atom_positions = np.fliplr(temp_positions)
+    if remove_too_close_atoms:
+        atom_positions = _remove_too_close_atoms(
+                atom_positions, int(separation)/2)
     return(atom_positions)
 
 
+def _remove_too_close_atoms(atom_positions, pixel_separation_tolerance):
+    index_list = []
+    for index0, atom0 in enumerate(atom_positions):
+        for index1, atom1 in enumerate(atom_positions):
+            too_close = False
+            if not ((atom0[0] == atom1[0]) and (atom0[1] == atom1[1])):
+                dist = math.hypot(atom0[0]-atom1[0], atom0[1]-atom1[1])
+                if pixel_separation_tolerance > dist:
+                    if not (index0 in index_list):
+                        index_list.append(index1)
+    new_atom_positions = []
+    for index, atom in enumerate(atom_positions):
+        if not index in index_list:
+            new_atom_positions.append(atom)
+    new_atom_positions = np.array(new_atom_positions)
+    return(new_atom_positions)
+                
+
 def find_features_by_separation(
-        image_data,
+        signal,
         separation_range=None,
         separation_step=1,
-        threshold_rel=None,
+        threshold_rel=0.02,
+        pca=False,
+        subtract_background=False,
+        normalize_intensity=False,
         ):
     """
     Do peak finding with a varying amount of peak separation
@@ -64,7 +110,7 @@ def find_features_by_separation(
 
     Parameters
     ----------
-    image_data : Numpy 2D array
+    signal : HyperSpy 2D signal
     separation_range : tuple, optional
         Lower and upper end of minimum pixel distance between the
         features.
@@ -74,13 +120,6 @@ def find_features_by_separation(
     -------
     tuple, (separation_list, peak_list)
     """
-    if image_data.dtype is np.dtype('float16'):
-        image_data = image_data.astype('float32')
-    if image_data.dtype is np.dtype('int8'):
-        image_data = image_data.astype('int32')
-    if image_data.dtype is np.dtype('int16'):
-        image_data = image_data.astype('int32')
-
     if separation_range is None:
         min_separation = 3
         max_separation = int(np.array(image_data.shape).min()/5)
@@ -94,11 +133,19 @@ def find_features_by_separation(
     separation_value_list = []
     peak_list = []
     for separation in separation_list:
-        peaks = peak_local_max(
-                image=image_data,
-                min_distance=separation,
+        peaks = get_atom_positions(
+                signal,
+                separation=separation,
                 threshold_rel=threshold_rel,
-                indices=True)
+                pca=pca,
+                normalize_intensity=normalize_intensity,
+                subtract_background=subtract_background)
+
+#        peaks = peak_local_max(
+#                image=image_data,
+#                min_distance=separation,
+#                threshold_rel=threshold_rel,
+#                indices=True)
         separation_value_list.append(separation)
         peak_list.append(peaks)
 
@@ -112,7 +159,7 @@ def get_feature_separation(
         pca=False,
         subtract_background=False,
         normalize_intensity=False,
-        threshold_rel=None,
+        threshold_rel=0.02,
         ):
     """
     Plot the peak positions on in a HyperSpy signal, as a function
@@ -126,6 +173,7 @@ def get_feature_separation(
     pca : bool, default False
     subtract_background : bool, default False
     normalize_intensity : bool, default False
+    threshold_rel : float, default 0.02
 
     Example
     -------
@@ -135,19 +183,15 @@ def get_feature_separation(
     >>> s1 = get_feature_separation(s)
 
     """
-    if pca:
-        signal = do_pca_on_signal(signal)
-    if subtract_background:
-        signal = subtract_average_background(signal)
-    if normalize_intensity:
-        signal = normalize_signal(signal)
 
-    image_data = deepcopy(signal.data)
     separation_list, peak_list = find_features_by_separation(
-            image_data=image_data,
+            signal=signal,
             separation_range=separation_range,
             separation_step=separation_step,
-            threshold_rel=threshold_rel)
+            threshold_rel=threshold_rel,
+            pca=pca,
+            normalize_intensity=normalize_intensity,
+            subtract_background=subtract_background)
 
     scale_x = signal.axes_manager[0].scale
     scale_y = signal.axes_manager[1].scale
@@ -169,8 +213,8 @@ def get_feature_separation(
     marker_list_y = np.ones((len(peak_list), max_peaks))*-100
 
     for index, peaks in enumerate(peak_list):
-        marker_list_x[index, 0:len(peaks)] = (peaks[:, 1]*scale_x)+offset_x
-        marker_list_y[index, 0:len(peaks)] = (peaks[:, 0]*scale_y)+offset_y
+        marker_list_x[index, 0:len(peaks)] = (peaks[:, 0]*scale_x)+offset_x
+        marker_list_y[index, 0:len(peaks)] = (peaks[:, 1]*scale_y)+offset_y
 
     marker_list = []
     for i in range(marker_list_x.shape[1]):
