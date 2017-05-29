@@ -214,8 +214,7 @@ def construct_zone_axes_from_sublattice(
     if sublattice._pixel_separation is None:
         sublattice._pixel_separation = sublattice._get_pixel_separation()
     sublattice._find_nearest_neighbors(nearest_neighbors=15)
-    sublattice._make_nearest_neighbor_direction_distance_statistics(
-            debug_plot=debug_plot)
+    sublattice._make_translation_symmetry()
 
     if zone_axis_para_list is not False:
         zone_axes = []
