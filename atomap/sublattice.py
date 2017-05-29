@@ -774,7 +774,7 @@ class Sublattice():
 
     def _make_translation_symmetry(self, pixel_separation_factor=7):
         pixel_radius = self._pixel_separation*pixel_separation_factor
-        fp_2d = self.get_2d_fingerprint(pixel_radius=pixel_radius)
+        fp_2d = self.get_fingerprint_2d(pixel_radius=pixel_radius)
         clusters = []
         for zone_vector in fp_2d:
             cluster = (
@@ -1645,26 +1645,26 @@ class Sublattice():
 
         return fingerprinter
 
-    def get_2d_fingerprint(self, pixel_radius=100):
+    def get_fingerprint_2d(self, pixel_radius=100):
         """
         Produce a distance and direction fingerprint of the sublattice.
 
         Example
         -------
-        >>> fp = sublattice.get_2d_fingerprint()
+        >>> fp = sublattice.get_fingerprint_2d()
         >>> import matplotlib.pyplot as plt
         >>> plt.scatter(fp[:,0], fp[:,1], marker='o')
         """
         fingerprinter = self._get_fingerprint(pixel_radius=pixel_radius)
         return fingerprinter.cluster_centers_
 
-    def get_1d_fingerprint(self, pixel_radius=100):
+    def get_fingerprint_1d(self, pixel_radius=100):
         """
         Produce a distance fingerprint of the sublattice.
 
         Example
         -------
-        >>> fp = sublattice.get_1d_fingerprint()
+        >>> fp = sublattice.get_fingerprint_1d()
         >>> import matplotlib.pyplot as plt
         >>> plt.plot(fp, marker='o')
         """
