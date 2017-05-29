@@ -12,7 +12,8 @@ from hyperspy.drawing._markers.point import Point
 from atomap.tools import (
         _get_interpolated2d_from_unregular_data,
         project_position_property_sum_planes,
-        array2signal2d, array2signal1d)
+        array2signal2d, array2signal1d,
+        Fingerprinter)
 
 from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
@@ -661,6 +662,64 @@ class Sublattice():
         x_pos_distances = np.array(x_pos_distances)*scale
         y_pos_distances = np.array(y_pos_distances)*scale
         return(x_pos_distances, y_pos_distances)
+
+    def get_nearest_neighbor_directions_all(self):
+        """
+        Like get_nearest_neighbour_directions(), but considers
+        all other atoms (instead of the typical 9) as neighbors
+        from each atom.
+
+        This method also does not require atoms to have the
+        atom.nearest_neighbor_list parameter populated with
+        sublattice._find_nearest_neighbors().
+
+        Without the constraint of looking at only n nearest neighbours,
+        blazing fast internal numpy functions can be utilized to
+        calculate directions. However, memory usage will grow quadratically
+        with the number of atomic columns. E.g.:
+        1000 atomic columns will require ~8MB of memory.
+        10,000 atomic columns will require ~800MB of memory.
+        100,000 atomic columns will throw a MemoryError exception
+        on most machines.
+
+        Returns
+        -------
+        Pixel Position : np.array([x_position, y_position])
+
+        Example
+        -------
+        >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions_all()
+        >>> import matplotlib.pyplot as plt
+        >>> mask = np.sqrt(x_pos**2 + y_pos**2) < 100
+        >>> plt.scatter(x_pos[mask], y_pos[mask])
+        """
+
+        n_atoms = len(self.atom_list)
+
+        # Calculate the offset matrix
+        #
+        # Note: The terms 'direction', 'offset' and 'distance vector' are used
+        # interchangeably in this method.
+        x_array = np.asarray(self.x_position)
+        y_array = np.asarray(self.y_position)
+        dx = x_array - x_array[..., np.newaxis]
+        dy = y_array - y_array[..., np.newaxis]
+        offset = np.array([dx,dy])
+
+        # Assert statements here are just to help the reader understand what's
+        # going on by keeping track of the shapes of arrays used.
+        assert offset.shape == (2, n_atoms, n_atoms)
+
+        # Produce a mask that selects all elements except the diagonal
+        # i.e. distance vectors from an atom to itself.
+        mask = ~np.diag([True]*n_atoms)
+        assert mask.shape == (n_atoms, n_atoms)
+
+        # Remove the diagonal and flatten
+        nn = np.array([offset[0][mask], offset[1][mask]])
+        assert nn.shape == (2, n_atoms*(n_atoms-1))
+
+        return nn
 
     def _make_nearest_neighbor_direction_distance_statistics(
             self,
@@ -1578,3 +1637,38 @@ class Sublattice():
             angle_list.extend(temp_angle_list)
         mean_angle = np.array(angle_list).mean()
         return(mean_angle)
+
+    def get_fingerprint(self, pixel_radius=100):
+        """
+        Produce a distance-fingerprint of the sublattice.
+
+        Example
+        -------
+        >>> fp = sublattice.get_fingerprint()
+        >>> import matplotlib.pyplot as plt
+        >>> plt.plot(fp, marker='o')
+        """
+
+        n_atoms = len(self.atom_list)
+
+        # Get distance vectors to all neighbouring atoms from each atom
+        x_pos, y_pos = self.get_nearest_neighbor_directions_all()
+
+        # Assert statements here are just to help the reader understand the
+        # algorithm by keeping track of the shapes of arrays used.
+        assert x_pos.shape == y_pos.shape == (n_atoms*(n_atoms-1),)
+
+        # Produce a mask that only select vectors that are shorter than radius
+        mask = (x_pos**2 + y_pos**2) < pixel_radius**2
+        assert mask.shape == (n_atoms*(n_atoms-1),)
+        n_atoms_closer_than_radius = mask.sum()
+
+        # Apply mask to get nearest neighbours
+        nn = np.array([x_pos[mask], y_pos[mask]])
+        assert nn.shape == (2, n_atoms_closer_than_radius,)
+
+        # Apply the fingerprinter
+        fingerprinter = Fingerprinter()
+        fingerprinter.fit(nn.T)
+
+        return fingerprinter.fingerprint_
