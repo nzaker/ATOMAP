@@ -11,8 +11,8 @@ from atomap.atom_finding_refining import\
 from atomap.sublattice import Sublattice
 from hyperspy.api import load
 from atomap.atom_finding_refining import refine_sublattice
-
 from atomap.atom_lattice import Atom_Lattice
+import atomap.testing_tools as tt
 
 my_path = os.path.dirname(__file__)
 
@@ -202,3 +202,34 @@ class test_sublattice_interpolation(unittest.TestCase):
                 x_list, y_list, z_list)
         z_interpolate = output[2]
         self.assertTrue(not z_interpolate.any())
+
+
+class test_sublattice_fingerprinter(unittest.TestCase):
+
+    def setUp(self):
+        x, y = np.mgrid[0:500:20j,0:500:20j]
+        x, y = x.flatten(), y.flatten()
+        s, g_list = tt.make_artifical_atomic_signal(x, y, image_pad=10)
+
+        atom_positions = get_atom_positions(
+                signal=s,
+                separation=10,
+                threshold_rel=0.02,
+                )
+        sublattice = Sublattice(
+                atom_position_list=atom_positions,
+                image=s.data)
+        sublattice._find_nearest_neighbors()
+        self.sublattice = sublattice
+
+    def test_fingerprint_1d(self):
+        sublattice = self.sublattice
+        sublattice.get_fingerprint_1d()
+
+    def test_fingerprint_2d(self):
+        sublattice = self.sublattice
+        sublattice.get_fingerprint_2d()
+
+    def test_fingerprint(self):
+        sublattice = self.sublattice
+        sublattice._get_fingerprint()
