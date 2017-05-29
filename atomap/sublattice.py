@@ -59,7 +59,7 @@ class Sublattice():
         self._tag = ''
         self.pixel_size = 1.0
         self._plot_color = 'blue'
-        self._pixel_separation = None
+        self._pixel_separation = 0.0
 
     def __repr__(self):
         return '<%s, %s (atoms:%s,planes:%s)>' % (
