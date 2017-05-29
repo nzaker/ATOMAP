@@ -728,3 +728,89 @@ def array2signal2d(numpy_array, scale=1.0, rotate_flip=False):
     signal.axes_manager[-1].scale = scale
     signal.axes_manager[-2].scale = scale
     return signal
+
+
+from sklearn.cluster import DBSCAN
+class Fingerprinter:
+    """
+    Produces a distance-fingerprint from an array of neighbor distance vectors.
+
+    To avoid introducing our own interface we're going to use scikit-learn
+    Estimator conventions to name the method, which produces our fingerprint, 'fit'
+    and store our estimations as attributes with a trailing underscore in their names.
+    http://scikit-learn.org/stable/developers/contributing.html#fitting
+    http://scikit-learn.org/stable/developers/contributing.html#estimated-attributes)
+
+    Attributes
+    ----------
+    fingerprint_ : array, shape = (n_clusters,)
+        The main result. The contents of fingerprint_ can be described as
+        the relative distances to neighbours in the generalized neighborhood.
+    cluster_centers_ : array, shape = (n_clusters, n_dimensions)
+        The cluster center coordinates from which the fingerprint was produced.
+    cluster_algo_.labels_ : array, shape = (n_points,)
+        Integer labels that denote which cluster each point belongs to.
+    """
+
+    def __init__(self, cluster_algo=DBSCAN(eps=0.1, min_samples=10)):
+        self._cluster_algo = cluster_algo
+
+    def fit(self, X):
+        """Parameters
+        ----------
+        X : array, shape = (n_points, n_dimensions)
+            This array is typically a transpose of a subset of the returned
+            value of sublattice.get_nearest_neighbor_directions_all()
+        """
+        X = np.asarray(X)
+        n_points, n_dimensions = X.shape
+
+        # Normalize scale so that the clustering algorithm can use constant parameters.
+        #
+        # E.g. the "eps" parameter in DBSCAN can take advantage of the normalized scale.
+        # It specifies the proximity (in the same space as X) required to connect adjacent
+        # points into a cluster.
+        X_std = X.std()
+        X = X/X_std
+        cl = self._cluster_algo
+        cl.fit(X)
+
+        # The result of a clustering algorithm are labels that indicate which cluster
+        # each point belongs to.
+        #
+        # Labels greater or equal to 0 correspond to valid clusters.
+        # A label equal to -1 indicate that this point doesn't belong to any cluster.
+        labels = cl.labels_
+
+        # Assert statements here are just to help the reader understand the
+        # algorithm by keeping track of the shapes of arrays used.
+        assert labels.shape == (n_points,)
+
+        # Number of clusters in labels, removing the -1 label if present.
+        n_clusters = len(set(labels) - set([-1]))
+
+        # Cluster centers.
+        means = np.zeros((n_clusters, n_dimensions))
+        for i in range(n_clusters):
+            ith_cluster = X[labels == i]
+            means[i] = ith_cluster.mean(axis=0)
+
+        assert means.shape == (n_clusters, n_dimensions)
+
+        # Calculate distances to each center, sort in increasing order.
+        dist = np.linalg.norm(means, axis=-1)
+        dist.sort()
+
+        # Divide distances by the closest one to get rid of any dependence on
+        # the image scale, i.e. produce distance ratios that are unitless.
+        dist /= dist[0]
+
+        assert dist.shape == (n_clusters,)
+
+        # Store estimated attributes using the scikit-learn convention.
+        # See the docstring of this class.
+        self.cluster_centers_ = means*X_std
+        self.fingerprint_ = dist
+        self.cluster_algo_ = cl
+
+        return self
