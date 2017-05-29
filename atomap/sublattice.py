@@ -1696,15 +1696,15 @@ class Sublattice():
                 debug_plot=debug_plot,
                 zone_axis_para_list=zone_axis_para_list)
 
-    def get_fingerprint(self, pixel_radius=100):
+    def _get_fingerprint(self, pixel_radius=100):
         """
-        Produce a distance-fingerprint of the sublattice.
+        Produce a Fingerprint class object.
 
         Example
         -------
         >>> fp = sublattice.get_fingerprint()
-        >>> import matplotlib.pyplot as plt
-        >>> plt.plot(fp, marker='o')
+        >>> fp_distance = fp.fingerprint_
+        >>> fp_vector = fp.cluster_centers_
         """
 
         n_atoms = len(self.atom_list)
@@ -1729,4 +1729,30 @@ class Sublattice():
         fingerprinter = Fingerprinter()
         fingerprinter.fit(nn.T)
 
+        return fingerprinter
+
+    def get_2d_fingerprint(self, pixel_radius=100):
+        """
+        Produce a distance and direction fingerprint of the sublattice.
+
+        Example
+        -------
+        >>> fp = sublattice.get_2d_fingerprint()
+        >>> import matplotlib.pyplot as plt
+        >>> plt.scatter(fp[:,0], fp[:,1], marker='o')
+        """
+        fingerprinter = self._get_fingerprint(pixel_radius=pixel_radius)
+        return fingerprinter.cluster_centers_
+
+    def get_1d_fingerprint(self, pixel_radius=100):
+        """
+        Produce a distance fingerprint of the sublattice.
+
+        Example
+        -------
+        >>> fp = sublattice.get_1d_fingerprint()
+        >>> import matplotlib.pyplot as plt
+        >>> plt.plot(fp, marker='o')
+        """
+        fingerprinter = self._get_fingerprint(pixel_radius=pixel_radius)
         return fingerprinter.fingerprint_
