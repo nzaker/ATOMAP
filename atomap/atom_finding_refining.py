@@ -30,8 +30,16 @@ def get_atom_positions(
     >>> peak_x = atom_positions[:,0]
     >>> peak_y = atom_positions[:,1]
     """
+    image_data = signal.data
+    if image_data.dtype is np.dtype('float16'):
+        image_data = image_data.astype('float32')
+    if image_data.dtype is np.dtype('int8'):
+        image_data = image_data.astype('int32')
+    if image_data.dtype is np.dtype('int16'):
+        image_data = image_data.astype('int32')
+
     temp_positions = peak_local_max(
-            image=signal.data,
+            image=image_data,
             min_distance=int(separation),
             threshold_rel=threshold_rel,
             indices=True)
@@ -203,6 +211,8 @@ def find_feature_density(
 def construct_zone_axes_from_sublattice(
         sublattice, debug_plot=False, zone_axis_para_list=False):
     tag = sublattice._tag
+    if sublattice._pixel_separation is None:
+        sublattice._pixel_separation = sublattice._get_pixel_separation()
     sublattice._find_nearest_neighbors(nearest_neighbors=15)
     sublattice._make_nearest_neighbor_direction_distance_statistics(
             debug_plot=debug_plot)

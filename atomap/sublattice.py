@@ -58,7 +58,7 @@ class Sublattice():
         self._tag = ''
         self.pixel_size = 1.0
         self._plot_color = 'blue'
-        self._pixel_separation = 10
+        self._pixel_separation = None
 
     def __repr__(self):
         return '<%s, %s (atoms:%s,planes:%s)>' % (
@@ -478,6 +478,41 @@ class Sublattice():
                 marker_list.append(Point(x, y))
             add_marker(signal, marker_list, permanent=True, plot_marker=False)
         return signal
+
+    def _get_pixel_separation(self, nearest_neighbors=2, leafsize=100):
+        """
+        Get the pixel separation by finding the distance between each atom
+        and its two closest neighbors. From this distance list the median
+        distance is found and divided by 2. This gives the distance used
+        by for example atom_finding_refining.get_atom_positions
+
+        Parameters
+        ----------
+        nearest_neighbor : int, optional, default 2
+
+        Returns
+        -------
+        pixel_separation, int
+        """
+        atom_position_list = np.array(
+                [self.x_position, self.y_position]).swapaxes(0, 1)
+        nearest_neighbor_data = sp.spatial.cKDTree(
+                atom_position_list,
+                leafsize=leafsize)
+        distance_list = []
+        for atom in self.atom_list:
+            nn_data_list = nearest_neighbor_data.query(
+                    atom.get_pixel_position(),
+                    nearest_neighbors)
+            nn_link_list = []
+            # Skipping the first element,
+            # since it points to the atom itself
+            for nn_link in nn_data_list[1][1:]:
+                distance = atom.get_pixel_distance_from_another_atom(
+                        self.atom_list[nn_link])
+                distance_list.append(distance)
+        pixel_separation = np.median(distance_list)/2
+        return(pixel_separation)
 
     def _find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
         atom_position_list = np.array(
