@@ -267,8 +267,8 @@ def make_atom_lattice_from_image(
             refinement_neighbor_distance)
 
         if sublattice_para.sublattice_order == 0:
-            construct_zone_axes_from_sublattice(
-                    sublattice, debug_plot=debug_plot,
+            sublattice.construct_zone_axes(
+                    debug_plot=debug_plot,
                     zone_axis_para_list=zone_axis_para_list)
 
     return(atom_lattice)
