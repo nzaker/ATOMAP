@@ -770,7 +770,8 @@ class Fingerprinter:
         # E.g. the "eps" parameter in DBSCAN can take advantage of the normalized scale.
         # It specifies the proximity (in the same space as X) required to connect adjacent
         # points into a cluster.
-        X = X/X.std()
+        X_std = X.std()
+        X = X/X_std
         cl = self._cluster_algo
         cl.fit(X)
 
@@ -808,7 +809,7 @@ class Fingerprinter:
 
         # Store estimated attributes using the scikit-learn convention.
         # See the docstring of this class.
-        self.cluster_centers_ = means
+        self.cluster_centers_ = means*X_std
         self.fingerprint_ = dist
         self.cluster_algo_ = cl
 
