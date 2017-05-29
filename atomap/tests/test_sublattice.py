@@ -7,7 +7,7 @@ from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
         construct_zone_axes_from_sublattice,\
-        get_peak2d_skimage
+        get_atom_positions
 from atomap.sublattice import Sublattice
 from hyperspy.api import load
 from atomap.atom_finding_refining import refine_sublattice
@@ -42,9 +42,9 @@ class test_sublattice_construct_refine(unittest.TestCase):
         self.pixel_size = s_adf.axes_manager[0].scale
         self.pixel_separation = peak_separation/self.pixel_size
 
-        self.peaks = get_peak2d_skimage(
+        self.peaks = get_atom_positions(
                 self.s_adf_modified,
-                self.pixel_separation)[0]
+                self.pixel_separation)
 
     def test_make_sublattice(self):
         sublattice = Sublattice(
@@ -93,9 +93,9 @@ class test_sublattice_get_signal(unittest.TestCase):
         pixel_size = s_adf.axes_manager[0].scale
         pixel_separation = peak_separation/pixel_size
 
-        peaks = get_peak2d_skimage(
+        peaks = get_atom_positions(
                 s_adf_modified,
-                pixel_separation)[0]
+                pixel_separation)
         self.sublattice = Sublattice(
                 peaks,
                 np.rot90(np.fliplr(s_adf_modified.data)))

@@ -6,7 +6,7 @@ from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
         construct_zone_axes_from_sublattice,\
-        get_peak2d_skimage
+        get_atom_positions
 
 from atomap.sublattice import Sublattice
 from hyperspy.api import load
@@ -35,9 +35,9 @@ class test_adf_abf_sto(unittest.TestCase):
         s_abf.change_dtype('float64')
         s_abf_modified = subtract_average_background(s_abf)
 
-        self.peaks = get_peak2d_skimage(
+        self.peaks = get_atom_positions(
                 self.s_adf_modified,
-                self.pixel_separation)[0]
+                self.pixel_separation)
 
     def test_find_b_cation_atoms(self):
         a_sublattice = Sublattice(

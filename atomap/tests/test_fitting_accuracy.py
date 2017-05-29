@@ -39,7 +39,7 @@ class test_fitting_accuracy(unittest.TestCase):
                 g_list, atom_list, scale=sublattice.pixel_size, delta=3)
         fit_miss = get_fit_miss_array(match_list)
         mean_diff = fit_miss[:,2].mean()
-        self.assertAlmostEqual(mean_diff, 0., places=5)
+        self.assertAlmostEqual(mean_diff, 0., places=4)
 
     def test_gaussian_2d(self):
         g_list = self.g_list

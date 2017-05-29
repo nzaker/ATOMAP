@@ -4,8 +4,7 @@ import matplotlib
 matplotlib.use('Agg')
 from atomap.main import (
         make_atom_lattice_from_image,
-        _get_signal_name,
-        make_atom_lattice_single_sublattice_from_image)
+        _get_signal_name)
 from atomap.process_parameters import PerovskiteOxide110
 from hyperspy.io import load
 from hyperspy.signals import Signal2D
