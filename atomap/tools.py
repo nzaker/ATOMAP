@@ -3,6 +3,7 @@ import math
 import copy
 from scipy import interpolate
 from scipy import ndimage
+from scipy.spatial import cKDTree
 import matplotlib.pyplot as plt
 import hyperspy.api as hs
 from hyperspy.signals import Signal1D, Signal2D
@@ -729,6 +730,33 @@ def array2signal2d(numpy_array, scale=1.0, rotate_flip=False):
     signal.axes_manager[-2].scale = scale
     return signal
 
+
+def _get_n_nearest_neighbors(position_list, nearest_neighbors, leafsize=100):
+    """
+    Parameters
+    ----------
+    position_list : NumPy array
+        In the form [[x0, y0], [x1, y1], ...].
+    nearest_neighbors : int
+        The number of closest neighbors which will be returned
+    """
+    # Need to add one, as the position itself is counted as one neighbor
+    nearest_neighbors += 1
+
+    nearest_neighbor_data = cKDTree(
+            position_list,
+            leafsize=leafsize)
+    position_neighbor_list = []
+    for position in position_list:
+        nn_data_list = nearest_neighbor_data.query(
+                position,
+                nearest_neighbors)
+        # Skipping the first element,
+        # since it points to the atom itself
+        for position_index in nn_data_list[1][1:]:
+            delta_position = position_list[position_index] - position
+            position_neighbor_list.append(delta_position)
+    return(np.array(position_neighbor_list))
 
 from sklearn.cluster import DBSCAN
 class Fingerprinter:

@@ -3,6 +3,7 @@ import scipy as sp
 import matplotlib.pyplot as plt
 import math
 from scipy import ndimage
+from scipy.spatial import cKDTree
 import hyperspy.api as hs
 import copy
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -497,7 +498,7 @@ class Sublattice():
         """
         atom_position_list = np.array(
                 [self.x_position, self.y_position]).swapaxes(0, 1)
-        nearest_neighbor_data = sp.spatial.cKDTree(
+        nearest_neighbor_data = cKDTree(
                 atom_position_list,
                 leafsize=leafsize)
         distance_list = []
