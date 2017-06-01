@@ -16,6 +16,7 @@ To install the requirements in Ubuntu (16.10):
 
     $ sudo apt-get install python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-matplotlib python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-skimage
     $ sudo apt-get install python3-sympy --no-install-recommends
+    $ pip3 install --user hyperspy[all]
 
 Installing Atomap itself:
 
