@@ -6,16 +6,17 @@ from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
         construct_zone_axes_from_sublattice,\
-        get_peak2d_skimage
+        get_atom_positions
 
 from atomap.sublattice import Sublattice
+from atomap.atom_lattice import Atom_Lattice
 from hyperspy.api import load
 import numpy as np
 
 my_path = os.path.dirname(__file__)
 
 
-class test_adf_abf_sto(unittest.TestCase):
+class test_adf_abf_sto_autoprocess(unittest.TestCase):
 
     def setUp(self):
         s_adf_filename = os.path.join(
@@ -35,9 +36,9 @@ class test_adf_abf_sto(unittest.TestCase):
         s_abf.change_dtype('float64')
         s_abf_modified = subtract_average_background(s_abf)
 
-        self.peaks = get_peak2d_skimage(
+        self.peaks = get_atom_positions(
                 self.s_adf_modified,
-                self.pixel_separation)[0]
+                self.pixel_separation)
 
     def test_find_b_cation_atoms(self):
         a_sublattice = Sublattice(
@@ -69,3 +70,27 @@ class test_adf_abf_sto(unittest.TestCase):
                     np.fliplr(self.s_adf_modified.data)))
         b_sublattice.pixel_size = self.pixel_size
         construct_zone_axes_from_sublattice(b_sublattice)
+
+
+class test_adf_abf_sto_manualprocess(unittest.TestCase):
+
+    def test_manual_processing(self):
+        s_adf_filename = os.path.join(
+                my_path, "datasets", "test_ADF_cropped.hdf5")
+        s = load(s_adf_filename)
+        atom_positions = get_atom_positions(
+                signal=s,
+                separation=17,
+                threshold_rel=0.02,
+                )
+        sublattice = Sublattice(
+                atom_position_list=atom_positions,
+                image=s.data)
+        sublattice._find_nearest_neighbors()
+        sublattice.refine_atom_positions_using_center_of_mass(
+                sublattice.image, percent_to_nn=0.4)
+        sublattice.refine_atom_positions_using_2d_gaussian(
+                sublattice.image, percent_to_nn=0.4)
+
+        atom_lattice = Atom_Lattice(image=s.data, sublattice_list=[sublattice])
+        sublattice.construct_zone_axes()

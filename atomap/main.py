@@ -5,7 +5,7 @@ from atomap.atom_finding_refining import\
         do_pca_on_signal,\
         refine_sublattice,\
         construct_zone_axes_from_sublattice,\
-        get_peak2d_skimage,\
+        get_atom_positions,\
         normalize_signal
 
 from atomap.tools import\
@@ -47,95 +47,6 @@ def _get_signal_name(signal):
     return(filename)
 
 
-def make_atom_lattice_single_sublattice_from_image(
-        s_image,
-        pixel_separation,
-        refinement_config=None,
-        debug_plot=False):
-    """
-    Find one sublattice from a HyperSpy image signal. This function will
-    not construct atom planes from the atom positions.
-    Useful for finding a single sublattice, especially where the crystal
-    structure is not the same across the whole image.
-
-    Parameters
-    ----------
-    s_image : HyperSpy Signal2D object
-    pixel_separation : number
-    refinement_config : dict, optional
-    debug_plot : bool, optional
-
-    Examples
-    --------
-    >>> import atomap.api as am
-    >>> import hyperspy.api as hs
-    >>> s = hs.load("some_signal.hdf5")
-    >>> atom_lattice = make_atom_lattice_single_sublattice_from_image(s, 15)
-    >>> atom_lattice.plot_all_sublattices()
-
-    Returns
-    -------
-    Atomap atom_lattice object
-    """
-    image_filename = _get_signal_name(s_image)
-
-    if refinement_config is None:
-        refinement_config = {
-                'config': [
-                    ['image_data_modified', 1, 'center_of_mass'],
-                    ['image_data', 1, 'center_of_mass'],
-                    ['image_data', 1, 'gaussian'],
-                    ],
-                'neighbor_distance': 0.35}
-
-    name = image_filename
-
-    s_image = s_image.deepcopy()
-    s_image_modified = run_image_filtering(s_image)
-
-    initial_atom_position_list = get_peak2d_skimage(
-            s_image_modified,
-            separation=pixel_separation)[0]
-
-    image_data = np.rot90(np.fliplr(s_image.data))
-    image_data_modified = np.rot90(np.fliplr(s_image_modified.data))
-
-    atom_lattice = Atom_Lattice(name=name)
-    atom_lattice._original_filename = image_filename
-    atom_lattice.image0 = image_data
-    atom_lattice._pixel_separation = pixel_separation
-
-    s_image = s_image
-    image_data = image_data
-    image_data_modified = image_data_modified
-
-    sublattice = Sublattice(
-        initial_atom_position_list,
-        image_data_modified)
-    sublattice._plot_color = "red"
-    sublattice.name = "Sublattice0"
-    sublattice._tag = "S0"
-    sublattice.pixel_size = s_image.axes_manager[0].scale
-    sublattice._pixel_separation = pixel_separation
-    sublattice.original_image = image_data
-    atom_lattice.sublattice_list.append(sublattice)
-
-    for refinement_step in refinement_config['config']:
-        if refinement_step[0] == 'image_data':
-            refinement_step[0] = sublattice.original_image
-        elif refinement_step[0] == 'image_data_modified':
-            refinement_step[0] = sublattice.image
-        else:
-            refinement_step[0] = sublattice.original_image
-
-    refine_sublattice(
-        sublattice,
-        refinement_config['config'],
-        refinement_config['neighbor_distance'])
-
-    return(atom_lattice)
-
-
 def make_atom_lattice_from_image(
         s_image0,
         process_parameter=None,
@@ -162,19 +73,19 @@ def make_atom_lattice_from_image(
                     or pixel_separation parameter")
         else:
             pixel_separation = process_parameter.peak_separation/image0_scale
-    initial_atom_position_list = get_peak2d_skimage(
+    initial_atom_position_list = get_atom_positions(
             s_image0_modified,
-            separation=pixel_separation)[0]
+            separation=pixel_separation)
 
     if s_image1 is not None:
         s_image1 = s_image1.deepcopy()
         s_image1.data = 1./s_image1.data
-        image1_data = np.rot90(np.fliplr(s_image1.data))
+        image1_data = s_image1.data
 
     #################################
 
-    image0_data = np.rot90(np.fliplr(s_image0.data))
-    image0_data_modified = np.rot90(np.fliplr(s_image0_modified.data))
+    image0_data = s_image0.data
+    image0_data_modified = s_image0_modified.data
 
     atom_lattice = Atom_Lattice(name=name)
     atom_lattice._original_filename = image0_filename
@@ -267,8 +178,8 @@ def make_atom_lattice_from_image(
             refinement_neighbor_distance)
 
         if sublattice_para.sublattice_order == 0:
-            construct_zone_axes_from_sublattice(
-                    sublattice, debug_plot=debug_plot,
+            sublattice.construct_zone_axes(
+                    debug_plot=debug_plot,
                     zone_axis_para_list=zone_axis_para_list)
 
     return(atom_lattice)

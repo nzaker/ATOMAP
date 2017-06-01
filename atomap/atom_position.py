@@ -479,7 +479,8 @@ class Atom_Position:
         self.pixel_y = new_y
 
     def _calculate_center_of_mass(self, data):
-        center_of_mass = ndimage.measurements.center_of_mass(data)
+        center_of_mass = ndimage.measurements.center_of_mass(
+                data.astype('float32'))
         return(center_of_mass)
 
     def get_atomic_plane_from_zone_vector(self, zone_vector):

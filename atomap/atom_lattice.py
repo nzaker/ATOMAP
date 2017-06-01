@@ -9,9 +9,26 @@ from atomap.tools import array2signal2d
 
 class Atom_Lattice():
 
-    def __init__(self, name=""):
-        self.sublattice_list = []
-        self.image0 = None
+    def __init__(
+            self,
+            image=None,
+            name="",
+            sublattice_list=None,
+            ):
+        """
+        Parameters
+        ----------
+        image : 2D NumPy array, optional
+        sublattice_list : list of sublattice object, optional
+        """
+        if sublattice_list is None:
+            self.sublattice_list = []
+        else:
+            self.sublattice_list = sublattice_list
+        if image is None:
+            self.image0 = None
+        else:
+            self.image0 = image
         self.name = name
         self._pixel_separation = 10
         self._original_filename = ''
