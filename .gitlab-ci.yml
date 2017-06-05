@@ -1,4 +1,4 @@
-all_tests:
+pip_install_tests:
     image: ubuntu:latest
     script: 
     - apt-get update -q
@@ -6,6 +6,12 @@ all_tests:
     - apt-get install -qy python3-sympy --no-install-recommends
     - pip3 install --upgrade pip
     - pip3 install --user .
+    - python3 -m unittest discover
+
+anaconda_install_tests:
+    image: continuumio/anaconda3
+    script:
+    - pip install --user .
     - python3 -m unittest discover
 
 pages:
