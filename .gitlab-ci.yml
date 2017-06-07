@@ -14,7 +14,7 @@ anaconda_install_tests:
     - conda install conda-build
     - mkdir build
     - conda build -c conda-forge --output-folder build .
-    - conda install --use-local build/linux-64/atomap-*.tar.bz2
+    - conda install -c conda-forge build/linux-64/atomap-*.tar.bz2
     - python3 -m unittest discover
 
 pages:
