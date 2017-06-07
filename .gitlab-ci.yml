@@ -11,6 +11,7 @@ pip_install_tests:
 anaconda_install_tests:
     image: continuumio/anaconda3
     script:
+    - apt-get install -qy libgl1-mesa-glx
     - conda install -c conda-forge hyperspy
     - conda install conda-build
     - mkdir build
