@@ -1,0 +1,27 @@
+package:
+  name: atomap
+  version: 0.0.7
+
+source:
+  path: ../
+  patches:
+    - remove_setup_py_ipython_hyperspy.patch
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - h5py
+    - scipy
+    - numpy
+    - matplotlib
+    - ipython
+    - hyperspy
+  run:
+    - python
+    - h5py
+    - scipy
+    - numpy
+    - matplotlib
+    - ipython
+    - hyperspy

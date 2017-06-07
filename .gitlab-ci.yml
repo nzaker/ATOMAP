@@ -11,7 +11,10 @@ pip_install_tests:
 anaconda_install_tests:
     image: continuumio/anaconda3
     script:
-    - pip install --user .
+    - conda install conda-build
+    - mkdir build
+    - conda build -c conda-forge --output-folder build .
+    - conda install --use-local build/linux-64/atomap-*.tar.bz2
     - python3 -m unittest discover
 
 pages:
