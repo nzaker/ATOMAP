@@ -5,7 +5,7 @@ package:
 source:
   path: ../
   patches:
-    - remove_setup_py_ipython_hyperspy.patch
+    - remove_setup_py_hyperspy.patch
 
 requirements:
   build:
