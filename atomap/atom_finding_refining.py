@@ -290,8 +290,25 @@ def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
     return(mask)
 
 
+def _make_model_from_atom_list(
+        atom_list,
+        image_data,
+        percent_to_nn=0.40):
+    mask = np.zeros_like(image_data)
+
+    for atom in atom_list:
+        closest_neighbor = atom.get_closest_neighbor()
+        radius = closest_neighbor * percent_to_nn
+        temp_mask = _make_circular_mask(
+                atom.pixel_y, atom.pixel_x,
+                image_data.shape[0], image_data.shape[1],
+                radius)
+        mask = mask + temp_mask
+    return(mask)
+
+
 def fit_atom_positions_gaussian(
-        atoms,
+        atom_list,
         image_data,
         rotation_enabled=True,
         percent_to_nn=0.40,
@@ -299,7 +316,7 @@ def fit_atom_positions_gaussian(
         debug=False):
     """ If the Gaussian is centered outside the masked area,
     this function returns False"""
-    atom = atoms
+    atom = atom_list
 
     closest_neighbor = atom.get_closest_neighbor()
 
