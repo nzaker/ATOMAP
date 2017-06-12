@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import hyperspy.api as hs
 from hyperspy.signals import Signal1D, Signal2D
 
+from atomap.atom_finding_refining import fit_atom_positions_gaussian
 
 # From Vidars HyperSpy repository
 def _line_profile_coordinates(src, dst, linewidth=1):
@@ -69,7 +70,8 @@ def remove_atoms_from_image_using_2d_gaussian(
     for atom in sublattice.atom_list:
         percent_distance = percent_to_nn
         for i in range(10):
-            g = atom.fit_2d_gaussian_with_mask(
+            g = fit_atom_positions_gaussian(
+                    atom,
                     image,
                     rotation_enabled=True,
                     percent_to_nn=percent_distance)
@@ -83,13 +85,6 @@ def remove_atoms_from_image_using_2d_gaussian(
                 break
     subtracted_image = copy.deepcopy(image) - model_image
     return(subtracted_image)
-
-
-# Delete this function?
-def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
-    y, x = np.ogrid[-centerX:imageSizeX-centerX, -centerY:imageSizeY-centerY]
-    mask = x*x + y*y <= radius*radius
-    return(mask)
 
 
 def get_atom_planes_square(

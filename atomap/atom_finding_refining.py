@@ -1,9 +1,12 @@
 from scipy.ndimage.filters import gaussian_filter
+from hyperspy.signals import Signal2D
 import hyperspy.api as hs
 import numpy as np
 from skimage.feature import peak_local_max
 from copy import deepcopy
 import math
+
+from atomap.external.gaussian2d import Gaussian2D
 
 
 def get_atom_positions(
@@ -281,6 +284,93 @@ def construct_zone_axes_from_sublattice(
         sublattice.plot_all_atom_planes(fignameprefix=tag+"_atom_plane")
 
 
+def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
+    y, x = np.ogrid[-centerX:imageSizeX-centerX, -centerY:imageSizeY-centerY]
+    mask = x*x + y*y <= radius*radius
+    return(mask)
+
+
+def fit_atom_positions_gaussian(
+        atoms,
+        image_data,
+        rotation_enabled=True,
+        percent_to_nn=0.40,
+        centre_free=True,
+        debug=False):
+    """ If the Gaussian is centered outside the masked area,
+    this function returns False"""
+    atom = atoms
+
+    closest_neighbor = atom.get_closest_neighbor()
+
+    slice_size = closest_neighbor * percent_to_nn * 2
+    data_slice, x0, y0 = atom._get_image_slice_around_atom(
+            image_data, slice_size)
+
+    slice_radius = slice_size/2
+
+    data_slice -= data_slice.min()
+    data_slice_max = data_slice.max()
+    data = data_slice
+
+    mask = _make_circular_mask(
+            slice_radius,
+            slice_radius,
+            data.shape[0],
+            data.shape[1],
+            closest_neighbor*percent_to_nn)
+    data = deepcopy(data)
+    mask = np.invert(mask)
+    data[mask] = 0
+    g = Gaussian2D(
+            centre_x=atom.pixel_x,
+            centre_y=atom.pixel_y,
+            sigma_x=atom.sigma_x,
+            sigma_y=atom.sigma_y,
+            rotation=atom.rotation,
+            A=data_slice_max)
+    
+    if centre_free is False:
+        g.centre_x.free = False
+        g.centre_y.free = False
+
+    if rotation_enabled:
+        g.rotation.free = True
+    else:
+        g.rotation.free = False
+
+    s = Signal2D(data)
+    s.axes_manager[0].offset = x0
+    s.axes_manager[1].offset = y0
+    s = hs.stack([s]*2)
+    m = s.create_model()
+    m.append(g)
+    m.fit()
+
+    if debug:
+        atom._plot_gaussian2d_debug(
+                slice_radius,
+                g,
+                data)
+
+    # If the Gaussian centre is located outside the masked region,
+    # return False
+    dislocation = math.hypot(
+            g.centre_x.value-atom.pixel_x,
+            g.centre_y.value-atom.pixel_y)
+    if dislocation > slice_radius:
+        return(False)
+
+    # If sigma aspect ratio is too large, assume the fitting is bad
+    max_sigma = max((abs(g.sigma_x.value), abs(g.sigma_y.value)))
+    min_sigma = min((abs(g.sigma_x.value), abs(g.sigma_y.value)))
+    sigma_ratio = max_sigma/min_sigma
+    if sigma_ratio > 5:
+        return(False)
+
+    return(g)
+
+
 def refine_sublattice(
         sublattice,
         refinement_config_list,
@@ -336,7 +426,7 @@ def make_denoised_stem_signal(signal, invert_signal=False):
     else:
         signal_den
     signal_denoised = s_abf_modified2/s_abf_modified2.max()
-    s_abf_pca = hs.signals.Signal2D(s_abf_data_normalized)
+    s_abf_pca = Signal2D(s_abf_data_normalized)
 
 
 def do_pca_on_signal(signal, pca_components=22):
@@ -344,7 +434,7 @@ def do_pca_on_signal(signal, pca_components=22):
     temp_signal = hs.signals.Signal1D(signal.data)
     temp_signal.decomposition()
     temp_signal = temp_signal.get_decomposition_model(pca_components)
-    temp_signal = hs.signals.Signal2D(temp_signal.data)
+    temp_signal = Signal2D(temp_signal.data)
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
     return(temp_signal)
@@ -371,7 +461,7 @@ def normalize_signal(signal, invert_signal=False):
     else:
         temp_signal_data = temp_signal.data
     temp_signal_data = temp_signal_data/temp_signal_data.max()
-    temp_signal = hs.signals.Signal2D(temp_signal_data)
+    temp_signal = Signal2D(temp_signal_data)
     temp_signal.axes_manager[0].scale = signal.axes_manager[0].scale
     temp_signal.axes_manager[1].scale = signal.axes_manager[1].scale
     return(temp_signal)

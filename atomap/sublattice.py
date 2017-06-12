@@ -574,13 +574,6 @@ class Sublattice():
             ort_atom_list.extend(temp_atom_list)
         return(ort_atom_list)
 
-    def _make_circular_mask(
-            self, centerX, centerY, imageSizeX, imageSizeY, radius):
-        y, x = np.ogrid[
-                -centerX:imageSizeX-centerX, -centerY:imageSizeY-centerY]
-        mask = x*x + y*y <= radius*radius
-        return(mask)
-
     def _find_perpendicular_vector(self, v):
         if v[0] == 0 and v[1] == 0:
             raise ValueError('zero vector')
@@ -1177,19 +1170,6 @@ class Sublattice():
                     atom_plane_list, scale=self.pixel_size, add_numbers=False))
         add_marker(signal, marker_list, permanent=True, plot_marker=False)
         return signal
-
-    def get_atom_column_amplitude_gaussian2d(
-            self,
-            image=None,
-            percent_to_nn=0.40):
-        if image is None:
-            image = self.original_image
-
-        percent_distance = percent_to_nn
-        for atom in self.atom_list:
-            atom.fit_2d_gaussian_with_mask_centre_locked(
-                    image,
-                    percent_to_nn=percent_distance)
 
     def get_atom_column_amplitude_max_intensity(
             self,
