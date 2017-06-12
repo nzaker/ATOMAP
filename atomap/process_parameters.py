@@ -62,8 +62,8 @@ class PerovskiteOxide110SublatticeACation(SublatticeParameterBase):
                 {'number': 1, 'name': '100'},
                 {'number': 2, 'name': '11-2'},
                 {'number': 3, 'name': '112'},
-                {'number': 5, 'name': '111'},
-                {'number': 6, 'name': '11-1'},
+                {'number': 4, 'name': '111'},
+                {'number': 5, 'name': '11-1'},
                 ]
         self.sublattice_order = 0
         self.refinement_config = {
@@ -85,8 +85,8 @@ class PerovskiteOxide110SublatticeBCation(SublatticeParameterBase):
                 {'number': 1, 'name': '100'},
                 {'number': 2, 'name': '11-2'},
                 {'number': 3, 'name': '112'},
-                {'number': 5, 'name': '111'},
-                {'number': 6, 'name': '11-1'}, ]
+                {'number': 4, 'name': '111'},
+                {'number': 5, 'name': '11-1'}, ]
         self.sublattice_order = 1
         self.sublattice_position_sublattice = "A-cation"
         self.sublattice_position_zoneaxis = "100"
@@ -116,8 +116,8 @@ class PerovskiteOxide110SublatticeOxygen(SublatticeParameterBase):
                 {'number': 1, 'name': '100'},
                 {'number': 2, 'name': '11-2'},
                 {'number': 3, 'name': '112'},
-                {'number': 5, 'name': '111'},
-                {'number': 6, 'name': '11-1'}, ]
+                {'number': 4, 'name': '111'},
+                {'number': 5, 'name': '11-1'}, ]
         self.sublattice_order = 2
         self.sublattice_position_sublattice = "B-cation"
         self.sublattice_position_zoneaxis = "110"

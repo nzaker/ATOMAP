@@ -1,4 +1,4 @@
-all_tests:
+pip_install_tests:
     image: ubuntu:latest
     script: 
     - apt-get update -q
@@ -6,6 +6,17 @@ all_tests:
     - apt-get install -qy python3-sympy --no-install-recommends
     - pip3 install --upgrade pip
     - pip3 install --user .
+    - python3 -m unittest discover
+
+anaconda_install_tests:
+    image: continuumio/anaconda3
+    script:
+    - apt-get install -qy libgl1-mesa-glx
+    - conda install -c conda-forge hyperspy
+    - conda install conda-build
+    - mkdir build
+    - conda build -c conda-forge --output-folder build .
+    - conda install -c conda-forge build/linux-64/atomap-*.tar.bz2
     - python3 -m unittest discover
 
 pages:

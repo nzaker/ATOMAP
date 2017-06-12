@@ -23,7 +23,6 @@ setup(
             'scipy',
             'numpy>=1.10',
             'h5py',
-            'ipython>=2.0',
             'matplotlib>=1.2',
             'hyperspy>=1.2',
             ],
