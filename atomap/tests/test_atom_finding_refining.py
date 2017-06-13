@@ -1,7 +1,8 @@
 import unittest
 import numpy as np
-from atomap.atom_finding_refining import _make_mask_from_positions
-
+from atomap.atom_finding_refining import (
+        _make_mask_from_positions,
+        _crop_mask_slice_indices)
 
 class test_make_mask_from_positions(unittest.TestCase):
 
@@ -61,3 +62,17 @@ class test_make_mask_from_positions(unittest.TestCase):
                 position_list=pos,
                 radius_list=rad,
                 data_shape=(40, 40))
+
+
+class test_crop_mask(unittest.TestCase):
+
+    def test_radius_1(self):
+        x, y, r = 10, 20, 1
+        pos = [[x, y]]
+        rad = [r]
+        mask = _make_mask_from_positions(pos, rad, (40, 40))
+        x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
+        self.assertEqual(x0, x-r)
+        self.assertEqual(x1, x+r+1)
+        self.assertEqual(y0, y-r)
+        self.assertEqual(y1, y+r+1)

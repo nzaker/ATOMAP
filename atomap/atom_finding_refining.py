@@ -321,6 +321,25 @@ def _make_mask_from_positions(
     return(mask)
 
 
+def _crop_mask_slice_indices(mask):
+    """
+    Find the outer True values in a mask.
+    
+    Examples
+    --------
+    >>> from atomap.atom_finding_refining import _make_mask_from_positions
+    >>> from atomap.atom_finding_refining import _crop_mask_slice_indices
+    >>> mask = _make_mask_from_positions([[10, 20]], [1], (40, 40))
+    >>> x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
+    >>> mask_crop = mask[x0:x1, y0:y1] 
+    """
+    x0 = np.nonzero(mask)[0].min()
+    x1 = np.nonzero(mask)[0].max()+1
+    y0 = np.nonzero(mask)[1].min()
+    y1 = np.nonzero(mask)[1].max()+1
+    return(x0, x1, y0, y1)
+
+
 def _make_model_from_atom_list(
         atom_list,
         image_data,
