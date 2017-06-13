@@ -346,15 +346,15 @@ def _make_model_from_atom_list(
         percent_to_nn=0.40):
     mask = np.zeros_like(image_data)
 
+    position_list, radius_list = [], []
     for atom in atom_list:
-        closest_neighbor = atom.get_closest_neighbor()
-        radius = closest_neighbor * percent_to_nn
-        temp_mask = _make_circular_mask(
-                atom.pixel_y, atom.pixel_x,
-                image_data.shape[0], image_data.shape[1],
-                radius)
-        mask = mask + temp_mask
-    return(mask)
+        position_list.append((atom.pixel_y, atom.pixel_x))
+        radius_list.append(atom.get_closest_neighbor() * percent_to_nn)
+    mask = _make_mask_from_positions(
+            position_list, radius_list, image_data.shape)
+    x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
+    data_mask_crop = (image_data*mask)[x0:x1, y0:y1]
+    return(data_mask_crop)
 
 
 def fit_atom_positions_gaussian(
