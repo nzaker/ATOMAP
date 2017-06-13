@@ -290,6 +290,37 @@ def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
     return(mask)
 
 
+def _make_mask_from_positions(
+        position_list,
+        radius_list,
+        data_shape):
+    """
+    Parameters
+    ----------
+    position_list : list of list
+        [[x0, y0], [x1, y1]]
+    radius_list : list
+    data_shape : tuple
+
+    Examples
+    --------
+    >>> from atomap.atom_finding_refining import _make_mask_from_positions
+    >>> pos = [[10, 20], [25, 10]]
+    >>> radius = [2, 1]
+    >>> mask = _make_mask_from_positions(pos, radius, (40, 40))
+    """
+    if len(position_list) != len(radius_list):
+        raise ValueError(
+                "position_list and radius_list must be the same length")
+    mask = np.zeros(data_shape)
+    for position, radius in zip(position_list, radius_list):
+        mask += _make_circular_mask(
+                position[0], position[1],
+                data_shape[0], data_shape[1],
+                radius)
+    return(mask)
+
+
 def _make_model_from_atom_list(
         atom_list,
         image_data,
