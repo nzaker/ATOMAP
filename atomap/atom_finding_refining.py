@@ -340,6 +340,79 @@ def _crop_mask_slice_indices(mask):
     return(x0, x1, y0, y1)
 
 
+def _find_background_value(data, method='median', lowest_percentile=0.1):
+    """
+    Get background value for image data. Intended for Gaussian
+    shaped image, with the intensity peak in the middle.
+    The median method is preferred to avoid any large outliers
+    affecting the background value. Since various acquisition
+    artifacts can lead to very low or zero pixel values.
+
+    Parameters
+    ----------
+    data : Numpy array
+    method : 'median', 'mean' or 'minimum'
+        If median, the median of the lowest_percentile will
+        be used as background. This is the default.
+        If mean, the mean of the lowest_percentile is
+        used as background.
+        If minimum, the lowest value in data will be
+        used as background.
+    lowest_percentile : number between 0.01 and 1
+        The lowest percentile will be used to calculate the
+        background, from 1 (0.01) to 100% (1.0). Default 10%
+
+    Returns
+    -------
+    Float
+    """
+    if not ((lowest_percentile >= 0.01) and (lowest_percentile <= 1.0)):
+        raise ValueError("lowest_percentile must be between 0.01 and 1.0")
+    if method == 'minimum':
+        background_value = data.min()
+    else:
+        amount = int(lowest_percentile*data.size)
+        if amount == 0:
+            amount = 1
+        lowest_values = np.sort(data.flatten())[:amount]
+        if method == 'median':
+            background_value = np.median(lowest_values)
+        elif method == 'mean':
+            background_value = np.mean(lowest_values)
+        else:
+            raise ValueError(
+                    "method must be 'minimum', 'median' or 'mean'")
+    return(background_value)
+
+    
+def _find_median_upper_percentile(data, upper_percentile=0.1):
+    """
+    Get the median of the upper percentile of an image.
+    Useful for finding a good initial max value in an image for doing
+    2D Gaussian fitting. 
+    Median is used to avoid acquisition artifacts leading to too
+    high pixel values giving bad initial values.
+
+    Parameters
+    ----------
+    data : Numpy array
+    upper_percentile : number between 0.01 and 1
+        The upper percentile will be used to calculate the
+        background, from 1 (0.01) to 100% (1.0). Default 10% (0.1).
+
+    Returns
+    -------
+    Float
+    """
+    if not ((upper_percentile >= 0.01) and (upper_percentile <= 1.0)):
+        raise ValueError("lowest_percentile must be between 0.01 and 1.0")
+    amount = int(upper_percentile*data.size)
+    if amount == 0:
+        amount = 1
+    high_value = np.median(np.sort(data.flatten())[-amount:])
+    return(high_value)
+
+
 def _make_model_from_atom_list(
         atom_list,
         image_data,
@@ -353,7 +426,14 @@ def _make_model_from_atom_list(
     mask = _make_mask_from_positions(
             position_list, radius_list, image_data.shape)
     x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
+    mask_crop = mask[x0:x1, y0:y1].astype('bool')
     data_mask_crop = (image_data*mask)[x0:x1, y0:y1]
+
+    upper_value = _find_median_upper_percentile(
+            data_mask_crop[mask_crop], upper_percentile=0.03)
+    lower_value = _find_background_value(
+            data_mask_crop[mask_crop], lowest_percentile=0.03)
+    print(lower_value, upper_value)
     return(data_mask_crop)
 
 

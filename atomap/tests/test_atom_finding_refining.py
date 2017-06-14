@@ -1,8 +1,8 @@
 import unittest
 import numpy as np
 from atomap.atom_finding_refining import (
-        _make_mask_from_positions,
-        _crop_mask_slice_indices)
+        _make_mask_from_positions,_crop_mask_slice_indices,
+        _find_background_value, _find_median_upper_percentile)
 
 class test_make_mask_from_positions(unittest.TestCase):
 
@@ -96,3 +96,27 @@ class test_crop_mask(unittest.TestCase):
         x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
         mask_crop = mask[x0:x1, y0:y1]
         self.assertEqual(mask_crop.shape, (2*r+1, 2*r+1))
+
+
+class test_find_background_value(unittest.TestCase):
+
+    def test_percentile(self):
+        data = np.arange(100)
+        value = _find_background_value(data, lowest_percentile=0.01)
+        self.assertEqual(value, 0.)
+        value = _find_background_value(data, lowest_percentile=0.1)
+        self.assertEqual(value, 4.5)
+        value = _find_background_value(data, lowest_percentile=0.5)
+        self.assertEqual(value, 24.5)
+
+
+class test_find_median_upper_percentile(unittest.TestCase):
+
+    def test_percentile(self):
+        data = np.arange(100)
+        value = _find_median_upper_percentile(data, upper_percentile=0.01)
+        self.assertEqual(value, 99.)
+        value = _find_median_upper_percentile(data, upper_percentile=0.1)
+        self.assertEqual(value, 94.5)
+        value = _find_median_upper_percentile(data, upper_percentile=0.5)
+        self.assertEqual(value, 74.5)
