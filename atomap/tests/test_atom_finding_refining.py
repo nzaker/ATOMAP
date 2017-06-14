@@ -76,3 +76,23 @@ class test_crop_mask(unittest.TestCase):
         self.assertEqual(x1, x+r+1)
         self.assertEqual(y0, y-r)
         self.assertEqual(y1, y+r+1)
+        mask_crop = mask[x0:x1, y0:y1]
+        self.assertEqual(mask_crop.shape, (2*r+1, 2*r+1))
+
+    def test_radius_2(self):
+        x, y, r = 15, 10, 2
+        pos = [[x, y]]
+        rad = [r]
+        mask = _make_mask_from_positions(pos, rad, (40, 40))
+        x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
+        mask_crop = mask[x0:x1, y0:y1]
+        self.assertEqual(mask_crop.shape, (2*r+1, 2*r+1))
+
+    def test_radius_5(self):
+        x, y, r = 15, 10, 5
+        pos = [[x, y]]
+        rad = [r]
+        mask = _make_mask_from_positions(pos, rad, (40, 40))
+        x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
+        mask_crop = mask[x0:x1, y0:y1]
+        self.assertEqual(mask_crop.shape, (2*r+1, 2*r+1))
