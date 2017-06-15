@@ -312,7 +312,7 @@ def _make_mask_from_positions(
     if len(position_list) != len(radius_list):
         raise ValueError(
                 "position_list and radius_list must be the same length")
-    mask = np.zeros(data_shape)
+    mask = np.zeros(data_shape, dtype=np.bool)
     for position, radius in zip(position_list, radius_list):
         mask += _make_circular_mask(
                 position[0], position[1],
@@ -446,6 +446,7 @@ def _make_model_from_atom_list(
             data_mask_crop[mask_crop], lowest_percentile=0.03)
     data_mask_crop -= lower_value
     data_mask_crop /= upper_value
+    data_mask_crop[data_mask_crop<0] = 0.
 
     s = Signal2D(data_mask_crop)
     gaussian_list = []
@@ -453,8 +454,8 @@ def _make_model_from_atom_list(
         gaussian = _atom_to_gaussian_component(atom)
         gaussian_list.append(gaussian)
 
-    s.axes_manager[0].offset = x0
-    s.axes_manager[1].offset = y0
+    s.axes_manager[0].offset = y0
+    s.axes_manager[1].offset = x0
     m = s.create_model()
     m.extend(gaussian_list)
 
@@ -467,79 +468,47 @@ def fit_atom_positions_gaussian(
         rotation_enabled=True,
         percent_to_nn=0.40,
         centre_free=True,
+        update_atom_parameters=True,
         debug=False):
     """ If the Gaussian is centered outside the masked area,
     this function returns False"""
-    atom = atom_list
 
-    closest_neighbor = atom.get_closest_neighbor()
+    atom_list = [atom_list]
 
-    slice_size = closest_neighbor * percent_to_nn * 2
-    data_slice, x0, y0 = atom._get_image_slice_around_atom(
-            image_data, slice_size)
-
-    slice_radius = slice_size/2
-
-    data_slice -= data_slice.min()
-    data_slice_max = data_slice.max()
-    data = data_slice
-
-    mask = _make_circular_mask(
-            slice_radius,
-            slice_radius,
-            data.shape[0],
-            data.shape[1],
-            closest_neighbor*percent_to_nn)
-    data = deepcopy(data)
-    mask = np.invert(mask)
-    data[mask] = 0
-    g = Gaussian2D(
-            centre_x=atom.pixel_x,
-            centre_y=atom.pixel_y,
-            sigma_x=atom.sigma_x,
-            sigma_y=atom.sigma_y,
-            rotation=atom.rotation,
-            A=data_slice_max)
+    model = _make_model_from_atom_list(
+            atom_list,
+            image_data,
+            percent_to_nn=percent_to_nn)
+    x0, x1, y0, y1 = model.axes_manager.signal_extent
     
     if centre_free is False:
-        g.centre_x.free = False
-        g.centre_y.free = False
+        for g in model:
+            g.centre_x.free = False
+            g.centre_y.free = False
+    for g in model:
+        if rotation_enabled:
+            g.rotation.free = True
+        else:
+            g.rotation.free = False
 
-    if rotation_enabled:
-        g.rotation.free = True
-    else:
-        g.rotation.free = False
+    model.fit()
 
-    s = Signal2D(data)
-    s.axes_manager[0].offset = x0
-    s.axes_manager[1].offset = y0
-    s = hs.stack([s]*2)
-    m = s.create_model()
-    m.append(g)
-    m.fit()
+    for atom, g in zip(atom_list, model):
+        # If the Gaussian centre is located outside the masked region,
+        # return False
+        if (g.centre_x.value < x0) and (g.centre_x.value > x1):
+            return(False)
+        elif (g.centre_y.value < y0) and (g.centre_y.value > y1):
+            return(False)
 
-    if debug:
-        atom._plot_gaussian2d_debug(
-                slice_radius,
-                g,
-                data)
+        # If sigma aspect ratio is too large, assume the fitting is bad
+        max_sigma = max((abs(g.sigma_x.value), abs(g.sigma_y.value)))
+        min_sigma = min((abs(g.sigma_x.value), abs(g.sigma_y.value)))
+        sigma_ratio = max_sigma/min_sigma
+        if sigma_ratio > 5:
+            return(False)
 
-    # If the Gaussian centre is located outside the masked region,
-    # return False
-    dislocation = math.hypot(
-            g.centre_x.value-atom.pixel_x,
-            g.centre_y.value-atom.pixel_y)
-    if dislocation > slice_radius:
-        return(False)
-
-    # If sigma aspect ratio is too large, assume the fitting is bad
-    max_sigma = max((abs(g.sigma_x.value), abs(g.sigma_y.value)))
-    min_sigma = min((abs(g.sigma_x.value), abs(g.sigma_y.value)))
-    sigma_ratio = max_sigma/min_sigma
-    if sigma_ratio > 5:
-        return(False)
-
-    return(g)
+    return(model[0])
 
 
 def refine_sublattice(
