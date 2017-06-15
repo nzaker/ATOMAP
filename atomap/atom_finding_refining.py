@@ -413,6 +413,17 @@ def _find_median_upper_percentile(data, upper_percentile=0.1):
     return(high_value)
 
 
+def _atom_to_gaussian_component(atom):
+    g = Gaussian2D(
+            centre_x=atom.pixel_x,
+            centre_y=atom.pixel_y,
+            sigma_x=atom.sigma_x,
+            sigma_y=atom.sigma_y,
+            rotation=atom.rotation,
+            A=1.)
+    return(g)
+
+
 def _make_model_from_atom_list(
         atom_list,
         image_data,
@@ -433,8 +444,21 @@ def _make_model_from_atom_list(
             data_mask_crop[mask_crop], upper_percentile=0.03)
     lower_value = _find_background_value(
             data_mask_crop[mask_crop], lowest_percentile=0.03)
-    print(lower_value, upper_value)
-    return(data_mask_crop)
+    data_mask_crop -= lower_value
+    data_mask_crop /= upper_value
+
+    s = Signal2D(data_mask_crop)
+    gaussian_list = []
+    for atom in atom_list:
+        gaussian = _atom_to_gaussian_component(atom)
+        gaussian_list.append(gaussian)
+
+    s.axes_manager[0].offset = x0
+    s.axes_manager[1].offset = y0
+    m = s.create_model()
+    m.extend(gaussian_list)
+
+    return(m)
 
 
 def fit_atom_positions_gaussian(
