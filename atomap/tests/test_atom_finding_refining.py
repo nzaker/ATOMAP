@@ -159,19 +159,20 @@ class test_make_model_from_atom_list(unittest.TestCase):
                 sublattice.image)
         self.assertEqual(len(model), 5)
 
+
 class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
 
     def setUp(self):
         x_list, y_list = [], []
-        for x in range(10, 100, 5):
-            for y in range(10, 100, 5):
+        for x in range(10, 100, 10):
+            for y in range(10, 100, 10):
                 x_list.append(x)
                 y_list.append(y)
         sigma_value = 1
         sigma = [sigma_value]*len(x_list)
         A = [50]*len(x_list)
         s, g_list = make_artifical_atomic_signal(
-                x_list, y_list, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=5)
+                x_list, y_list, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=0)
         position_list = np.array([x_list, y_list]).T
         sublattice = Sublattice(np.array(position_list), s.data)
         sublattice._find_nearest_neighbors()
