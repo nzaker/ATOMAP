@@ -1,5 +1,6 @@
 import numpy as np
 import scipy as sp
+import tqdm
 import matplotlib.pyplot as plt
 import math
 from scipy import ndimage
@@ -642,7 +643,7 @@ class Sublattice():
             percent_to_nn=0.40,
             rotation_enabled=True,
             debug=False):
-        for atom in self.atom_list:
+        for atom in tqdm(self.atom_list):
             atom.refine_position_using_2d_gaussian(
                     image_data,
                     rotation_enabled=rotation_enabled,
@@ -651,7 +652,7 @@ class Sublattice():
 
     def refine_atom_positions_using_center_of_mass(
             self, image_data, percent_to_nn=0.25):
-        for atom_index, atom in enumerate(self.atom_list):
+        for atom in tqdm(self.atom_list):
             atom.refine_position_using_center_of_mass(
                 image_data,
                 percent_to_nn=percent_to_nn)
