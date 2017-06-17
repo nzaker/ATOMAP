@@ -1,3 +1,4 @@
+from tqdm import tqdm, trange
 from scipy.ndimage.filters import gaussian_filter
 from hyperspy.signals import Signal2D
 import hyperspy.api as hs
@@ -135,7 +136,7 @@ def find_features_by_separation(
 
     separation_value_list = []
     peak_list = []
-    for separation in separation_list:
+    for separation in tqdm(separation_list):
         peaks = get_atom_positions(
                 signal,
                 separation=separation,
@@ -220,7 +221,7 @@ def get_feature_separation(
         marker_list_y[index, 0:len(peaks)] = (peaks[:, 1]*scale_y)+offset_y
 
     marker_list = []
-    for i in range(marker_list_x.shape[1]):
+    for i in trange(marker_list_x.shape[1]):
         m = hs.markers.point(
                 x=marker_list_x[:, i], y=marker_list_y[:, i], color='red')
         marker_list.append(m)

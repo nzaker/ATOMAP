@@ -1,6 +1,6 @@
 import numpy as np
 import scipy as sp
-import tqdm
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 import math
 from scipy import ndimage
