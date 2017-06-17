@@ -43,7 +43,8 @@ def _get_dumbbell_arrays(s, position_list, dumbbell_vec):
             next_position_list0, next_position_list1)
     total_num = len(next_position_list0)
     dumbbell_list0, dumbbell_list1 = [], []
-    for x, y, next_pos0, next_pos1 in tqdm(iterator, total=total_num):
+    for x, y, next_pos0, next_pos1 in tqdm(
+            iterator, total=total_num, desc="Finding dumbbells"):
         mask0 = _make_circular_mask(
                 y, x,
                 s.data.shape[0], s.data.shape[1],
@@ -69,9 +70,7 @@ def _get_dumbbell_arrays(s, position_list, dumbbell_vec):
     return(dumbbell_list0, dumbbell_list1)
 
 
-def make_atom_lattice_dumbbell_structure(
-        s, small_separation, large_separation):
-    position_list = get_atom_positions(s, separation=large_separation)
+def make_atom_lattice_dumbbell_structure(s, position_list, small_separation):
     dumbbell_vec = _find_dumbbell_vector(s, separation=small_separation)
 
     dumbbell_list0, dumbbell_list1 = _get_dumbbell_arrays(

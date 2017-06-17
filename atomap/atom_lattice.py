@@ -110,7 +110,8 @@ class Dumbbell_Lattice(Atom_Lattice):
     def refine_position_gaussian(self, image=None):
         if image is None:
             image = self.image0
-        for i_atom in trange(len(self.sublattice_list[0].atom_list)):
+        n_tot = len(self.sublattice_list[0].atom_list)
+        for i_atom in trange(n_tot, desc="Gaussian fitting"):
             atom_list = []
             for sublattice in self.sublattice_list:
                 atom_list.append(sublattice.atom_list[i_atom])

@@ -118,8 +118,9 @@ class test_make_atom_lattice_dumbbell_structure(unittest.TestCase):
 
     def test_simple_running(self):
         s = self.s
+        position_list = get_atom_positions(s, separation=13)
         atom_lattice = make_atom_lattice_dumbbell_structure(
-                s, 4, 14)
+                s, position_list, 4)
         self.assertEqual(len(atom_lattice.sublattice_list), 2)
         sublattice0 = atom_lattice.sublattice_list[0]
         sublattice1 = atom_lattice.sublattice_list[0]

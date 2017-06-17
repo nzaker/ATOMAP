@@ -421,7 +421,7 @@ def _atom_to_gaussian_component(atom):
             sigma_x=atom.sigma_x,
             sigma_y=atom.sigma_y,
             rotation=atom.rotation,
-            A=10.)
+            A=15.)
     return(g)
 
 
@@ -533,7 +533,6 @@ def fit_atom_positions_gaussian(
                 rotation_enabled=rotation_enabled,
                 percent_to_nn=percent_to_nn)
         if g_list is False:
-            print("Fitting missed")
             if i == 9:
                 for g, atom in zip(g_list, atom_list):
                     atom.pixel_x, atom.pixel_y = atom.get_center_position_com(
