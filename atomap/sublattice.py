@@ -37,6 +37,7 @@ class Sublattice():
             atom_position_list,
             image,
             original_image=None,
+            color='red',
             ):
         """
         Parameters
@@ -44,6 +45,8 @@ class Sublattice():
         atom_position_list : NumPy array
             In the form [[x0, y0], [x1, y1], [x2, y2], ... ]
         image : 2D NumPy array
+        original_image : 2D NumPy array, optional
+        color : string, optional, default red
         """
         self.atom_list = []
         for atom_position in atom_position_list:
@@ -61,7 +64,7 @@ class Sublattice():
         self._plot_clim = None
         self._tag = ''
         self.pixel_size = 1.0
-        self._plot_color = 'blue'
+        self._plot_color = color
         self._pixel_separation = 0.0
 
     def __repr__(self):

@@ -1,8 +1,9 @@
 import h5py
 import os
+from tqdm import trange
 import numpy as np
 from atomap.atom_finding_refining import\
-        construct_zone_axes_from_sublattice
+        construct_zone_axes_from_sublattice, fit_atom_positions_gaussian
 from atomap.plotting import _make_atom_position_marker_list
 from atomap.tools import array2signal2d
 
@@ -102,3 +103,17 @@ class Atom_Lattice():
         if filename is None:
             filename = self.name + "_atom_lattice.hdf5"
         save_atom_lattice_to_hdf5(self, filename)
+
+
+class Dumbbell_Lattice(Atom_Lattice):
+
+    def refine_position_gaussian(self, image=None):
+        if image is None:
+            image = self.image0
+        for i_atom in trange(len(self.sublattice_list[0].atom_list)):
+            atom_list = []
+            for sublattice in self.sublattice_list:
+                atom_list.append(sublattice.atom_list[i_atom])
+            fit_atom_positions_gaussian(
+                    atom_list,
+                    image)
