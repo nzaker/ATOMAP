@@ -420,7 +420,7 @@ def _atom_to_gaussian_component(atom):
             sigma_x=atom.sigma_x,
             sigma_y=atom.sigma_y,
             rotation=atom.rotation,
-            A=1.)
+            A=10.)
     return(g)
 
 
@@ -462,18 +462,17 @@ def _make_model_from_atom_list(
     return(m)
 
 
-def fit_atom_positions_gaussian(
+def _fit_atom_positions_with_gaussian_model(
         atom_list,
         image_data,
         rotation_enabled=True,
         percent_to_nn=0.40,
-        centre_free=True,
-        update_atom_parameters=True,
-        debug=False):
+        centre_free=True):
     """ If the Gaussian is centered outside the masked area,
     this function returns False"""
-
-    atom_list = [atom_list]
+    if (not hasattr(atom_list[0], 'pixel_x')) or hasattr(atom_list, 'pixel_x'):
+        raise TypeError(
+            "atom_list argument must be a list of Atom_Position objects")
 
     model = _make_model_from_atom_list(
             atom_list,
@@ -493,6 +492,7 @@ def fit_atom_positions_gaussian(
 
     model.fit()
 
+    gaussian_list = []
     for atom, g in zip(atom_list, model):
         # If the Gaussian centre is located outside the masked region,
         # return False
@@ -501,14 +501,56 @@ def fit_atom_positions_gaussian(
         elif (g.centre_y.value < y0) and (g.centre_y.value > y1):
             return(False)
 
+        if g.A.value < 0.0:
+            return(False)
+
         # If sigma aspect ratio is too large, assume the fitting is bad
         max_sigma = max((abs(g.sigma_x.value), abs(g.sigma_y.value)))
         min_sigma = min((abs(g.sigma_x.value), abs(g.sigma_y.value)))
         sigma_ratio = max_sigma/min_sigma
-        if sigma_ratio > 5:
+        if sigma_ratio > 4:
             return(False)
+        gaussian_list.append(g)
 
-    return(model[0])
+    return(gaussian_list)
+
+
+def fit_atom_positions_gaussian(
+        atom_list,
+        image_data,
+        rotation_enabled=True,
+        percent_to_nn=0.40,
+        centre_free=True):
+    if (not hasattr(atom_list[0], 'pixel_x')) or hasattr(atom_list, 'pixel_x'):
+        raise TypeError(
+            "atom_list argument must be a list of Atom_Position objects")
+
+    for i in range(10):
+        g_list = _fit_atom_positions_with_gaussian_model(
+                atom_list,
+                image_data,
+                rotation_enabled=rotation_enabled,
+                percent_to_nn=percent_to_nn)
+        if g_list is False:
+            print("Fitting missed")
+            if i == 9:
+                for g, atom in zip(g_list, atom_list):
+                    atom.pixel_x, atom.pixel_y = atom.get_center_position_com(
+                            image_data,
+                            percent_to_nn=percent_to_nn)
+                    atom.amplitude_gaussian = 0.0
+                break
+            else:
+                percent_to_nn *= 0.95
+        else:
+            for g, atom in zip(g_list, atom_list):
+                atom.pixel_x = g.centre_x.value
+                atom.pixel_y = g.centre_y.value
+                atom.rotation = g.rotation.value % math.pi
+                atom.sigma_x = abs(g.sigma_x.value)
+                atom.sigma_y = abs(g.sigma_y.value)
+                atom.amplitude_gaussian = g.A.value
+            break
 
 
 def refine_sublattice(

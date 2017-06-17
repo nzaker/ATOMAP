@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 import hyperspy.api as hs
 from hyperspy.signals import Signal1D, Signal2D
 
-from atomap.atom_finding_refining import fit_atom_positions_gaussian
+from atomap.atom_finding_refining import _fit_atom_positions_with_gaussian_model
+
 
 # From Vidars HyperSpy repository
 def _line_profile_coordinates(src, dst, linewidth=1):
@@ -70,11 +71,12 @@ def remove_atoms_from_image_using_2d_gaussian(
     for atom in sublattice.atom_list:
         percent_distance = percent_to_nn
         for i in range(10):
-            g = fit_atom_positions_gaussian(
-                    atom,
+            g_list = _fit_atom_positions_with_gaussian_model(
+                    [atom],
                     image,
                     rotation_enabled=True,
                     percent_to_nn=percent_distance)
+            g = g_list[0]
             if g is False:
                 if i == 9:
                     break

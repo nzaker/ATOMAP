@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import ndimage
 import math
 from atomap.atom_finding_refining import _make_circular_mask
-from atomap.atom_finding_refining import fit_atom_positions_gaussian
+from atomap.atom_finding_refining import _fit_atom_positions_with_gaussian_model
 
 
 class Atom_Position:
@@ -270,12 +270,12 @@ class Atom_Position:
         """
 
         for i in range(10):
-            g = fit_atom_positions_gaussian(
-                    self,
+            g_list = _fit_atom_positions_with_gaussian_model(
+                    [self],
                     image_data,
                     rotation_enabled=rotation_enabled,
-                    percent_to_nn=percent_to_nn,
-                    debug=debug)
+                    percent_to_nn=percent_to_nn)
+            g = g_list[0]
             if g is False:
                 print("Fitting missed")
                 if i == 9:

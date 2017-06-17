@@ -1,8 +1,12 @@
 import unittest
 import numpy as np
+from atomap.atom_position import Atom_Position
+from atomap.sublattice import Sublattice
+from atomap.testing_tools import make_artifical_atomic_signal
 from atomap.atom_finding_refining import (
         _make_mask_from_positions,_crop_mask_slice_indices,
-        _find_background_value, _find_median_upper_percentile)
+        _find_background_value, _find_median_upper_percentile,
+        _make_model_from_atom_list, _fit_atom_positions_with_gaussian_model)
 
 class test_make_mask_from_positions(unittest.TestCase):
 
@@ -120,3 +124,90 @@ class test_find_median_upper_percentile(unittest.TestCase):
         self.assertEqual(value, 94.5)
         value = _find_median_upper_percentile(data, upper_percentile=0.5)
         self.assertEqual(value, 74.5)
+
+
+class test_make_model_from_atom_list(unittest.TestCase):
+
+    def setUp(self):
+        image_data = np.random.random(size=(100, 100))
+        position_list = []
+        for x in range(10, 100, 5):
+            for y in range(10, 100, 5):
+                position_list.append([x, y])
+        sublattice = Sublattice(np.array(position_list), image_data)
+        sublattice._find_nearest_neighbors()
+        self.sublattice = sublattice
+
+    def test_1_atom(self):
+        sublattice = self.sublattice
+        model = _make_model_from_atom_list(
+                [sublattice.atom_list[10]],
+                sublattice.image)
+        self.assertEqual(len(model), 1)
+
+    def test_2_atom(self):
+        sublattice = self.sublattice
+        model = _make_model_from_atom_list(
+                sublattice.atom_list[10:12],
+                sublattice.image)
+        self.assertEqual(len(model), 2)
+
+    def test_5_atom(self):
+        sublattice = self.sublattice
+        model = _make_model_from_atom_list(
+                sublattice.atom_list[10:15],
+                sublattice.image)
+        self.assertEqual(len(model), 5)
+
+class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
+
+    def setUp(self):
+        x_list, y_list = [], []
+        for x in range(10, 100, 5):
+            for y in range(10, 100, 5):
+                x_list.append(x)
+                y_list.append(y)
+        sigma_value = 1
+        sigma = [sigma_value]*len(x_list)
+        A = [50]*len(x_list)
+        s, g_list = make_artifical_atomic_signal(
+                x_list, y_list, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=5)
+        position_list = np.array([x_list, y_list]).T
+        sublattice = Sublattice(np.array(position_list), s.data)
+        sublattice._find_nearest_neighbors()
+        self.sublattice = sublattice
+
+    def test_1_atom(self):
+        sublattice = self.sublattice
+        g_list = _fit_atom_positions_with_gaussian_model(
+                [sublattice.atom_list[5]],
+                sublattice.image)
+        self.assertEqual(len(g_list), 1)
+
+    def test_2_atom(self):
+        sublattice = self.sublattice
+        g_list = _fit_atom_positions_with_gaussian_model(
+                sublattice.atom_list[5:7],
+                sublattice.image)
+        self.assertEqual(len(g_list), 2)
+
+    def test_5_atom(self):
+        sublattice = self.sublattice
+        g_list = _fit_atom_positions_with_gaussian_model(
+                sublattice.atom_list[5:10],
+                sublattice.image)
+        self.assertEqual(len(g_list), 5)
+
+    @unittest.expectedFailure
+    def test_wrong_input_0(self):
+        sublattice = self.sublattice
+        g_list = _fit_atom_positions_with_gaussian_model(
+                sublattice.atom_list[5],
+                sublattice.image)
+
+    @unittest.expectedFailure
+    def test_wrong_input_1(self):
+        sublattice = self.sublattice
+        g_list = _fit_atom_positions_with_gaussian_model(
+                [sublattice.atom_list[5:7]],
+                sublattice.image)
