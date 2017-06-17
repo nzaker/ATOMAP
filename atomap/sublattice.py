@@ -5,6 +5,7 @@ import math
 from scipy import ndimage
 from scipy.spatial import cKDTree
 import hyperspy.api as hs
+from hyperspy.signals import Signal2D
 import copy
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -27,6 +28,7 @@ from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
 
 from atomap.external.add_marker import add_marker
+from atomap.external.gaussian2d import Gaussian2D
 
 
 class Sublattice():
@@ -1472,7 +1474,7 @@ class Sublattice():
         X, Y = np.meshgrid(np.arange(
             model_image.shape[1]), np.arange(model_image.shape[0]))
 
-        g = hs.model.components2D.Gaussian2D(
+        g = Gaussian2D(
             centre_x=0.0,
             centre_y=0.0,
             sigma_x=1.0,
@@ -1488,8 +1490,9 @@ class Sublattice():
             g.sigma_y.value = atom.sigma_y
             g.rotation.value = atom.rotation
             model_image += g.function(X, Y)
+        s = Signal2D(model_image)
 
-        return(model_image)
+        return(s)
 
     def _get_zone_vector_index_list(self, zone_vector_list):
         if zone_vector_list is None:

@@ -233,3 +233,19 @@ class test_sublattice_fingerprinter(unittest.TestCase):
     def test_fingerprint(self):
         sublattice = self.sublattice
         sublattice._get_fingerprint()
+
+
+class test_sublattice_get_atom_model(unittest.TestCase):
+
+    def setUp(self):
+        image_data = np.random.random(size=(100, 100))
+        position_list = []
+        for x in range(10, 100, 5):
+            for y in range(10, 100, 5):
+                position_list.append([x, y])
+        sublattice = Sublattice(np.array(position_list), image_data)
+        self.sublattice = sublattice
+
+    def test_simple(self):
+        sublattice = self.sublattice
+        sublattice.get_atom_model()
