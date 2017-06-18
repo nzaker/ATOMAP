@@ -78,7 +78,6 @@ def make_atom_lattice_dumbbell_structure(s, position_list, small_separation):
     dumbbell_list0, dumbbell_list1 = _get_dumbbell_arrays(
             s, position_list, dumbbell_vec)
     s_modified = do_pca_on_signal(s)
-    s_modified = subtract_average_background(s)
     sublattice0 = Sublattice(
             atom_position_list=dumbbell_list0,
             original_image=s.data,
