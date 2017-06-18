@@ -541,7 +541,7 @@ def fit_atom_positions_gaussian(
                 centre_free=centre_free)
         if g_list is False:
             if i == 9:
-                for g, atom in zip(g_list, atom_list):
+                for atom in atom_list:
                     atom.old_pixel_x_list.append(atom.pixel_x)
                     atom.old_pixel_y_list.append(atom.pixel_y)
                     atom.pixel_x, atom.pixel_y = atom.get_center_position_com(
