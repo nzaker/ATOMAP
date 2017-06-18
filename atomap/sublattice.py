@@ -1,6 +1,6 @@
 import numpy as np
 import scipy as sp
-from tqdm import tqdm
+from tqdm import tqdm, trange
 import matplotlib.pyplot as plt
 import math
 from scipy import ndimage
@@ -1703,3 +1703,70 @@ class Sublattice():
         """
         fingerprinter = self._get_fingerprint(pixel_radius=pixel_radius)
         return fingerprinter.fingerprint_
+
+    def get_position_history(
+            self,
+            image=None,
+            color='red',
+            add_numbers=False,
+            markersize=20):
+        """
+        Plot position history of each atom positions on the image data.
+
+        Parameters
+        ----------
+        image : 2-D numpy array, optional
+            Image data for plotting. If none is given, will use
+            the original_image.
+        color : string, default 'red'
+        add_numbers : bool, default False
+            Plot the number of the atom beside each atomic
+            position in the plot. Useful for locating
+            misfitted atoms.
+        markersize : number, default 20
+            Size of the atom position markers
+
+        Returns
+        -------
+        HyperSpy 2D-signal
+            The atom positions as permanent markers stored in the metadata.
+        """
+        if image is None:
+            image = self.original_image
+
+        pos_num = len(self.atom_list[0].old_pixel_x_list) + 1
+        if pos_num == 1:
+            s = self.get_atom_list_on_image(
+                image=image,
+                color=color,
+                add_numbers=add_numbers,
+                markersize=markersize)
+            return(s)
+
+        atom_num = len(self.atom_list)
+        peak_list = np.zeros((pos_num, atom_num, 2))
+        for i, atom in enumerate(self.atom_list):
+            for j in range(len(atom.old_pixel_x_list)):
+                peak_list[j, i, 0] = atom.old_pixel_x_list[j]
+                peak_list[j, i, 1] = atom.old_pixel_y_list[j]
+                peak_list[-1, i, 0] = atom.pixel_x
+                peak_list[-1, i, 1] = atom.pixel_y
+
+        signal = Signal2D(image)
+        s = hs.stack([signal]*pos_num)
+
+        marker_list_x = np.ones((len(peak_list), atom_num))*-100
+        marker_list_y = np.ones((len(peak_list), atom_num))*-100
+
+        for index, peaks in enumerate(peak_list):
+            marker_list_x[index, 0:len(peaks)] = peaks[:, 0]
+            marker_list_y[index, 0:len(peaks)] = peaks[:, 1]
+
+        marker_list = []
+        for i in trange(marker_list_x.shape[1]):
+            m = hs.markers.point(
+                    x=marker_list_x[:, i], y=marker_list_y[:, i], color='red')
+            marker_list.append(m)
+
+        s.add_marker(marker_list, permanent=True, plot_marker=False)
+        return(s)

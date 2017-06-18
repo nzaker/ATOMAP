@@ -249,3 +249,20 @@ class test_sublattice_get_atom_model(unittest.TestCase):
     def test_simple(self):
         sublattice = self.sublattice
         sublattice.get_atom_model()
+
+class test_get_position_history(unittest.TestCase):
+
+    def setUp(self):
+        pos = [[x, y] for x in range(9) for y in range(9)]
+        self.sublattice = Sublattice(pos, np.random.random((9, 9)))
+
+    def test_no_history(self):
+        sublattice = self.sublattice
+        s = sublattice.get_position_history()
+
+    def test_1_history(self):
+        sublattice = self.sublattice
+        for atom in sublattice.atom_list:
+            atom.old_pixel_x_list.append(np.random.random())
+            atom.old_pixel_y_list.append(np.random.random())
+        s = sublattice.get_position_history()
