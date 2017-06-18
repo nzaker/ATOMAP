@@ -444,6 +444,13 @@ class Sublattice():
 
         Example
         -------
+        >>> from numpy.random import random
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> for atom in sublattice.atom_list:
+        ...     atom.sigma_x, atom.sigma_y = 0.5*random()+1, 0.5*random()+1
+        >>> sublattice.construct_zone_axes()
         >>> x = sublattice.x_position
         >>> y = sublattice.y_position
         >>> z = sublattice.ellipticity
@@ -686,12 +693,18 @@ class Sublattice():
 
         Example
         -------
+        >>> import numpy as np
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> sublattice.construct_zone_axes()
         >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions()
         >>> import matplotlib.pyplot as plt
-        >>> plt.scatter(x_pos, y_pos)
+        >>> cax = plt.scatter(x_pos, y_pos)
+
         With all the keywords
         >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions(
-                pixel_scale=False, neigbors=3)
+        ...     pixel_scale=False, neighbors=3)
         """
         if neighbors is None:
             neighbors = 10000
@@ -739,10 +752,14 @@ class Sublattice():
 
         Example
         -------
+        >>> import numpy as np
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
         >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions_all()
+        >>> mask = np.sqrt(x_pos**2 + y_pos**2) < 3
         >>> import matplotlib.pyplot as plt
-        >>> mask = np.sqrt(x_pos**2 + y_pos**2) < 100
-        >>> plt.scatter(x_pos[mask], y_pos[mask])
+        >>> cax = plt.scatter(x_pos[mask], y_pos[mask])
         """
 
         n_atoms = len(self.atom_list)
@@ -948,10 +965,15 @@ class Sublattice():
 
         Example
         -------
-        >>> zone_vector = sublatticeA.zones_axis_average_distances[0]
-        >>> atom_planes = sublatticeA.atom_planes_by_zone_vector[zone_vector]
-        >>> s = sublattice.get_atom_plane_on_image(atom_planes)
-        >>> s.plot(plot_markers=True)
+        >>> from numpy.random import random
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> sublattice.construct_zone_axes()
+        >>> zone_vector = sublattice.zones_axis_average_distances[0]
+        >>> atom_planes = sublattice.atom_planes_by_zone_vector[zone_vector]
+        >>> s = sublattice.get_atom_planes_on_image(atom_planes)
+        >>> s.plot()
         """
         if image is None:
             image = self.original_image
@@ -994,23 +1016,23 @@ class Sublattice():
         -------
         Getting a list signals showing the atomic planes for all the
         zone vectors
-        >>> s_list = sublattice.get_all_atom_planes_by_zone_vector()
-        >>> s_list[1].plot(plot_markers=True)
-
-        Single signal from one zone vector
-        >>> zone_vec = sublattice.zones_axis_average_distances[0]
-        >>> s = sublattice.get_all_atom_planes_by_zone_vector(zone_vec)
-        >>> s.plot(plot_markers=True)
+        >>> from numpy.random import random
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> sublattice.construct_zone_axes()
+        >>> s = sublattice.get_all_atom_planes_by_zone_vector()
+        >>> s.plot()
 
         Several zone vectors
-        >>> zone_vec = sublattice.zones_axis_average_distances[0:3]
-        >>> s_list = sublattice.get_all_atom_planes_by_zone_vector(zone_vec)
-        >>> s_list[1].plot(plot_markers=True)
+        >>> zone_vec_list = sublattice.zones_axis_average_distances[0:3]
+        >>> s = sublattice.get_all_atom_planes_by_zone_vector(zone_vec_list)
+        >>> s.plot()
 
         Different image
-        >>> im = sublattice1.original_image
-        >>> s_list = sublattice0.get_all_atom_planes_by_zone_vector(image=im)
-        >>> s_list[1].plot(plot_markers=True)
+        >>> im = random((9., 9))
+        >>> s = sublattice.get_all_atom_planes_by_zone_vector(image=im)
+        >>> s.plot()
         """
         if image is None:
             image = self.original_image
@@ -1068,26 +1090,27 @@ class Sublattice():
 
         Examples
         --------
-        >>> sublattice = atom_lattice.sublattice_list[0]
+        >>> from numpy.random import random
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> sublattice.construct_zone_axes()
         >>> s = sublattice.get_atom_list_on_image()
-        >>> s.plot(plot_markers=True)
+        >>> s.plot()
 
         Number all the atoms
-        >>> sublattice = atom_lattice.sublattice_list[0]
         >>> s = sublattice.get_atom_list_on_image(add_numbers=True)
-        >>> s.plot(plot_markers=True)
+        >>> s.plot()
 
         Plot a subset of the atom positions
-        >>> sublattice = atom_lattice.sublattice_list[0]
         >>> atoms = sublattice.atom_list[0:20]
         >>> s = sublattice.get_atom_list_on_image(atom_list=atoms, add_numbers=True)
-        >>> s.plot(plot_markers=True)
+        >>> s.plot()
 
         Saving the signal as HyperSpy HDF5 file, which saves the atom
         positions as permanent markers.
-        >>> sublattice = atom_lattice.sublattice_list[0]
         >>> s = sublattice.get_atom_list_on_image()
-        >>> s.save("sublattice_atom_positions.hdf5")
+        >>> s.save("sublattice_atom_positions.hdf5", overwrite=True)
         """
         if image is None:
             image = self.original_image
@@ -1151,9 +1174,14 @@ class Sublattice():
 
         Examples
         --------
-        >>> sublattice0 = atom_lattice.sublattice_list[0]
-        >>> s = sublattice0.get_ellipticity_vector(vector_scale=20)
-        >>> s.plot(plot_markers=True)
+        >>> import numpy as np
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> for atom in sublattice.atom_list:
+        ...     atom.sigma_x, atom.sigma_y = 1., 1.2
+        >>> s = sublattice.get_ellipticity_vector(vector_scale=20)
+        >>> s.plot()
         """
         if image is None:
             image = self.original_image
@@ -1280,13 +1308,20 @@ class Sublattice():
 
         Examples
         --------
+        >>> from numpy.random import random
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> for atom in sublattice.atom_list:
+        ...     atom.sigma_x, atom.sigma_y = 0.5*random()+1, 0.5*random()+1
         >>> s_elli = sublattice.get_ellipticity_map()
         >>> s_elli.plot()
 
         Include an atom plane, which is added to the signal as a marker
+        >>> sublattice.construct_zone_axes()
         >>> atom_plane = [sublattice.atom_plane_list[10]]
         >>> s_elli = sublattice.get_ellipticity_map(atom_plane_list=atom_plane)
-        >>> s_elli.plot(plot_markers=True)
+        >>> s_elli.plot()
         """
         signal = self._get_property_map(
             self.x_position,
@@ -1604,7 +1639,11 @@ class Sublattice():
 
         Example
         -------
-        >>> fp = sublattice.get_fingerprint()
+        >>> from numpy.random import random
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> fp = sublattice._get_fingerprint()
         >>> fp_distance = fp.fingerprint_
         >>> fp_vector = fp.cluster_centers_
         """
@@ -1639,9 +1678,13 @@ class Sublattice():
 
         Example
         -------
+        >>> import numpy as np
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
         >>> fp = sublattice.get_fingerprint_2d()
         >>> import matplotlib.pyplot as plt
-        >>> plt.scatter(fp[:,0], fp[:,1], marker='o')
+        >>> cax = plt.scatter(fp[:,0], fp[:,1], marker='o')
         """
         fingerprinter = self._get_fingerprint(pixel_radius=pixel_radius)
         return fingerprinter.cluster_centers_
@@ -1652,9 +1695,13 @@ class Sublattice():
 
         Example
         -------
+        >>> import numpy as np
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
         >>> fp = sublattice.get_fingerprint_1d()
         >>> import matplotlib.pyplot as plt
-        >>> plt.plot(fp, marker='o')
+        >>> cax = plt.plot(fp, marker='o')
         """
         fingerprinter = self._get_fingerprint(pixel_radius=pixel_radius)
         return fingerprinter.fingerprint_
