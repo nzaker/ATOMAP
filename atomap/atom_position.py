@@ -275,8 +275,7 @@ class Atom_Position:
                     image_data,
                     rotation_enabled=rotation_enabled,
                     percent_to_nn=percent_to_nn)
-            g = g_list[0]
-            if g is False:
+            if g_list is False:
                 print("Fitting missed")
                 if i == 9:
                     new_x, new_y = self.get_center_position_com(
@@ -289,6 +288,7 @@ class Atom_Position:
                 else:
                     percent_to_nn *= 0.95
             else:
+                g = g_list[0]
                 new_x = g.centre_x.value
                 new_y = g.centre_y.value
                 new_rotation = g.rotation.value % math.pi
