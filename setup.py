@@ -24,6 +24,7 @@ setup(
             'numpy>=1.10',
             'h5py',
             'matplotlib>=1.2',
+            'tqdm',
             'hyperspy>=1.2',
             ],
         classifiers = [
