@@ -451,13 +451,13 @@ def _make_model_from_atom_list(
     lower_value = _find_background_value(
             data_mask_crop[mask_crop], lowest_percentile=0.03)
     data_mask_crop -= lower_value
-    data_mask_crop /= upper_value
     data_mask_crop[data_mask_crop<0] = 0.
 
     s = Signal2D(data_mask_crop)
     gaussian_list = []
     for atom in atom_list:
         gaussian = _atom_to_gaussian_component(atom)
+        gaussian.A.value = upper_value
         gaussian_list.append(gaussian)
 
     s.axes_manager[0].offset = y0
@@ -536,10 +536,13 @@ def fit_atom_positions_gaussian(
                 atom_list,
                 image_data,
                 rotation_enabled=rotation_enabled,
-                percent_to_nn=percent_to_nn)
+                percent_to_nn=percent_to_nn,
+                centre_free=centre_free)
         if g_list is False:
             if i == 9:
                 for g, atom in zip(g_list, atom_list):
+                    atom.old_pixel_x_list.append(atom.pixel_x)
+                    atom.old_pixel_y_list.append(atom.pixel_y)
                     atom.pixel_x, atom.pixel_y = atom.get_center_position_com(
                             image_data,
                             percent_to_nn=percent_to_nn)
@@ -549,6 +552,8 @@ def fit_atom_positions_gaussian(
                 percent_to_nn *= 0.95
         else:
             for g, atom in zip(g_list, atom_list):
+                atom.old_pixel_x_list.append(atom.pixel_x)
+                atom.old_pixel_y_list.append(atom.pixel_y)
                 atom.pixel_x = g.centre_x.value
                 atom.pixel_y = g.centre_y.value
                 atom.rotation = g.rotation.value % math.pi
