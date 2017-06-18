@@ -44,19 +44,29 @@ class test_atom_lattice_object_tools(unittest.TestCase):
         atoms_N = 10
         image_data = np.arange(10000).reshape(100,100)
         peaks = np.arange(20).reshape(atoms_N,2)
-        sublattice = Sublattice(
-                peaks, 
-                image_data)
-        sublattice.original_image = image_data
+        sublattice0 = Sublattice(
+                atom_position_list=peaks,
+                image=image_data)
+        sublattice1 = Sublattice(
+                atom_position_list=peaks,
+                image=image_data)
         self.atom_lattice = Atom_Lattice()
-        self.atom_lattice.sublattice_list.append(sublattice)
+        self.atom_lattice.sublattice_list.extend([sublattice0, sublattice1])
         self.atom_lattice.image0 = image_data
 
     def test_save_atom_lattice(self):
         save_path = "test_atomic_lattice_save.hdf5"
         self.atom_lattice.save(
-                filename=save_path)
+                filename=save_path, overwrite=True)
 
     def test_load_atom_lattice(self):
         hdf5_filename = os.path.join(my_path, "datasets", "test_atom_lattice.hdf5")
         load_atom_lattice_from_hdf5(hdf5_filename, construct_zone_axes=False)
+
+    @unittest.expectedFailure
+    def test_save_atom_lattice_already_exist(self):
+        save_path = "test_atomic_lattice_save.hdf5"
+        self.atom_lattice.save(
+                filename=save_path, overwrite=True)
+        self.atom_lattice.save(
+                filename=save_path)

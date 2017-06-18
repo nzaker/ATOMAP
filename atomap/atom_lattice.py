@@ -103,7 +103,7 @@ class Atom_Lattice():
         >>> pos = [[x, y] for x in range(9) for y in range(9)]
         >>> sublattice = Sublattice(pos, random((9, 9)))
         >>> atom_lattice = Atom_Lattice(random((9, 9)), "test", [sublattice])
-        >>> atom_lattice.save("test.hdf5")
+        >>> atom_lattice.save("test.hdf5", overwrite=True)
 
         Loading the atom lattice:
         >>> import atomap.api as am
