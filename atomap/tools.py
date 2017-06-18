@@ -612,12 +612,20 @@ def project_position_property_sum_planes(
 
     Example
     -------
-    >>> data = project_position_property_sum_planes(
-            input_data,
-            interface_plane)
+    >>> from numpy.random import random
+    >>> from atomap.sublattice import Sublattice
+    >>> pos = [[x, y] for x in range(9) for y in range(9)]
+    >>> sublattice = Sublattice(pos, random((9, 9)))
+    >>> sublattice.construct_zone_axes()
+    >>> x, y = sublattice.x_position, sublattice.y_position
+    >>> z = sublattice.ellipticity
+    >>> input_data_list = np.array([x, y, z]).swapaxes(0, 1)
+    >>> from atomap.tools import project_position_property_sum_planes
+    >>> plane = sublattice.atom_plane_list[10]
+    >>> data = project_position_property_sum_planes(input_data_list, plane)
     >>> positions = data[:,0]
-    >>> property_values = data[:,0]
-    >>> plt.plot(positions, property_values)
+    >>> property_values = data[:,1]
+    >>> cax = plt.plot(positions, property_values)
     """
     x_pos_list = input_data_list[:, 0]
     y_pos_list = input_data_list[:, 1]
@@ -648,6 +656,7 @@ def project_position_property_sum_planes(
 
     if rebin_data:
         data_list = combine_clusters_using_average_distance(data_list)
+    data_list = np.array(data_list)
     return(data_list)
 
 

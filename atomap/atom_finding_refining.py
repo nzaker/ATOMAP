@@ -45,6 +45,11 @@ def get_atom_positions(
     Example
     -------
     If s is a single signal
+    >>> import numpy as np
+    >>> x, y = np.mgrid[0:150:10j,0:150:10j]
+    >>> from atomap.testing_tools import make_artifical_atomic_signal
+    >>> s = make_artifical_atomic_signal(x.flatten(), y.flatten())[0]
+    >>> from atomap.atom_finding_refining import get_atom_positions
     >>> atom_positions = get_atom_positions(s, 5)
     >>> peak_x = atom_positions[:,0]
     >>> peak_y = atom_positions[:,1]
@@ -181,11 +186,11 @@ def get_feature_separation(
 
     Example
     -------
+    >>> import numpy as np
     >>> import hyperspy.api as hs
     >>> from atomap.atom_finding_refining import get_feature_separation
-    >>> s = hs.signals.Signal2D(np.random.random((500, 500))
+    >>> s = hs.signals.Signal2D(np.random.random((500, 500)))
     >>> s1 = get_feature_separation(s)
-
     """
 
     separation_list, peak_list = find_features_by_separation(

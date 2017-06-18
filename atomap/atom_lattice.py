@@ -96,7 +96,16 @@ class Atom_Lattice():
 
         Examples
         --------
+        >>> from numpy.random import random
+        >>> from atomap.sublattice import Sublattice
+        >>> from atomap.atom_lattice import Atom_Lattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> atom_lattice = Atom_Lattice(random((9, 9)), "test", [sublattice])
         >>> atom_lattice.save("test.hdf5")
+
+        Loading the atom lattice:
+        >>> import atomap.api as am
         >>> atom_lattice1 = am.load_atom_lattice_from_hdf5("test.hdf5")
         """
         from atomap.io import save_atom_lattice_to_hdf5
