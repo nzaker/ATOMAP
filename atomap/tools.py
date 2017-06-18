@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import copy
+from tqdm import tqdm
 from scipy import interpolate
 from scipy import ndimage
 from scipy.spatial import cKDTree
@@ -76,13 +77,13 @@ def remove_atoms_from_image_using_2d_gaussian(
                     image,
                     rotation_enabled=True,
                     percent_to_nn=percent_distance)
-            g = g_list[0]
-            if g is False:
+            if g_list is False:
                 if i == 9:
                     break
                 else:
                     percent_distance *= 0.95
             else:
+                g = g_list[0]
                 model_image += g.function(X, Y)
                 break
     subtracted_image = copy.deepcopy(image) - model_image
