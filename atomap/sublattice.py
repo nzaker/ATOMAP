@@ -648,14 +648,12 @@ class Sublattice():
             self,
             image_data,
             percent_to_nn=0.40,
-            rotation_enabled=True,
-            debug=False):
+            rotation_enabled=True):
         for atom in tqdm(self.atom_list, desc="Gaussian fitting"):
             atom.refine_position_using_2d_gaussian(
                     image_data,
                     rotation_enabled=rotation_enabled,
-                    percent_to_nn=percent_to_nn,
-                    debug=debug)
+                    percent_to_nn=percent_to_nn)
 
     def refine_atom_positions_using_center_of_mass(
             self, image_data, percent_to_nn=0.25):

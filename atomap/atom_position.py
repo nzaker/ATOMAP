@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import ndimage
 import math
 from atomap.atom_finding_refining import _make_circular_mask
-from atomap.atom_finding_refining import _fit_atom_positions_with_gaussian_model
+from atomap.atom_finding_refining import fit_atom_positions_gaussian
 
 
 class Atom_Position:
@@ -246,7 +246,7 @@ class Atom_Position:
             image_data,
             rotation_enabled=True,
             percent_to_nn=0.40,
-            debug=False):
+            centre_free=True):
         """
         Parameters
         ----------
@@ -263,52 +263,16 @@ class Atom_Position:
             neighboring atoms, but might also decrease the accuracy of
             the fitting due to less data to fit to.
             Default 0.4 (40%).
-        debug_plot : bool, optional
-            Make debug figure for every Gaussian fit.
-            Useful for debugging failed Gaussian fitting.
-            Default False.
+        centre_free : bool, default True
+            If True, the centre parameter will be free, meaning that
+            the Gaussian can move.
         """
-
-        for i in range(10):
-            g_list = _fit_atom_positions_with_gaussian_model(
-                    [self],
-                    image_data,
-                    rotation_enabled=rotation_enabled,
-                    percent_to_nn=percent_to_nn)
-            if g_list is False:
-                print("Fitting missed")
-                if i == 9:
-                    new_x, new_y = self.get_center_position_com(
-                        image_data,
-                        percent_to_nn=percent_to_nn)
-                    new_sigma_x = self.sigma_x
-                    new_sigma_y = self.sigma_y
-                    new_rotation = self.rotation
-                    break
-                else:
-                    percent_to_nn *= 0.95
-            else:
-                g = g_list[0]
-                new_x = g.centre_x.value
-                new_y = g.centre_y.value
-                new_rotation = g.rotation.value % math.pi
-                new_sigma_x = abs(g.sigma_x.value)
-                new_sigma_y = abs(g.sigma_y.value)
-                break
-
-        self.old_pixel_x_list.append(self.pixel_x)
-        self.old_pixel_y_list.append(self.pixel_y)
-
-        self.pixel_x = new_x
-        self.pixel_y = new_y
-
-        self.rotation = new_rotation
-        self.sigma_x = new_sigma_x
-        self.sigma_y = new_sigma_y
-        if g is not False:
-            self.amplitude_gaussian = g.A.value
-        else:
-            self.amplitude_gaussian = 0.0
+        fit_atom_positions_gaussian(
+                [self],
+                image_data,
+                rotation_enabled=True,
+                percent_to_nn=0.40,
+                centre_free=True)
 
     def get_center_position_com(
             self,
