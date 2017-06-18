@@ -82,7 +82,7 @@ class Atom_Lattice():
 
         return signal
 
-    def save(self, filename=None):
+    def save(self, filename=None, overwrite=False):
         """
         Save the AtomLattice object as an HDF5 file.
         This will store the information about the individual atomic
@@ -93,6 +93,7 @@ class Atom_Lattice():
         Parameters
         ----------
         filename : string, optional
+        overwrite : bool, default False
 
         Examples
         --------
@@ -111,7 +112,7 @@ class Atom_Lattice():
         from atomap.io import save_atom_lattice_to_hdf5
         if filename is None:
             filename = self.name + "_atom_lattice.hdf5"
-        save_atom_lattice_to_hdf5(self, filename)
+        save_atom_lattice_to_hdf5(self, filename=filename, overwrite=overwrite)
 
 
 class Dumbbell_Lattice(Atom_Lattice):
