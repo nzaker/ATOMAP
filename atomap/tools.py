@@ -68,7 +68,7 @@ def remove_atoms_from_image_using_2d_gaussian(
     model_image = np.zeros(image.shape)
     X, Y = np.meshgrid(np.arange(
         model_image.shape[1]), np.arange(model_image.shape[0]))
-    for atom in sublattice.atom_list:
+    for atom in tqdm(sublattice.atom_list, desc='Subtracting atoms'):
         percent_distance = percent_to_nn
         for i in range(10):
             g_list = _fit_atom_positions_with_gaussian_model(
