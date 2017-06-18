@@ -6,7 +6,7 @@ test_docstrings:
     - apt-get install -qy python3-sympy --no-install-recommends
     - pip3 install --upgrade pip
     - pip3 install --user .
-    - python3 -m doctest atomap/*.py
+    - python3 run_doctests.py
 
 pip_install_tests:
     image: ubuntu:latest
