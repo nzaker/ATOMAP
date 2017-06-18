@@ -425,8 +425,7 @@ def _atom_to_gaussian_component(atom):
             centre_y=atom.pixel_y,
             sigma_x=atom.sigma_x,
             sigma_y=atom.sigma_y,
-            rotation=atom.rotation,
-            A=15.)
+            rotation=atom.rotation)
     return(g)
 
 
@@ -457,14 +456,16 @@ def _make_model_from_atom_list(
     gaussian_list = []
     for atom in atom_list:
         gaussian = _atom_to_gaussian_component(atom)
-        gaussian.A.value = upper_value
+        if atom._gaussian_fitted:
+            gaussian.A.value = atom.amplitude_gaussian
+        else:
+            gaussian.A.value = upper_value*10
         gaussian_list.append(gaussian)
 
     s.axes_manager[0].offset = y0
     s.axes_manager[1].offset = x0
     m = s.create_model()
     m.extend(gaussian_list)
-
     return(m)
 
 
@@ -560,6 +561,7 @@ def fit_atom_positions_gaussian(
                 atom.sigma_x = abs(g.sigma_x.value)
                 atom.sigma_y = abs(g.sigma_y.value)
                 atom.amplitude_gaussian = g.A.value
+                atom._gaussian_fitted = True
             break
 
 

@@ -24,6 +24,7 @@ class Atom_Position:
         self.sigma_y = 1.0
         self.rotation = 0.01
         self.amplitude_gaussian = 1.0
+        self._gaussian_fitted = False
         self.amplitude_max_intensity = 1.0
 
     def __repr__(self):
