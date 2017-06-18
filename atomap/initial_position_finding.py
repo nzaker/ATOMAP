@@ -2,7 +2,9 @@ import numpy as np
 from tqdm import tqdm
 from atomap.atom_finding_refining import get_atom_positions
 from atomap.tools import _get_n_nearest_neighbors, Fingerprinter
-from atomap.atom_finding_refining import _make_circular_mask
+from atomap.atom_finding_refining import (
+        _make_circular_mask, do_pca_on_signal,
+        subtract_average_background)
 from atomap.sublattice import Sublattice
 from atomap.atom_lattice import Dumbbell_Lattice
 import operator
@@ -75,13 +77,17 @@ def make_atom_lattice_dumbbell_structure(s, position_list, small_separation):
 
     dumbbell_list0, dumbbell_list1 = _get_dumbbell_arrays(
             s, position_list, dumbbell_vec)
+    s_modified = do_pca_on_signal(s)
+    s_modified = subtract_average_background(s)
     sublattice0 = Sublattice(
             atom_position_list=dumbbell_list0,
-            image=s.data,
+            original_image=s.data,
+            image=s_modified.data,
             color='blue')
     sublattice1 = Sublattice(
             atom_position_list=dumbbell_list1,
-            image=s.data,
+            original_image=s.data,
+            image=s_modified.data,
             color='red')
     sublattice0._find_nearest_neighbors()
     sublattice1._find_nearest_neighbors()
