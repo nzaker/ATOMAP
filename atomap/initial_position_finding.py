@@ -10,7 +10,14 @@ from atomap.atom_lattice import Dumbbell_Lattice
 import operator
 
 
-def _find_dumbbell_vector(s, separation):
+def find_dumbbell_vector(s, separation):
+    """
+    Parameters
+    ----------
+    s : HyperSpy 2D signal
+    separation : int
+        Pixel separation between the atoms in the dumbbells.
+    """
     position_list = get_atom_positions(s, separation=separation)
     test = _get_n_nearest_neighbors(position_list, 10, leafsize=100)
     fp = Fingerprinter()
@@ -72,11 +79,9 @@ def _get_dumbbell_arrays(s, position_list, dumbbell_vec):
     return(dumbbell_list0, dumbbell_list1)
 
 
-def make_atom_lattice_dumbbell_structure(s, position_list, small_separation):
-    dumbbell_vec = _find_dumbbell_vector(s, separation=small_separation)
-
+def make_atom_lattice_dumbbell_structure(s, position_list, dumbbell_vector):
     dumbbell_list0, dumbbell_list1 = _get_dumbbell_arrays(
-            s, position_list, dumbbell_vec)
+            s, position_list, dumbbell_vector)
     s_modified = do_pca_on_signal(s)
     sublattice0 = Sublattice(
             atom_position_list=dumbbell_list0,

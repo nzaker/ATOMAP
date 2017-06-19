@@ -150,11 +150,6 @@ def find_features_by_separation(
                 normalize_intensity=normalize_intensity,
                 subtract_background=subtract_background)
 
-#        peaks = peak_local_max(
-#                image=image_data,
-#                min_distance=separation,
-#                threshold_rel=threshold_rel,
-#                indices=True)
         separation_value_list.append(separation)
         peak_list.append(peaks)
 
