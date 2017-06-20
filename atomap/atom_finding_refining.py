@@ -44,7 +44,6 @@ def get_atom_positions(
 
     Example
     -------
-    If s is a single signal
     >>> import numpy as np
     >>> x, y = np.mgrid[0:150:10j,0:150:10j]
     >>> from atomap.testing_tools import make_artifical_atomic_signal

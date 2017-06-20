@@ -689,8 +689,8 @@ class Sublattice():
         Position : tuple
             (x_position, y_position). Where both are numpy arrays.
 
-        Example
-        -------
+        Examples
+        --------
         >>> import numpy as np
         >>> from atomap.sublattice import Sublattice
         >>> pos = [[x, y] for x in range(9) for y in range(9)]
@@ -701,6 +701,7 @@ class Sublattice():
         >>> cax = plt.scatter(x_pos, y_pos)
 
         With all the keywords
+
         >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions(
         ...     pixel_scale=False, neighbors=3)
         """
@@ -748,8 +749,8 @@ class Sublattice():
         -------
         Pixel Position : np.array([x_position, y_position])
 
-        Example
-        -------
+        Examples
+        --------
         >>> import numpy as np
         >>> from atomap.sublattice import Sublattice
         >>> pos = [[x, y] for x in range(9) for y in range(9)]
@@ -961,8 +962,8 @@ class Sublattice():
         -------
         HyperSpy signal2D object
 
-        Example
-        -------
+        Examples
+        --------
         >>> from numpy.random import random
         >>> from atomap.sublattice import Sublattice
         >>> pos = [[x, y] for x in range(9) for y in range(9)]
@@ -1010,10 +1011,12 @@ class Sublattice():
         HyperSpy signal2D object if given a single zone vector,
         list of HyperSpy signal2D if given a list (or none) of zone vectors.
 
-        Example
-        -------
+        Examples
+        --------
+
         Getting a list signals showing the atomic planes for all the
         zone vectors
+
         >>> from numpy.random import random
         >>> from atomap.sublattice import Sublattice
         >>> pos = [[x, y] for x in range(9) for y in range(9)]
@@ -1023,11 +1026,13 @@ class Sublattice():
         >>> s.plot()
 
         Several zone vectors
+
         >>> zone_vec_list = sublattice.zones_axis_average_distances[0:3]
         >>> s = sublattice.get_all_atom_planes_by_zone_vector(zone_vec_list)
         >>> s.plot()
 
         Different image
+
         >>> im = random((9., 9))
         >>> s = sublattice.get_all_atom_planes_by_zone_vector(image=im)
         >>> s.plot()
@@ -1097,16 +1102,19 @@ class Sublattice():
         >>> s.plot()
 
         Number all the atoms
+
         >>> s = sublattice.get_atom_list_on_image(add_numbers=True)
         >>> s.plot()
 
         Plot a subset of the atom positions
+
         >>> atoms = sublattice.atom_list[0:20]
         >>> s = sublattice.get_atom_list_on_image(atom_list=atoms, add_numbers=True)
         >>> s.plot()
 
         Saving the signal as HyperSpy HDF5 file, which saves the atom
         positions as permanent markers.
+
         >>> s = sublattice.get_atom_list_on_image()
         >>> s.save("sublattice_atom_positions.hdf5", overwrite=True)
         """
@@ -1316,6 +1324,7 @@ class Sublattice():
         >>> s_elli.plot()
 
         Include an atom plane, which is added to the signal as a marker
+
         >>> sublattice.construct_zone_axes()
         >>> atom_plane = [sublattice.atom_plane_list[10]]
         >>> s_elli = sublattice.get_ellipticity_map(atom_plane_list=atom_plane)

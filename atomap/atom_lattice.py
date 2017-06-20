@@ -106,6 +106,7 @@ class Atom_Lattice():
         >>> atom_lattice.save("test.hdf5", overwrite=True)
 
         Loading the atom lattice:
+
         >>> import atomap.api as am
         >>> atom_lattice1 = am.load_atom_lattice_from_hdf5("test.hdf5")
         """
