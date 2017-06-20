@@ -9,9 +9,34 @@ from atomap.atom_finding_refining import fit_atom_positions_gaussian
 
 
 class Atom_Position:
-    def __init__(self, x, y):
-        self.pixel_x = x
-        self.pixel_y = y
+
+    def __init__(self, x, y, sigma_x=1., sigma_y=1., rotation=0.01):
+        """
+        Parameters
+        ----------
+        x : float
+        y : float
+        sigma_x : float, optional
+        sigma_y : float, optional
+        rotation : float, optional
+            In radians
+
+        Attributes
+        ----------
+        ellipticity : float
+
+        Examples
+        --------
+        >>> from atomap.atom_position import Atom_Position
+        >>> atom_position = Atom_Position(10, 5)
+
+        More parameters
+
+        >>> atom_pos = Atom_Position(10, 5, sigma_x=2, sigma_y=4, rotation=2)
+        """
+        self.pixel_x, self.pixel_y = x, y
+        self.sigma_x, self.sigma_y = sigma_x, sigma_y
+        self.rotation = rotation
         self.nearest_neighbor_list = None
         self.in_atomic_plane = []
         self._start_atom = []
@@ -20,9 +45,6 @@ class Atom_Position:
         self._tag = ''
         self.old_pixel_x_list = []
         self.old_pixel_y_list = []
-        self.sigma_x = 1.0
-        self.sigma_y = 1.0
-        self.rotation = 0.01
         self.amplitude_gaussian = 1.0
         self._gaussian_fitted = False
         self.amplitude_max_intensity = 1.0
