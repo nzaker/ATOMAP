@@ -39,6 +39,7 @@ class Sublattice():
             image,
             original_image=None,
             color='red',
+            pixel_size=1.,
             ):
         """
         Parameters
@@ -47,7 +48,39 @@ class Sublattice():
             In the form [[x0, y0], [x1, y1], [x2, y2], ... ]
         image : 2D NumPy array
         original_image : 2D NumPy array, optional
-        color : string, optional, default red
+        color : string, optional
+            Plotting color, default red.
+        pixel_size : float, optional
+            Scaling number, default 1.
+
+        Attributes
+        ----------
+        x_position : list of floats
+        y_position : list of floats
+        sigma_x : list of floats
+        sigma_y : list of floats
+        sigma_average : list of floats
+        rotation : list of floats
+        ellipticity : list of floats
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from atomap.sublattice import Sublattice
+        >>> atom_positions = [[2, 2], [2, 4], [4, 2], [4, 4]]
+        >>> image_data = np.random.random((7, 7))
+        >>> sublattice = Sublattice(atom_positions, image_data)
+        >>> s_sublattice = sublattice.get_atom_list_on_image()
+        >>> s_sublattice.plot()
+
+        More atom positions
+
+        >>> x, y = np.mgrid[0:100:10j, 0:100:10j]
+        >>> x, y = x.flatten(), y.flatten()
+        >>> atom_positions = np.dstack((x, y))[0]
+        >>> image_data = np.random.random((100, 100))
+        >>> sublattice = Sublattice(atom_positions, image_data, color='yellow')
+        >>> sublattice.get_atom_list_on_image(markersize=50).plot()
         """
         self.atom_list = []
         for atom_position in atom_position_list:
@@ -64,7 +97,7 @@ class Sublattice():
         self.atom_planes_by_zone_vector = {}
         self._plot_clim = None
         self._tag = ''
-        self.pixel_size = 1.0
+        self.pixel_size = pixel_size
         self._plot_color = color
         self._pixel_separation = 0.0
 
@@ -1064,7 +1097,7 @@ class Sublattice():
             self,
             atom_list=None,
             image=None,
-            color='red',
+            color=None,
             add_numbers=False,
             markersize=20):
         """
@@ -1078,7 +1111,7 @@ class Sublattice():
         image : 2-D numpy array, optional
             Image data for plotting. If none is given, will use
             the original_image.
-        color : string, default 'red'
+        color : string, optional
         add_numbers : bool, default False
             Plot the number of the atom beside each atomic
             position in the plot. Useful for locating
@@ -1110,7 +1143,7 @@ class Sublattice():
 
         >>> atoms = sublattice.atom_list[0:20]
         >>> s = sublattice.get_atom_list_on_image(atom_list=atoms, add_numbers=True)
-        >>> s.plot()
+        >>> s.plot(cmap='viridis')
 
         Saving the signal as HyperSpy HDF5 file, which saves the atom
         positions as permanent markers.
@@ -1118,6 +1151,8 @@ class Sublattice():
         >>> s = sublattice.get_atom_list_on_image()
         >>> s.save("sublattice_atom_positions.hdf5", overwrite=True)
         """
+        if color is None:
+            color = self._plot_color
         if image is None:
             image = self.original_image
         if atom_list is None:
