@@ -6,7 +6,9 @@ from atomap.testing_tools import make_artifical_atomic_signal
 from atomap.atom_finding_refining import (
         _make_mask_from_positions,_crop_mask_slice_indices,
         _find_background_value, _find_median_upper_percentile,
-        _make_model_from_atom_list, _fit_atom_positions_with_gaussian_model)
+        _make_model_from_atom_list, _fit_atom_positions_with_gaussian_model,
+        _atom_to_gaussian_component, _make_circular_mask,
+        fit_atom_positions_gaussian)
 
 class test_make_mask_from_positions(unittest.TestCase):
 
@@ -212,3 +214,119 @@ class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
         g_list = _fit_atom_positions_with_gaussian_model(
                 [sublattice.atom_list[5:7]],
                 sublattice.image)
+
+
+class test_atom_to_gaussian_component(unittest.TestCase):
+
+    def test_simple(self):
+        x, y, sX, sY, r = 7.1, 2.8, 2.1, 3.3, 1.9
+        atom_position = Atom_Position(
+                x=x, y=y,
+                sigma_x=sX, sigma_y=sY,
+                rotation=r)
+        gaussian = _atom_to_gaussian_component(atom_position)
+        self.assertEqual(x, gaussian.centre_x.value)
+        self.assertEqual(y, gaussian.centre_y.value)
+        self.assertEqual(sX, gaussian.sigma_x.value)
+        self.assertEqual(sY, gaussian.sigma_y.value)
+        self.assertEqual(r, gaussian.rotation.value)
+
+
+class test_make_circular_mask(unittest.TestCase):
+
+    def test_small_radius_1(self):
+        imX, imY = 3, 3
+        mask = _make_circular_mask(1, 1, imX, imY, 1)
+        self.assertEqual(mask.size, imX*imY)
+        self.assertEqual(mask.sum(), 5)
+        true_index = [[1, 0], [0, 1], [1, 1],  [2, 1], [1 ,2]]
+        false_index = [[0, 0], [0, 2], [2, 0],  [2, 2]]
+        for index in true_index:
+            self.assertTrue(mask[index[0], index[1]])
+        for index in false_index:
+            self.assertFalse(mask[index[0], index[1]])
+
+    def test_all_true_mask(self):
+        imX, imY = 5, 5
+        mask = _make_circular_mask(1, 1, imX, imY, 5)
+        self.assertTrue(mask.all())
+        self.assertEqual(mask.size, imX*imY)
+        self.assertEqual(mask.sum(), imX*imY)
+
+    def test_all_false_mask(self):
+        mask = _make_circular_mask(10, 10, 5, 5, 3)
+        self.assertFalse(mask.any())
+
+
+class test_fit_atom_positions_gaussian(unittest.TestCase):
+
+    def setUp(self):
+        x, y = np.mgrid[0:100:10j,0:100:10j]
+        x, y = x.flatten(), y.flatten()
+        s, g_list = make_artifical_atomic_signal(x, y, image_pad=0)
+        position_list = np.array((x, y)).swapaxes(0, 1)
+        sublattice = Sublattice(position_list, s.data)
+        sublattice.construct_zone_axes()
+        self.sublattice = sublattice
+        self.x, self.y = x, y
+
+    def test_one_atoms(self):
+        sublattice = self.sublattice
+        atom_index = 55
+        atom_list = [sublattice.atom_list[atom_index]]
+        image_data = sublattice.image
+        fit_atom_positions_gaussian(atom_list, image_data)
+        self.assertAlmostEqual(
+                sublattice.atom_list[atom_index].pixel_x,
+                self.x[atom_index], places=4)
+        self.assertAlmostEqual(
+                sublattice.atom_list[atom_index].pixel_y,
+                self.y[atom_index], places=4)
+
+    def test_two_atoms(self):
+        sublattice = self.sublattice
+        atom_indices = [44, 45]
+        atom_list = []
+        for index in atom_indices:
+            atom_list.append(sublattice.atom_list[index])
+        image_data = sublattice.image
+        fit_atom_positions_gaussian(atom_list, image_data)
+        for atom_index in atom_indices:
+            self.assertAlmostEqual(
+                    sublattice.atom_list[atom_index].pixel_x,
+                    self.x[atom_index], places=4)
+            self.assertAlmostEqual(
+                    sublattice.atom_list[atom_index].pixel_y,
+                    self.y[atom_index], places=4)
+
+    def test_four_atoms(self):
+        sublattice = self.sublattice
+        atom_indices = [35, 36, 45, 46]
+        atom_list = []
+        for index in atom_indices:
+            atom_list.append(sublattice.atom_list[index])
+        image_data = sublattice.image
+        fit_atom_positions_gaussian(atom_list, image_data)
+        for atom_index in atom_indices:
+            self.assertAlmostEqual(
+                    sublattice.atom_list[atom_index].pixel_x,
+                    self.x[atom_index], places=4)
+            self.assertAlmostEqual(
+                    sublattice.atom_list[atom_index].pixel_y,
+                    self.y[atom_index], places=4)
+
+    def test_nine_atoms(self):
+        sublattice = self.sublattice
+        atom_indices = [34, 35, 36, 44, 45, 46, 54, 55, 56]
+        atom_list = []
+        for index in atom_indices:
+            atom_list.append(sublattice.atom_list[index])
+        image_data = sublattice.image
+        fit_atom_positions_gaussian(atom_list, image_data)
+        for atom_index in atom_indices:
+            self.assertAlmostEqual(
+                    sublattice.atom_list[atom_index].pixel_x,
+                    self.x[atom_index], places=4)
+            self.assertAlmostEqual(
+                    sublattice.atom_list[atom_index].pixel_y,
+                    self.y[atom_index], places=4)
