@@ -10,11 +10,25 @@ from operator import itemgetter
 
 def find_dumbbell_vector(s, separation):
     """
+    Find the vector between the atoms in structure with dumbbells.
+    For example GaAs-(110).
+
     Parameters
     ----------
     s : HyperSpy 2D signal
     separation : int
         Pixel separation between the atoms in the dumbbells.
+
+    Returns
+    -------
+    dumbbell_vector : tuple
+
+    Examples
+    --------
+    >>> from atomap.initial_position_finding import find_dumbbell_vector
+    >>> from atomap.testing_tools import get_test_dumbbell_signal
+    >>> s = get_test_dumbbell_signal()
+    >>> dumbbell_vector = find_dumbbell_vector(s, 4)
     """
     position_list = get_atom_positions(s, separation=separation)
     test = _get_n_nearest_neighbors(position_list, 10, leafsize=100)
@@ -35,21 +49,44 @@ def find_dumbbell_vector(s, separation):
     return(vec0)
 
 
-def _get_dumbbell_arrays(s, position_list, dumbbell_vec):
-    next_position_list0 = []
-    next_position_list1 = []
-    for x, y in zip(position_list[:, 0], position_list[:, 1]):
-        next_position_list0.append([dumbbell_vec[0]+x, dumbbell_vec[1]+y])
-        next_position_list1.append([-dumbbell_vec[0]+x, -dumbbell_vec[1]+y])
-    next_position_list0 = np.array(next_position_list0)
-    next_position_list1 = np.array(next_position_list1)
+def _get_dumbbell_arrays(s, position_list, dumbbell_vector):
+    """
+    Parameters
+    ----------
+    s : HyperSpy 2D signal
+    position_list : list of atomic positions
+        In the form [[x0, y0], [x1, y1], [x2, y2], ...]
+    dumbbell_vector : tuple
 
-    mask_radius = 0.5*(dumbbell_vec[0]**2+dumbbell_vec[1]**2)**0.5
+    Returns
+    -------
+    Dumbbell lists : tuple of lists
+
+    Examples
+    --------
+    >>> from atomap.initial_position_finding import find_dumbbell_vector
+    >>> from atomap.initial_position_finding import _get_dumbbell_arrays
+    >>> from atomap.testing_tools import get_test_dumbbell_signal
+    >>> from atomap.atom_finding_refining import get_atom_positions
+    >>> s = get_test_dumbbell_signal()
+    >>> position_list = get_atom_positions(s, separation=16)
+    >>> dumbbell_vector = find_dumbbell_vector(s, 4)
+    >>> d0, d1 = _get_dumbbell_arrays(s, position_list, dumbbell_vector)
+    """
+    next_pos_list0 = []
+    next_pos_list1 = []
+    for x, y in zip(position_list[:, 0], position_list[:, 1]):
+        next_pos_list0.append([dumbbell_vector[0]+x, dumbbell_vector[1]+y])
+        next_pos_list1.append([-dumbbell_vector[0]+x, -dumbbell_vector[1]+y])
+    next_pos_list0 = np.array(next_pos_list0)
+    next_pos_list1 = np.array(next_pos_list1)
+
+    mask_radius = 0.5*(dumbbell_vector[0]**2+dumbbell_vector[1]**2)**0.5
 
     iterator = zip(
             position_list[:, 0], position_list[:, 1],
-            next_position_list0, next_position_list1)
-    total_num = len(next_position_list0)
+            next_pos_list0, next_pos_list1)
+    total_num = len(next_pos_list0)
     dumbbell_list0, dumbbell_list1 = [], []
     for x, y, next_pos0, next_pos1 in tqdm(
             iterator, total=total_num, desc="Finding dumbbells"):
@@ -75,6 +112,32 @@ def _get_dumbbell_arrays(s, position_list, dumbbell_vec):
 
 
 def make_atom_lattice_dumbbell_structure(s, position_list, dumbbell_vector):
+    """
+    Make Atom_Lattice object from image of dumbbell structure.
+
+    Parameters
+    ----------
+    s : HyperSpy 2D signal
+    position_list : list of atomic positions
+        In the form [[x0, y0], [x1, y1], [x2, y2], ...]
+    dumbbell_vector : tuple
+
+    Returns
+    -------
+    dumbbell_lattice: Atomap Dumbbell_Lattice object
+
+    Examples
+    --------
+    >>> from atomap.initial_position_finding import find_dumbbell_vector
+    >>> from atomap.initial_position_finding import make_atom_lattice_dumbbell_structure
+    >>> from atomap.testing_tools import get_test_dumbbell_signal
+    >>> from atomap.atom_finding_refining import get_atom_positions
+    >>> s = get_test_dumbbell_signal()
+    >>> position_list = get_atom_positions(s, separation=16)
+    >>> dumbbell_vector = find_dumbbell_vector(s, 4)
+    >>> dumbbell_lattice = make_atom_lattice_dumbbell_structure(
+    ...     s, position_list, dumbbell_vector)
+    """
     dumbbell_list0, dumbbell_list1 = _get_dumbbell_arrays(
             s, position_list, dumbbell_vector)
     s_modified = do_pca_on_signal(s)
