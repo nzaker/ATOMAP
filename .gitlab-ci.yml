@@ -8,7 +8,7 @@ test_docstrings:
     - pip3 install --user .
     - python3 run_doctests.py
 
-pip_install_tests:
+pip_install_test_and_coverage:
     image: ubuntu:latest
     script: 
     - apt-get update -q
@@ -16,7 +16,8 @@ pip_install_tests:
     - apt-get install -qy python3-sympy --no-install-recommends
     - pip3 install --upgrade pip
     - pip3 install --user .
-    - python3 -m unittest discover
+    - coverage run --source=atomap --omit=atomap/tests/*,*__init__.py -m unittest discover
+    - coverage report -m
 
 anaconda_install_tests:
     image: continuumio/anaconda3
