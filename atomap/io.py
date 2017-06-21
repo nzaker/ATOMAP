@@ -1,4 +1,5 @@
-import h5py, os
+import h5py
+import os
 from atomap.atom_lattice import Atom_Lattice
 from atomap.sublattice import Sublattice
 from atomap.atom_finding_refining import construct_zone_axes_from_sublattice

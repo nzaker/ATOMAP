@@ -1,6 +1,5 @@
 import copy
 import numpy as np
-import hyperspy.api as hs
 import matplotlib.pyplot as plt
 from scipy import ndimage
 import math

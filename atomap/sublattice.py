@@ -3,13 +3,10 @@ import scipy as sp
 from tqdm import tqdm, trange
 import matplotlib.pyplot as plt
 import math
-from scipy import ndimage
 from scipy.spatial import cKDTree
 import hyperspy.api as hs
 from hyperspy.signals import Signal2D
 import copy
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
 from hyperspy.drawing._markers.point import Point
 
 from atomap.tools import (
@@ -22,8 +19,7 @@ from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
         _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
         _make_zone_vector_text_marker_list)
-from atomap.atom_finding_refining import (
-        get_atom_positions, construct_zone_axes_from_sublattice)
+from atomap.atom_finding_refining import construct_zone_axes_from_sublattice
 
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
@@ -552,7 +548,6 @@ class Sublattice():
             nn_data_list = nearest_neighbor_data.query(
                     atom.get_pixel_position(),
                     nearest_neighbors)
-            nn_link_list = []
             # Skipping the first element,
             # since it points to the atom itself
             for nn_link in nn_data_list[1][1:]:
@@ -804,7 +799,7 @@ class Sublattice():
         y_array = np.asarray(self.y_position)
         dx = x_array - x_array[..., np.newaxis]
         dy = y_array - y_array[..., np.newaxis]
-        offset = np.array([dx,dy])
+        offset = np.array([dx, dy])
 
         # Assert statements here are just to help the reader understand what's
         # going on by keeping track of the shapes of arrays used.
@@ -1142,7 +1137,8 @@ class Sublattice():
         Plot a subset of the atom positions
 
         >>> atoms = sublattice.atom_list[0:20]
-        >>> s = sublattice.get_atom_list_on_image(atom_list=atoms, add_numbers=True)
+        >>> s = sublattice.get_atom_list_on_image(
+        ...     atom_list=atoms, add_numbers=True)
         >>> s.plot(cmap='viridis')
 
         Saving the signal as HyperSpy HDF5 file, which saves the atom
@@ -1422,7 +1418,7 @@ class Sublattice():
             signal = hs.stack(signal_list)
         if atom_plane_list is not None:
             marker_list = _make_atom_planes_marker_list(
-                    atom_plane_list, scale=data_scale, add_numbers=False)
+                    atom_plane_list, scale=self.pixel_size, add_numbers=False)
             add_marker(signal, marker_list, permanent=True, plot_marker=False)
         signal_ax0 = signal.axes_manager.signal_axes[0]
         signal_ax1 = signal.axes_manager.signal_axes[1]
@@ -1472,7 +1468,7 @@ class Sublattice():
             signal = hs.stack(signal_list)
         if atom_plane_list is not None:
             marker_list = _make_atom_planes_marker_list(
-                    atom_plane_list, scale=data_scale, add_numbers=False)
+                    atom_plane_list, scale=self.pixel_size, add_numbers=False)
             add_marker(signal, marker_list, permanent=True, plot_marker=False)
         signal_ax0 = signal.axes_manager.signal_axes[0]
         signal_ax1 = signal.axes_manager.signal_axes[1]
@@ -1537,7 +1533,7 @@ class Sublattice():
             signal = hs.stack(signal_list)
         if atom_plane_list is not None:
             marker_list = _make_atom_planes_marker_list(
-                    atom_plane_list, scale=data_scale, add_numbers=False)
+                    atom_plane_list, scale=self.pixel_size, add_numbers=False)
             add_marker(signal, marker_list, permanent=True, plot_marker=False)
         signal_ax0 = signal.axes_manager.signal_axes[0]
         signal_ax1 = signal.axes_manager.signal_axes[1]

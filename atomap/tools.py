@@ -10,6 +10,7 @@ import hyperspy.api as hs
 from hyperspy.signals import Signal1D, Signal2D
 
 from atomap.atom_finding_refining import _fit_atom_positions_with_gaussian_model
+from sklearn.cluster import DBSCAN
 
 
 # From Vidars HyperSpy repository
@@ -765,14 +766,15 @@ def _get_n_nearest_neighbors(position_list, nearest_neighbors, leafsize=100):
             position_neighbor_list.append(delta_position)
     return(np.array(position_neighbor_list))
 
-from sklearn.cluster import DBSCAN
+
 class Fingerprinter:
     """
     Produces a distance-fingerprint from an array of neighbor distance vectors.
 
     To avoid introducing our own interface we're going to use scikit-learn
-    Estimator conventions to name the method, which produces our fingerprint, 'fit'
-    and store our estimations as attributes with a trailing underscore in their names.
+    Estimator conventions to name the method, which produces our fingerprint,
+    'fit' and store our estimations as attributes with a trailing underscore
+    in their names.
     http://scikit-learn.org/stable/developers/contributing.html#fitting
     http://scikit-learn.org/stable/developers/contributing.html#estimated-attributes)
 
@@ -800,21 +802,22 @@ class Fingerprinter:
         X = np.asarray(X)
         n_points, n_dimensions = X.shape
 
-        # Normalize scale so that the clustering algorithm can use constant parameters.
+        # Normalize scale so that the clustering algorithm can use constant
+        # parameters.
         #
-        # E.g. the "eps" parameter in DBSCAN can take advantage of the normalized scale.
-        # It specifies the proximity (in the same space as X) required to connect adjacent
-        # points into a cluster.
+        # E.g. the "eps" parameter in DBSCAN can take advantage of the
+        # normalized scale. It specifies the proximity (in the same space
+        # as X) required to connect adjacent points into a cluster.
         X_std = X.std()
         X = X/X_std
         cl = self._cluster_algo
         cl.fit(X)
 
-        # The result of a clustering algorithm are labels that indicate which cluster
-        # each point belongs to.
+        # The result of a clustering algorithm are labels that indicate which
+        # cluster each point belongs to.
         #
-        # Labels greater or equal to 0 correspond to valid clusters.
-        # A label equal to -1 indicate that this point doesn't belong to any cluster.
+        # Labels greater or equal to 0 correspond to valid clusters. A label
+        # equal to -1 indicate that this point doesn't belong to any cluster.
         labels = cl.labels_
 
         # Assert statements here are just to help the reader understand the

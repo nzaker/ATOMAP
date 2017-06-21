@@ -4,7 +4,6 @@ from hyperspy.signals import Signal2D
 import hyperspy.api as hs
 import numpy as np
 from skimage.feature import peak_local_max
-from copy import deepcopy
 import math
 
 from atomap.external.gaussian2d import Gaussian2D
@@ -87,7 +86,6 @@ def _remove_too_close_atoms(atom_positions, pixel_separation_tolerance):
     index_list = []
     for index0, atom0 in enumerate(atom_positions):
         for index1, atom1 in enumerate(atom_positions):
-            too_close = False
             if not ((atom0[0] == atom1[0]) and (atom0[1] == atom1[1])):
                 dist = math.hypot(atom0[0]-atom1[0], atom0[1]-atom1[1])
                 if pixel_separation_tolerance > dist:
@@ -99,11 +97,11 @@ def _remove_too_close_atoms(atom_positions, pixel_separation_tolerance):
             new_atom_positions.append(atom)
     new_atom_positions = np.array(new_atom_positions)
     return(new_atom_positions)
-                
+
 
 def find_features_by_separation(
         signal,
-        separation_range=None,
+        separation_range,
         separation_step=1,
         threshold_rel=0.02,
         pca=False,
@@ -119,7 +117,7 @@ def find_features_by_separation(
     Parameters
     ----------
     signal : HyperSpy 2D signal
-    separation_range : tuple, optional
+    separation_range : tuple
         Lower and upper end of minimum pixel distance between the
         features.
     separation_step : int, optional
@@ -128,11 +126,6 @@ def find_features_by_separation(
     -------
     tuple, (separation_list, peak_list)
     """
-    if separation_range is None:
-        min_separation = 3
-        max_separation = int(np.array(image_data.shape).min()/5)
-        separation_range = (min_separation, max_separation)
-
     separation_list = range(
             separation_range[0],
             separation_range[1],
@@ -324,14 +317,14 @@ def _make_mask_from_positions(
 def _crop_mask_slice_indices(mask):
     """
     Find the outer True values in a mask.
-    
+
     Examples
     --------
     >>> from atomap.atom_finding_refining import _make_mask_from_positions
     >>> from atomap.atom_finding_refining import _crop_mask_slice_indices
     >>> mask = _make_mask_from_positions([[10, 20]], [1], (40, 40))
     >>> x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
-    >>> mask_crop = mask[x0:x1, y0:y1] 
+    >>> mask_crop = mask[x0:x1, y0:y1]
     """
     x0 = np.nonzero(mask)[0].min()
     x1 = np.nonzero(mask)[0].max()+1
@@ -384,12 +377,12 @@ def _find_background_value(data, method='median', lowest_percentile=0.1):
                     "method must be 'minimum', 'median' or 'mean'")
     return(background_value)
 
-    
+
 def _find_median_upper_percentile(data, upper_percentile=0.1):
     """
     Get the median of the upper percentile of an image.
     Useful for finding a good initial max value in an image for doing
-    2D Gaussian fitting. 
+    2D Gaussian fitting.
     Median is used to avoid acquisition artifacts leading to too
     high pixel values giving bad initial values.
 
@@ -444,7 +437,7 @@ def _make_model_from_atom_list(
     lower_value = _find_background_value(
             data_mask_crop[mask_crop], lowest_percentile=0.03)
     data_mask_crop -= lower_value
-    data_mask_crop[data_mask_crop<0] = 0.
+    data_mask_crop[data_mask_crop < 0] = 0.
 
     s = Signal2D(data_mask_crop)
     gaussian_list = []
@@ -480,7 +473,7 @@ def _fit_atom_positions_with_gaussian_model(
             image_data,
             percent_to_nn=percent_to_nn)
     x0, x1, y0, y1 = model.axes_manager.signal_extent
-    
+
     if centre_free is False:
         for g in model:
             g.centre_x.free = False
@@ -593,28 +586,6 @@ def refine_sublattice(
                         image,
                         percent_to_nn=percent_to_nn)
             current_counts += 1
-
-
-# Work in progress
-def make_denoised_stem_signal(signal, invert_signal=False):
-    signal.change_dtype('float64')
-    temp_signal = signal.deepcopy()
-    average_background_data = gaussian_filter(
-            temp_signal.data, 30, mode='nearest')
-    background_subtracted = signal.deepcopy().data -\
-        average_background_data
-    signal_denoised = hs.signals.Signal(
-            background_subtracted-background_subtracted.min())
-
-    signal_denoised.decomposition()
-    signal_denoised = signal_denoised.get_decomposition_model(22)
-    if not invert_signal:
-        signal_denoised_data = 1./signal_denoised.data
-        s_abf = 1./s_abf.data
-    else:
-        signal_den
-    signal_denoised = s_abf_modified2/s_abf_modified2.max()
-    s_abf_pca = Signal2D(s_abf_data_normalized)
 
 
 def do_pca_on_signal(signal, pca_components=22):
