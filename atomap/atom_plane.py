@@ -109,6 +109,12 @@ class Atom_Plane():
 
         Example
         -------
+        >>> from numpy.random import random
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> sublattice.construct_zone_axes()
+        >>> atom_plane = sublattice.atom_plane_list[10]
         >>> pos_distance = atom_plane.position_distance_to_neighbor()
         >>> x_pos = pos_distance[0]
         >>> y_pos = pos_distance[1]

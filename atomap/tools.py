@@ -1,11 +1,16 @@
 import numpy as np
 import math
 import copy
+from tqdm import tqdm
 from scipy import interpolate
 from scipy import ndimage
+from scipy.spatial import cKDTree
 import matplotlib.pyplot as plt
 import hyperspy.api as hs
 from hyperspy.signals import Signal1D, Signal2D
+
+from atomap.atom_finding_refining import _fit_atom_positions_with_gaussian_model
+from sklearn.cluster import DBSCAN
 
 
 # From Vidars HyperSpy repository
@@ -65,30 +70,25 @@ def remove_atoms_from_image_using_2d_gaussian(
     model_image = np.zeros(image.shape)
     X, Y = np.meshgrid(np.arange(
         model_image.shape[1]), np.arange(model_image.shape[0]))
-    for atom in sublattice.atom_list:
+    for atom in tqdm(sublattice.atom_list, desc='Subtracting atoms'):
         percent_distance = percent_to_nn
         for i in range(10):
-            g = atom.fit_2d_gaussian_with_mask(
+            g_list = _fit_atom_positions_with_gaussian_model(
+                    [atom],
                     image,
                     rotation_enabled=True,
                     percent_to_nn=percent_distance)
-            if g is False:
+            if g_list is False:
                 if i == 9:
                     break
                 else:
                     percent_distance *= 0.95
             else:
+                g = g_list[0]
                 model_image += g.function(X, Y)
                 break
     subtracted_image = copy.deepcopy(image) - model_image
     return(subtracted_image)
-
-
-# Delete this function?
-def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
-    y, x = np.ogrid[-centerX:imageSizeX-centerX, -centerY:imageSizeY-centerY]
-    mask = x*x + y*y <= radius*radius
-    return(mask)
 
 
 def get_atom_planes_square(
@@ -614,12 +614,20 @@ def project_position_property_sum_planes(
 
     Example
     -------
-    >>> data = project_position_property_sum_planes(
-            input_data,
-            interface_plane)
+    >>> from numpy.random import random
+    >>> from atomap.sublattice import Sublattice
+    >>> pos = [[x, y] for x in range(9) for y in range(9)]
+    >>> sublattice = Sublattice(pos, random((9, 9)))
+    >>> sublattice.construct_zone_axes()
+    >>> x, y = sublattice.x_position, sublattice.y_position
+    >>> z = sublattice.ellipticity
+    >>> input_data_list = np.array([x, y, z]).swapaxes(0, 1)
+    >>> from atomap.tools import project_position_property_sum_planes
+    >>> plane = sublattice.atom_plane_list[10]
+    >>> data = project_position_property_sum_planes(input_data_list, plane)
     >>> positions = data[:,0]
-    >>> property_values = data[:,0]
-    >>> plt.plot(positions, property_values)
+    >>> property_values = data[:,1]
+    >>> cax = plt.plot(positions, property_values)
     """
     x_pos_list = input_data_list[:, 0]
     y_pos_list = input_data_list[:, 1]
@@ -650,6 +658,7 @@ def project_position_property_sum_planes(
 
     if rebin_data:
         data_list = combine_clusters_using_average_distance(data_list)
+    data_list = np.array(data_list)
     return(data_list)
 
 
@@ -730,14 +739,42 @@ def array2signal2d(numpy_array, scale=1.0, rotate_flip=False):
     return signal
 
 
-from sklearn.cluster import DBSCAN
+def _get_n_nearest_neighbors(position_list, nearest_neighbors, leafsize=100):
+    """
+    Parameters
+    ----------
+    position_list : NumPy array
+        In the form [[x0, y0], [x1, y1], ...].
+    nearest_neighbors : int
+        The number of closest neighbors which will be returned
+    """
+    # Need to add one, as the position itself is counted as one neighbor
+    nearest_neighbors += 1
+
+    nearest_neighbor_data = cKDTree(
+            position_list,
+            leafsize=leafsize)
+    position_neighbor_list = []
+    for position in position_list:
+        nn_data_list = nearest_neighbor_data.query(
+                position,
+                nearest_neighbors)
+        # Skipping the first element,
+        # since it points to the atom itself
+        for position_index in nn_data_list[1][1:]:
+            delta_position = position_list[position_index] - position
+            position_neighbor_list.append(delta_position)
+    return(np.array(position_neighbor_list))
+
+
 class Fingerprinter:
     """
     Produces a distance-fingerprint from an array of neighbor distance vectors.
 
     To avoid introducing our own interface we're going to use scikit-learn
-    Estimator conventions to name the method, which produces our fingerprint, 'fit'
-    and store our estimations as attributes with a trailing underscore in their names.
+    Estimator conventions to name the method, which produces our fingerprint,
+    'fit' and store our estimations as attributes with a trailing underscore
+    in their names.
     http://scikit-learn.org/stable/developers/contributing.html#fitting
     http://scikit-learn.org/stable/developers/contributing.html#estimated-attributes)
 
@@ -765,21 +802,22 @@ class Fingerprinter:
         X = np.asarray(X)
         n_points, n_dimensions = X.shape
 
-        # Normalize scale so that the clustering algorithm can use constant parameters.
+        # Normalize scale so that the clustering algorithm can use constant
+        # parameters.
         #
-        # E.g. the "eps" parameter in DBSCAN can take advantage of the normalized scale.
-        # It specifies the proximity (in the same space as X) required to connect adjacent
-        # points into a cluster.
+        # E.g. the "eps" parameter in DBSCAN can take advantage of the
+        # normalized scale. It specifies the proximity (in the same space
+        # as X) required to connect adjacent points into a cluster.
         X_std = X.std()
         X = X/X_std
         cl = self._cluster_algo
         cl.fit(X)
 
-        # The result of a clustering algorithm are labels that indicate which cluster
-        # each point belongs to.
+        # The result of a clustering algorithm are labels that indicate which
+        # cluster each point belongs to.
         #
-        # Labels greater or equal to 0 correspond to valid clusters.
-        # A label equal to -1 indicate that this point doesn't belong to any cluster.
+        # Labels greater or equal to 0 correspond to valid clusters. A label
+        # equal to -1 indicate that this point doesn't belong to any cluster.
         labels = cl.labels_
 
         # Assert statements here are just to help the reader understand the

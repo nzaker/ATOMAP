@@ -62,5 +62,5 @@ class test_fitting_accuracy(unittest.TestCase):
             sigma_y_list.append(atom.sigma_y)
         mean_sigma_x = np.array(sigma_x_list).mean()
         mean_sigma_y = np.array(sigma_y_list).mean()
-        self.assertAlmostEqual(mean_sigma_x, self.sigma_value, places=4)
-        self.assertAlmostEqual(mean_sigma_y, self.sigma_value, places=4)
+        self.assertAlmostEqual(mean_sigma_x, self.sigma_value, places=2)
+        self.assertAlmostEqual(mean_sigma_y, self.sigma_value, places=2)

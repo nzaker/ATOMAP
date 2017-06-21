@@ -1,5 +1,3 @@
-import os
-import numpy as np
 from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
@@ -146,7 +144,8 @@ def make_atom_lattice_from_image(
             atom.sigma_x = sublattice._pixel_separation/10.
             atom.sigma_y = sublattice._pixel_separation/10.
         if not(sublattice_para.sublattice_order == 0):
-            construct_zone_axes_from_sublattice(sublattice, debug_plot=debug_plot,
+            construct_zone_axes_from_sublattice(
+                    sublattice, debug_plot=debug_plot,
                     zone_axis_para_list=zone_axis_para_list)
             atom_subtract_config = sublattice_para.atom_subtract_config
             image_data = sublattice.image

@@ -1,17 +1,41 @@
 import copy
 import numpy as np
-import hyperspy.api as hs
 import matplotlib.pyplot as plt
-from atomap.tools import _make_circular_mask
 from scipy import ndimage
 import math
-from atomap.external.gaussian2d import Gaussian2D
+from atomap.atom_finding_refining import _make_circular_mask
+from atomap.atom_finding_refining import fit_atom_positions_gaussian
 
 
 class Atom_Position:
-    def __init__(self, x, y):
-        self.pixel_x = x
-        self.pixel_y = y
+
+    def __init__(self, x, y, sigma_x=1., sigma_y=1., rotation=0.01):
+        """
+        Parameters
+        ----------
+        x : float
+        y : float
+        sigma_x : float, optional
+        sigma_y : float, optional
+        rotation : float, optional
+            In radians
+
+        Attributes
+        ----------
+        ellipticity : float
+
+        Examples
+        --------
+        >>> from atomap.atom_position import Atom_Position
+        >>> atom_position = Atom_Position(10, 5)
+
+        More parameters
+
+        >>> atom_pos = Atom_Position(10, 5, sigma_x=2, sigma_y=4, rotation=2)
+        """
+        self.pixel_x, self.pixel_y = x, y
+        self.sigma_x, self.sigma_y = sigma_x, sigma_y
+        self.rotation = rotation
         self.nearest_neighbor_list = None
         self.in_atomic_plane = []
         self._start_atom = []
@@ -20,10 +44,8 @@ class Atom_Position:
         self._tag = ''
         self.old_pixel_x_list = []
         self.old_pixel_y_list = []
-        self.sigma_x = 1.0
-        self.sigma_y = 1.0
-        self.rotation = 0.01
         self.amplitude_gaussian = 1.0
+        self._gaussian_fitted = False
         self.amplitude_max_intensity = 1.0
 
     def __repr__(self):
@@ -241,144 +263,12 @@ class Atom_Position:
 
         return(data_slice_max)
 
-    def fit_2d_gaussian_with_mask_centre_locked(
-            self,
-            image_data,
-            rotation_enabled=True,
-            percent_to_nn=0.40,
-            debug_plot=False):
-        """ If the Gaussian is centered outside the masked area,
-        this function returns False"""
-        plt.ioff()
-        closest_neighbor = self.get_closest_neighbor()
-
-        slice_size = closest_neighbor * percent_to_nn * 2
-        data_slice, x0, y0 = self._get_image_slice_around_atom(
-                image_data, slice_size)
-        slice_radius = slice_size/2
-
-        data_slice_max = data_slice.max()
-        data = data_slice
-
-        mask = _make_circular_mask(
-                slice_radius,
-                slice_radius,
-                data.shape[0],
-                data.shape[1],
-                closest_neighbor*percent_to_nn)
-        data = copy.deepcopy(data)
-        mask = np.invert(mask)
-        data[mask] = 0
-        g = Gaussian2D(
-                centre_x=self.pixel_x,
-                centre_y=self.pixel_y,
-                sigma_x=self.sigma_x,
-                sigma_y=self.sigma_y,
-                rotation=self.rotation,
-                A=data_slice_max)
-
-        s = hs.signals.Signal2D(data)
-        s.axes_manager[0].offset = x0
-        s.axes_manager[1].offset = y0
-        s = hs.stack([s]*2)
-        m = s.create_model()
-        m.append(g)
-        g.centre_x.free = False
-        g.centre_y.free = False
-        if rotation_enabled:
-            g.rotation.free = True
-        else:
-            g.rotation.free = False
-        m.fit()
-
-        if debug_plot:
-            self._plot_gaussian2d_debug(
-                    slice_radius,
-                    g,
-                    data)
-
-        self.amplitude_gaussian = g.A.value
-        return(g)
-
-    def fit_2d_gaussian_with_mask(
-            self,
-            image_data,
-            rotation_enabled=True,
-            percent_to_nn=0.40,
-            debug=False):
-        """ If the Gaussian is centered outside the masked area,
-        this function returns False"""
-        closest_neighbor = self.get_closest_neighbor()
-
-        slice_size = closest_neighbor * percent_to_nn * 2
-        data_slice, x0, y0 = self._get_image_slice_around_atom(
-                image_data, slice_size)
-
-        slice_radius = slice_size/2
-
-        data_slice -= data_slice.min()
-        data_slice_max = data_slice.max()
-        data = data_slice
-
-        mask = _make_circular_mask(
-                slice_radius,
-                slice_radius,
-                data.shape[0],
-                data.shape[1],
-                closest_neighbor*percent_to_nn)
-        data = copy.deepcopy(data)
-        mask = np.invert(mask)
-        data[mask] = 0
-        g = Gaussian2D(
-                centre_x=self.pixel_x,
-                centre_y=self.pixel_y,
-                sigma_x=self.sigma_x,
-                sigma_y=self.sigma_y,
-                rotation=self.rotation,
-                A=data_slice_max)
-
-        if rotation_enabled:
-            g.rotation.free = True
-        else:
-            g.rotation.free = False
-
-        s = hs.signals.Signal2D(data)
-        s.axes_manager[0].offset = x0
-        s.axes_manager[1].offset = y0
-        s = hs.stack([s]*2)
-        m = s.create_model()
-        m.append(g)
-        m.fit()
-
-        if debug:
-            self._plot_gaussian2d_debug(
-                    slice_radius,
-                    g,
-                    data)
-
-        # If the Gaussian centre is located outside the masked region,
-        # return False
-        dislocation = math.hypot(
-                g.centre_x.value-self.pixel_x,
-                g.centre_y.value-self.pixel_y)
-        if dislocation > slice_radius:
-            return(False)
-
-        # If sigma aspect ratio is too large, assume the fitting is bad
-        max_sigma = max((abs(g.sigma_x.value), abs(g.sigma_y.value)))
-        min_sigma = min((abs(g.sigma_x.value), abs(g.sigma_y.value)))
-        sigma_ratio = max_sigma/min_sigma
-        if sigma_ratio > 5:
-            return(False)
-
-        return(g)
-
     def refine_position_using_2d_gaussian(
             self,
             image_data,
             rotation_enabled=True,
             percent_to_nn=0.40,
-            debug=False):
+            centre_free=True):
         """
         Parameters
         ----------
@@ -395,51 +285,16 @@ class Atom_Position:
             neighboring atoms, but might also decrease the accuracy of
             the fitting due to less data to fit to.
             Default 0.4 (40%).
-        debug_plot : bool, optional
-            Make debug figure for every Gaussian fit.
-            Useful for debugging failed Gaussian fitting.
-            Default False.
+        centre_free : bool, default True
+            If True, the centre parameter will be free, meaning that
+            the Gaussian can move.
         """
-
-        for i in range(10):
-            g = self.fit_2d_gaussian_with_mask(
+        fit_atom_positions_gaussian(
+                [self],
                 image_data,
-                rotation_enabled=rotation_enabled,
-                percent_to_nn=percent_to_nn,
-                debug=debug)
-            if g is False:
-                print("Fitting missed")
-                if i == 9:
-                    new_x, new_y = self.get_center_position_com(
-                        image_data,
-                        percent_to_nn=percent_to_nn)
-                    new_sigma_x = self.sigma_x
-                    new_sigma_y = self.sigma_y
-                    new_rotation = self.rotation
-                    break
-                else:
-                    percent_to_nn *= 0.95
-            else:
-                new_x = g.centre_x.value
-                new_y = g.centre_y.value
-                new_rotation = g.rotation.value % math.pi
-                new_sigma_x = abs(g.sigma_x.value)
-                new_sigma_y = abs(g.sigma_y.value)
-                break
-
-        self.old_pixel_x_list.append(self.pixel_x)
-        self.old_pixel_y_list.append(self.pixel_y)
-
-        self.pixel_x = new_x
-        self.pixel_y = new_y
-
-        self.rotation = new_rotation
-        self.sigma_x = new_sigma_x
-        self.sigma_y = new_sigma_y
-        if g is not False:
-            self.amplitude_gaussian = g.A.value
-        else:
-            self.amplitude_gaussian = 0.0
+                rotation_enabled=True,
+                percent_to_nn=0.40,
+                centre_free=True)
 
     def get_center_position_com(
             self,

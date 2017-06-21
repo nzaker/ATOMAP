@@ -1,7 +1,6 @@
 import numpy as np
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
-from hyperspy.drawing._markers.point import Point
 import matplotlib.gridspec as gridspec
 
 
