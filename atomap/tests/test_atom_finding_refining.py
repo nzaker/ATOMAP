@@ -161,6 +161,15 @@ class test_make_model_from_atom_list(unittest.TestCase):
                 sublattice.image)
         self.assertEqual(len(model), 5)
 
+    def test_set_mask_radius_atom(self):
+        atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
+        image = np.random.random((20, 20))
+        model = _make_model_from_atom_list(
+                atom_list=atom_list,
+                image_data=image,
+                mask_radius=3)
+        self.assertEqual(len(model), 2)
+
 
 class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
 

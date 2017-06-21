@@ -278,6 +278,37 @@ def construct_zone_axes_from_sublattice(
 
 
 def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
+    """
+    Make a circular mask in a bool array for masking a region in an image.
+
+    Parameters
+    ----------
+    centreX, centreY : float
+        Centre point of the mask.
+    imageSizeX, imageSizeY : int
+        Size of the image to be masked.
+    radius : float
+        Radius of the mask.
+
+    Returns
+    -------
+    Boolean Numpy 2D Array
+        Array with the shape (imageSizeX, imageSizeY) with the mask.
+
+    See also
+    --------
+    _make_mask_from_positions
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from atomap.atom_finding_refining import _make_circular_mask
+    >>> image = np.ones((9, 9))
+    >>> mask = _make_circular_mask(4, 4, 9, 9, 2)
+    >>> image_masked = image*mask
+    >>> import matplotlib.pyplot as plt
+    >>> cax = plt.imshow(image_masked)
+    """
     y, x = np.ogrid[-centerX:imageSizeX-centerX, -centerY:imageSizeY-centerY]
     mask = x*x + y*y <= radius*radius
     return(mask)
@@ -357,7 +388,7 @@ def _find_background_value(data, method='median', lowest_percentile=0.1):
 
     Returns
     -------
-    Float
+    low_value : float
     """
     if not ((lowest_percentile >= 0.01) and (lowest_percentile <= 1.0)):
         raise ValueError("lowest_percentile must be between 0.01 and 1.0")
@@ -395,7 +426,7 @@ def _find_median_upper_percentile(data, upper_percentile=0.1):
 
     Returns
     -------
-    Float
+    high_value : float
     """
     if not ((upper_percentile >= 0.01) and (upper_percentile <= 1.0)):
         raise ValueError("lowest_percentile must be between 0.01 and 1.0")
@@ -407,6 +438,24 @@ def _find_median_upper_percentile(data, upper_percentile=0.1):
 
 
 def _atom_to_gaussian_component(atom):
+    """
+    Make a HyperSpy 2D gaussian component from an Atomap Atom_Position.
+
+    Parameter
+    ---------
+    atom : Atomap Atom_Position object
+
+    Return
+    ------
+    HyperSpy 2D gaussian component
+
+    Example
+    -------
+    >>> from atomap.atom_position import Atom_Position
+    >>> from atomap.atom_finding_refining import _atom_to_gaussian_component
+    >>> atom = Atom_Position(x=5.2, y=7.7, sigma_x=2.1, sigma_y=1.1)
+    >>> gaussian = _atom_to_gaussian_component(atom)
+    """
     g = Gaussian2D(
             centre_x=atom.pixel_x,
             centre_y=atom.pixel_y,
@@ -419,13 +468,52 @@ def _atom_to_gaussian_component(atom):
 def _make_model_from_atom_list(
         atom_list,
         image_data,
-        percent_to_nn=0.40):
+        percent_to_nn=0.40,
+        mask_radius=None):
+    """
+    Make a HyperSpy model from a list of Atom_Position objects and
+    an image.
+
+    Parameters
+    ----------
+    atom_list : list of Atom_Position objects
+        List of atoms to be included in the model.
+    image_data : NumPy 2D array
+    percent_to_nn : float, optional
+    mask_radius : float, optional
+        Radius of the mask around each atom. If this is not set,
+        the radius will be the distance to the nearest atom in the
+        same sublattice times the `percent_to_nn` value.
+
+    Returns
+    -------
+    model : HyperSpy model
+        Model where the atoms are added as gaussian components.
+
+    See also
+    --------
+    _fit_atom_positions_with_gaussian_model
+    fit_atom_positions_gaussian
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from atomap.atom_position import Atom_Position
+    >>> from atomap.atom_finding_refining import _make_model_from_atom_list
+    >>> atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
+    >>> image = np.random.random((100, 100))
+    >>> m = _make_model_from_atom_list(
+    ...     atom_list=atom_list, image_data=image, mask_radius=3)
+    >>> m.fit()
+    """
     mask = np.zeros_like(image_data)
 
     position_list, radius_list = [], []
     for atom in atom_list:
         position_list.append((atom.pixel_y, atom.pixel_x))
-        radius_list.append(atom.get_closest_neighbor() * percent_to_nn)
+        if mask_radius is None:
+            mask_radius = atom.get_closest_neighbor() * percent_to_nn
+        radius_list.append(mask_radius)
     mask = _make_mask_from_positions(
             position_list, radius_list, image_data.shape)
     x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
@@ -461,9 +549,53 @@ def _fit_atom_positions_with_gaussian_model(
         image_data,
         rotation_enabled=True,
         percent_to_nn=0.40,
+        mask_radius=None,
         centre_free=True):
-    """ If the Gaussian is centered outside the masked area,
-    this function returns False"""
+    """
+    Fit a list of Atom_Positions to an image using 2D gaussians.
+    This type of fitting is prone to errors, especially where the atoms are
+    close together, and on noisy images. To reduce the odds of bad
+    fitting this function will return False if:
+    - Any of the fitted positions are outside the model region.
+    - The sigma ratio (highest_sigma/lowest_sigma) is higher than 4.
+
+    Parameters
+    ----------
+    atom_list : list of Atom_Position objects
+    image_data : NumPy 2D array
+    rotation_enabled : bool, optional
+        If True (default), the 2D gaussian will be able to rotate.
+    percent_to_nn : float, optional
+    mask_radius : float, optional
+        Radius of the mask around each atom. If this is not set,
+        the radius will be the distance to the nearest atom in the
+        same sublattice times the `percent_to_nn` value.
+    centre_free : bool, optional
+        If True (default), the gaussian will be free to move. Setting this
+        to False can be used to find better values for the other parameters
+        like sigma and A, without the centre positions causing bad fitting.
+
+    Returns
+    -------
+    gaussian_list : list of the fitted gaussians
+
+    See also
+    --------
+    _make_model_from_atom_list
+    fit_atom_positions_gaussian
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from atomap.atom_position import Atom_Position
+    >>> from atomap.atom_finding_refining import _fit_atom_positions_with_gaussian_model
+    >>> atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
+    >>> image = np.zeros((9, 9))
+    >>> image[2, 2] = 1.
+    >>> image[4, 4] = 1.
+    >>> g_list = _fit_atom_positions_with_gaussian_model(
+    ...     atom_list=atom_list, image_data=image, mask_radius=2)
+    """
     if (not hasattr(atom_list[0], 'pixel_x')) or hasattr(atom_list, 'pixel_x'):
         raise TypeError(
             "atom_list argument must be a list of Atom_Position objects")
@@ -471,6 +603,7 @@ def _fit_atom_positions_with_gaussian_model(
     model = _make_model_from_atom_list(
             atom_list,
             image_data,
+            mask_radius=mask_radius,
             percent_to_nn=percent_to_nn)
     x0, x1, y0, y1 = model.axes_manager.signal_extent
 
@@ -514,7 +647,69 @@ def fit_atom_positions_gaussian(
         image_data,
         rotation_enabled=True,
         percent_to_nn=0.40,
+        mask_radius=None,
         centre_free=True):
+    """
+    Fit a list of Atom_Positions to an image using 2D gaussians.
+    The results of the fitting will be saved in the Atom_Position objects
+    themselves, and the old positions will be added to
+    atom.old_pixel_x_list and atom.old_pixel_y_list.
+
+    This type of fitting is prone to errors, especially where the atoms are
+    close together, and on noisy images. To reduce the odds of bad
+    fitting the function will rerun the model with a slightly smaller
+    mask_radius or percent_to_nn if:
+    - Any of the fitted positions are outside the model region.
+    - The sigma ratio (highest_sigma/lowest_sigma) is higher than 4.
+
+    This repeats 10 times, and if the fitting is still bad, center of mass
+    will be used to set the center position for the atom.
+
+    Parameters
+    ----------
+    atom_list : list of Atom_Position objects
+    image_data : NumPy 2D array
+    rotation_enabled : bool, optional
+        If True (default), the 2D gaussian will be able to rotate.
+    percent_to_nn : float, optional
+    mask_radius : float, optional
+        Radius of the mask around each atom. If this is not set,
+        the radius will be the distance to the nearest atom in the
+        same sublattice times the `percent_to_nn` value.
+        Note: if `mask_radius` is not specified, the Atom_Position objects
+        must have a populated nearest_neighbor_list. This is normally done
+        through the sublattice class, but can also be done manually.
+        See below for an example how to do this.
+    centre_free : bool, optional
+        If True (default), the gaussian will be free to move. Setting this
+        to False can be used to find better values for the other parameters
+        like sigma and A, without the centre positions causing bad fitting.
+
+    See also
+    --------
+    _make_model_from_atom_list
+    _fit_atom_positions_with_gaussian_model
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from atomap.atom_position import Atom_Position
+    >>> from atomap.atom_finding_refining import fit_atom_positions_gaussian
+    >>> atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
+    >>> image = np.zeros((9, 9))
+    >>> image[2, 2] = 1.
+    >>> image[4, 4] = 1.
+    >>> g_list = fit_atom_positions_gaussian(
+    ...     atom_list=atom_list, image_data=image, mask_radius=2)
+
+    Not using `mask_radius`, populating the nearest_neighbor_list manually
+
+    >>> atom0 = Atom_Position(2, 2, 0.5, 0.5)
+    >>> atom1 = Atom_Position(4, 4, 0.5, 0.5)
+    >>> atom0.nearest_neighbor_list = [atom1]
+    >>> atom1.nearest_neighbor_list = [atom0]
+    >>> g_list = fit_atom_positions_gaussian([atom0, atom1], image)
+    """
     if (not hasattr(atom_list[0], 'pixel_x')) or hasattr(atom_list, 'pixel_x'):
         raise TypeError(
             "atom_list argument must be a list of Atom_Position objects")
@@ -524,6 +719,7 @@ def fit_atom_positions_gaussian(
                 atom_list,
                 image_data,
                 rotation_enabled=rotation_enabled,
+                mask_radius=mask_radius,
                 percent_to_nn=percent_to_nn,
                 centre_free=centre_free)
         if g_list is False:
@@ -538,6 +734,8 @@ def fit_atom_positions_gaussian(
                 break
             else:
                 percent_to_nn *= 0.95
+                if mask_radius is not None:
+                    mask_radius *= 0.95
         else:
             for g, atom in zip(g_list, atom_list):
                 atom.old_pixel_x_list.append(atom.pixel_x)
