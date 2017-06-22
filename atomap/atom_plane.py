@@ -9,6 +9,23 @@ import matplotlib.pyplot as plt
 
 class Atom_Plane():
     def __init__(self, atom_list, zone_vector, atom_lattice):
+        """
+        Parameters
+        ----------
+        atom_list : list of Atom_Position objects
+        zone_vector : tuple
+        atom_lattice : Atomap Atom_Lattice object
+
+        Attributes
+        ----------
+        x_position : list of floats
+        y_position : list of floats
+        sigma_x : list of floats
+        sigma_y : list of floats
+        sigma_average : list of floats
+        rotation : list of floats
+        ellipticity : list of floats
+        """
         self.atom_list = atom_list
         self.zone_vector = zone_vector
         self.atom_lattice = atom_lattice
@@ -28,6 +45,75 @@ class Atom_Plane():
             self.zone_vector,
             len(self.atom_list),
             )
+
+    @property
+    def x_position(self):
+        x_pos = []
+        for atom in self.atom_list:
+            x_pos.append(atom.pixel_x)
+        return(x_pos)
+
+    @property
+    def y_position(self):
+        y_pos = []
+        for atom in self.atom_list:
+            y_pos.append(atom.pixel_y)
+        return(y_pos)
+
+    @property
+    def sigma_x(self):
+        sigma_x = []
+        for atom in self.atom_list:
+            sigma_x.append(abs(atom.sigma_x))
+        return(sigma_x)
+
+    @property
+    def sigma_y(self):
+        sigma_y = []
+        for atom in self.atom_list:
+            sigma_y.append(abs(atom.sigma_y))
+        return(sigma_y)
+
+    @property
+    def sigma_average(self):
+        sigma = np.array(self.sigma_x)+np.array(self.sigma_y)
+        sigma *= 0.5
+        return(sigma.tolist())
+
+    @property
+    def amplitude_gaussian(self):
+        amplitude = []
+        for atom in self.atom_list:
+            amplitude.append(atom.amplitude_gaussian)
+        return(amplitude)
+
+    @property
+    def amplitude_max_intensity(self):
+        amplitude = []
+        for atom in self.atom_list:
+            amplitude.append(atom.amplitude_max_intensity)
+        return(amplitude)
+
+    @property
+    def rotation(self):
+        rotation = []
+        for atom in self.atom_list:
+            rotation.append(atom.rotation)
+        return(rotation)
+
+    @property
+    def ellipticity(self):
+        ellipticity = []
+        for atom in self.atom_list:
+            ellipticity.append(atom.ellipticity)
+        return(ellipticity)
+
+    @property
+    def rotation_ellipticity(self):
+        rotation_ellipticity = []
+        for atom in self.atom_list:
+            rotation_ellipticity.append(atom.rotation_ellipticity)
+        return(rotation_ellipticity)
 
     def _link_atom_to_atom_plane(self):
         for atom in self.atom_list:
