@@ -72,8 +72,9 @@ Getting this separation is done using the `get_feature_separation` function, whi
     >>> import hyperspy.api as hs
     >>> import atomap.api as am
     >>> s = hs.load("test_ADF_cropped.hdf5")
+    >>> s.change_dtype('float32')
     >>> s_peaks = am.get_feature_separation(s)
-    >>> s_peaks.plot(plot_markers=True)
+    >>> s_peaks.plot()
 
 This should open two figures like shown below:
 
@@ -140,7 +141,7 @@ For example `get_sublattice_atom_list_on_image` returns a HyperSpy signal which 
 
 .. code-block:: python
 
-    >>> atom_lattice.get_sublattice_atom_list_on_image().plot(plot_markers=True)
+    >>> atom_lattice.get_sublattice_atom_list_on_image().plot()
 
 .. image:: images/tutorial/atomlattice_plot_atoms.jpg
     :scale: 50 %
@@ -184,9 +185,9 @@ So any variations are due to factors such as scanning noise, sample drift and po
 .. code-block:: python
 
     >>> s_monolayer = sublattice.get_monolayer_distance_map()
-    >>> s_monolayer.plot(plot_markers=True)
+    >>> s_monolayer.plot()
     >>> s_elli = sublattice.get_ellipticity_map()
-    >>> s_elli.plot(plot_markers=True)
+    >>> s_elli.plot()
 
 These signals can be saved by using the inbuilt `save` function in the signals.
 
@@ -213,7 +214,7 @@ The atom planes can be plotted by using the `get_all_atom_planes_by_zone_vector`
 
 .. code-block:: python
 
-    >>> sublattice.get_all_atom_planes_by_zone_vector().plot(plot_markers=True)
+    >>> sublattice.get_all_atom_planes_by_zone_vector().plot()
 
 .. image:: images/tutorial/atomic_planes.jpg
     :scale: 50 %
@@ -230,7 +231,7 @@ For example:
     >>> atom_position.pixel_y
     >>> atom_position.sigma_x
     >>> atom_position.sigma_y
-    >>> sublattice.get_atom_list_on_image().plot(plot_markers=True)
+    >>> sublattice.get_atom_list_on_image().plot()
 
 Basic information about the `atom_lattice`, `sublattice`, `atom_plane` and `atom_position` objects can be accessed by simply:
 
@@ -282,7 +283,7 @@ This new `sublattice` can be visualized using `get_sublattice_atom_list_on_image
 
 .. code-block:: python
 
-    >>> atom_lattice.get_sublattice_atom_list_on_image().plot(plot_markers=True)
+    >>> atom_lattice.get_sublattice_atom_list_on_image().plot()
 
 .. image:: images/tutorial/all_sublattice_oxygen.jpg
     :scale: 50 %
