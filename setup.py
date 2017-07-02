@@ -23,9 +23,11 @@ setup(
             'scipy',
             'numpy>=1.10',
             'h5py',
-            'matplotlib>=1.2',
+            'matplotlib>=2.0',
             'tqdm',
-            'hyperspy>=1.2',
+            'hyperspy>=1.3',
+            'hyperspy-gui-ipywidgets',
+            'hyperspy-gui-traitsui',
             ],
         classifiers = [
             'Development Status :: 3 - Alpha',
