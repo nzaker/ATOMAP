@@ -1,0 +1,10 @@
+--- setup.py	2017-06-18 18:41:36.612318227 +0100
++++ setup.py	2017-06-18 18:41:30.500359438 +0100
+@@ -25,7 +25,6 @@
+             'h5py',
+             'matplotlib>=1.2',
+             'tqdm',
+-            'hyperspy>=1.2',
+             ],
+         classifiers = [
+             'Development Status :: 3 - Alpha',

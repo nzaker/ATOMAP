@@ -11,8 +11,7 @@ from hyperspy.drawing._markers.text import Text
 
 from atomap.tools import\
         _get_clim_from_data,\
-        project_position_property_sum_planes,\
-        _get_interpolated2d_from_unregular_data
+        project_position_property_sum_planes
 
 
 def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list):
@@ -620,52 +619,6 @@ def _make_line_profile_subplot_from_three_parameter_data(
         scale_y=scale_y)
 
 
-def plot_stem_image_and_oxygen_position_100_heatmap_for_all_atom_planes(
-        image,
-        sublattice,
-        parallel_zone_vector,
-        orthogonal_zone_vector,
-        distance_data_scale=1,
-        clim=None,
-        plot_title=''):
-
-    plt.ioff()
-    data = find_atom_positions_for_all_atom_planes(
-        image,
-        sublattice,
-        parallel_zone_vector,
-        orthogonal_zone_vector)
-
-    atom_position_list = np.array(
-            sublattice._get_atom_position_list())
-    data[0].extend(atom_position_list[:, 0])
-    data[1].extend(atom_position_list[:, 1])
-    data[2].extend(np.zeros(len(atom_position_list[:, 0])))
-    data = np.swapaxes(data, 0, 1)
-    interpolate_x_lim = (0, image.shape[1])
-    interpolate_y_lim = (0, image.shape[0])
-    new_data = _get_interpolated2d_from_unregular_data(
-        data,
-        new_x_lim=interpolate_x_lim,
-        new_y_lim=interpolate_y_lim,
-        upscale=4)
-
-    if not clim:
-        clim = _get_clim_from_data(data[:, 2], sigma=2)
-
-    atom_plane_list = sublattice.atom_planes_by_zone_vector[
-            parallel_zone_vector]
-    plot_zone_vector_and_atom_distance_map(
-            image,
-            new_data,
-            atom_planes=[atom_plane_list[3]],
-            distance_data_scale=distance_data_scale,
-            atom_list=sublattice.atom_list,
-            clim=clim,
-            plot_title=plot_title,
-            figname="oxygen_position_100.jpg")
-
-
 # Parameter list in the form of [position, data]
 def plot_line_profiles_from_parameter_input(
         parameter_list,
@@ -849,7 +802,9 @@ def _make_zone_vector_text_marker_list(
     marker_list = []
     if len(zone_vector_list) == 1:
         marker_list.append(
-                Text(x, y, text=str(zone_vector_list[0]), size=20, color=color))
+                Text(
+                    x, y,
+                    text=str(zone_vector_list[0]), size=20, color=color))
     else:
         for index, zone_vector in enumerate(zone_vector_list):
             xP, yP = [-1000]*number, [-1000]*number

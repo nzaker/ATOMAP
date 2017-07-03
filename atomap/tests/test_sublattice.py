@@ -7,12 +7,12 @@ from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
         construct_zone_axes_from_sublattice,\
-        get_peak2d_skimage
+        get_atom_positions
 from atomap.sublattice import Sublattice
 from hyperspy.api import load
 from atomap.atom_finding_refining import refine_sublattice
-
 from atomap.atom_lattice import Atom_Lattice
+import atomap.testing_tools as tt
 
 my_path = os.path.dirname(__file__)
 
@@ -42,9 +42,9 @@ class test_sublattice_construct_refine(unittest.TestCase):
         self.pixel_size = s_adf.axes_manager[0].scale
         self.pixel_separation = peak_separation/self.pixel_size
 
-        self.peaks = get_peak2d_skimage(
+        self.peaks = get_atom_positions(
                 self.s_adf_modified,
-                self.pixel_separation)[0]
+                self.pixel_separation)
 
     def test_make_sublattice(self):
         sublattice = Sublattice(
@@ -93,9 +93,9 @@ class test_sublattice_get_signal(unittest.TestCase):
         pixel_size = s_adf.axes_manager[0].scale
         pixel_separation = peak_separation/pixel_size
 
-        peaks = get_peak2d_skimage(
+        peaks = get_atom_positions(
                 s_adf_modified,
-                pixel_separation)[0]
+                pixel_separation)
         self.sublattice = Sublattice(
                 peaks,
                 np.rot90(np.fliplr(s_adf_modified.data)))
@@ -202,3 +202,67 @@ class test_sublattice_interpolation(unittest.TestCase):
                 x_list, y_list, z_list)
         z_interpolate = output[2]
         self.assertTrue(not z_interpolate.any())
+
+
+class test_sublattice_fingerprinter(unittest.TestCase):
+
+    def setUp(self):
+        x, y = np.mgrid[0:500:20j,0:500:20j]
+        x, y = x.flatten(), y.flatten()
+        s, g_list = tt.make_artifical_atomic_signal(x, y, image_pad=10)
+
+        atom_positions = get_atom_positions(
+                signal=s,
+                separation=10,
+                threshold_rel=0.02,
+                )
+        sublattice = Sublattice(
+                atom_position_list=atom_positions,
+                image=s.data)
+        sublattice._find_nearest_neighbors()
+        self.sublattice = sublattice
+
+    def test_fingerprint_1d(self):
+        sublattice = self.sublattice
+        sublattice.get_fingerprint_1d()
+
+    def test_fingerprint_2d(self):
+        sublattice = self.sublattice
+        sublattice.get_fingerprint_2d()
+
+    def test_fingerprint(self):
+        sublattice = self.sublattice
+        sublattice._get_fingerprint()
+
+
+class test_sublattice_get_atom_model(unittest.TestCase):
+
+    def setUp(self):
+        image_data = np.random.random(size=(100, 100))
+        position_list = []
+        for x in range(10, 100, 5):
+            for y in range(10, 100, 5):
+                position_list.append([x, y])
+        sublattice = Sublattice(np.array(position_list), image_data)
+        self.sublattice = sublattice
+
+    def test_simple(self):
+        sublattice = self.sublattice
+        sublattice.get_atom_model()
+
+class test_get_position_history(unittest.TestCase):
+
+    def setUp(self):
+        pos = [[x, y] for x in range(9) for y in range(9)]
+        self.sublattice = Sublattice(pos, np.random.random((9, 9)))
+
+    def test_no_history(self):
+        sublattice = self.sublattice
+        s = sublattice.get_position_history()
+
+    def test_1_history(self):
+        sublattice = self.sublattice
+        for atom in sublattice.atom_list:
+            atom.old_pixel_x_list.append(np.random.random())
+            atom.old_pixel_y_list.append(np.random.random())
+        s = sublattice.get_position_history()

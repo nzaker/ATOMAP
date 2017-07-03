@@ -1,11 +1,34 @@
-all_tests:
+test_docstrings:
+    image: ubuntu:latest
+    script:
+    - apt-get update -q
+    - apt-get install -qy python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-matplotlib python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-skimage libgl1-mesa-glx
+    - apt-get install -qy python3-sympy --no-install-recommends
+    - pip3 install --upgrade pip
+    - pip3 install --user .
+    - python3 run_doctests.py
+
+pip_install_test_and_coverage:
     image: ubuntu:latest
     script: 
     - apt-get update -q
     - apt-get install -qy python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-matplotlib python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-skimage
     - apt-get install -qy python3-sympy --no-install-recommends
     - pip3 install --upgrade pip
+    - pip3 install coverage
     - pip3 install --user .
+    - coverage run --source=atomap --omit=atomap/tests/*,*__init__.py -m unittest discover
+    - coverage report -m
+
+anaconda_install_tests:
+    image: continuumio/anaconda3
+    script:
+    - apt-get install -qy libgl1-mesa-glx
+    - conda install -c conda-forge hyperspy
+    - conda install conda-build
+    - mkdir build
+    - conda build -c conda-forge --output-folder build .
+    - conda install -c conda-forge build/linux-64/atomap-*.tar.bz2
     - python3 -m unittest discover
 
 pages:
