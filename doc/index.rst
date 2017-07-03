@@ -39,6 +39,10 @@ atomic resolution images using two-dimensional Gaussian fitting <https://dx.doi.
 
     Mapping the variation in distance between oxygen columns. `More information <https://ascimaging.springeropen.com/articles/10.1186/s40679-017-0042-5#Fig5>`_
 
+News
+----
+2017-07-03: version 0.0.8 released! 
+New features: ability to process dumbbell structures, fitting of multiple 2D Gaussians at the same time, improved background subtraction during 2D Gaussian fitting, and processing of nanoparticles.
 
 Contents on this webpage
 ------------------------
@@ -50,6 +54,7 @@ Contents on this webpage
    tutorial
    single_sublattice_no_atom_planes
    structures_without_config_files
+   nanoparticle_example
    api_documentation
 
 
