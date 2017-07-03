@@ -14,7 +14,7 @@ To install the requirements in Ubuntu (16.10):
 
 .. code-block:: bash
 
-    $ sudo apt-get install python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-matplotlib python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-skimage
+    $ sudo apt-get install python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-skimage
     $ sudo apt-get install python3-sympy --no-install-recommends
     $ pip3 install --user hyperspy[all]
 
@@ -35,6 +35,8 @@ To check that everything is working, open a terminal and run :code:`ipython3 --m
 
 If this works, continue with the :ref:`tutorial`.
 If you get some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
+Note, having the system and pip version of matplotlib installed at the same might cause an error with matplotlib not finding matplotlib.external.
+The easiest way of fixing this is by removing the system version of matplotlib.
 
 Windows
 -------
