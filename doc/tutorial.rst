@@ -17,13 +17,13 @@ Open a terminal and start `ipython3`:
 
 .. code-block:: bash
 
-    $ ipython3
+    $ ipython3 --matplotlib qt4
 
 If `ipython3` is not available, try `ipython`:
 
 .. code-block:: bash
 
-    $ ipython
+    $ ipython --matplotlib qt4
 
 Windows
 ^^^^^^^
@@ -83,7 +83,7 @@ This should open two figures like shown below:
     :align: center
 
 The right figure shows where the peak finding function has located a peak, the left
-figure shows the minimum feature separation in pixels on the x-axis. Use the left-right arrow keys to change
+figure shows the minimum feature separation in pixels on the x-axis. Use the *left-right arrow keys* to change
 the minimum feature separation.
 
 The requirements for the peak separation are:
@@ -265,7 +265,7 @@ Finding the oxygen columns
 --------------------------
 
 Atomap can also find the positions of oxygen columns in an Annular Bright Field (ABF) image, by firstly using an ADF image.
-We use the same ADF image as earlier, in addition to an ABF image acquired simultaneously:
+We use the same ADF image as earlier, in addition to an ABF image acquired simultaneously. This second image is inputed using the optional `s_image1` argument:
 
 .. code-block:: python
 
