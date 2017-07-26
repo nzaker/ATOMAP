@@ -369,7 +369,7 @@ class Sublattice():
             z_list,
             upscale=2):
         """
-        Interpolate unregularly spaced data points into a
+        Interpolate irregularly spaced data points into a
         regularly spaced grid, useful for making data work
         with plotting using imshow.
 
@@ -709,13 +709,13 @@ class Sublattice():
         neighbors : int, optional
             The number of neighbors returned for each atoms.
             If no number is given, will return all the neighbors,
-            which is typcially 9 for each atom. As given when
+            which is typically 9 for each atom. As given when
             running the symmetry finder.
 
         Returns
         -------
         Position : tuple
-            (x_position, y_position). Where both are numpy arrays.
+            (x_position, y_position). Where both are NumPy arrays.
 
         Examples
         --------
@@ -765,7 +765,7 @@ class Sublattice():
         sublattice._find_nearest_neighbors().
 
         Without the constraint of looking at only n nearest neighbours,
-        blazing fast internal numpy functions can be utilized to
+        blazing fast internal NumPy functions can be utilized to
         calculate directions. However, memory usage will grow quadratically
         with the number of atomic columns. E.g.:
         1000 atomic columns will require ~8MB of memory.
@@ -1103,7 +1103,7 @@ class Sublattice():
         atom_list : list of Atom objects, optional
             Atom positions to plot. If no list is given,
             will use the atom_list.
-        image : 2-D numpy array, optional
+        image : 2-D NumPy array, optional
             Image data for plotting. If none is given, will use
             the original_image.
         color : string, optional
@@ -1199,7 +1199,7 @@ class Sublattice():
 
         Parameters
         ----------
-        image : 2-D Numpy array, optional
+        image : 2-D NumPy array, optional
         atom_plane_list : list of AtomPlane instances
         vector_scale : scaling of the vector
         color : string
@@ -1755,7 +1755,7 @@ class Sublattice():
 
         Parameters
         ----------
-        image : 2-D numpy array, optional
+        image : 2-D NumPy array, optional
             Image data for plotting. If none is given, will use
             the original_image.
         color : string, default 'red'

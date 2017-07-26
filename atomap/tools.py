@@ -33,7 +33,7 @@ def _line_profile_coordinates(src, dst, linewidth=1):
     -----
     This is a utility method meant to be used internally by skimage
     functions. The destination point is included in the profile, in
-    contrast to standard numpy indexing.
+    contrast to standard NumPy indexing.
     """
     src_row, src_col = src = np.asarray(src, dtype=float)
     dst_row, dst_col = dst = np.asarray(dst, dtype=float)
@@ -609,7 +609,7 @@ def project_position_property_sum_planes(
 
     Returns
     -------
-    Data list : Numpy Array
+    Data list : NumPy Array
         Array in the form [[position, property]].
 
     Example
