@@ -28,8 +28,7 @@ def make_artifical_atomic_signal(
 
     Parameters
     ----------
-    x : 1D list
-    y : 1D list
+    x, y : 1D list
         x and y positions
     sigma_x : 1D list, optional, default 1
     sigma_y : 1D list, optional, default 1
@@ -68,15 +67,17 @@ def make_artifical_atomic_signal(
                 A=tA,
                 sigma_x=tsigma_x,
                 sigma_y=tsigma_y,
-                centre_x=tx+image_pad,
-                centre_y=ty+image_pad,
+                centre_x=tx,
+                centre_y=ty,
                 rotation=trotation)
         gaussian_list.append(g)
     min_size_x, max_size_x = min(x), max(x)
     min_size_y, max_size_y = min(y), max(y)
     temp_signal = Signal2D(np.zeros((
-        int((max_size_x-min_size_x+image_pad*2)),
-        int((max_size_y-min_size_y+image_pad*2)))))
+        int((max_size_y - min_size_y + image_pad*2 + 1)),
+        int((max_size_x - min_size_x + image_pad*2 + 1)))))
+    temp_signal.axes_manager[0].offset = min_size_x - image_pad
+    temp_signal.axes_manager[1].offset = min_size_y - image_pad
     model = temp_signal.create_model()
     model.extend(gaussian_list)
     signal = model.as_signal()
