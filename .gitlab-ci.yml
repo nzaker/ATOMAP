@@ -21,6 +21,10 @@ pip_install_test_and_coverage:
     - pip3 install --user .
     - coverage run --source=atomap --omit=atomap/tests/*,*__init__.py -m unittest discover
     - coverage report -m
+    - coverage html
+    artifacts:
+        paths:
+        - htmlcov
 
 anaconda_install_tests:
     image: continuumio/anaconda3
@@ -52,4 +56,3 @@ pages:
         - public
     only:
     - release
-
