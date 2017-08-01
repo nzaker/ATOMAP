@@ -579,6 +579,9 @@ class Sublattice():
         """Get a list of atom planes between two atom planes.
         Both these atom planes must belong to the same zone vector.
 
+        The list will include the two atom planes passed to the
+        function.
+
         Parameters
         ----------
         atom_plane1, atom_plane2 : Atomap Atom_Plane object
@@ -615,16 +618,28 @@ class Sublattice():
             par_atom_plane2,
             ort_atom_plane1,
             ort_atom_plane2):
-        ort_atom_plane_slice = self.get_atom_plane_slice_between_two_planes(
-                ort_atom_plane1, ort_atom_plane2, ort_atom_plane1.zone_vector)
-        par_atom_plane_slice = self.get_atom_plane_slice_between_two_planes(
-                par_atom_plane1, par_atom_plane2, par_atom_plane1.zone_vector)
+        """Get a slice of atoms between two pairs of atom planes.
+        Each pair must belong to the zone vector.
+
+        Parameters
+        ----------
+        par_atom_plane1, par_atom_plane2 : Atomap Atom_Plane object
+        ort_atom_plane1, ort_atom_plane2 : Atomap Atom_Plane object
+
+        Returns
+        -------
+        atom_list : list of Atom_Position objects
+        """
+        ort_slice = self.get_atom_plane_slice_between_two_planes(
+                ort_atom_plane1, ort_atom_plane2)
+        par_slice = self.get_atom_plane_slice_between_two_planes(
+                par_atom_plane1, par_atom_plane2)
 
         par_atom_list = []
-        for atom_plane in par_atom_plane_slice:
+        for atom_plane in par_slice:
             par_atom_list.extend(atom_plane.atom_list)
         ort_atom_list = []
-        for temp_atom_plane in ort_atom_plane_slice:
+        for temp_atom_plane in ort_slice:
             temp_atom_list = []
             for atom in temp_atom_plane.atom_list:
                 if atom in par_atom_list:
