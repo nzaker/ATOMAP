@@ -3,6 +3,7 @@ matplotlib.use('Agg')
 import os
 import unittest
 import numpy as np
+import atomap.api as am
 from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
@@ -13,14 +14,15 @@ from hyperspy.api import load
 from atomap.atom_finding_refining import refine_sublattice
 from atomap.atom_lattice import Atom_Lattice
 import atomap.testing_tools as tt
+from atomap.testing_tools import make_artifical_atomic_signal
 
 my_path = os.path.dirname(__file__)
 
 class test_make_simple_sublattice(unittest.TestCase):
     def setUp(self):
         self.atoms_N = 10
-        self.image_data = np.arange(10000).reshape(100,100)
-        self.peaks = np.arange(20).reshape(self.atoms_N,2)
+        self.image_data = np.arange(10000).reshape(100, 100)
+        self.peaks = np.arange(self.atoms_N*2).reshape(self.atoms_N, 2)
 
     def test_make_sublattice(self):
         sublattice = Sublattice(
@@ -28,11 +30,22 @@ class test_make_simple_sublattice(unittest.TestCase):
                 self.image_data)
         self.assertEqual(len(sublattice.atom_list), self.atoms_N)
 
+    def test_repr_no_planes(self):
+        sublattice = Sublattice(
+                self.peaks,
+                self.image_data)
+        sublattice._tag = 'test'
+        repr_str = '<Sublattice, test (atoms:%s,planes:0)>' % (
+                self.atoms_N)
+        self.assertEqual(
+                sublattice.__repr__(),
+                repr_str)
 
-class test_sublattice_construct_refine(unittest.TestCase):
+class test_sublattice_with_atom_planes(unittest.TestCase):
     
     def setUp(self):
-        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
+        s_adf_filename = os.path.join(
+                my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
         s_adf = load(s_adf_filename)
@@ -67,6 +80,33 @@ class test_sublattice_construct_refine(unittest.TestCase):
 
         self.assertEqual(number_zone_vector_110, 14)
         self.assertEqual(number_zone_vector_100, 17)
+
+    def test_repr(self):
+        sublattice = Sublattice(
+                self.peaks,
+                np.rot90(np.fliplr(self.s_adf_modified.data)))
+        sublattice.pixel_size = self.pixel_size
+        sublattice._tag = 'test planes'
+        construct_zone_axes_from_sublattice(sublattice)
+
+        repr_str = '<Sublattice, test planes (atoms:%s,planes:%s)>' % (
+                len(sublattice.atom_list),
+                len(sublattice.atom_planes_by_zone_vector))
+        self.assertEqual(
+                sublattice.__repr__(),
+                repr_str)
+
+    def test_get_zone_vector_index(self):
+        sublattice = Sublattice(
+                self.peaks,
+                np.rot90(np.fliplr(self.s_adf_modified.data)))
+        sublattice.pixel_size = self.pixel_size
+        construct_zone_axes_from_sublattice(sublattice)
+        zone_axis_index = sublattice.get_zone_vector_index(
+                sublattice.zones_axis_average_distances_names[0])
+        self.assertEqual(zone_axis_index, 0)
+        with self.assertRaises(ValueError):
+            sublattice.get_zone_vector_index('(99, 99)')
 
     def test_center_of_mass_refine(self):
         sublattice = Sublattice(
@@ -266,3 +306,155 @@ class test_get_position_history(unittest.TestCase):
             atom.old_pixel_x_list.append(np.random.random())
             atom.old_pixel_y_list.append(np.random.random())
         s = sublattice.get_position_history()
+
+class test_get_atom_angles_from_zone_vector(unittest.TestCase):
+    def setUp(self):
+        x, y = np.mgrid[0:500:10j,0:500:10j]
+        x, y = x.flatten(), y.flatten()
+        sigma_value = 10
+        sigma = [sigma_value]*len(x)
+        A = [50]*len(x)
+        s, g_list = make_artifical_atomic_signal(
+                x, y, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=100)
+        atom_lattice = am.make_atom_lattice_from_image(
+                s,
+                am.process_parameters.GenericStructure(),
+                pixel_separation=40)
+        self.sublattice = atom_lattice.sublattice_list[0]
+
+    def test_cubic_radians(self):
+        sublattice = self.sublattice
+        x, y, z = sublattice.get_atom_angles_from_zone_vector(
+                sublattice.zones_axis_average_distances,
+                sublattice.zones_axis_average_distances)
+        self.assertTrue(
+                np.allclose(np.zeros_like(z)+np.pi/2, z))
+
+    def test_cubuc_degrees(self):
+        sublattice = self.sublattice
+        x, y, z = sublattice.get_atom_angles_from_zone_vector(
+                sublattice.zones_axis_average_distances,
+                sublattice.zones_axis_average_distances,
+                degrees=True)
+        self.assertTrue(
+                np.allclose(np.zeros_like(z)+90, z))
+
+class test_get_atom_plane_slice_between_two_planes(unittest.TestCase):
+
+    def setUp(self):
+        x, y = np.mgrid[0:500:10j,0:500:10j]
+        x, y = x.flatten(), y.flatten()
+        sigma_value = 10
+        sigma = [sigma_value]*len(x)
+        A = [50]*len(x)
+        s, g_list = make_artifical_atomic_signal(
+                x, y, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=100)
+        atom_lattice = am.make_atom_lattice_from_image(
+                s,
+                am.process_parameters.GenericStructure(),
+                pixel_separation=40)
+        self.sublattice = atom_lattice.sublattice_list[0]
+
+    def test_subset0(self):
+        sublattice = self.sublattice
+        zv = sublattice.zones_axis_average_distances[0]
+        ap_index0, ap_index1 = 2, 6
+        ap0 = sublattice.atom_planes_by_zone_vector[zv][ap_index0]
+        ap1 = sublattice.atom_planes_by_zone_vector[zv][ap_index1]
+        ap_list = sublattice.get_atom_plane_slice_between_two_planes(
+                ap0, ap1)
+        self.assertEqual(ap_index1-ap_index0+1, len(ap_list))
+        ap_list_check = sublattice.atom_planes_by_zone_vector[
+                zv][ap_index0:ap_index1+1]
+        self.assertTrue(ap_list, ap_list_check)
+
+    def test_subset1(self):
+        sublattice = self.sublattice
+        zv = sublattice.zones_axis_average_distances[0]
+        ap_index0, ap_index1 = 3, 4
+        ap0 = sublattice.atom_planes_by_zone_vector[zv][ap_index0]
+        ap1 = sublattice.atom_planes_by_zone_vector[zv][ap_index1]
+        ap_list = sublattice.get_atom_plane_slice_between_two_planes(
+                ap0, ap1)
+        self.assertEqual(ap_index1-ap_index0+1, len(ap_list))
+        ap_list_check = sublattice.atom_planes_by_zone_vector[
+                zv][ap_index0:ap_index1+1]
+        self.assertTrue(ap_list, ap_list_check)
+
+    def test_get_all(self):
+        sublattice = self.sublattice
+        zv = sublattice.zones_axis_average_distances[0]
+        ap_index0, ap_index1 = 0, -1
+        ap0 = sublattice.atom_planes_by_zone_vector[zv][ap_index0]
+        ap1 = sublattice.atom_planes_by_zone_vector[zv][ap_index1]
+        ap_list = sublattice.get_atom_plane_slice_between_two_planes(
+                ap0, ap1)
+        self.assertEqual(10, len(ap_list))
+        ap_list_check = sublattice.atom_planes_by_zone_vector[
+                zv]
+        self.assertTrue(ap_list, ap_list_check)
+
+
+class test_get_atom_list_between_four_atom_planes(unittest.TestCase):
+
+    def setUp(self):
+        x, y = np.mgrid[0:500:10j,0:500:10j]
+        x, y = x.flatten(), y.flatten()
+        sigma_value = 10
+        sigma = [sigma_value]*len(x)
+        A = [50]*len(x)
+        s, g_list = make_artifical_atomic_signal(
+                x, y, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=100)
+        atom_lattice = am.make_atom_lattice_from_image(
+                s,
+                am.process_parameters.GenericStructure(),
+                pixel_separation=40)
+        self.sublattice = atom_lattice.sublattice_list[0]
+
+    def test_subset0(self):
+        sublattice = self.sublattice
+        zv0 = sublattice.zones_axis_average_distances[0]
+        zv1 = sublattice.zones_axis_average_distances[1]
+        ap_index00, ap_index01 = 2, 6
+        ap_index10, ap_index11 = 2, 6
+        ap00 = sublattice.atom_planes_by_zone_vector[zv0][ap_index00]
+        ap01 = sublattice.atom_planes_by_zone_vector[zv0][ap_index01]
+        ap10 = sublattice.atom_planes_by_zone_vector[zv1][ap_index10]
+        ap11 = sublattice.atom_planes_by_zone_vector[zv1][ap_index11]
+        apos_list = sublattice.get_atom_list_between_four_atom_planes(
+                ap00, ap01, ap10, ap11)
+
+        num_atoms = (ap_index01-ap_index00+1)*(ap_index11-ap_index10+1)
+        self.assertEqual(num_atoms, len(apos_list))
+
+    def test_subset1(self):
+        sublattice = self.sublattice
+        zv0 = sublattice.zones_axis_average_distances[0]
+        zv1 = sublattice.zones_axis_average_distances[1]
+        ap_index00, ap_index01 = 5, 8
+        ap_index10, ap_index11 = 2, 5
+        ap00 = sublattice.atom_planes_by_zone_vector[zv0][ap_index00]
+        ap01 = sublattice.atom_planes_by_zone_vector[zv0][ap_index01]
+        ap10 = sublattice.atom_planes_by_zone_vector[zv1][ap_index10]
+        ap11 = sublattice.atom_planes_by_zone_vector[zv1][ap_index11]
+        apos_list = sublattice.get_atom_list_between_four_atom_planes(
+                ap00, ap01, ap10, ap11)
+
+        num_atoms = (ap_index01-ap_index00+1)*(ap_index11-ap_index10+1)
+        self.assertEqual(num_atoms, len(apos_list))
+
+    def test_get_all(self):
+        sublattice = self.sublattice
+        zv0 = sublattice.zones_axis_average_distances[0]
+        zv1 = sublattice.zones_axis_average_distances[1]
+        ap_index00, ap_index01 = 0, -1
+        ap_index10, ap_index11 = 0, -1
+        ap00 = sublattice.atom_planes_by_zone_vector[zv0][ap_index00]
+        ap01 = sublattice.atom_planes_by_zone_vector[zv0][ap_index01]
+        ap10 = sublattice.atom_planes_by_zone_vector[zv1][ap_index10]
+        ap11 = sublattice.atom_planes_by_zone_vector[zv1][ap_index11]
+        apos_list = sublattice.get_atom_list_between_four_atom_planes(
+                ap00, ap01, ap10, ap11)
+
+        num_atoms = 100
+        self.assertEqual(num_atoms, len(apos_list))
