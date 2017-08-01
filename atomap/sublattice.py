@@ -575,21 +575,38 @@ class Sublattice():
             atom.nearest_neighbor_list = nn_link_list
 
     def get_atom_plane_slice_between_two_planes(
-            self, atom_plane1, atom_plane2, zone_vector):
+            self, atom_plane1, atom_plane2):
+        """Get a list of atom planes between two atom planes.
+        Both these atom planes must belong to the same zone vector.
+
+        Parameters
+        ----------
+        atom_plane1, atom_plane2 : Atomap Atom_Plane object
+
+        Returns
+        -------
+        atom_plane_slice : list of Atom Plane objects
+        """
         atom_plane_start_index = None
         atom_plane_end_index = None
+        zone_vector = atom_plane1.zone_vector
+        if zone_vector != atom_plane2.zone_vector:
+            raise ValueError(
+                    "atom_plane1 and atom_plane2 must belong to the"
+                    " same zone vector")
         for index, temp_atom_plane in enumerate(
                 self.atom_planes_by_zone_vector[zone_vector]):
             if temp_atom_plane == atom_plane1:
                 atom_plane_start_index = index
             if temp_atom_plane == atom_plane2:
-                atom_plane_end_index = index
+                atom_plane_end_index = index + 1
         if atom_plane_start_index > atom_plane_end_index:
             temp_index = atom_plane_start_index
             atom_plane_start_index = atom_plane_end_index
             atom_plane_end_index = temp_index
-        atom_plane_slice = self.atom_planes_by_zone_vector[zone_vector][
-                atom_plane_start_index:atom_plane_end_index]
+        atom_plane_slice = self.atom_planes_by_zone_vector[
+                zone_vector][
+                        atom_plane_start_index:atom_plane_end_index]
         return(atom_plane_slice)
 
     def get_atom_list_between_four_atom_planes(
