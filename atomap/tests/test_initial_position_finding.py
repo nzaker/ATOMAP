@@ -84,7 +84,9 @@ class test_get_dumbbell_arrays(unittest.TestCase):
         sigma = [sigma_value]*len(x_list)
         A = [50]*len(x_list)
         s, g_list = make_artifical_atomic_signal(
-                x_list, y_list, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=0)
+                x_list, y_list,
+                sigma_x=sigma, sigma_y=sigma,
+                A=A, image_pad=50)
         self.s = s
 
     def test_simple_running(self):
@@ -93,8 +95,8 @@ class test_get_dumbbell_arrays(unittest.TestCase):
         position_list = get_atom_positions(s, 14)
         dumbbell_array0, dumbbell_array1 = _get_dumbbell_arrays(
                 s, position_list, vector)
-        self.assertEqual(len(dumbbell_array0), 64)
-        self.assertEqual(len(dumbbell_array1), 64)
+        self.assertEqual(len(dumbbell_array0), 100)
+        self.assertEqual(len(dumbbell_array1), 100)
 
 
 class test_make_atom_lattice_dumbbell_structure(unittest.TestCase):
@@ -113,7 +115,9 @@ class test_make_atom_lattice_dumbbell_structure(unittest.TestCase):
         sigma = [sigma_value]*len(x_list)
         A = [50]*len(x_list)
         s, g_list = make_artifical_atomic_signal(
-                x_list, y_list, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=0)
+                x_list, y_list,
+                sigma_x=sigma, sigma_y=sigma,
+                A=A, image_pad=50)
         self.s = s
 
     def test_simple_running(self):
@@ -125,5 +129,5 @@ class test_make_atom_lattice_dumbbell_structure(unittest.TestCase):
         self.assertEqual(len(atom_lattice.sublattice_list), 2)
         sublattice0 = atom_lattice.sublattice_list[0]
         sublattice1 = atom_lattice.sublattice_list[0]
-        self.assertEqual(len(sublattice0.atom_list),64)
-        self.assertEqual(len(sublattice1.atom_list),64)
+        self.assertEqual(len(sublattice0.atom_list), 100)
+        self.assertEqual(len(sublattice1.atom_list), 100)

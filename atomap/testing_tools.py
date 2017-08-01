@@ -29,7 +29,10 @@ def make_artifical_atomic_signal(
     Parameters
     ----------
     x, y : 1D list
-        x and y positions
+        x and y positions. The image_pad value will be added
+        to each position, meaning that if a position is 
+        x=[10], y=[20], and image_pad=15. The position on the image
+        will be x=25, y=35
     sigma_x : 1D list, optional, default 1
     sigma_y : 1D list, optional, default 1
     A : 1D list, optional, default 1
@@ -67,8 +70,8 @@ def make_artifical_atomic_signal(
                 A=tA,
                 sigma_x=tsigma_x,
                 sigma_y=tsigma_y,
-                centre_x=tx,
-                centre_y=ty,
+                centre_x=tx+image_pad,
+                centre_y=ty+image_pad,
                 rotation=trotation)
         gaussian_list.append(g)
     min_size_x, max_size_x = min(x), max(x)
@@ -76,8 +79,6 @@ def make_artifical_atomic_signal(
     temp_signal = Signal2D(np.zeros((
         int((max_size_y - min_size_y + image_pad*2 + 1)),
         int((max_size_x - min_size_x + image_pad*2 + 1)))))
-    temp_signal.axes_manager[0].offset = min_size_x - image_pad
-    temp_signal.axes_manager[1].offset = min_size_y - image_pad
     model = temp_signal.create_model()
     model.extend(gaussian_list)
     signal = model.as_signal()
@@ -109,7 +110,6 @@ def make_nn_test_dataset(xN=3, yN=3, xS=9, yS=9, std=0.3, n=50):
 
 
 def find_atom_position_match(component_list, atom_list, delta=3, scale=1.):
-    delta = 10
     match_list = []
     for atom in atom_list:
         for component in component_list:
