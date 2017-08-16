@@ -624,7 +624,7 @@ def plot_line_profiles_from_parameter_input(
         parameter_list,
         parameter_name_list=None,
         invert_line_profiles=False,
-        extra_line_marker_list=[],
+        extra_line_marker_list=None,
         x_lim=False,
         figname="line_profile_list.jpg"):
     figsize = (15, len(parameter_list)*3)
@@ -665,9 +665,10 @@ def plot_line_profiles_from_parameter_input(
         for ax in fig.axes:
             ax.set_xlim(x_lim[0], x_lim[1])
 
-    for extra_line_marker in extra_line_marker_list:
-        for ax in fig.axes:
-            ax.axvline(extra_line_marker, color='red')
+    if extra_line_marker is not None:
+        for extra_line_marker in extra_line_marker_list:
+            for ax in fig.axes:
+                ax.axvline(extra_line_marker, color='red')
     fig.tight_layout()
     fig.savefig(figname, dpi=100)
 
