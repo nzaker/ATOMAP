@@ -8,6 +8,7 @@ from scipy.spatial import cKDTree
 import matplotlib.pyplot as plt
 import hyperspy.api as hs
 from hyperspy.signals import Signal1D, Signal2D
+from skimage.morphology import watershed
 
 from atomap.atom_finding_refining import _fit_atom_positions_with_gaussian_model
 from sklearn.cluster import DBSCAN
@@ -853,7 +854,7 @@ class Fingerprinter:
 
         return self
 
-def Integrate(img, points_x, points_y, maxRadius='Auto'):
+def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     """Given an image a set of points and a maximum outer radius,
     this function integrates the voronoi cell surround each point.
 
@@ -882,33 +883,42 @@ def Integrate(img, points_x, points_y, maxRadius='Auto'):
     such that spectrum images could be integrated in the same way.
 
     """
-    #Setting max_radius to the width of the image, if none is set.
 
-    if maxRadius=='Auto':
-        maxRadius = max(img.shape)
-
-    points = np.array((points_y, points_x))
-
-    pointRecord = np.zeros_like(img)
-    distanceLog = np.zeros_like(points[0])
-    integratedIntensity = np.zeros_like(points[0])
+    integratedIntensity = np.zeros_like(points_x)
     intensityRecord = np.zeros_like(img)
     currentFeature = np.zeros_like(img)
+    pointRecord = np.zeros_like(img)
 
-    for i in range(img.shape[0]):
-        for j in range(img.shape[1]):
-            #For every pixel the distance to all points must be calculated.
-            distance_log = ((points[0]-float(i))**2 + (points[1]-float(j))**2)**0.5
+    #Setting max_radius to the width of the image, if none is set.
 
-            # Next for that pixel the minimum distance to and point should be
-            # checked and discarded if too large:
-            distMin = np.min(distance_log)
-            minIndex = np.argmin(distance_log)
+    if method == 'Voronoi':
+        if maxRadius=='Auto':
+            maxRadius = max(img.shape)
 
-            if distMin >= maxRadius:
-                pointRecord[i][j] = 0
-            else:
-                pointRecord[i][j] = minIndex + 1
+        points = np.array((points_y, points_x))
+        distanceLog = np.zeros_like(points[0])
+
+
+        for i in range(img.shape[0]):
+            for j in range(img.shape[1]):
+                #For every pixel the distance to all points must be calculated.
+                distance_log = ((points[0]-float(i))**2 + (points[1]-float(j))**2)**0.5
+
+                # Next for that pixel the minimum distance to and point should be
+                # checked and discarded if too large:
+                distMin = np.min(distance_log)
+                minIndex = np.argmin(distance_log)
+
+                if distMin >= maxRadius:
+                    pointRecord[i][j] = 0
+                else:
+                    pointRecord[i][j] = minIndex + 1
+    elif method =='Watershed':
+        points = _Make_Mask(img, points_x, points_y)
+        pointRecord = watershed(-img, points)
+
+    else:
+        raise ValueError('Oops, you have selected an unimplimented method.')
     for i in range(points[0].shape[0]):
         mask = i + 1
         currentMask = (pointRecord == mask)
@@ -917,3 +927,16 @@ def Integrate(img, points_x, points_y, maxRadius='Auto'):
         intensityRecord += currentMask * integratedIntensity[i]
 
     return (integratedIntensity, intensityRecord, pointRecord)
+
+def _Make_Mask(figure, points_x, points_y):
+    points = np.array((points_y, points_x))
+    image = np.zeros_like(figure)
+    for i, x in enumerate(points):
+        for j, y in enumerate(x):
+            points[i][j]= int(round(y))
+    points = points.T
+    points.astype(int)
+    image = np.zeros_like(s.data)
+    for x, i in enumerate(points.astype(int)):
+        image[i[0]][i[1]] = x + 1
+    return image
