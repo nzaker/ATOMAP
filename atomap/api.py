@@ -6,3 +6,4 @@ from atomap.io import load_atom_lattice_from_hdf5
 
 from atomap.sublattice import Sublattice
 from atomap.atom_lattice import Atom_Lattice
+from atomap.tools import Integrate
