@@ -80,3 +80,19 @@ In this prompt run:
 
     $ pip install atomap
 
+
+Development version
+###################
+
+Grab the development version using the version control system git:
+
+.. code-block:: bash
+
+    $ git clone https://gitlab.com/atomap/atomap.git
+
+Then install it using pip:
+
+.. code-block:: bash
+
+    $ cd atomap
+    $ pip3 install -e .
