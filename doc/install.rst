@@ -82,7 +82,7 @@ In this prompt run:
 
 
 Development version
-###################
+-------------------
 
 Grab the development version using the version control system git:
 
