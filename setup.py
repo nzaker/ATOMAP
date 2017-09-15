@@ -25,6 +25,7 @@ setup(
             'h5py',
             'matplotlib>=2.0',
             'tqdm',
+            'scikit-learn',
             'hyperspy>=1.3',
             'hyperspy-gui-ipywidgets',
             'hyperspy-gui-traitsui',
