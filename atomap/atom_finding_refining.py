@@ -253,7 +253,7 @@ def construct_zone_axes_from_sublattice(
     tag = sublattice._tag
     if sublattice._pixel_separation == 0.0:
         sublattice._pixel_separation = sublattice._get_pixel_separation()
-    sublattice._find_nearest_neighbors(nearest_neighbors=15)
+    sublattice.find_nearest_neighbors(nearest_neighbors=15)
     sublattice._make_translation_symmetry()
 
     if zone_axis_para_list is not False:
@@ -759,7 +759,7 @@ def refine_sublattice(
     for refinement_config in refinement_config_list:
         total_number_of_refinements += refinement_config[1]
 
-    sublattice._find_nearest_neighbors()
+    sublattice.find_nearest_neighbors()
 
     current_counts = 1
     for refinement_config in refinement_config_list:

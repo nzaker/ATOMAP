@@ -73,7 +73,7 @@ class test_remove_atoms_from_image_using_2d_gaussian(unittest.TestCase):
         sublattice = Sublattice(
                 atom_position_list=atom_positions,
                 image=s.data)
-        sublattice._find_nearest_neighbors()
+        sublattice.find_nearest_neighbors()
         self.sublattice = sublattice
 
     def test_running(self):

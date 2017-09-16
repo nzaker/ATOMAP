@@ -261,7 +261,7 @@ class test_sublattice_fingerprinter(unittest.TestCase):
         sublattice = Sublattice(
                 atom_position_list=atom_positions,
                 image=s.data)
-        sublattice._find_nearest_neighbors()
+        sublattice.find_nearest_neighbors()
         self.sublattice = sublattice
 
     def test_fingerprint_1d(self):
@@ -397,6 +397,48 @@ class test_get_atom_plane_slice_between_two_planes(unittest.TestCase):
         ap_list_check = sublattice.atom_planes_by_zone_vector[
                 zv]
         self.assertTrue(ap_list, ap_list_check)
+
+
+class test_refine_functions(unittest.TestCase):
+
+    def setUp(self):
+        x, y = np.mgrid[0:500:8j,0:500:8j]
+        x, y = x.flatten(), y.flatten()
+        sigma_value = 10
+        sigma = [sigma_value]*len(x)
+        image_pad = 20
+        A = [50]*len(x)
+        s, g_list = make_artifical_atomic_signal(
+                x, y, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=image_pad)
+        self.image_data = s.data
+        self.xy = np.dstack((x + image_pad, y + image_pad))[0]
+
+    def test_refine_2d_gaussian_simple(self):
+        sublattice = Sublattice(self.xy, self.image_data)
+        with self.assertRaises(ValueError):
+            sublattice.refine_atom_positions_using_2d_gaussian()
+        sublattice.find_nearest_neighbors()
+        sublattice.refine_atom_positions_using_2d_gaussian()
+
+    def test_refine_2d_gaussian_all_arguments(self):
+        sublattice = Sublattice(self.xy, self.image_data)
+        sublattice.find_nearest_neighbors()
+        sublattice.refine_atom_positions_using_2d_gaussian(
+                image_data=self.image_data, percent_to_nn=0.3,
+                rotation_enabled=False)
+
+    def test_refine_center_of_mass_simple(self):
+        sublattice = Sublattice(self.xy, self.image_data)
+        with self.assertRaises(ValueError):
+            sublattice.refine_atom_positions_using_center_of_mass()
+        sublattice.find_nearest_neighbors()
+        sublattice.refine_atom_positions_using_center_of_mass()
+
+    def test_refine_center_of_mass_all_arguments(self):
+        sublattice = Sublattice(self.xy, self.image_data)
+        sublattice.find_nearest_neighbors()
+        sublattice.refine_atom_positions_using_center_of_mass(
+                image_data=self.image_data, percent_to_nn=0.3)
 
 
 class test_get_atom_list_between_four_atom_planes(unittest.TestCase):

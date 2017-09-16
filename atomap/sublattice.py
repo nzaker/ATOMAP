@@ -557,7 +557,16 @@ class Sublattice():
         pixel_separation = np.median(distance_list)/2
         return(pixel_separation)
 
-    def _find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
+    def find_nearest_neighbors(self, nearest_neighbors=9, leafsize=100):
+        """
+        Find the nearest neighbors for all the atom position objects.
+        Needs to be run before doing any position refinements.
+
+        Parameters
+        ----------
+        nearest_neighbors : int, default 9
+        leafsize : int, default 100
+        """
         atom_position_list = np.array(
                 [self.x_position, self.y_position]).swapaxes(0, 1)
         nearest_neighbor_data = sp.spatial.cKDTree(
@@ -706,9 +715,35 @@ class Sublattice():
 
     def refine_atom_positions_using_2d_gaussian(
             self,
-            image_data,
+            image_data=None,
             percent_to_nn=0.40,
             rotation_enabled=True):
+        """
+        Use 2D-Gaussian fitting to refine the atom positions on the image
+        data.
+
+        Parameters
+        ----------
+        image_data : 2D NumPy array, optional
+            If this is not specified, original_image will be used.
+        percent_to_nn : float, default 0.4
+            Percent to nearest neighbor. The function will find the closest
+            nearest neighbor to the current atom position, and
+            this value times percent_to_nn will be the radius of the mask
+            centered on the atom position. Value should be somewhere
+            between 0.01 (1%) and 1 (100%).
+        rotation_enabled : bool, default True
+            If True, rotation will be enabled for the 2D Gaussians.
+            This will most likely make the fitting better, but potentially
+            at a cost of less robust fitting.
+        """
+        if self.atom_list[0].nearest_neighbor_list is None:
+            raise ValueError(
+                    "The atom_position objects does not seem to have a "
+                    "populated nearest neighbor list. "
+                    "Has sublattice.find_nearest_neighbors() been called?")
+        if image_data is None:
+            image_data = self.original_image
         for atom in tqdm(self.atom_list, desc="Gaussian fitting"):
             atom.refine_position_using_2d_gaussian(
                     image_data,
@@ -716,7 +751,29 @@ class Sublattice():
                     percent_to_nn=percent_to_nn)
 
     def refine_atom_positions_using_center_of_mass(
-            self, image_data, percent_to_nn=0.25):
+            self, image_data=None, percent_to_nn=0.25):
+        """
+        Use center of mass to refine the atom positions on the image
+        data.
+
+        Parameters
+        ----------
+        image_data : 2D NumPy array, optional
+            If this is not specified, original_image will be used.
+        percent_to_nn : float, default 0.25
+            Percent to nearest neighbor. The function will find the closest
+            nearest neighbor to the current atom position, and
+            this value times percent_to_nn will be the radius of the mask
+            centered on the atom position. Value should be somewhere
+            between 0.01 (1%) and 1 (100%).
+        """
+        if self.atom_list[0].nearest_neighbor_list is None:
+            raise ValueError(
+                    "The atom_position objects does not seem to have a "
+                    "populated nearest neighbor list. "
+                    "Has sublattice.find_nearest_neighbors() been called?")
+        if image_data is None:
+            image_data = self.original_image
         for atom in tqdm(self.atom_list, desc="Center of mass"):
             atom.refine_position_using_center_of_mass(
                 image_data,
@@ -794,7 +851,7 @@ class Sublattice():
 
         This method also does not require atoms to have the
         atom.nearest_neighbor_list parameter populated with
-        sublattice._find_nearest_neighbors().
+        sublattice.find_nearest_neighbors().
 
         Without the constraint of looking at only n nearest neighbours,
         blazing fast internal NumPy functions can be utilized to

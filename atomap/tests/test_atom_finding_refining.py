@@ -137,7 +137,7 @@ class test_make_model_from_atom_list(unittest.TestCase):
             for y in range(10, 100, 5):
                 position_list.append([x, y])
         sublattice = Sublattice(np.array(position_list), image_data)
-        sublattice._find_nearest_neighbors()
+        sublattice.find_nearest_neighbors()
         self.sublattice = sublattice
 
     def test_1_atom(self):
@@ -186,7 +186,7 @@ class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
                 x_list, y_list, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=0)
         position_list = np.array([x_list, y_list]).T
         sublattice = Sublattice(np.array(position_list), s.data)
-        sublattice._find_nearest_neighbors()
+        sublattice.find_nearest_neighbors()
         self.sublattice = sublattice
 
     def test_1_atom(self):

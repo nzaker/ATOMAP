@@ -86,7 +86,7 @@ class test_adf_abf_sto_manualprocess(unittest.TestCase):
         sublattice = Sublattice(
                 atom_position_list=atom_positions,
                 image=s.data)
-        sublattice._find_nearest_neighbors()
+        sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_center_of_mass(
                 sublattice.image, percent_to_nn=0.4)
         sublattice.refine_atom_positions_using_2d_gaussian(

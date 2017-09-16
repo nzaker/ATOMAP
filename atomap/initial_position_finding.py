@@ -151,8 +151,8 @@ def make_atom_lattice_dumbbell_structure(s, position_list, dumbbell_vector):
             original_image=s.data,
             image=s_modified.data,
             color='red')
-    sublattice0._find_nearest_neighbors()
-    sublattice1._find_nearest_neighbors()
+    sublattice0.find_nearest_neighbors()
+    sublattice1.find_nearest_neighbors()
     atom_lattice = Dumbbell_Lattice(
             image=sublattice0.image,
             name="Dumbbell structure",
