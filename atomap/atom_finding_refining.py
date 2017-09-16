@@ -250,7 +250,6 @@ def find_feature_density(
 
 def construct_zone_axes_from_sublattice(
         sublattice, debug_plot=False, zone_axis_para_list=False):
-    tag = sublattice._tag
     if sublattice._pixel_separation == 0.0:
         sublattice._pixel_separation = sublattice._get_pixel_separation()
     sublattice.find_nearest_neighbors(nearest_neighbors=15)
@@ -274,7 +273,8 @@ def construct_zone_axes_from_sublattice(
     sublattice._sort_atom_planes_by_zone_vector()
     sublattice._remove_bad_zone_vectors()
     if debug_plot:
-        sublattice.plot_all_atom_planes(fignameprefix=tag+"_atom_plane")
+        sublattice.plot_all_atom_planes(
+                fignameprefix=sublattice.name + "_atom_plane")
 
 
 def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):

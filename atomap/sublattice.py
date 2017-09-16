@@ -34,6 +34,7 @@ class Sublattice():
             atom_position_list,
             image,
             original_image=None,
+            name='',
             color='red',
             pixel_size=1.,
             ):
@@ -44,6 +45,7 @@ class Sublattice():
             In the form [[x0, y0], [x1, y1], [x2, y2], ... ]
         image : 2D NumPy array
         original_image : 2D NumPy array, optional
+        name : string, default ''
         color : string, optional
             Plotting color, default red.
         pixel_size : float, optional
@@ -51,6 +53,7 @@ class Sublattice():
 
         Attributes
         ----------
+        image: 2D NumPy array
         x_position : list of floats
         y_position : list of floats
         sigma_x : list of floats
@@ -58,6 +61,7 @@ class Sublattice():
         sigma_average : list of floats
         rotation : list of floats
         ellipticity : list of floats
+        name : string
 
         Examples
         --------
@@ -75,7 +79,8 @@ class Sublattice():
         >>> x, y = x.flatten(), y.flatten()
         >>> atom_positions = np.dstack((x, y))[0]
         >>> image_data = np.random.random((100, 100))
-        >>> sublattice = Sublattice(atom_positions, image_data, color='yellow')
+        >>> sublattice = Sublattice(atom_positions, image_data, color='yellow',
+        ...     name='the sublattice')
         >>> sublattice.get_atom_list_on_image(markersize=50).plot()
         """
         self.atom_list = []
@@ -92,7 +97,7 @@ class Sublattice():
             self.original_image = original_image
         self.atom_planes_by_zone_vector = {}
         self._plot_clim = None
-        self._tag = ''
+        self.name = name
         self.pixel_size = pixel_size
         self._plot_color = color
         self._pixel_separation = 0.0
@@ -100,7 +105,7 @@ class Sublattice():
     def __repr__(self):
         return '<%s, %s (atoms:%s,planes:%s)>' % (
             self.__class__.__name__,
-            self._tag,
+            self.name,
             len(self.atom_list),
             len(self.atom_planes_by_zone_vector),
             )
@@ -1456,7 +1461,7 @@ class Sublattice():
             self.ellipticity,
             atom_plane_list=atom_plane_list,
             upscale_map=upscale_map)
-        title = 'Sublattice {} ellipticity'.format(self._tag)
+        title = 'Sublattice {} ellipticity'.format(self.name)
         signal.metadata.General.title = title
         return signal
 
@@ -1516,7 +1521,7 @@ class Sublattice():
         text_marker_list = _make_zone_vector_text_marker_list(
                 zone_vector_list, x=x, y=y)
         add_marker(signal, text_marker_list, permanent=True, plot_marker=False)
-        title = 'Sublattice {} monolayer distance'.format(self._tag)
+        title = 'Sublattice {} monolayer distance'.format(self.name)
         signal.metadata.General.title = title
         return signal
 
@@ -1566,7 +1571,7 @@ class Sublattice():
         text_marker_list = _make_zone_vector_text_marker_list(
                 zone_vector_list, x=x, y=y)
         add_marker(signal, text_marker_list, permanent=True, plot_marker=False)
-        title = 'Sublattice {} atom distance'.format(self._tag)
+        title = 'Sublattice {} atom distance'.format(self.name)
         signal.metadata.General.title = title
         return signal
 
@@ -1631,7 +1636,7 @@ class Sublattice():
         text_marker_list = _make_zone_vector_text_marker_list(
                 zone_vector_list, x=x, y=y)
         add_marker(signal, text_marker_list, permanent=True, plot_marker=False)
-        title = 'Sublattice {} atom distance difference'.format(self._tag)
+        title = 'Sublattice {} atom distance difference'.format(self.name)
         signal.metadata.General.title = title
         return signal
 
@@ -1736,7 +1741,7 @@ class Sublattice():
         relative_ax.set_xlabel("Refinement step")
 
         fig.tight_layout()
-        fig.savefig(self._tag + "_" + figname)
+        fig.savefig(self.name + "_" + figname)
 
     def get_zone_vector_mean_angle(self, zone_vector):
         """Get the mean angle between the atoms planes with a

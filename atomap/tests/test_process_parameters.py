@@ -16,5 +16,4 @@ class test_process_parameters(unittest.TestCase):
         generic_structure.add_sublattice_config(sublattice1)
         self.assertEqual(sublattice1.sublattice_order, 1)
         self.assertNotEqual(sublattice0.name, sublattice1.name)
-        self.assertNotEqual(sublattice0.tag, sublattice1.tag)
         self.assertNotEqual(sublattice0.color, sublattice1.color)

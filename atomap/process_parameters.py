@@ -18,9 +18,8 @@ class GenericSublattice(SublatticeParameterBase):
     def __init__(self):
         SublatticeParameterBase.__init__(self)
         self.color = 'red'
-        self.tag = 'S0'
         self.image_type = 0
-        self.name = "Sublattice 0"
+        self.name = "S0"
         self.sublattice_order = 0
         self.zone_axis_list = [
                 {'number': 0, 'name': '0'},
@@ -54,7 +53,6 @@ class PerovskiteOxide110SublatticeACation(SublatticeParameterBase):
     def __init__(self):
         SublatticeParameterBase.__init__(self)
         self.name = "A-cation"
-        self.tag = "A"
         self.color = 'blue'
         self.image_type = 0
         self.zone_axis_list = [
@@ -77,7 +75,6 @@ class PerovskiteOxide110SublatticeBCation(SublatticeParameterBase):
     def __init__(self):
         SublatticeParameterBase.__init__(self)
         self.name = "B-cation"
-        self.tag = "B"
         self.color = 'green'
         self.image_type = 0
         self.zone_axis_list = [
@@ -108,7 +105,6 @@ class PerovskiteOxide110SublatticeOxygen(SublatticeParameterBase):
     def __init__(self):
         SublatticeParameterBase.__init__(self)
         self.name = "Oxygen"
-        self.tag = "O"
         self.color = 'red'
         self.image_type = 1
         self.zone_axis_list = [
@@ -165,12 +161,10 @@ class ModelParametersBase:
         name_list = []
         color_list = []
         sublattice_order_list = []
-        tag_list = []
         for sublattice in self.sublattice_list:
             color_list.append(sublattice.color)
             sublattice_order_list.append(sublattice.sublattice_order)
             name_list.append(sublattice.name)
-            tag_list.append(sublattice.tag)
         sublattice_config_object.sublattice_order = max(
                 sublattice_order_list) + 1
 
@@ -184,13 +178,6 @@ class ModelParametersBase:
                 name = "Sublattice " + str(i)
                 if not (name in name_list):
                     sublattice_config_object.name = name
-                    break
-
-        if sublattice_config_object.tag in tag_list:
-            for i in range(20):
-                tag = "Sublattice " + str(i)
-                if not (tag in tag_list):
-                    sublattice_config_object.tag = tag
                     break
 
         self.sublattice_list.append(sublattice_config_object)

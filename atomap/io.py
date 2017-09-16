@@ -56,11 +56,19 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
                     atom.rotation = rotation
 
             sublattice.pixel_size = sublattice_set.attrs['pixel_size']
-            sublattice._tag = sublattice_set.attrs['tag']
+
+            if 'tag' in sublattice_set.attrs.keys():
+                sublattice.name = sublattice_set.attrs['tag']
+            elif 'name' in sublattice_set.attrs.keys():
+                sublattice.name = sublattice_set.attrs['name']
+            else:
+                sublattice.name = ''
+
+            if type(sublattice.name) == bytes:
+                sublattice.name = sublattice.name.decode()
+
             sublattice._plot_color = sublattice_set.attrs['plot_color']
 
-            if type(sublattice._tag) == bytes:
-                sublattice._tag = sublattice._tag.decode()
             if type(sublattice._plot_color) == bytes:
                 sublattice._plot_color = sublattice._plot_color.decode()
 
@@ -112,7 +120,7 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename, overwrite=False):
 
     h5f = h5py.File(filename, 'w')
     for index, sublattice in enumerate(atom_lattice.sublattice_list):
-        subgroup_name = sublattice._tag + "_sublattice"
+        subgroup_name = sublattice.name + "_sublattice"
         if subgroup_name in h5f:
             subgroup_name = str(index) + subgroup_name
         modified_image_data = sublattice.image
@@ -163,7 +171,7 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename, overwrite=False):
         h5f[subgroup_name].attrs['pixel_size'] = sublattice.pixel_size
         h5f[subgroup_name].attrs[
                 'pixel_separation'] = sublattice._pixel_separation
-        h5f[subgroup_name].attrs['tag'] = sublattice._tag
+        h5f[subgroup_name].attrs['name'] = sublattice.name
         h5f[subgroup_name].attrs['plot_color'] = sublattice._plot_color
 
         # HDF5 does not supporting saving a list of strings, so converting

@@ -120,7 +120,7 @@ def make_atom_lattice_from_image(
             zone_vector = temp_sublattice.zones_axis_average_distances[
                     temp_zone_vector_index]
             atom_list = temp_sublattice._find_missing_atoms_from_zone_vector(
-                    zone_vector, new_atom_tag=sublattice_para.tag)
+                    zone_vector, new_atom_tag=sublattice_para.name)
 
             sublattice = Sublattice(
                 atom_list,
@@ -132,14 +132,13 @@ def make_atom_lattice_from_image(
 
         sublattice._plot_color = sublattice_para.color
         sublattice.name = sublattice_para.name
-        sublattice._tag = sublattice_para.tag
         sublattice.pixel_size = s_image.axes_manager[0].scale
         sublattice._pixel_separation = pixel_separation
         sublattice.original_image = image_data
         atom_lattice.sublattice_list.append(sublattice)
         if debug_plot:
             sublattice.plot_atom_list_on_image_data(
-                    figname=sublattice._tag + "_initial_position.jpg")
+                    figname=sublattice.name + "_initial_position.jpg")
         for atom in sublattice.atom_list:
             atom.sigma_x = sublattice._pixel_separation/10.
             atom.sigma_y = sublattice._pixel_separation/10.

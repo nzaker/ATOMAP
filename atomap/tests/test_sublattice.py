@@ -35,7 +35,7 @@ class test_make_simple_sublattice(unittest.TestCase):
         sublattice = Sublattice(
                 self.peaks,
                 self.image_data)
-        sublattice._tag = 'test'
+        sublattice.name = 'test'
         repr_str = '<Sublattice, test (atoms:%s,planes:0)>' % (
                 self.atoms_N)
         self.assertEqual(
@@ -88,7 +88,7 @@ class test_sublattice_with_atom_planes(unittest.TestCase):
                 self.peaks,
                 np.rot90(np.fliplr(self.s_adf_modified.data)))
         sublattice.pixel_size = self.pixel_size
-        sublattice._tag = 'test planes'
+        sublattice.name = 'test planes'
         construct_zone_axes_from_sublattice(sublattice)
 
         repr_str = '<Sublattice, test planes (atoms:%s,planes:%s)>' % (
