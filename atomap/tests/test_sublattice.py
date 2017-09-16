@@ -18,6 +18,7 @@ from atomap.testing_tools import make_artifical_atomic_signal
 
 my_path = os.path.dirname(__file__)
 
+
 class test_make_simple_sublattice(unittest.TestCase):
     def setUp(self):
         self.atoms_N = 10
@@ -40,6 +41,7 @@ class test_make_simple_sublattice(unittest.TestCase):
         self.assertEqual(
                 sublattice.__repr__(),
                 repr_str)
+
 
 class test_sublattice_with_atom_planes(unittest.TestCase):
     
@@ -307,6 +309,7 @@ class test_get_position_history(unittest.TestCase):
             atom.old_pixel_y_list.append(np.random.random())
         s = sublattice.get_position_history()
 
+
 class test_get_atom_angles_from_zone_vector(unittest.TestCase):
     def setUp(self):
         x, y = np.mgrid[0:500:10j,0:500:10j]
@@ -330,7 +333,7 @@ class test_get_atom_angles_from_zone_vector(unittest.TestCase):
         self.assertTrue(
                 np.allclose(np.zeros_like(z)+np.pi/2, z))
 
-    def test_cubuc_degrees(self):
+    def test_cubic_degrees(self):
         sublattice = self.sublattice
         x, y, z = sublattice.get_atom_angles_from_zone_vector(
                 sublattice.zones_axis_average_distances,
@@ -338,6 +341,7 @@ class test_get_atom_angles_from_zone_vector(unittest.TestCase):
                 degrees=True)
         self.assertTrue(
                 np.allclose(np.zeros_like(z)+90, z))
+
 
 class test_get_atom_plane_slice_between_two_planes(unittest.TestCase):
 
