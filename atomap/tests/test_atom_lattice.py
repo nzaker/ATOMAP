@@ -25,7 +25,7 @@ class test_create_atom_lattice_object(unittest.TestCase):
         image_data = np.arange(10000).reshape(100,100)
         peaks = np.arange(20).reshape(atoms_N,2)
         self.sublattice = Sublattice(
-                peaks, 
+                peaks,
                 image_data)
 
     def test_create_empty_atom_lattice_object(self):
