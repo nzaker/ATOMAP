@@ -83,7 +83,7 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
                 sublattice._pixel_separation = sublattice_set.attrs[
                         'pixel_separation']
             else:
-                sublattice._pixel_separation = 0.8/sublattice.pixel_size
+                sublattice._pixel_separation = 0.0
 
             if construct_zone_axes:
                 construct_zone_axes_from_sublattice(sublattice)
