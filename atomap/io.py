@@ -24,12 +24,18 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
     """
     h5f = h5py.File(filename, 'r')
     atom_lattice = Atom_Lattice()
+    sublattice_list = []
+    sublattice_index_list = []
     for group_name in h5f:
         if ('atom_lattice' in group_name) or ('sublattice' in group_name):
             sublattice_set = h5f[group_name]
             modified_image_data = sublattice_set['modified_image_data'][:]
             original_image_data = sublattice_set['original_image_data'][:]
             atom_position_array = sublattice_set['atom_positions'][:]
+
+            if 'sublattice_index' in sublattice_set.attrs.keys():
+                sublattice_index_list.append(
+                        sublattice_set.attrs['sublattice_index'])
 
             sublattice = Sublattice(
                 atom_position_array,
@@ -72,7 +78,6 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
             if type(sublattice._plot_color) == bytes:
                 sublattice._plot_color = sublattice._plot_color.decode()
 
-            atom_lattice.sublattice_list.append(sublattice)
 
             if 'pixel_separation' in sublattice_set.attrs.keys():
                 sublattice._pixel_separation = sublattice_set.attrs[
@@ -91,11 +96,18 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
                     zone_axis_list.append(zone_axis_name_byte.decode())
                 sublattice.zones_axis_average_distances_names = zone_axis_list
 
+            sublattice_list.append(sublattice)
+
         if group_name == 'image_data0':
             atom_lattice.image0 = h5f[group_name][:]
         if group_name == 'image_data1':
             atom_lattice.image1 = h5f[group_name][:]
 
+    sorted_sublattice_list = []
+    for sublattice_index in sublattice_index_list:
+        sorted_sublattice_list.append(sublattice_list[sublattice_index])
+
+    atom_lattice.sublattice_list.extend(sorted_sublattice_list)
     if 'name' in h5f.attrs.keys():
         atom_lattice.name = h5f.attrs['name']
     elif 'path_name' in h5f.attrs.keys():
@@ -123,6 +135,7 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename, overwrite=False):
         subgroup_name = sublattice.name + "_sublattice"
         if subgroup_name in h5f:
             subgroup_name = str(index) + subgroup_name
+
         modified_image_data = sublattice.image
         original_image_data = sublattice.original_image
 
@@ -173,6 +186,7 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename, overwrite=False):
                 'pixel_separation'] = sublattice._pixel_separation
         h5f[subgroup_name].attrs['name'] = sublattice.name
         h5f[subgroup_name].attrs['plot_color'] = sublattice._plot_color
+        h5f[subgroup_name].attrs['sublattice_index'] = index
 
         # HDF5 does not supporting saving a list of strings, so converting
         # them to bytes

@@ -110,8 +110,8 @@ class test_atom_lattice_input_output(unittest.TestCase):
         self.assertTrue((sl0.sigma_y==atom0_sigma_y).all())
         self.assertTrue((sl1.sigma_x==atom1_sigma_x).all())
         self.assertTrue((sl1.sigma_y==atom1_sigma_y).all())
-        self.assertTrue((sl0.rotation==atom0_rotation).all())
-        self.assertTrue((sl1.rotation==atom1_rotation).all())
+        self.assertTrue((sl0.rotation==atom0_rot).all())
+        self.assertTrue((sl1.rotation==atom1_rot).all())
 
 
     @unittest.expectedFailure
