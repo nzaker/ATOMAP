@@ -183,6 +183,13 @@ class Sublattice():
             rotation_ellipticity.append(atom.rotation_ellipticity)
         return(rotation_ellipticity)
 
+    @property
+    def intensity_mask(self):
+        intensity_mask = []
+        for atom in self.atom_list:
+            intensity_mask.append(atom.intensity_mask)
+        return(intensity_mask)
+
     def get_zone_vector_index(self, zone_vector_id):
         """Find zone vector index from zone vector name"""
         for zone_vector_index, zone_vector in enumerate(
@@ -1904,3 +1911,14 @@ class Sublattice():
 
         s.add_marker(marker_list, permanent=True, plot_marker=False)
         return(s)
+        
+    def find_atom_intensities_inside_mask(self,image_data,radius=4):
+        """
+        Find the image intensity of each atom in the sublattice by
+        finding the average intensity of the pixels inside an circle
+        with radius r around the atom position
+        """
+        if image_data is None:
+                image_data = self.original_image
+        for atom in tqdm(self.atom_list, desc="Finding intensity"):
+            atom.find_intensity_inside_mask(image_data,radius)

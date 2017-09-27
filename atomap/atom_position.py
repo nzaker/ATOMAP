@@ -5,6 +5,7 @@ from scipy import ndimage
 import math
 from atomap.atom_finding_refining import _make_circular_mask
 from atomap.atom_finding_refining import fit_atom_positions_gaussian
+from atomap.atom_finding_refining import _crop_mask_slice_indices
 
 
 class Atom_Position:
@@ -47,6 +48,7 @@ class Atom_Position:
         self.amplitude_gaussian = 1.0
         self._gaussian_fitted = False
         self.amplitude_max_intensity = 1.0
+        self.intensity_mask = 0.
 
     def __repr__(self):
         return '<%s, %s (x:%s,y:%s,sx:%s,sy:%s,r:%s,e:%s)>' % (
@@ -452,3 +454,18 @@ class Atom_Position:
             dist = math.hypot(x - previous_x, y - previous_y)
             distance_list.append(dist)
         return(distance_list)
+
+    def find_intensity_inside_mask(self,image_data,radius=4):
+        """
+        Finds the average intensity inside a round area with a radius in
+        pixels. The outside of the area is covered by a mask. The average
+        intensity is saved to self.intensity_mask
+        """
+        centerX, centerY = self.pixel_x, self.pixel_y
+        mask = _make_circular_mask(centerY, centerX, image_data.shape[0],
+                image_data.shape[1], radius)
+        x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
+        mask_crop = mask[x0:x1, y0:y1].astype('bool')
+        data_mask_crop = (image_data*mask)[x0:x1, y0:y1]
+        self.intensity_mask = np.average(data_mask_crop)
+
