@@ -68,34 +68,75 @@ class TestData(object):
         >>> test_data.add_atom_list(x, y, sigma_x=sx, sigma_y=sy,
         ...         amplitude=A, rotation=r)
         >>> test_data.signal.plot()
+
+        The class also generates a sublattice object
+
+        >>> test_data = TestData(200, 200)
+        >>> import numpy as np
+        >>> x, y = np.mgrid[0:200:10j, 0:200:10j]
+        >>> x, y = x.flatten(), y.flatten()
+        >>> test_data.add_atom_list(x, y)
+        >>> test_data.sublattice.get_atom_list_on_image().plot()
         """
         self.data_extent = (image_x, image_y)
-        self.sublattice = Sublattice([], None)
-        self.sublattice.atom_list = []
+        self.__sublattice = Sublattice([], None)
+        self.__sublattice.atom_list = []
 
     @property
     def signal(self):
-        signal = self.sublattice.get_model_image(
+        signal = self.__sublattice.get_model_image(
                 image_shape=self.data_extent, progressbar=False)
         return signal
 
     @property
     def gaussian_list(self):
         gaussian_list = []
-        for atom in self.sublattice.atom_list:
+        for atom in self.__sublattice.atom_list:
             gaussian_list.append(atom.as_gaussian())
         return gaussian_list
 
+    @property
+    def sublattice(self):
+        atom_list = []
+        for atom in self.__sublattice.atom_list:
+            new_atom = Atom_Position(
+                    x=atom.pixel_x, y=atom.pixel_y,
+                    sigma_x=atom.sigma_x, sigma_y=atom.sigma_y,
+                    rotation=atom.rotation, amplitude=atom.amplitude_gaussian)
+            atom_list.append(new_atom)
+
+        sublattice = Sublattice([], self.signal.data) 
+        sublattice.atom_list = atom_list
+        return sublattice
+
     def add_atom(self, x, y, sigma_x=1, sigma_y=1, amplitude=1, rotation=0):
+        """
+        Add a single atom to the test data.
+
+        Parameters
+        ----------
+        x, y : numbers
+            Position of the atom.
+        sigma_x, sigma_y : numbers, default 1
+        amplitude : number, default 1
+        rotation : number, default 0
+
+        Examples
+        --------
+        >>> from atomap.testing_tools import TestData
+        >>> test_data = TestData(200, 200)
+        >>> test_data.add_atom(x=10, y=20)
+        >>> test_data.signal.plot()
+        """
         atom = Atom_Position(
                 x=x, y=y, sigma_x=sigma_x, sigma_y=sigma_y,
                 rotation=rotation, amplitude=amplitude)
-        self.sublattice.atom_list.append(atom)
+        self.__sublattice.atom_list.append(atom)
 
     def add_atom_list(
             self, x, y, sigma_x=1, sigma_y=1, amplitude=1, rotation=0):
         """
-        Add several atoms.
+        Add several atoms to the test data.
 
         Parameters
         ----------
