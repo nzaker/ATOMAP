@@ -5,11 +5,12 @@ from atomap.sublattice import Sublattice
 from atomap.testing_tools import make_artifical_atomic_signal
 from atomap.testing_tools import TestData
 from atomap.atom_finding_refining import (
-        _make_mask_from_positions,_crop_mask_slice_indices,
+        _make_mask_from_positions, _crop_mask_slice_indices,
         _find_background_value, _find_median_upper_percentile,
         _make_model_from_atom_list, _fit_atom_positions_with_gaussian_model,
         _atom_to_gaussian_component, _make_circular_mask,
         fit_atom_positions_gaussian)
+
 
 class test_make_mask_from_positions(unittest.TestCase):
 
@@ -62,7 +63,6 @@ class test_make_mask_from_positions(unittest.TestCase):
         x, y, r = 10, 5, 2
         pos = [[x, y]]
         rad = [r, r]
-        mask = (pos, rad, (40, 40))
         self.assertRaises(
                 ValueError,
                 _make_mask_from_positions,
@@ -179,7 +179,8 @@ class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
         x, y = np.mgrid[10:90:10j, 10:90:10j]
         x, y = x.flatten(), y.flatten()
         sigma, A = 1, 50
-        test_data.add_atom_list(x, y, sigma_x=sigma, sigma_y=sigma, amplitude=A)
+        test_data.add_atom_list(
+                x, y, sigma_x=sigma, sigma_y=sigma, amplitude=A)
         self.sublattice = test_data.sublattice
         self.sublattice.find_nearest_neighbors()
 
@@ -207,14 +208,14 @@ class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
     @unittest.expectedFailure
     def test_wrong_input_0(self):
         sublattice = self.sublattice
-        g_list = _fit_atom_positions_with_gaussian_model(
+        _fit_atom_positions_with_gaussian_model(
                 sublattice.atom_list[5],
                 sublattice.image)
 
     @unittest.expectedFailure
     def test_wrong_input_1(self):
         sublattice = self.sublattice
-        g_list = _fit_atom_positions_with_gaussian_model(
+        _fit_atom_positions_with_gaussian_model(
                 [sublattice.atom_list[5:7]],
                 sublattice.image)
 
@@ -242,7 +243,7 @@ class test_make_circular_mask(unittest.TestCase):
         mask = _make_circular_mask(1, 1, imX, imY, 1)
         self.assertEqual(mask.size, imX*imY)
         self.assertEqual(mask.sum(), 5)
-        true_index = [[1, 0], [0, 1], [1, 1],  [2, 1], [1 ,2]]
+        true_index = [[1, 0], [0, 1], [1, 1],  [2, 1], [1, 2]]
         false_index = [[0, 0], [0, 2], [2, 0],  [2, 2]]
         for index in true_index:
             self.assertTrue(mask[index[0], index[1]])
@@ -264,7 +265,7 @@ class test_make_circular_mask(unittest.TestCase):
 class test_fit_atom_positions_gaussian(unittest.TestCase):
 
     def setUp(self):
-        x, y = np.mgrid[0:100:10j,0:100:10j]
+        x, y = np.mgrid[0:100:10j, 0:100:10j]
         x, y = x.flatten(), y.flatten()
         s, g_list = make_artifical_atomic_signal(x, y, image_pad=0)
         position_list = np.array((x, y)).swapaxes(0, 1)
