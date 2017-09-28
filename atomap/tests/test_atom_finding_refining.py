@@ -3,6 +3,7 @@ import numpy as np
 from atomap.atom_position import Atom_Position
 from atomap.sublattice import Sublattice
 from atomap.testing_tools import make_artifical_atomic_signal
+from atomap.testing_tools import TestData
 from atomap.atom_finding_refining import (
         _make_mask_from_positions,_crop_mask_slice_indices,
         _find_background_value, _find_median_upper_percentile,
@@ -174,20 +175,13 @@ class test_make_model_from_atom_list(unittest.TestCase):
 class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
 
     def setUp(self):
-        x_list, y_list = [], []
-        for x in range(10, 100, 10):
-            for y in range(10, 100, 10):
-                x_list.append(x)
-                y_list.append(y)
-        sigma_value = 1
-        sigma = [sigma_value]*len(x_list)
-        A = [50]*len(x_list)
-        s, g_list = make_artifical_atomic_signal(
-                x_list, y_list, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=0)
-        position_list = np.array([x_list, y_list]).T
-        sublattice = Sublattice(np.array(position_list), s.data)
-        sublattice.find_nearest_neighbors()
-        self.sublattice = sublattice
+        test_data = TestData(100, 100)
+        x, y = np.mgrid[10:90:10j, 10:90:10j]
+        x, y = x.flatten(), y.flatten()
+        sigma, A = 1, 50
+        test_data.add_atom_list(x, y, sigma_x=sigma, sigma_y=sigma, amplitude=A)
+        self.sublattice = test_data.sublattice
+        self.sublattice.find_nearest_neighbors()
 
     def test_1_atom(self):
         sublattice = self.sublattice
