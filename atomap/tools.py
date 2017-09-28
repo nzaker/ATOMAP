@@ -900,7 +900,9 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
             maxRadius = max(img.shape)
 
         points = np.array((points_y, points_x))
-        distanceLog = np.zeros_like(points[0])
+
+    pointRecord = np.zeros_like(img)
+    distanceLog = np.zeros_like(points[0])
 
 
         for i in range(img.shape[0]):
@@ -917,12 +919,6 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
                     pointRecord[i][j] = 0
                 else:
                     pointRecord[i][j] = minIndex + 1
-    elif method =='Watershed':
-        points = _Make_Mask(img, points_x, points_y)
-        pointRecord = watershed(-img, points)
-
-    else:
-        raise ValueError('Oops, you have selected an unimplimented method.')
     for i in range(points[0].shape[0]):
         mask = i + 1
         currentMask = (pointRecord == mask)
