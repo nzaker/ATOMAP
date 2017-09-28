@@ -1912,17 +1912,6 @@ class Sublattice():
 
         s.add_marker(marker_list, permanent=True, plot_marker=False)
         return(s)
-        
-    def find_atom_intensities_inside_mask(self,image_data,radius=4):
-        """
-        Find the image intensity of each atom in the sublattice by
-        finding the average intensity of the pixels inside an circle
-        with radius r around the atom position
-        """
-        if image_data is None:
-            image_data = self.original_image
-        for atom in tqdm(self.atom_list, desc="Finding intensity"):
-            atom.find_intensity_inside_mask(image_data,radius)
             
     def mask_image_around_sublattice(self, image_data, radius=4):
         """
