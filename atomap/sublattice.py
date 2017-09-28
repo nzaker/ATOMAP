@@ -1913,11 +1913,11 @@ class Sublattice():
         s.add_marker(marker_list, permanent=True, plot_marker=False)
         return(s)
     
-    def mask_image_around_sublattice(self, image_data, radius=4):
+    def mask_image_around_sublattice(self, image_data, radius=1):
         """
         Returns a HyperSpy signal containing a masked image. The mask covers
         the area around each atom position in the sublattice, from a given
-        radius away from the pixel position of the atom. This radius is given
+        radius away from the center position of the atom. This radius is given
         in pixels.
 
         Parameters
@@ -1945,3 +1945,13 @@ class Sublattice():
             mask[np.where(temp_mask)] = True
         s = hs.signals.Signal2D(mask*image_data)
         return(s)
+ 
+    def find_sublattice_intensity_from_masked_image(self, image_data, radius):
+        """
+        Find the image intensity of each atom in the sublattice by
+        finding the average intensity of the pixels inside an unmasked area.
+        """
+        if image_data is None:
+            image_data = self.original_image
+        for atom in self.atom_list:
+            atom.find_atom_intensity_inside_mask(image_data,radius)
