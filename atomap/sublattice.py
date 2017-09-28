@@ -1640,8 +1640,26 @@ class Sublattice():
         signal.metadata.General.title = title
         return signal
 
-    def get_atom_model(self):
-        model_image = np.zeros(self.image.shape)
+    def get_model_image(self, image_shape=None, progressbar=True):
+        """
+        Generate an image of the atomic positions from the
+        atom positions Gaussian parameter's.
+
+        Parameters
+        ----------
+        image_shape : tuple (x, y), optional
+            Size of the image generated. Note that atoms might be
+            outside the image if (x, y) is too small.
+
+        Returns
+        -------
+        signal, HyperSpy 2D signal
+            
+        """
+        if image_shape is None:
+            model_image = np.zeros(self.image.shape)
+        else:
+            model_image = np.zeros(image_shape)
         X, Y = np.meshgrid(np.arange(
             model_image.shape[1]), np.arange(model_image.shape[0]))
 
@@ -1653,7 +1671,7 @@ class Sublattice():
             rotation=1.0,
             A=1.0)
 
-        for atom in tqdm(self.atom_list):
+        for atom in tqdm(self.atom_list, disable=(not progressbar)):
             g.A.value = atom.amplitude_gaussian
             g.centre_x.value = atom.pixel_x
             g.centre_y.value = atom.pixel_y

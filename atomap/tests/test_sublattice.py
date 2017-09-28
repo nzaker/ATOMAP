@@ -277,7 +277,7 @@ class test_sublattice_fingerprinter(unittest.TestCase):
         sublattice._get_fingerprint()
 
 
-class test_sublattice_get_atom_model(unittest.TestCase):
+class test_sublattice_get_model_image(unittest.TestCase):
 
     def setUp(self):
         image_data = np.random.random(size=(100, 100))
@@ -290,7 +290,7 @@ class test_sublattice_get_atom_model(unittest.TestCase):
 
     def test_simple(self):
         sublattice = self.sublattice
-        sublattice.get_atom_model()
+        sublattice.get_model_image()
 
 class test_get_position_history(unittest.TestCase):
 
