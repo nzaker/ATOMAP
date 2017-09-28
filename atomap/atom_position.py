@@ -9,7 +9,9 @@ from atomap.atom_finding_refining import fit_atom_positions_gaussian
 
 class Atom_Position:
 
-    def __init__(self, x, y, sigma_x=1., sigma_y=1., rotation=0.01):
+    def __init__(
+            self, x, y, sigma_x=1., sigma_y=1., rotation=0.01,
+            amplitude=1.):
         """
         Parameters
         ----------
@@ -19,6 +21,8 @@ class Atom_Position:
         sigma_y : float, optional
         rotation : float, optional
             In radians
+        amplitude : float, optional
+            Amplitude of Gaussian. Stored as amplitude_gaussian attribute.
 
         Attributes
         ----------
@@ -44,7 +48,7 @@ class Atom_Position:
         self._tag = ''
         self.old_pixel_x_list = []
         self.old_pixel_y_list = []
-        self.amplitude_gaussian = 1.0
+        self.amplitude_gaussian = amplitude
         self._gaussian_fitted = False
         self.amplitude_max_intensity = 1.0
 
