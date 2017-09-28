@@ -44,7 +44,7 @@ class test_make_simple_sublattice(unittest.TestCase):
 
 
 class test_sublattice_with_atom_planes(unittest.TestCase):
-    
+
     def setUp(self):
         s_adf_filename = os.path.join(
                 my_path, "datasets", "test_ADF_cropped.hdf5")
@@ -125,7 +125,8 @@ class test_sublattice_with_atom_planes(unittest.TestCase):
 class test_sublattice_get_signal(unittest.TestCase):
 
     def setUp(self):
-        s_adf_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
+        s_adf_filename = os.path.join(my_path, "datasets",
+                                      "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
         s_adf = load(s_adf_filename)
@@ -190,7 +191,8 @@ class test_sublattice_get_signal(unittest.TestCase):
         sublattice = self.sublattice
         zone_vector = sublattice.zones_axis_average_distances[0]
         plane = sublattice.atom_planes_by_zone_vector[zone_vector][0]
-        sublattice.get_atom_distance_difference_line_profile(zone_vector, plane)
+        sublattice.get_atom_distance_difference_line_profile(
+                    zone_vector, plane)
 
     def test_get_atom_distance_difference_map(self):
         self.sublattice.get_atom_distance_difference_map()
@@ -230,9 +232,9 @@ class test_sublattice_get_signal(unittest.TestCase):
 class test_sublattice_interpolation(unittest.TestCase):
 
     def setUp(self):
-        x, y = np.mgrid[0:100,0:100]
+        x, y = np.mgrid[0:100, 0:100]
         position_list = np.vstack((x.flatten(), y.flatten())).T
-        image_data = np.arange(100).reshape(10,10)
+        image_data = np.arange(100).reshape(10, 10)
         self.sublattice = Sublattice(position_list, image_data)
 
     def test_make_sublattice(self):
@@ -249,7 +251,7 @@ class test_sublattice_interpolation(unittest.TestCase):
 class test_sublattice_fingerprinter(unittest.TestCase):
 
     def setUp(self):
-        x, y = np.mgrid[0:500:20j,0:500:20j]
+        x, y = np.mgrid[0:500:20j, 0:500:20j]
         x, y = x.flatten(), y.flatten()
         s, g_list = tt.make_artifical_atomic_signal(x, y, image_pad=10)
 
@@ -292,6 +294,7 @@ class test_sublattice_get_model_image(unittest.TestCase):
         sublattice = self.sublattice
         sublattice.get_model_image()
 
+
 class test_get_position_history(unittest.TestCase):
 
     def setUp(self):
@@ -312,7 +315,7 @@ class test_get_position_history(unittest.TestCase):
 
 class test_get_atom_angles_from_zone_vector(unittest.TestCase):
     def setUp(self):
-        x, y = np.mgrid[0:500:10j,0:500:10j]
+        x, y = np.mgrid[0:500:10j, 0:500:10j]
         x, y = x.flatten(), y.flatten()
         sigma_value = 10
         sigma = [sigma_value]*len(x)
@@ -346,7 +349,7 @@ class test_get_atom_angles_from_zone_vector(unittest.TestCase):
 class test_get_atom_plane_slice_between_two_planes(unittest.TestCase):
 
     def setUp(self):
-        x, y = np.mgrid[0:500:10j,0:500:10j]
+        x, y = np.mgrid[0:500:10j, 0:500:10j]
         x, y = x.flatten(), y.flatten()
         sigma_value = 10
         sigma = [sigma_value]*len(x)
@@ -402,7 +405,7 @@ class test_get_atom_plane_slice_between_two_planes(unittest.TestCase):
 class test_refine_functions(unittest.TestCase):
 
     def setUp(self):
-        x, y = np.mgrid[0:500:8j,0:500:8j]
+        x, y = np.mgrid[0:500:8j, 0:500:8j]
         x, y = x.flatten(), y.flatten()
         sigma_value = 10
         sigma = [sigma_value]*len(x)
@@ -444,7 +447,7 @@ class test_refine_functions(unittest.TestCase):
 class test_get_atom_list_between_four_atom_planes(unittest.TestCase):
 
     def setUp(self):
-        x, y = np.mgrid[0:500:10j,0:500:10j]
+        x, y = np.mgrid[0:500:10j, 0:500:10j]
         x, y = x.flatten(), y.flatten()
         sigma_value = 10
         sigma = [sigma_value]*len(x)
@@ -504,3 +507,21 @@ class test_get_atom_list_between_four_atom_planes(unittest.TestCase):
 
         num_atoms = 100
         self.assertEqual(num_atoms, len(apos_list))
+
+
+class test_sublattice_mask(unittest.TestCase):
+
+    def setUp(self):
+        image_data = np.random.random(size=(100, 100))
+        position_list = []
+        for x in range(10, 100, 10):
+            for y in range(10, 100, 10):
+                position_list.append([x, y])
+        sublattice = Sublattice(np.array(position_list), image_data)
+        self.sublattice = sublattice
+
+    def test_radius_is_0(self):
+        sublattice = self.sublattice
+        s = sublattice.mask_image_around_sublattice(
+            sublattice.image, radius=0)
+        self.assertEqual(np.count_nonzero(s.data), len(sublattice.atom_list))
