@@ -1,8 +1,83 @@
-from hyperspy.signals import Signal2D
-from atomap.external.gaussian2d import Gaussian2D
+import math
 import numpy as np
 from numpy.random import normal
-import math
+from hyperspy.signals import Signal2D
+from hyperspy.misc.utils import isiterable
+from atomap.external.gaussian2d import Gaussian2D
+from atomap.sublattice import Sublattice
+from atomap.atom_position import Atom_Position
+
+
+class TestData(object):
+
+    def __init__(self, image_x, image_y):
+        self.data_extent = (image_x, image_y)
+        self.sublattice = Sublattice([], None)
+        self.sublattice.atom_list = []
+
+    @property
+    def signal(self):
+        signal = self.sublattice.get_model_image(
+                image_shape=self.data_extent, progressbar=False)
+        return signal
+
+    def add_atom(self, x, y, sigma_x=1, sigma_y=1, amplitude=1, rotation=0):
+        atom = Atom_Position(
+                x=x, y=y, sigma_x=sigma_x, sigma_y=sigma_y,
+                rotation=rotation, amplitude=amplitude)
+        self.sublattice.atom_list.append(atom)
+
+    def add_atom_list(
+            self, x, y, sigma_x=1, sigma_y=1, amplitude=1, rotation=0):
+        """
+        Add several atoms.
+
+        x, y : iterable
+            Position of the atoms. Must be iterable, and have the same size.
+        sigma_x, sigma_y : number or iterable, default 1
+            If number: all the atoms will have the same sigma.
+            Use iterable for setting different sigmas for different atoms.
+            If iterable: must be same length as x and y iterables.
+        amplitude : number or iterable, default 1
+            If number: all the atoms will have the same amplitude.
+            Use iterable for setting different amplitude for different atoms.
+            If iterable: must be same length as x and y iterables.
+        rotation : number or iterable, default 1
+            If number: all the atoms will have the same rotation.
+            Use iterable for setting different rotation for different atoms.
+            If iterable: must be same length as x and y iterables.
+        """
+        if len(x) != len(y):
+            raise ValueError("x and y needs to have the same length")
+
+        if isiterable(sigma_x):
+            if len(sigma_x) != len(x):
+                raise ValueError("sigma_x and x needs to have the same length")
+        else:
+            sigma_x = [sigma_x]*len(x)
+
+        if isiterable(sigma_y):
+            if len(sigma_y) != len(y):
+                raise ValueError("sigma_y and x needs to have the same length")
+        else:
+            sigma_y = [sigma_y]*len(x)
+
+        if isiterable(amplitude):
+            if len(amplitude) != len(x):
+                raise ValueError(
+                        "amplitude and x needs to have the same length")
+        else:
+            amplitude = [amplitude]*len(x)
+
+        if isiterable(rotation):
+            if len(rotation) != len(x):
+                raise ValueError(
+                        "rotation and x needs to have the same length")
+        else:
+            rotation = [rotation]*len(x)
+        iterator = zip(x, y, sigma_x, sigma_y, amplitude, rotation)
+        for tx, ty, tsigma_x, tsigma_y, tamplitude, trotation in iterator:
+            self.add_atom(tx, ty, tsigma_x, tsigma_y, tamplitude, trotation)
 
 
 def get_test_dumbbell_signal():
