@@ -874,10 +874,14 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
 
     Returns
     -------
-    integrated_points: list
-        A list of integrated intensities the same length as the imput points.
-    img: (opptional) np.array
-        Intensity record showing where each integrated intensity came from.
+    integratedIntensity: list
+        List the same length of points giving the integrated intensities.
+    intensityRecord: np.array, same size as img
+        Each pixel in a particular segment or region has the value of the
+        inegration.
+    pointRecord: np.array, same size as img
+        Image showing where each integration region is, pixels in region 1
+        all have a value of 1, pixels in regio 2 all have a value of 2 etc.
 
     **Note: Should try and make sure this also works with 3D or 4D np.array
     such that spectrum images could be integrated in the same way.
