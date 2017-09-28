@@ -1155,8 +1155,8 @@ class Sublattice():
 
         Different image
 
-        >>> from numpy import random
-        >>> im = random((9., 9))
+        >>> from numpy.random import random
+        >>> im = random((9, 9))
         >>> s = sublattice.get_all_atom_planes_by_zone_vector(image=im)
         >>> s.plot()
         """
