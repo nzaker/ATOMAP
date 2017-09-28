@@ -1912,37 +1912,36 @@ class Sublattice():
 
         s.add_marker(marker_list, permanent=True, plot_marker=False)
         return(s)
-            
+    
     def mask_image_around_sublattice(self, image_data, radius=4):
         """
         Returns a HyperSpy signal containing a masked image. The mask covers
-        the area around each atom position in the sublattice, from a given 
+        the area around each atom position in the sublattice, from a given
         radius away from the pixel position of the atom. This radius is given
         in pixels.
-       
+
         Parameters
         ----------
         image_data : 2-D NumPy array, optional
             Image data for plotting. If none is given, will use
             the original_image.
-            
+
         radius : int, optional
             The radius in pixels away from the atom centre pixels, determining
             the area that shall not be masked. The default radius is 3 pixels.
-        
+
         Returns
         -------
         HyperSpy 2D-signal containing the masked image.
-        
         """
         if image_data is None:
             image_data = self.original_image
-        mask = np.full_like(image_data,False)
+        mask = np.full_like(image_data, False)
         for atom in self.atom_list:
             centerX, centerY = atom.pixel_x, atom.pixel_y
-            temp_mask = _make_circular_mask(centerY, centerX,
-                image_data.shape[0],image_data.shape[1], radius)
+            temp_mask = _make_circular_mask(
+                        centerY, centerX, image_data.shape[0],
+                        image_data.shape[1], radius)
             mask[np.where(temp_mask)] = True
         s = hs.signals.Signal2D(mask*image_data)
         return(s)
-
