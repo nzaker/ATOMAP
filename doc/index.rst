@@ -1,6 +1,18 @@
 Welcome to Atomap's documentation!
 ==================================
 
+News
+----
+2017-09-28: New functionality and improved documentation in development version.
+Functionality for generating testdata have now been added. See `the development repository <https://gitlab.com/atomap/atomap/blob/master/atomap/testing_tools.py#L28>`_ for some simple examples.
+The documentation for some functions have also been documented better.
+As always, some bugs are also fixed!
+
+2017-07-03: version 0.0.8 released! 
+New features: ability to process dumbbell structures, fitting of multiple 2D Gaussians at the same time, improved background subtraction during 2D Gaussian fitting, and processing of nanoparticles.
+
+About Atomap
+------------
 Atomap is a Python library for analysing atomic resolution
 scanning transmission electron microscopy images.
 It relies in fitting 2-D Gaussian functions to every atomic
@@ -39,10 +51,6 @@ atomic resolution images using two-dimensional Gaussian fitting <https://dx.doi.
 
     Mapping the variation in distance between oxygen columns. `More information <https://ascimaging.springeropen.com/articles/10.1186/s40679-017-0042-5#Fig5>`_
 
-News
-----
-2017-07-03: version 0.0.8 released! 
-New features: ability to process dumbbell structures, fitting of multiple 2D Gaussians at the same time, improved background subtraction during 2D Gaussian fitting, and processing of nanoparticles.
 
 Contents on this webpage
 ------------------------
@@ -55,8 +63,8 @@ Contents on this webpage
    single_sublattice_no_atom_planes
    structures_without_config_files
    nanoparticle_example
+   make_testdata
    api_documentation
-
 
 * :ref:`genindex`
 * :ref:`modindex`
