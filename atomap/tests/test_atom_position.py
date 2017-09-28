@@ -77,3 +77,15 @@ class test_atom_position_object_tools(unittest.TestCase):
         self.assertAlmostEqual(angle180, pi, 7)
         self.assertAlmostEqual(angle0, 0, 7)
         self.assertAlmostEqual(angle45, pi/4, 7)
+
+    def test_as_gaussian(self):
+        x, y, sx, sy, A, r = 10., 5., 2., 3.5, 9.9, 1.5
+        atom_position = Atom_Position(
+                x=x, y=y, sigma_x=sx, sigma_y=sy, amplitude=A, rotation=r)
+        g = atom_position.as_gaussian()
+        self.assertEqual(g.centre_x.value, x)
+        self.assertEqual(g.centre_y.value, y)
+        self.assertEqual(g.sigma_x.value, sx)
+        self.assertEqual(g.sigma_y.value, sy)
+        self.assertEqual(g.A.value, A)
+        self.assertEqual(g.rotation.value, r)

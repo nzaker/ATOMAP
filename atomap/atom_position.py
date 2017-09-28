@@ -6,6 +6,8 @@ import math
 from atomap.atom_finding_refining import _make_circular_mask
 from atomap.atom_finding_refining import fit_atom_positions_gaussian
 from atomap.atom_finding_refining import _crop_mask_slice_indices
+from atomap.atom_finding_refining import _atom_to_gaussian_component
+from atomap.external.gaussian2d import Gaussian2D
 
 
 class Atom_Position:
@@ -109,6 +111,11 @@ class Atom_Position:
             return(self.sigma_x/self.sigma_y)
         else:
             return(self.sigma_y/self.sigma_x)
+
+    def as_gaussian(self):
+        g = _atom_to_gaussian_component(self)
+        g.A.value = self.amplitude_gaussian
+        return(g)
 
     def get_pixel_position(self):
         return((self.pixel_x, self.pixel_y))
