@@ -623,9 +623,9 @@ def _fit_atom_positions_with_gaussian_model(
     for atom, g in zip(atom_list, model):
         # If the Gaussian centre is located outside the masked region,
         # return False
-        if (g.centre_x.value < x0) and (g.centre_x.value > x1):
+        if (g.centre_x.value < x0) or (g.centre_x.value > x1):
             return(False)
-        elif (g.centre_y.value < y0) and (g.centre_y.value > y1):
+        elif (g.centre_y.value < y0) or (g.centre_y.value > y1):
             return(False)
 
         if g.A.value < 0.0:
