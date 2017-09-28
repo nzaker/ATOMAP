@@ -1,9 +1,10 @@
+import unittest
+from numpy import pi
 import math
 import matplotlib
 matplotlib.use('Agg')
-import unittest
 from atomap.atom_position import Atom_Position
-from numpy import pi
+
 
 class test_create_atom_position_object(unittest.TestCase):
 
@@ -23,7 +24,6 @@ class test_create_atom_position_object(unittest.TestCase):
         atom_position = Atom_Position(1, 2, sigma_x=sigma_x, sigma_y=sigma_y)
         self.assertEqual(atom_position.sigma_x, abs(sigma_x))
         self.assertEqual(atom_position.sigma_y, abs(sigma_y))
-
 
     def test_amplitude(self):
         amplitude = 30
@@ -53,16 +53,16 @@ class test_create_atom_position_object(unittest.TestCase):
 
 
 class test_atom_position_object_tools(unittest.TestCase):
-    
+
     def setUp(self):
-        self.atom_position = Atom_Position(1,1)
-    
+        self.atom_position = Atom_Position(1, 1)
+
     def test_get_atom_angle(self):
-        atom_position0 = Atom_Position(1,2)
-        atom_position1 = Atom_Position(3,1)
-        atom_position2 = Atom_Position(1,0)
-        atom_position3 = Atom_Position(5,1)
-        atom_position4 = Atom_Position(2,2)
+        atom_position0 = Atom_Position(1, 2)
+        atom_position1 = Atom_Position(3, 1)
+        atom_position2 = Atom_Position(1, 0)
+        atom_position3 = Atom_Position(5, 1)
+        atom_position4 = Atom_Position(2, 2)
 
         angle90 = self.atom_position.get_angle_between_atoms(
                 atom_position0, atom_position1)
