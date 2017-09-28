@@ -8,6 +8,22 @@ from atomap.sublattice import Sublattice
 from atomap.atom_position import Atom_Position
 
 
+def get_simple_cubic_signal():
+    simple_cubic = TestData(300, 300)
+    x, y = np.mgrid[10:290:15j, 10:290:15j]
+    simple_cubic.add_atom_list(x.flatten(), y.flatten(), sigma_x=3, sigma_y=3)
+    return simple_cubic.signal
+
+def get_simple_cubic_sublattice():
+    simple_cubic = TestData(300, 300)
+    x, y = np.mgrid[10:290:15j, 10:290:15j]
+    simple_cubic.add_atom_list(x.flatten(), y.flatten(), sigma_x=3, sigma_y=3)
+    sublattice = simple_cubic.sublattice
+    sublattice.image = simple_cubic.signal.data
+    sublattice.original_image = simple_cubic.signal.data
+    return sublattice
+
+
 class TestData(object):
 
     def __init__(self, image_x, image_y):
@@ -20,6 +36,13 @@ class TestData(object):
         signal = self.sublattice.get_model_image(
                 image_shape=self.data_extent, progressbar=False)
         return signal
+
+    @property
+    def gaussian_list(self):
+        gaussian_list = []
+        for atom in self.sublattice.atom_list:
+            gaussian_list.append(atom.as_gaussian())
+        return gaussian_list
 
     def add_atom(self, x, y, sigma_x=1, sigma_y=1, amplitude=1, rotation=0):
         atom = Atom_Position(
