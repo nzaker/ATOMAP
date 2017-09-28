@@ -487,9 +487,8 @@ class Sublattice():
         Example
         -------
         >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> for atom in sublattice.atom_list:
         ...     atom.sigma_x, atom.sigma_y = 0.5*random()+1, 0.5*random()+1
         >>> sublattice.construct_zone_axes()
@@ -821,10 +820,8 @@ class Sublattice():
 
         Examples
         --------
-        >>> import numpy as np
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> sublattice.construct_zone_axes()
         >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions()
         >>> import matplotlib.pyplot as plt
@@ -882,9 +879,8 @@ class Sublattice():
         Examples
         --------
         >>> import numpy as np
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions_all()
         >>> mask = np.sqrt(x_pos**2 + y_pos**2) < 3
         >>> import matplotlib.pyplot as plt
@@ -1094,10 +1090,8 @@ class Sublattice():
 
         Examples
         --------
-        >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> sublattice.construct_zone_axes()
         >>> zone_vector = sublattice.zones_axis_average_distances[0]
         >>> atom_planes = sublattice.atom_planes_by_zone_vector[zone_vector]
@@ -1147,10 +1141,8 @@ class Sublattice():
         Getting a list signals showing the atomic planes for all the
         zone vectors
 
-        >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> sublattice.construct_zone_axes()
         >>> s = sublattice.get_all_atom_planes_by_zone_vector()
         >>> s.plot()
@@ -1163,7 +1155,8 @@ class Sublattice():
 
         Different image
 
-        >>> im = random((9., 9))
+        >>> from numpy.random import random
+        >>> im = random((9, 9))
         >>> s = sublattice.get_all_atom_planes_by_zone_vector(image=im)
         >>> s.plot()
         """
@@ -1223,10 +1216,8 @@ class Sublattice():
 
         Examples
         --------
-        >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> sublattice.construct_zone_axes()
         >>> s = sublattice.get_atom_list_on_image()
         >>> s.plot()
@@ -1313,10 +1304,8 @@ class Sublattice():
 
         Examples
         --------
-        >>> import numpy as np
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> for atom in sublattice.atom_list:
         ...     atom.sigma_x, atom.sigma_y = 1., 1.2
         >>> s = sublattice.get_ellipticity_vector(vector_scale=20)
@@ -1448,9 +1437,8 @@ class Sublattice():
         Examples
         --------
         >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> for atom in sublattice.atom_list:
         ...     atom.sigma_x, atom.sigma_y = 0.5*random()+1, 0.5*random()+1
         >>> s_elli = sublattice.get_ellipticity_map()
@@ -1510,9 +1498,8 @@ class Sublattice():
         Example
         -------
         >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> for atom in sublattice.atom_list:
         ...     atom.sigma_x, atom.sigma_y = 0.5*random()+1, 0.5*random()+1
         >>> sublattice.construct_zone_axes()
@@ -1703,7 +1690,7 @@ class Sublattice():
         Returns
         -------
         signal, HyperSpy 2D signal
-            
+
         """
         if image_shape is None:
             model_image = np.zeros(self.image.shape)
@@ -1838,10 +1825,8 @@ class Sublattice():
 
         Example
         -------
-        >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> fp = sublattice._get_fingerprint()
         >>> fp_distance = fp.fingerprint_
         >>> fp_vector = fp.cluster_centers_
@@ -1877,10 +1862,8 @@ class Sublattice():
 
         Example
         -------
-        >>> import numpy as np
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> fp = sublattice.get_fingerprint_2d()
         >>> import matplotlib.pyplot as plt
         >>> cax = plt.scatter(fp[:,0], fp[:,1], marker='o')
@@ -1894,10 +1877,8 @@ class Sublattice():
 
         Example
         -------
-        >>> import numpy as np
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> from atomap.api import get_simple_cubic_sublattice
+        >>> sublattice = get_simple_cubic_sublattice()
         >>> fp = sublattice.get_fingerprint_1d()
         >>> import matplotlib.pyplot as plt
         >>> cax = plt.plot(fp, marker='o')
