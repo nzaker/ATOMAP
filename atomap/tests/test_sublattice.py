@@ -284,8 +284,8 @@ class test_sublattice_get_model_image(unittest.TestCase):
     def setUp(self):
         image_data = np.random.random(size=(100, 100))
         position_list = []
-        for x in range(10, 100, 5):
-            for y in range(10, 100, 5):
+        for x in range(5, 100, 5):
+            for y in range(5, 100, 5):
                 position_list.append([x, y])
         sublattice = Sublattice(np.array(position_list), image_data)
         self.sublattice = sublattice
@@ -293,6 +293,31 @@ class test_sublattice_get_model_image(unittest.TestCase):
     def test_simple(self):
         sublattice = self.sublattice
         sublattice.get_model_image()
+
+    def test_image_shape_default(self):
+        sublattice = self.sublattice
+        s = sublattice.get_model_image()
+        self.assertEqual(s.data.shape, sublattice.image.shape)
+
+    def test_image_shape_small(self):
+        sublattice = self.sublattice
+        s = sublattice.get_model_image(image_shape=(10, 10))
+        self.assertEqual(s.data.shape, (10, 10))
+
+    def test_image_shape_large(self):
+        sublattice = self.sublattice
+        s = sublattice.get_model_image(image_shape=(1000, 1000))
+        self.assertEqual(s.data.shape, (1000, 1000))
+
+    def test_image_shape_rectangle_1(self):
+        sublattice = self.sublattice
+        s = sublattice.get_model_image(image_shape=(100, 200))
+        self.assertEqual(s.data.shape, (100, 200))
+
+    def test_image_shape_rectangle_2(self):
+        sublattice = self.sublattice
+        s = sublattice.get_model_image(image_shape=(200, 100))
+        self.assertEqual(s.data.shape, (200, 100))
 
 
 class test_get_position_history(unittest.TestCase):
