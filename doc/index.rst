@@ -55,8 +55,8 @@ Contents on this webpage
    single_sublattice_no_atom_planes
    structures_without_config_files
    nanoparticle_example
+   make_testdata
    api_documentation
-
 
 * :ref:`genindex`
 * :ref:`modindex`
