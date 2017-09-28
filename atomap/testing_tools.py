@@ -14,6 +14,7 @@ def get_simple_cubic_signal():
     simple_cubic.add_atom_list(x.flatten(), y.flatten(), sigma_x=3, sigma_y=3)
     return simple_cubic.signal
 
+
 def get_simple_cubic_sublattice():
     simple_cubic = TestData(300, 300)
     x, y = np.mgrid[10:290:15j, 10:290:15j]
@@ -27,6 +28,47 @@ def get_simple_cubic_sublattice():
 class TestData(object):
 
     def __init__(self, image_x, image_y):
+        """
+        Class for generating test datasets of atomic resolution
+        STEM images.
+
+        Parameters
+        ----------
+        image_x, image_y : int
+            Size of the image data.
+
+        Attributes
+        ----------
+        signal : HyperSpy 2D Signal
+        gaussian_list : list of 2D Gaussians objects
+
+        Examples
+        --------
+        >>> from atomap.testing_tools import TestData
+        >>> test_data = TestData(200, 200)
+        >>> test_data.add_atom(x=10, y=20)
+        >>> test_data.signal.plot()
+
+        Adding many atoms
+
+        >>> test_data = TestData(200, 200)
+        >>> import numpy as np
+        >>> x, y = np.mgrid[0:200:10j, 0:200:10j]
+        >>> x, y = x.flatten(), y.flatten()
+        >>> test_data.add_atom_list(x, y)
+        >>> test_data.signal.plot()
+
+        Adding many atoms with different parameters
+
+        >>> test_data = TestData(200, 200)
+        >>> x, y = np.mgrid[0:200:10j, 0:200:10j]
+        >>> x, y = x.flatten(), y.flatten()
+        >>> sx, sy = np.random.random(len(x)), np.random.random(len(x))
+        >>> A, r = np.random.random(len(x))*10, np.random.random(len(x))*3.14
+        >>> test_data.add_atom_list(x, y, sigma_x=sx, sigma_y=sy,
+        ...         amplitude=A, rotation=r)
+        >>> test_data.signal.plot()
+        """
         self.data_extent = (image_x, image_y)
         self.sublattice = Sublattice([], None)
         self.sublattice.atom_list = []
@@ -55,6 +97,8 @@ class TestData(object):
         """
         Add several atoms.
 
+        Parameters
+        ----------
         x, y : iterable
             Position of the atoms. Must be iterable, and have the same size.
         sigma_x, sigma_y : number or iterable, default 1
@@ -69,6 +113,17 @@ class TestData(object):
             If number: all the atoms will have the same rotation.
             Use iterable for setting different rotation for different atoms.
             If iterable: must be same length as x and y iterables.
+
+        Examples
+        --------
+        >>> from atomap.testing_tools import TestData
+        >>> test_data = TestData(200, 200)
+        >>> import numpy as np
+        >>> x, y = np.mgrid[0:200:10j, 0:200:10j]
+        >>> x, y = x.flatten(), y.flatten()
+        >>> test_data.add_atom_list(x, y)
+        >>> test_data.signal.plot()
+
         """
         if len(x) != len(y):
             raise ValueError("x and y needs to have the same length")
