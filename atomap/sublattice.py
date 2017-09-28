@@ -1708,7 +1708,7 @@ class Sublattice():
         if image_shape is None:
             model_image = np.zeros(self.image.shape)
         else:
-            model_image = np.zeros(image_shape)
+            model_image = np.zeros(image_shape[::-1])
         X, Y = np.meshgrid(np.arange(
             model_image.shape[1]), np.arange(model_image.shape[0]))
 
