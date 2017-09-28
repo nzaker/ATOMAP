@@ -459,17 +459,17 @@ class Atom_Position:
             distance_list.append(dist)
         return(distance_list)
 
-    def find_intensity_inside_mask(self,image_data,radius=4):
+    def find_atom_intensity_inside_mask(self,image_data,radius):
         """
-        Finds the average intensity inside a round area with a radius in
+        Finds the average intensity inside a "round" area with a radius in
         pixels. The outside of the area is covered by a mask. The average
-        intensity is saved to self.intensity_mask
+        intensity is saved to self.intensity_mask. The centerpoint of the
+        area is the atom center point.
         """
+        if radius is None:
+            radius = 1 
         centerX, centerY = self.pixel_x, self.pixel_y
         mask = _make_circular_mask(centerY, centerX, image_data.shape[0],
                 image_data.shape[1], radius)
-        x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
-        mask_crop = mask[x0:x1, y0:y1].astype('bool')
-        data_mask_crop = (image_data*mask)[x0:x1, y0:y1]
-        self.intensity_mask = np.average(data_mask_crop)
-
+        data_mask = image_data*mask
+        self.intensity_mask = np.mean(data_mask[np.nonzero(mask)])

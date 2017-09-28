@@ -1479,6 +1479,47 @@ class Sublattice():
             atom_plane,
             invert_line_profile=False,
             interpolate_value=50):
+        """
+        Projects the distance between each atom and the next monolayer along
+        the zone vector, onto an atom plane given by atom_plane. The
+        monolayers belong to the zone vector zone_vector. For more information
+        on the definition of monolayer distance, check
+        sublattice.get_monolayer_distance_list_from_zone_vector()
+
+        Parameters
+        ----------
+
+        zone_vector : tuple
+            Zone vector for the monolayers for which the separation will be
+            found
+        atom_plane : Atomap AtomPlane object
+            Passed to get_monolayer_distance_list_from_zone_vector(). The
+            plane the data is projected onto.
+        invert_line_profile : bool, optional, default False
+            Passed to _get_property_line_profile(). If True, will invert the
+            x-axis values.
+        interpolate_value : int, default 50
+            Passed to _get_property_line_profile(). The amount of data points
+            between in monolayer, due to HyperSpy signals not supporting
+            non-linear axes.
+
+        Returns
+        -------
+        HyperSpy signal1D
+
+        Example
+        -------
+        >>> from numpy.random import random
+        >>> from atomap.sublattice import Sublattice
+        >>> pos = [[x, y] for x in range(9) for y in range(9)]
+        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> for atom in sublattice.atom_list:
+        ...     atom.sigma_x, atom.sigma_y = 0.5*random()+1, 0.5*random()+1
+        >>> sublattice.construct_zone_axes()
+        >>> zone = sublattice.zones_axis_average_distances[0]
+        >>> plane = sublattice.atom_planes_by_zone_vector[zone][0]
+        >>> s = sublattice.get_monolayer_distance_line_profile(zone,plane)
+        """
         data_list = self.get_monolayer_distance_list_from_zone_vector(
                 zone_vector)
         signal = self._get_property_line_profile(
@@ -1930,12 +1971,12 @@ class Sublattice():
 
         s.add_marker(marker_list, permanent=True, plot_marker=False)
         return(s)
-    
-    def mask_image_around_sublattice(self, image_data, radius=4):
+
+    def mask_image_around_sublattice(self, image_data, radius=1):
         """
         Returns a HyperSpy signal containing a masked image. The mask covers
         the area around each atom position in the sublattice, from a given
-        radius away from the pixel position of the atom. This radius is given
+        radius away from the center position of the atom. This radius is given
         in pixels.
 
         Parameters
@@ -1963,3 +2004,13 @@ class Sublattice():
             mask[np.where(temp_mask)] = True
         s = hs.signals.Signal2D(mask*image_data)
         return(s)
+
+    def find_sublattice_intensity_from_masked_image(self, image_data, radius):
+        """
+        Find the image intensity of each atom in the sublattice by
+        finding the average intensity of the pixels inside an unmasked area.
+        """
+        if image_data is None:
+            image_data = self.original_image
+        for atom in self.atom_list:
+            atom.find_atom_intensity_inside_mask(image_data, radius)
