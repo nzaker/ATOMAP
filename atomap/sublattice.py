@@ -1690,7 +1690,7 @@ class Sublattice():
         Returns
         -------
         signal, HyperSpy 2D signal
-            
+
         """
         if image_shape is None:
             model_image = np.zeros(self.image.shape)
