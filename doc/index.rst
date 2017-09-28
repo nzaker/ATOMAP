@@ -60,7 +60,6 @@ Contents on this webpage
 
    install
    tutorial
-   single_sublattice_no_atom_planes
    structures_without_config_files
    nanoparticle_example
    api_documentation
