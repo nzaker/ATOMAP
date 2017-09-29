@@ -27,7 +27,6 @@ The sublattice of the simple cubic structure can also be generated
 .. code-block:: python
 
     >>> sublattice = am.get_simple_cubic_sublattice()
-    <Sublattice,  (atoms:225,planes:0)>
     
 More advanced datasets can also be created.
 The functionality for generating testdata signals uses the function sublattice.get_model_image.
