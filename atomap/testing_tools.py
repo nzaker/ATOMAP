@@ -79,6 +79,7 @@ class TestData(object):
         >>> test_data.sublattice.get_atom_list_on_image().plot()
         """
         self.data_extent = (image_x, image_y)
+        self._image_noise = False
         self.__sublattice = Sublattice([], None)
         self.__sublattice.atom_list = []
 
@@ -86,6 +87,8 @@ class TestData(object):
     def signal(self):
         signal = self.__sublattice.get_model_image(
                 image_shape=self.data_extent, progressbar=False)
+        if self._image_noise is not False:
+            signal.data += self._image_noise
         return signal
 
     @property
@@ -105,7 +108,7 @@ class TestData(object):
                     rotation=atom.rotation, amplitude=atom.amplitude_gaussian)
             atom_list.append(new_atom)
 
-        sublattice = Sublattice([], self.signal.data) 
+        sublattice = Sublattice([], self.signal.data)
         sublattice.atom_list = atom_list
         return sublattice
 
@@ -198,6 +201,42 @@ class TestData(object):
         for tx, ty, tsigma_x, tsigma_y, tamplitude, trotation in iterator:
             self.add_atom(tx, ty, tsigma_x, tsigma_y, tamplitude, trotation)
 
+    def add_image_noise(self, mu=0, sigma=0.005, only_positive=False):
+        """
+        Add white noise to the image signal. The noise component is Gaussian
+        distributed, with a default expectation value at 0, and a sigma of
+        0.005. If only_positive is set to True, the absolute value of the
+        noise is added to the signal. This can be useful for avoiding negative
+        values in the image signal.
+
+        Parameters
+        ----------
+        mu : int, float
+            The expectation value of the Gaussian distribution, default is 0
+        sigma : int, float
+            The standard deviation of the Gaussian distributon, default
+            is 0.005.
+        only_positive : bool
+            Defalt is False. If True, the absolute value of the noise is added
+            to the image signal.
+        Example
+        -------
+        >>> from atomap.testing_tools import TestData
+        >>> test_data = TestData(300, 300)
+        >>> import numpy as np
+        >>> x, y = np.mgrid[10:290:15j, 10:290:15j]
+        >>> test_data.add_atom_list(x.flatten(), y.flatten(), sigma_x=3,
+        ... sigma_y=3)
+        >>> test_data.add_signal_noise()
+        >>> test_data.signal.plot()
+        """
+        shape = self.signal.axes_manager.shape
+        noise = normal(mu, sigma, shape)
+        if only_positive:
+            self._image_noise = np.absolute(noise)
+        else:
+            self._image_noise = noise
+
 
 def get_test_dumbbell_signal():
     x_list, y_list = [], []
@@ -224,7 +263,7 @@ def make_artifical_atomic_signal(
     ----------
     x, y : 1D list
         x and y positions. The image_pad value will be added
-        to each position, meaning that if a position is 
+        to each position, meaning that if a position is
         x=[10], y=[20], and image_pad=15. The position on the image
         will be x=25, y=35
     sigma_x : 1D list, optional, default 1
@@ -291,7 +330,7 @@ def make_vector_test_gaussian(x, y, standard_deviation=1, n=30):
 
 
 def make_nn_test_dataset(xN=3, yN=3, xS=9, yS=9, std=0.3, n=50):
-    point_list = np.array([[],[]]).T
+    point_list = np.array([[], []]).T
     for ix in range(-xN, xN+1):
         for iy in range(-yN, yN+1):
             if (ix == 0) and (iy == 0):
