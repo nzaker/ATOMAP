@@ -43,23 +43,23 @@ In the IPython terminal:
 
 .. code-block:: python
 
-    >>> mkdir atomap_testing
-    >>> cd atomap_testing
+    >>> mkdir atomap_testing # doctest: +SKIP
+    >>> cd atomap_testing # doctest: +SKIP
 
 Firstly we need to download some test datasets from the Atomap repository:
 
 .. code-block:: python
 
     >>> import urllib.request
-    >>> urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ADF_cropped.hdf5", "test_ADF_cropped.hdf5")
+    >>> filename_adf, client = urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ADF_cropped.hdf5", "test_ADF_cropped.hdf5") 
 
 This will grab a data file with a High Angle Annular Dark Field image of |SrTiO3| projected along the [110] zone axis.
 The file should appear in our current folder:
 
 .. code-block:: python
 
-    >>> ls
-    test_ADF_cropped.hdf5
+    >>> ls # doctest: +SKIP
+    test_ADF_cropped.hdf5 # doctest: +SKIP
 
 Finding the peak separation
 ----------------------------
@@ -71,7 +71,7 @@ Getting this separation is done using the `get_feature_separation` function, whi
 
     >>> import hyperspy.api as hs
     >>> import atomap.api as am
-    >>> s = hs.load("test_ADF_cropped.hdf5")
+    >>> s = hs.load(filename_adf)
     >>> s.change_dtype('float32')
     >>> s_peaks = am.get_feature_separation(s)
     >>> s_peaks.plot()
@@ -121,6 +121,10 @@ a perovskite oxide structure projected along the [110] direction.
 
     >>> process_parameter = am.process_parameters.PerovskiteOxide110()
     >>> atom_lattice = am.make_atom_lattice_from_image(s, process_parameter=process_parameter, pixel_separation=16)
+    1/2
+    2/2
+    1/2
+    2/2
 
 Depending on the size of the dataset, this can take a while. 
 For the test dataset used here it should take about 1 minute.
@@ -158,12 +162,12 @@ the atomic columns:
 
 .. code-block:: python
 
-    >>> sublattice.x_position
-    >>> sublattice.y_position
-    >>> sublattice.sigma_x
-    >>> sublattice.sigma_y
-    >>> sublattice.ellipticity
-    >>> sublattice.rotation
+    >>> x = sublattice.x_position
+    >>> y = sublattice.y_position
+    >>> sigma_x = sublattice.sigma_x
+    >>> sigmal_y = sublattice.sigma_y
+    >>> ellipticity = sublattice.ellipticity
+    >>> rotation = sublattice.rotation
 
 These can be saved in different formats such as Numpy npz file:
 
@@ -193,13 +197,13 @@ These signals can be saved by using the inbuilt `save` function in the signals.
 
 .. code-block:: python
 
-    >>> s_monolayer.save("monolayer_distances.hdf5")
+    >>> s_monolayer.save("monolayer_distances.hdf5",overwrite=True)
 
 The `sublattice` objects also contain a list of all the atomic planes:
 
 .. code-block:: python
 
-    >>> sublattice.atom_plane_list
+    >>> atom_plane_list = sublattice.atom_plane_list
 
 The `atom_plane` objects contain the atomic columns belonging to the same specific plane.
 Atom plane objects are defined by the direction vector parallel to the atoms in the plane, for example (58.81, -41.99).
@@ -207,8 +211,8 @@ These can be accessed by:
 
 .. code-block:: python
 
-    >>> atom_plane = sublattice.atom_plane_list[0]
-    >>> atom_plane.atom_list
+    >>> atom_plane = atom_plane_list[0]
+    >>> atom_list = atom_plane.atom_list
 
 The atom planes can be plotted by using the `get_all_atom_planes_by_zone_vector` function, where the zone vector is changed by using the left-right arrow keys:
 
@@ -225,12 +229,11 @@ For example:
 
 .. code-block:: python
 
-    >>> sublattice.atom_list
     >>> atom_position = sublattice.atom_list[0]
-    >>> atom_position.pixel_x
-    >>> atom_position.pixel_y
-    >>> atom_position.sigma_x
-    >>> atom_position.sigma_y
+    >>> x = atom_position.pixel_x
+    >>> y = atom_position.pixel_y
+    >>> sigma_x = atom_position.sigma_x
+    >>> sigma_y = atom_position.sigma_y
     >>> sublattice.get_atom_list_on_image().plot()
 
 Basic information about the `atom_lattice`, `sublattice`, `atom_plane` and `atom_position` objects can be accessed by simply:
@@ -238,19 +241,19 @@ Basic information about the `atom_lattice`, `sublattice`, `atom_plane` and `atom
 .. code-block:: python
 
     >>> atom_lattice
-    <Atom_Lattice, test_ADF_cropped (sublattice(s): 2)>
+    <Atom_Lattice, signal (sublattice(s): 2)>
     >>> sublattice
-    <Sublattice, test_ADF_cropped.A (atoms:237,planes:7)>
+    <Sublattice, A-cation (atoms:238,planes:6)>
     >>> atom_plane
-    <Atom_Plane, (29.14, -0.18) (atoms:17)>
+    <Atom_Plane, (-0.19, -29.5) (atoms:17)>
     >>> atom_position
-    <Atom_Position,  (x:26.1,y:404.7,sx:4.4,sy:5.1,r:0.2,e:1.2)>
+    <Atom_Position,  (x:322.4,y:498.8,sx:4.4,sy:5.1,r:1.3,e:1.2)>
 
 The `atom_lattice` object with all the atom positions can be saved:
 
 .. code-block:: python
 
-    >>> atom_lattice.save()
+    >>> atom_lattice.save("test_ADF_cropped_atom_lattice.hdf5",overwrite=True)
 
 This will make a HDF5-file in the current working directory.
 The `atom_lattice` object can then be restored using:
@@ -269,12 +272,18 @@ We use the same ADF image as earlier, in addition to an ABF image acquired simul
 
 .. code-block:: python
 
-    >>> urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ADF_cropped.hdf5", "test_ADF_cropped.hdf5")
+    >>> filename_adf, client = urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ADF_cropped.hdf5", "test_ADF_cropped.hdf5")
     >>> s = hs.load("test_ADF_cropped.hdf5")
-    >>> urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ABF_cropped.hdf5", "test_ABF_cropped.hdf5")
-    >>> s_abf = hs.load("test_ABF_cropped.hdf5")
+    >>> filename_abf, client = urllib.request.urlretrieve("https://gitlab.com/atomap/atomap/raw/master/atomap/tests/datasets/test_ABF_cropped.hdf5", "test_ABF_cropped.hdf5")
+    >>> s_abf = hs.load(filename_abf)
     >>> process_parameter = am.process_parameters.PerovskiteOxide110()
     >>> atom_lattice = am.make_atom_lattice_from_image(s, process_parameter=process_parameter, pixel_separation=16, s_image1=s_abf)
+    1/2
+    2/2
+    1/2
+    2/2
+    1/2
+    2/2
     >>> atom_lattice
     <Atom_Lattice, test_ADF_cropped (sublattice(s): 3)>
 
