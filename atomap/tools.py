@@ -898,12 +898,8 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     if method == 'Voronoi':
         if maxRadius=='Auto':
             maxRadius = max(img.shape)
-
         points = np.array((points_y, points_x))
-
-    pointRecord = np.zeros_like(img)
-    distanceLog = np.zeros_like(points[0])
-
+        distanceLog = np.zeros_like(points[0])
 
         for i in range(img.shape[0]):
             for j in range(img.shape[1]):
@@ -919,6 +915,14 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
                     pointRecord[i][j] = 0
                 else:
                     pointRecord[i][j] = minIndex + 1
+
+    elif method == 'Watershed':
+        points = _Make_Mask(img, points_x, points_y)
+        pointRecord = watershed(-img, points)
+
+    else:
+        raise ValueError('Oops! You have asked for an unimplimented method.')
+
     for i in range(points[0].shape[0]):
         mask = i + 1
         currentMask = (pointRecord == mask)
@@ -930,13 +934,12 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
 
 def _Make_Mask(figure, points_x, points_y):
     points = np.array((points_y, points_x))
-    image = np.zeros_like(figure)
     for i, x in enumerate(points):
         for j, y in enumerate(x):
             points[i][j]= int(round(y))
     points = points.T
     points.astype(int)
-    image = np.zeros_like(s.data)
+    image = np.zeros_like(figure)
     for x, i in enumerate(points.astype(int)):
         image[i[0]][i[1]] = x + 1
     return image
