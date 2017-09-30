@@ -176,8 +176,8 @@ Explain why this is done, and that it is best to do it after 3.
 Also explain the effect of missing atoms on this (ref part 1)
     
     >>> sublattice.construct_zone_axes()
-    >>> sublattice
-    <Sublattice,  (atoms:400,planes:4)>
+    >>> sublattice # doctest: +SKIP
+    <Sublattice,  (atoms:400,planes:4)> # doctest: +SKIP
 
 *construct_zone_axes* does what the function name implies.
 The zone axes are needed for the types of analysis explained in :ref:`analysing_atom_lattices`.
