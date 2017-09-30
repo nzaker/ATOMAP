@@ -59,6 +59,9 @@ Contents on this webpage
    :maxdepth: 2
 
    install
+   finding_atom_lattices
+   analysing_atom_lattices
+   automatation
    tutorial
    structures_without_config_files
    nanoparticle_example
