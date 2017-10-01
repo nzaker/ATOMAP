@@ -1,15 +1,19 @@
+import os
 import unittest
 import numpy as np
+from hyperspy.api import load
 from atomap.atom_position import Atom_Position
 from atomap.sublattice import Sublattice
-from atomap.testing_tools import make_artifical_atomic_signal
 from atomap.testing_tools import MakeTestData
 from atomap.atom_finding_refining import (
         _make_mask_from_positions, _crop_mask_slice_indices,
         _find_background_value, _find_median_upper_percentile,
         _make_model_from_atom_list, _fit_atom_positions_with_gaussian_model,
         _atom_to_gaussian_component, _make_circular_mask,
-        fit_atom_positions_gaussian)
+        fit_atom_positions_gaussian, subtract_average_background,
+        do_pca_on_signal, get_atom_positions)
+
+my_path = os.path.dirname(__file__)
 
 
 class test_make_mask_from_positions(unittest.TestCase):
