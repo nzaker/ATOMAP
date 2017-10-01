@@ -550,3 +550,15 @@ class test_sublattice_mask(unittest.TestCase):
         s = sublattice.mask_image_around_sublattice(
             sublattice.image, radius=0)
         self.assertEqual(np.count_nonzero(s.data), len(sublattice.atom_list))
+
+
+class test_sublattice_plot(unittest.TestCase):
+
+    def setUp(self):
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom_list(np.arange(5, 45, 5), np.arange(5, 45, 5))
+        self.sublattice = test_data.sublattice
+
+    def test_plot(self):
+        self.sublattice.plot()
+        self.sublattice.plot(color='green', cmap='viridis')
