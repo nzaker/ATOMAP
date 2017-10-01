@@ -14,16 +14,18 @@ from atomap.testing_tools import make_artifical_atomic_signal
 from atomap.initial_position_finding import (
         find_dumbbell_vector, make_atom_lattice_dumbbell_structure)
 from atomap.atom_finding_refining import get_atom_positions
+import atomap.testing_tools as tt
 from hyperspy.api import load
 
 my_path = os.path.dirname(__file__)
+
 
 class test_create_atom_lattice_object(unittest.TestCase):
 
     def setUp(self):
         atoms_N = 10
-        image_data = np.arange(10000).reshape(100,100)
-        peaks = np.arange(20).reshape(atoms_N,2)
+        image_data = np.arange(10000).reshape(100, 100)
+        peaks = np.arange(20).reshape(atoms_N, 2)
         self.sublattice = Sublattice(
                 peaks,
                 image_data)
@@ -68,3 +70,15 @@ class test_dumbbell_lattice(unittest.TestCase):
     def test_refine_position_gaussian(self):
         atom_lattice = self.atom_lattice
         atom_lattice.refine_position_gaussian()
+
+
+class test_atom_lattice_plot(unittest.TestCase):
+
+    def setUp(self):
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom_list(np.arange(5, 45, 5), np.arange(5, 45, 5))
+        self.atom_lattice = test_data.atom_lattice
+
+    def test_plot(self):
+        self.atom_lattice.plot()
+        self.atom_lattice.plot(markersize=10, cmap='viridis')

@@ -6,6 +6,7 @@ from hyperspy.misc.utils import isiterable
 from atomap.external.gaussian2d import Gaussian2D
 from atomap.sublattice import Sublattice
 from atomap.atom_position import Atom_Position
+from atomap.atom_lattice import Atom_Lattice
 
 
 class MakeTestData(object):
@@ -94,6 +95,13 @@ class MakeTestData(object):
         sublattice = Sublattice([], self.signal.data)
         sublattice.atom_list = atom_list
         return sublattice
+
+    @property
+    def atom_lattice(self):
+        sublattice = self.sublattice
+        atom_lattice = Atom_Lattice(image=sublattice.image,
+                                    sublattice_list=[sublattice])
+        return atom_lattice
 
     def add_atom(self, x, y, sigma_x=1, sigma_y=1, amplitude=1, rotation=0):
         """
