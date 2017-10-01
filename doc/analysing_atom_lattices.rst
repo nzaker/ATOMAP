@@ -41,7 +41,7 @@ Or comma-separated values (CSV) file, which can be opened in spreadsheet softwar
 
 .. code-block:: python
 
-    >>> np.savetxt("datafile.csv", (sublattice.x_position, sublattice.y_position, sublattice.sigma_x, sublattice.sigma_y, sublattice.ellipticity), delimiter=',')
+    >>> np.savetxt("datafile.csv", (sublattice.x_position, sublattice.y_position, sublattice.sigma_x, sublattice.sigma_y, sublattice.ellipticity), delimiter=',') # doctest: +SKIP
 
 Visualize structural properties
 ===============================
