@@ -2033,3 +2033,31 @@ class Sublattice():
         """
         signal = self.get_atom_list_on_image(color=color)
         signal.plot(**kwargs, plot_markers=True)
+
+    def plot_planes(self, add_numbers=True, color='red', **kwargs):
+        """
+        Show the atomic planes for all zone vectors.
+
+        Parameters
+        ----------
+        add_numbers : bool, optional, default True
+            If True, will the number of the atom plane at the end of the
+            atom plane line. Useful for finding the index of the atom plane.
+        color : string, optional, default red
+            The color of the lines and text used to show the atom planes.
+        **kwargs
+            Addition keywords passed to HyperSpy's signal plot function.
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.construct_zone_axes()
+        >>> sublattice.plot_planes()
+        """
+
+        signal = self.get_all_atom_planes_by_zone_vector(
+                      zone_vector_list=None,
+                      add_numbers=add_numbers,
+                      color=color)
+        signal.plot(**kwargs)
