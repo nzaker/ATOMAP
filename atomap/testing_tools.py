@@ -144,7 +144,7 @@ class MakeTestData(object):
             If number: all the atoms will have the same amplitude.
             Use iterable for setting different amplitude for different atoms.
             If iterable: must be same length as x and y iterables.
-        rotation : number or iterable, default 1
+        rotation : number or iterable, default 0
             If number: all the atoms will have the same rotation.
             Use iterable for setting different rotation for different atoms.
             If iterable: must be same length as x and y iterables.
