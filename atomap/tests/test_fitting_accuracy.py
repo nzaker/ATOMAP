@@ -1,23 +1,22 @@
 import unittest
-from atomap.testing_tools import make_artifical_atomic_signal
+import numpy as np
+from atomap.testing_tools import MakeTestData
 from atomap.testing_tools import find_atom_position_match
 from atomap.testing_tools import get_fit_miss_array
 import atomap.api as am
-import numpy as np
 
 
 class test_fitting_accuracy(unittest.TestCase):
 
     def setUp(self):
-        x, y = np.mgrid[0:500:5j, 0:500:5j]
-        x, y = x.flatten(), y.flatten()
+        test_data = MakeTestData(700, 700)
+        x, y = np.mgrid[100:600:5j, 100:600:5j]
         sigma_value = 10
-        sigma = [sigma_value]*len(x)
-        A = [50]*len(x)
-        s, g_list = make_artifical_atomic_signal(
-                x, y, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=100)
-        self.s = s
-        self.g_list = g_list
+        test_data.add_atom_list(
+                x.flatten(), y.flatten(),
+                sigma_x=sigma_value, sigma_y=sigma_value, amplitude=50)
+        self.s = test_data.signal
+        self.g_list = test_data.gaussian_list
         self.sigma_value = sigma_value
 
     def test_center_of_mass(self):

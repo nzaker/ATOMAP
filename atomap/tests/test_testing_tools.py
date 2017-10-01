@@ -152,18 +152,6 @@ class TestMakeTestData(unittest.TestCase):
             self.assertEqual(gaussian.rotation.value, tr)
 
 
-class TestMakeArtificalAtomicSignal(unittest.TestCase):
-    def setUp(self):
-        x, y = mgrid[0:50:5j,0:50:5j]
-        self.x, self.y = x.flatten(), y.flatten()
-
-    def test_running(self):
-        x, y = self.x, self.y
-        signal, gaussian_list = tt.make_artifical_atomic_signal(
-                x=x, y=y)
-        self.assertEqual(len(x), len(gaussian_list))
-
-
 class TestMakeVectorTestGaussian(unittest.TestCase):
     def test_running(self):
         x, y, std, n = 10, 5, 0.5, 5000
