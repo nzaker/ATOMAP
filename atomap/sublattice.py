@@ -1996,9 +1996,9 @@ class Sublattice():
         for atom in self.atom_list:
             atom.find_atom_intensity_inside_mask(image_data, radius)
 
-    def plot(self, color=None, **kwargs):
+    def plot(self, color=None, add_numbers=False, markersize=20, **kwargs):
         """
-        Plot all atom positions on the image data.
+        Plot all atom positions in the sublattice on the image data.
 
         The sublattice.original_image attribute is used as the image.
 
@@ -2007,6 +2007,11 @@ class Sublattice():
         color : string, optional
             Color of the atom positions. If none is specific the value
             set in sublattice._plot_color is used.
+        add_numbers : bool, default False
+            Plot the number of the atom beside each atomic position in the
+            plot. Useful for locating misfitted atoms.
+        markersize : number, default 20
+            Size of the atom position markers
         **kwargs
             Addition keywords passed to HyperSpy's signal plot function.
 
@@ -2028,3 +2033,31 @@ class Sublattice():
         """
         signal = self.get_atom_list_on_image(color=color)
         signal.plot(**kwargs, plot_markers=True)
+
+    def plot_planes(self, add_numbers=True, color='red', **kwargs):
+        """
+        Show the atomic planes for all zone vectors.
+
+        Parameters
+        ----------
+        add_numbers : bool, optional, default True
+            If True, will the number of the atom plane at the end of the
+            atom plane line. Useful for finding the index of the atom plane.
+        color : string, optional, default red
+            The color of the lines and text used to show the atom planes.
+        **kwargs
+            Addition keywords passed to HyperSpy's signal plot function.
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.construct_zone_axes()
+        >>> sublattice.plot_planes()
+        """
+
+        signal = self.get_all_atom_planes_by_zone_vector(
+                      zone_vector_list=None,
+                      add_numbers=add_numbers,
+                      color=color)
+        signal.plot(**kwargs)
