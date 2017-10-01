@@ -98,10 +98,9 @@ class Atom_Lattice():
         Examples
         --------
         >>> from numpy.random import random
-        >>> from atomap.atom_lattice import Atom_Lattice
-        >>> from atomap.api import get_simple_cubic_sublattice
-        >>> sublattice = get_simple_cubic_sublattice()
-        >>> atom_lattice = Atom_Lattice(random((9, 9)), "test", [sublattice])
+        >>> import atomap.api as am
+        >>> sl = am.dummy_data.get_simple_cubic_sublattice()
+        >>> atom_lattice = am.Atom_Lattice(random((9, 9)), "test", [sl])
         >>> atom_lattice.save("test.hdf5", overwrite=True)
 
         Loading the atom lattice:
