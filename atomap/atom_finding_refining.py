@@ -44,9 +44,8 @@ def get_atom_positions(
     Example
     -------
     >>> import numpy as np
-    >>> x, y = np.mgrid[0:150:10j,0:150:10j]
-    >>> from atomap.testing_tools import make_artifical_atomic_signal
-    >>> s = make_artifical_atomic_signal(x.flatten(), y.flatten())[0]
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_simple_cubic_signal()
     >>> from atomap.atom_finding_refining import get_atom_positions
     >>> atom_positions = get_atom_positions(s, 5)
     >>> peak_x = atom_positions[:,0]

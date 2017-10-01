@@ -13,5 +13,8 @@ class test_dummy_data(unittest.TestCase):
     def test_get_two_sublattice_signal(self):
         dd.get_two_sublattice_signal()
 
-    def test_get_simple_heterostructure(self):
-        dd.get_simple_heterostructure()
+    def test_get_simple_heterostructure_signal(self):
+        dd.get_simple_heterostructure_signal()
+
+    def test_get_dumbbell_signal(self):
+        dd.get_dumbbell_signal()
