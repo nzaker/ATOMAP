@@ -267,8 +267,22 @@ Now, the B-columns can be refined without being drowned in the A-column signal.
     >>> sublattice_B.refine_atom_positions_using_center_of_mass()
     >>> sublattice_B.refine_atom_positions_using_2d_gaussian()
     >>> atom_lattice = am.Atom_Lattice(image=s.data, name='test', sublattice_list=[sublattice_A, sublattice_B])
-    >>> atom_lattice.save("atom_lattice.hdf5", overwrite=True)
     >>> atom_lattice.plot()
 
 .. image:: images/finding_atom_lattices/atom_lattice.png
     :align: center
+
+Sublattices can be accessed using `Atom_Lattice.sublattice_list`:
+
+.. code-block:: python
+
+    >>> sublattice_A = atom_lattice.sublattice_list[0]
+
+The `Atom_Lattice` object with all the atom positions can be saved:
+
+.. code-block:: python
+
+    >>> atom_lattice.save("atom_lattice.hdf5", overwrite=True)
+
+This will make a HDF5-file in the current working directory.
+To save single sublattices, initialize an `Atom_Lattice` object with your sublattice as the only sublattice, and save the `Atom_Lattice`.
