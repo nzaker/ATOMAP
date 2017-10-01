@@ -2019,6 +2019,12 @@ class Sublattice():
         Setting color and color map
 
         >>> sublattice.plot(color='green', cmap='viridis')
+
+        See also
+        --------
+        get_atom_list_on_image : get HyperSpy signal with atom positions
+                                 as markers. More customizability.
+
         """
         signal = self.get_atom_list_on_image(color=color)
         signal.plot(**kwargs, plot_markers=True)
