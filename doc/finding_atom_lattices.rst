@@ -141,7 +141,7 @@ Let's see what how the refinement procedure have improved the atom positions.
 
 .. code-block:: python
 
-    >>> sublattice.get_position_history().plot()
+    >>> sublattice.get_position_history().plot() # doctest: +SKIP
 
 Again, navigate through from the initial positions, to the positions after the first and second refinement, in this case the centre of mass and 2D-Gaussian respectively.
 Below, the initial and end position are shown.
@@ -164,8 +164,8 @@ All atoms are in *atom_list*.
 .. code-block:: python
 
     >>> atom_list = sublattice.atom_list
-    >>> atom_list[0]
-    <Atom_Position,  (x:290.2,y:289.9,sx:3.1,sy:3.2,r:0.2,e:1.0)>
+    >>> atom_list[0] # doctest: +SKIP
+    <Atom_Position,  (x:290.2,y:289.9,sx:3.1,sy:3.2,r:0.2,e:1.0)> # doctest: +SKIP
 
 *Sublattice* also holds lists of all the atom position coordinates, ellipticity, the sigma of the Gaussian, etc....
 
