@@ -63,7 +63,6 @@ class Atom_Lattice():
     def get_sublattice_atom_list_on_image(
             self,
             image=None,
-            color='red',
             add_numbers=False,
             markersize=20):
         if image is None:
@@ -112,6 +111,46 @@ class Atom_Lattice():
         if filename is None:
             filename = self.name + "_atom_lattice.hdf5"
         save_atom_lattice_to_hdf5(self, filename=filename, overwrite=overwrite)
+
+    def plot(self,
+             add_numbers=False,
+             markersize=20,
+             **kwargs):
+        """
+        Plot all atom positions for all sub lattices on the image data.
+
+        The Atom_Lattice.image0 is used as the image. For the sublattices,
+        sublattice._plot_color is used as marker color. This color is set
+        when the sublattice is initialized, but it can also be changed.
+
+        Parameters
+        ----------
+        add_numbers : bool, default False
+            Plot the number of the atom beside each atomic position in the
+            plot. Useful for locating misfitted atoms.
+        markersize : number, default 20
+            Size of the atom position markers
+        **kwargs
+            Addition keywords passed to HyperSpy's signal plot function.
+
+        Examples
+        --------
+        >>> import atomap.api as am
+
+        Change sublattice colour
+
+        >>> atom_lattice.sublattice_list[0]._plot_color = 'red'
+
+        See also
+        --------
+        get_sublattice_atom_list_on_image : get HyperSpy signal with atom
+            positions as markers. More customizability.
+
+        """
+        signal = self.get_sublattice_atom_list_on_image(
+            add_numbers=add_numbers,
+            markersize=markersize)
+        signal.plot(**kwargs, plot_markers=True)
 
 
 class Dumbbell_Lattice(Atom_Lattice):

@@ -1996,9 +1996,9 @@ class Sublattice():
         for atom in self.atom_list:
             atom.find_atom_intensity_inside_mask(image_data, radius)
 
-    def plot(self, color=None, **kwargs):
+    def plot(self, color=None, add_numbers=False, markersize=20, **kwargs):
         """
-        Plot all atom positions on the image data.
+        Plot all atom positions in the sublattice on the image data.
 
         The sublattice.original_image attribute is used as the image.
 
@@ -2007,6 +2007,11 @@ class Sublattice():
         color : string, optional
             Color of the atom positions. If none is specific the value
             set in sublattice._plot_color is used.
+        add_numbers : bool, default False
+            Plot the number of the atom beside each atomic position in the
+            plot. Useful for locating misfitted atoms.
+        markersize : number, default 20
+            Size of the atom position markers
         **kwargs
             Addition keywords passed to HyperSpy's signal plot function.
 
