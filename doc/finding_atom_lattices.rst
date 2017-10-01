@@ -59,7 +59,7 @@ You can find the optimal pixel separation by using the Atomap function *get_feat
 
 .. code-block:: python
 
-    >>> s_peaks = am.get_feature_separation(s,separation_range=(2, 20))
+    >>> s_peaks = am.get_feature_separation(s, separation_range=(2, 20))
 
 This function tests the peak finding algorithm for a range of pixel separations.
 The default separation range is 5 to 30.
@@ -71,9 +71,11 @@ Use the left-right arrow keys to navigate through the different minimum feature 
 
     >>> s_peaks.plot()
 
-.. image:: images/finding_atom_lattices/peak_finding_1.png
-    :align: center
+.. image:: images/finding_atom_lattices/peak_finding_1a.png
+    :scale: 50 %
 
+.. image:: images/finding_atom_lattices/peak_finding_1b.png
+    :scale: 50 %
 
 The requirements for the peak separation are:
 
@@ -83,17 +85,24 @@ The requirements for the peak separation are:
 
 With a pixel separation of 2, too many atoms are found. 
 
-.. image:: images/finding_atom_lattices/peak_finding_2.png
-    :align: center
+.. image:: images/finding_atom_lattices/peak_finding_2a.png
+    :scale: 50 %
+
+.. image:: images/finding_atom_lattices/peak_finding_2b.png
+    :scale: 50 %
 
 With a pixel separation of 7, all atoms are identified.
 Often, the program will have difficulties with finding the atoms in the rows at the boundary of the image.
 This does not matter, the important thing is that all atoms in the middle of the image are found.
 
-.. image:: images/finding_atom_lattices/peak_finding_3.png
-    :align: center
+.. image:: images/finding_atom_lattices/peak_finding_3a.png
+    :scale: 50 %
+
+.. image:: images/finding_atom_lattices/peak_finding_3b.png
+    :scale: 50 %
 
 12 is a too large pixel separation, not all atoms in the "centre" of the image are found.
+This will create issues when the zone axes are constructed and atom planes are found (part 4).
 
 2. Generate the initial positions for the atomic columns and initialize a *Sublattice*
 --------------------------------------------------------------------------------------
@@ -105,7 +114,7 @@ The function also allows for pca, background subtraction and normalization of in
 
 .. code-block:: python
 
-    >>> atom_positions = am.get_atom_positions(s,separation=7)
+    >>> atom_positions = am.get_atom_positions(s, separation=7)
 
 *atom_positions* is a list of x and y coordinates for initial atom positions.
 This list will be used to initialize a *Sublattice* object, which will contain all the information about the atoms.
@@ -115,7 +124,7 @@ The *Sublattice* object takes a list of atom positions, and a 2D numpy array rep
 
 .. code-block:: python
 
-    >>> sublattice = am.Sublattice(atom_positions,image=s.data)
+    >>> sublattice = am.Sublattice(atom_positions, image=s.data)
     >>> sublattice
     <Sublattice,  (atoms:400,planes:0)>
 
@@ -142,16 +151,23 @@ Let's see what how the refinement procedure have improved the atom positions.
 Again, navigate through from the initial positions, to the positions after the first and second refinement, in this case the centre of mass and 2D-Gaussian respectively.
 Below, the initial and end position are shown.
 
-.. image:: images/finding_atom_lattices/pos_hist_1.png
-    :align: center
+.. image:: images/finding_atom_lattices/pos_hist_1a.png
+    :scale: 50 %
 
-.. image:: images/finding_atom_lattices/pos_hist_2.png
-    :align: center
+.. image:: images/finding_atom_lattices/pos_hist_1b.png
+    :scale: 50 %
+ 
+.. image:: images/finding_atom_lattices/pos_hist_2a.png
+    :scale: 50 %
+ 
+.. image:: images/finding_atom_lattices/pos_hist_2b.png
+    :scale: 50 %
 
 Atom positions have clearly been improved by the refinement.
 The quality of the fit is seen more clearly when we zoom in on the atoms.
 
 .. image:: images/finding_atom_lattices/pos_hist_2_zoom.png
+    :scale: 50 %
     :align: center
 
 Information on the atoms in a sublattice can always be accessed, as *Sublattice* holds a list of all atom columns (atom positions).
@@ -163,13 +179,12 @@ All atoms are in *atom_list*.
     >>> atom_list[0] # doctest: +SKIP
     <Atom_Position,  (x:290.2,y:289.9,sx:3.1,sy:3.2,r:0.2,e:1.0)> # doctest: +SKIP
 
-*Sublattice* also holds lists of all the atom position coordinates, ellipticity, the sigma of the Gaussian, etc....
-
 4. Construct zone axes
 ----------------------
 
-Explain why this is done, and that it is best to do it after 3.
-Also explain the effect of missing atoms on this (ref part 1)
+Atomap can find atom planes and zone axes in a *Sublattice*.
+The program uses nearest neighbour statistics in real space, and finds translation symmetry. 
+If not all atoms in the interior of the image are found (as in the peak finding in part 2, with the largest feature separation), the atom planes will probably be discontinuous at the "missing atom".
 
 .. code-block:: python
     
@@ -177,28 +192,83 @@ Also explain the effect of missing atoms on this (ref part 1)
     >>> sublattice # doctest: +SKIP
     <Sublattice,  (atoms:400,planes:4)> # doctest: +SKIP
 
-*construct_zone_axes* does what the function name implies.
 The zone axes are needed for the types of analysis explained in :ref:`analysing_atom_lattices`.
-Show zone axes and atom planes (atom numbers).
+Atom planes for the zone axes in the sublattice can easily be plotted.
+
+.. code-block:: python
+
+    >>> sublattice.plot_planes()
+
+.. image:: images/finding_atom_lattices/zone_axes_nav.png
+    :width: 300 px
+
+.. image:: images/finding_atom_lattices/zone_axes_sig.png
+    :width: 300 px
+
+Navigate though the different zone vectors to see the corresponding planes.
 
 Images with more than one sublattice
 ====================================
 
 Often, the imaged crystal structure will have more than one sublattice.
 We will now find the atom positions in an image containing two sublattices, where the atomic columns in one of the sublattices are more intense than in the other.
-Again, we use a dummy dataset generated using *atomap.dummy_data*. 
+Again, we use a dummy dataset generated using *atomap.dummy_data*.
+First, the sublattice with the most intense columns will be found. 
+The best feature separation have been found the same way as for the simple example above, and 15 was found to fit well. 
 
 .. code-block:: python
 
     >>> s = dummy_data.get_two_sublattice_signal()
-    >>> s_peaks = am.get_feature_separation(s)
-    >>> A_positions = am.get_atom_positions(s,separation=14)
-    >>> sublattice_A = am.Sublattice(A_positions,image=s.data)
+    >>> A_positions = am.get_atom_positions(s, separation=15)
+    >>> sublattice_A = am.Sublattice(A_positions, image=s.data, color='r')
     >>> sublattice_A.find_nearest_neighbors()
     >>> sublattice_A.refine_atom_positions_using_center_of_mass()
     >>> sublattice_A.refine_atom_positions_using_2d_gaussian()
     >>> sublattice_A.construct_zone_axes()
-    >>> sublattice_A.get_all_atom_planes_by_zone_vector().plot()
-    
-    
-    
+    >>> sublattice_A.plot()
+    >>> sublattice_A.plot_planes()
+
+.. image:: images/finding_atom_lattices/sublattice_A.png
+    :scale: 50 %
+
+.. image:: images/finding_atom_lattices/sublattice_A_zone1.png
+    :scale: 50 %
+
+The atom positions are shown in the left image, and the atom planes for one zone axis is shown in the right.
+This zone axis has index 1 in the list *sublattice_A.zones_axis_average_distances*.
+Atomic columns belonging to the second, less intense sublattice ("B") are between the "A" atoms in the most intense sublattice.
+Knowing this, the trick to find the initial positions for the "B"-columns is:
+
+.. code-block:: python
+
+    >>> zone_axis_001 = sublattice_A.zones_axis_average_distances[1]
+    >>> B_positions = sublattice_A._find_missing_atoms_from_zone_vector(zone_axis_1)
+
+Explain the function, update with new name
+
+In Atomap, you can now refine the B-positions using an image from which the A-cations are removed.
+
+.. code-block:: python
+
+    >>> from atomap.tools import remove_atoms_from_image_using_2d_gaussian
+    >>> image_without_A = remove_atoms_from_image_using_2d_gaussian(sublattice_A.image, sublattice_A)
+
+.. image:: images/finding_atom_lattices/signal_wo_A.png
+    :scale: 50 %
+    :align: center
+
+This is how the image looks like after the Gaussians fitted to the A-atoms are subtracted from the original image.
+Now, the B-columns can be refined without being drowned in the A-column signal.
+
+.. code-block:: python
+
+    >>> sublattice_B = am.Sublattice(B_positions, image_without_A, color='blue')
+    >>> sublattice_B.construct_zone_axes()
+    >>> sublattice_B.refine_atom_positions_using_center_of_mass()
+    >>> sublattice_B.refine_atom_positions_using_2d_gaussian()
+    >>> atom_lattice = am.Atom_Lattice(image=s.data, name='test', sublattice_list=[sublattice_A, sublattice_B])
+    >>> atom_lattice.save("atom_lattice.hdf5", overwrite=True)
+    >>> atom_lattice.plot()
+
+.. image:: images/finding_atom_lattices/atom_lattice.png
+    :align: center
