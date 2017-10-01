@@ -1995,3 +1995,30 @@ class Sublattice():
             image_data = self.original_image
         for atom in self.atom_list:
             atom.find_atom_intensity_inside_mask(image_data, radius)
+
+    def plot(self, color=None, **kwargs):
+        """
+        Plot all atom positions on the image data.
+
+        The sublattice.original_image attribute is used as the image.
+
+        Parameters
+        ----------
+        color : string, optional
+            Color of the atom positions. If none is specific the value
+            set in sublattice._plot_color is used.
+        **kwargs
+            Addition keywords passed to HyperSpy's signal plot function.
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.plot()
+
+        Setting color and color map
+
+        >>> sublattice.plot(color='green', cmap='viridis')
+        """
+        signal = self.get_atom_list_on_image(color=color)
+        signal.plot(**kwargs, plot_markers=True)
