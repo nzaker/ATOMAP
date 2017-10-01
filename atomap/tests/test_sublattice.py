@@ -562,3 +562,7 @@ class test_sublattice_plot(unittest.TestCase):
     def test_plot(self):
         self.sublattice.plot()
         self.sublattice.plot(color='green', cmap='viridis')
+        
+    def test_plot_planes(self):
+        self.sublattice.construct_zone_axes()
+        self.sublattice.plot_planes(color='green')
