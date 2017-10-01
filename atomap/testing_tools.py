@@ -230,20 +230,6 @@ class MakeTestData(object):
             self._image_noise = noise
 
 
-def get_test_dumbbell_signal():
-    x_list, y_list = [], []
-    for x in range(10, 200, 20):
-        for y in range(10, 200, 20):
-            x_list.append(x)
-            y_list.append(y)
-    for x in range(16, 200, 20):
-        for y in range(10, 200, 20):
-            x_list.append(x)
-            y_list.append(y)
-    s, g_list = make_artifical_atomic_signal(x_list, y_list, image_pad=0)
-    return(s)
-
-
 def make_artifical_atomic_signal(
         x, y, sigma_x=None, sigma_y=None, A=None, rotation=None,
         image_pad=50.):

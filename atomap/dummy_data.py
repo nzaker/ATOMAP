@@ -33,7 +33,7 @@ def get_two_sublattice_signal():
     return test_data.signal
 
 
-def get_simple_heterostructure():
+def get_simple_heterostructure_signal():
     test_data = MakeTestData(400, 400)
     x0, y0 = np.mgrid[10:390:15, 10:200:15]
     test_data.add_atom_list(
@@ -45,4 +45,13 @@ def get_simple_heterostructure():
             x1.flatten(), y1.flatten(), sigma_x=3, sigma_y=3, amplitude=5)
 
     test_data.add_image_noise(mu=0.0, sigma=0.005)
+    return test_data.signal
+
+
+def get_dumbbell_signal():
+    test_data = MakeTestData(200, 200)
+    x0, y0 = np.mgrid[10:200:20, 10:200:20]
+    x1, y1 = np.mgrid[10:200:20, 16:200:20]
+    x, y = np.vstack((x0, x1)).flatten(), np.vstack((y0, y1)).flatten()
+    test_data.add_atom_list(x, y, sigma_x=1, sigma_y=1, amplitude=50)
     return test_data.signal

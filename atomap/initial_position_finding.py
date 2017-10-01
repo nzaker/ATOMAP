@@ -25,9 +25,9 @@ def find_dumbbell_vector(s, separation):
 
     Examples
     --------
+    >>> import atomap.api as am 
     >>> from atomap.initial_position_finding import find_dumbbell_vector
-    >>> from atomap.testing_tools import get_test_dumbbell_signal
-    >>> s = get_test_dumbbell_signal()
+    >>> s = am.dummy_data.get_dumbbell_signal()
     >>> dumbbell_vector = find_dumbbell_vector(s, 4)
     """
     position_list = get_atom_positions(s, separation=separation)
@@ -64,11 +64,12 @@ def _get_dumbbell_arrays(s, position_list, dumbbell_vector):
 
     Examples
     --------
+    >>> import atomap.api as am 
     >>> from atomap.initial_position_finding import find_dumbbell_vector
     >>> from atomap.initial_position_finding import _get_dumbbell_arrays
     >>> from atomap.testing_tools import get_test_dumbbell_signal
     >>> from atomap.atom_finding_refining import get_atom_positions
-    >>> s = get_test_dumbbell_signal()
+    >>> s = am.dummy_data.get_dumbbell_signal()
     >>> position_list = get_atom_positions(s, separation=16)
     >>> dumbbell_vector = find_dumbbell_vector(s, 4)
     >>> d0, d1 = _get_dumbbell_arrays(s, position_list, dumbbell_vector)
@@ -128,11 +129,12 @@ def make_atom_lattice_dumbbell_structure(s, position_list, dumbbell_vector):
 
     Examples
     --------
+    >>> import atomap.api as am 
     >>> from atomap.initial_position_finding import find_dumbbell_vector
     >>> from atomap.initial_position_finding import make_atom_lattice_dumbbell_structure
     >>> from atomap.testing_tools import get_test_dumbbell_signal
     >>> from atomap.atom_finding_refining import get_atom_positions
-    >>> s = get_test_dumbbell_signal()
+    >>> s = am.dummy_data.get_dumbbell_signal()
     >>> position_list = get_atom_positions(s, separation=16)
     >>> dumbbell_vector = find_dumbbell_vector(s, 4)
     >>> dumbbell_lattice = make_atom_lattice_dumbbell_structure(
