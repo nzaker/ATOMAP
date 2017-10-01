@@ -136,19 +136,21 @@ class Atom_Lattice():
         Examples
         --------
         >>> import atomap.api as am
-
-        Change sublattice colour
-
+        >>> import atomap.testing_tools as tt
         >>> test_data = tt.MakeTestData(50, 50)
         >>> test_data.add_atom_list(np.arange(5, 45, 5), np.arange(5, 45, 5))
         >>> atom_lattice = test_data.atom_lattice
-        >>> atom_lattice.sublattice_list[0]._plot_color = 'red'
+        >>> atom_lattice.plot()
+
+        Change sublattice colour and color map
+
+        >>> atom_lattice.sublattice_list[0]._plot_color = 'green'
+        >>> atom_lattice.plot(cmap='viridis')
 
         See also
         --------
         get_sublattice_atom_list_on_image : get HyperSpy signal with atom
             positions as markers. More customizability.
-
         """
         signal = self.get_sublattice_atom_list_on_image(
             add_numbers=add_numbers,
