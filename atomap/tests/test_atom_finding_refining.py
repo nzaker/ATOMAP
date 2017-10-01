@@ -334,3 +334,22 @@ class test_fit_atom_positions_gaussian(unittest.TestCase):
             self.assertAlmostEqual(
                     sublattice.atom_list[atom_index].pixel_y,
                     self.y[atom_index], places=4)
+
+
+class test_get_atom_positions(unittest.TestCase):
+
+    def setUp(self):
+        s_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
+        peak_separation = 0.15
+
+        s_adf = load(s_filename)
+        s_adf.change_dtype('float64')
+        s_adf_modified = subtract_average_background(s_adf)
+        self.s_adf_modified = do_pca_on_signal(s_adf_modified)
+        self.pixel_separation = peak_separation/s_adf.axes_manager[0].scale
+
+    def test_find_number_of_columns(self):
+        peaks = get_atom_positions(
+                self.s_adf_modified,
+                self.pixel_separation)
+        self.assertEqual(len(peaks), 238)
