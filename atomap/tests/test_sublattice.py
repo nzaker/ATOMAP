@@ -562,7 +562,20 @@ class test_sublattice_plot(unittest.TestCase):
     def test_plot(self):
         self.sublattice.plot()
         self.sublattice.plot(color='green', cmap='viridis')
-        
+
+
+class test_plot_planes(unittest.TestCase):
+
+    def setUp(self):
+        image_data = np.random.random(size=(100, 100))
+        position_list = []
+        for x in range(10, 100, 10):
+            for y in range(10, 100, 10):
+                position_list.append([x, y])
+        self.sublattice = Sublattice(np.array(position_list), image_data)
+
     def test_plot_planes(self):
-        self.sublattice.construct_zone_axes()
-        self.sublattice.plot_planes(color='green')
+        sublattice = self.sublattice
+        sublattice.find_nearest_neighbors()
+        sublattice.construct_zone_axes()
+        sublattice.plot_planes(color='green')
