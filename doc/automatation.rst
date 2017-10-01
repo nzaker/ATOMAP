@@ -18,8 +18,8 @@ a perovskite oxide structure projected along the [110] direction.
 
 .. code-block:: python
 
-    >>> process_parameter = am.process_parameters.PerovskiteOxide110()
-    >>> atom_lattice = am.make_atom_lattice_from_image(s, process_parameter=process_parameter, pixel_separation=16)
+    >>> process_parameter = am.process_parameters.PerovskiteOxide110() # doctest: +SKIP
+    >>> atom_lattice = am.make_atom_lattice_from_image(s, process_parameter=process_parameter, pixel_separation=16) # doctest: +SKIP
     1/2
     2/2
     1/2
@@ -44,15 +44,8 @@ For example `get_sublattice_atom_list_on_image` returns a HyperSpy signal which 
 
 .. code-block:: python
 
-    >>> atom_lattice.get_sublattice_atom_list_on_image().plot()
+    >>> atom_lattice.plot() # doctest: +SKIP
 
 .. image:: images/tutorial/atomlattice_plot_atoms.jpg
     :scale: 50 %
     :align: center
-
-Sublattices can be accessed using `atom_lattice.sublattice_list`:
-
-.. code-block:: python
-
-    >>> sublattice = atom_lattice.sublattice_list[0]
-
