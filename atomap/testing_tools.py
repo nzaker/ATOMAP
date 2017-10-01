@@ -8,24 +8,7 @@ from atomap.sublattice import Sublattice
 from atomap.atom_position import Atom_Position
 
 
-def get_simple_cubic_signal():
-    simple_cubic = TestData(300, 300)
-    x, y = np.mgrid[10:290:15j, 10:290:15j]
-    simple_cubic.add_atom_list(x.flatten(), y.flatten(), sigma_x=3, sigma_y=3)
-    return simple_cubic.signal
-
-
-def get_simple_cubic_sublattice():
-    simple_cubic = TestData(300, 300)
-    x, y = np.mgrid[10:290:15j, 10:290:15j]
-    simple_cubic.add_atom_list(x.flatten(), y.flatten(), sigma_x=3, sigma_y=3)
-    sublattice = simple_cubic.sublattice
-    sublattice.image = simple_cubic.signal.data
-    sublattice.original_image = simple_cubic.signal.data
-    return sublattice
-
-
-class TestData(object):
+class MakeTestData(object):
 
     def __init__(self, image_x, image_y):
         """
@@ -44,14 +27,14 @@ class TestData(object):
 
         Examples
         --------
-        >>> from atomap.testing_tools import TestData
-        >>> test_data = TestData(200, 200)
+        >>> from atomap.testing_tools import MakeTestData
+        >>> test_data = MakeTestData(200, 200)
         >>> test_data.add_atom(x=10, y=20)
         >>> test_data.signal.plot()
 
         Adding many atoms
 
-        >>> test_data = TestData(200, 200)
+        >>> test_data = MakeTestData(200, 200)
         >>> import numpy as np
         >>> x, y = np.mgrid[0:200:10j, 0:200:10j]
         >>> x, y = x.flatten(), y.flatten()
@@ -60,7 +43,7 @@ class TestData(object):
 
         Adding many atoms with different parameters
 
-        >>> test_data = TestData(200, 200)
+        >>> test_data = MakeTestData(200, 200)
         >>> x, y = np.mgrid[0:200:10j, 0:200:10j]
         >>> x, y = x.flatten(), y.flatten()
         >>> sx, sy = np.random.random(len(x)), np.random.random(len(x))
@@ -71,7 +54,7 @@ class TestData(object):
 
         The class also generates a sublattice object
 
-        >>> test_data = TestData(200, 200)
+        >>> test_data = MakeTestData(200, 200)
         >>> import numpy as np
         >>> x, y = np.mgrid[0:200:10j, 0:200:10j]
         >>> x, y = x.flatten(), y.flatten()
@@ -126,8 +109,8 @@ class TestData(object):
 
         Examples
         --------
-        >>> from atomap.testing_tools import TestData
-        >>> test_data = TestData(200, 200)
+        >>> from atomap.testing_tools import MakeTestData
+        >>> test_data = MakeTestData(200, 200)
         >>> test_data.add_atom(x=10, y=20)
         >>> test_data.signal.plot()
         """
@@ -160,8 +143,8 @@ class TestData(object):
 
         Examples
         --------
-        >>> from atomap.testing_tools import TestData
-        >>> test_data = TestData(200, 200)
+        >>> from atomap.testing_tools import MakeTestData
+        >>> test_data = MakeTestData(200, 200)
         >>> import numpy as np
         >>> x, y = np.mgrid[0:200:10j, 0:200:10j]
         >>> x, y = x.flatten(), y.flatten()
@@ -219,15 +202,16 @@ class TestData(object):
         only_positive : bool
             Defalt is False. If True, the absolute value of the noise is added
             to the image signal.
+
         Example
         -------
-        >>> from atomap.testing_tools import TestData
-        >>> test_data = TestData(300, 300)
+        >>> from atomap.testing_tools import MakeTestData
+        >>> test_data = MakeTestData(300, 300)
         >>> import numpy as np
         >>> x, y = np.mgrid[10:290:15j, 10:290:15j]
         >>> test_data.add_atom_list(x.flatten(), y.flatten(), sigma_x=3,
         ... sigma_y=3)
-        >>> test_data.add_signal_noise()
+        >>> test_data.add_image_noise()
         >>> test_data.signal.plot()
         """
         shape = self.signal.axes_manager.shape

@@ -3,7 +3,7 @@ import numpy as np
 from atomap.atom_position import Atom_Position
 from atomap.sublattice import Sublattice
 from atomap.testing_tools import make_artifical_atomic_signal
-from atomap.testing_tools import TestData
+from atomap.testing_tools import MakeTestData
 from atomap.atom_finding_refining import (
         _make_mask_from_positions, _crop_mask_slice_indices,
         _find_background_value, _find_median_upper_percentile,
@@ -175,7 +175,7 @@ class test_make_model_from_atom_list(unittest.TestCase):
 class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
 
     def setUp(self):
-        test_data = TestData(100, 100)
+        test_data = MakeTestData(100, 100)
         x, y = np.mgrid[10:90:10j, 10:90:10j]
         x, y = x.flatten(), y.flatten()
         sigma, A = 1, 50
