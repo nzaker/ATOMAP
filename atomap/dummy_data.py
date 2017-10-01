@@ -2,16 +2,18 @@ import numpy as np
 from atomap.testing_tools import MakeTestData
 
 
-def get_simple_cubic_signal():
+def get_simple_cubic_signal(image_noise=False):
     simple_cubic = MakeTestData(300, 300)
-    x, y = np.mgrid[10:290:15j, 10:290:15j]
+    x, y = np.mgrid[10:290:20j, 10:290:20j]
     simple_cubic.add_atom_list(x.flatten(), y.flatten(), sigma_x=3, sigma_y=3)
+    if image_noise:
+        simple_cubic.add_image_noise(mu=0, sigma=0.002)
     return simple_cubic.signal
 
 
 def get_simple_cubic_sublattice():
     simple_cubic = MakeTestData(300, 300)
-    x, y = np.mgrid[10:290:15j, 10:290:15j]
+    x, y = np.mgrid[10:290:20j, 10:290:20j]
     simple_cubic.add_atom_list(x.flatten(), y.flatten(), sigma_x=3, sigma_y=3)
     sublattice = simple_cubic.sublattice
     sublattice.image = simple_cubic.signal.data
