@@ -1,41 +1,12 @@
-test_docstrings:
-    image: ubuntu:latest
+pip_install_unittest_docstring_documentation_coverage:
+    image: ubuntu:rolling
     script:
     - apt-get update -q
-    - apt-get install -qy python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-skimage libgl1-mesa-glx
+    - apt-get install -qy python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-skimage python3-pytest python3-pytest-cov xvfb
     - apt-get install -qy python3-sympy --no-install-recommends
-    - apt-get remove -qy python3-matplotlib
-    - pip3 install --upgrade pip
     - pip3 install --user .
-    - python3 run_doctests.py
-
-pip_install_test_and_coverage:
-    image: ubuntu:latest
-    script: 
-    - apt-get update -q
-    - apt-get install -qy python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-skimage
-    - apt-get install -qy python3-sympy --no-install-recommends
-    - apt-get remove -qy python3-matplotlib
-    - pip3 install --upgrade pip
-    - pip3 install coverage
-    - pip3 install --user .
-    - coverage run --source=atomap --omit=atomap/tests/*,*__init__.py -m unittest discover
-    - coverage report -m
-    - coverage html
-    artifacts:
-        paths:
-        - htmlcov
-
-test_documentation_tests:
-    image: ubuntu:latest
-    script:
-    - apt-get update -q
-    - apt-get install -qy python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-skimage python3-pytest libgl1-mesa-glx xvfb
-    - apt-get install -qy python3-sympy --no-install-recommends
-    - apt-get remove -qy python3-matplotlib
-    - pip3 install --upgrade pip
-    - pip3 install --user .
-    - xvfb-run -a python3 -m pytest --doctest-glob="*.rst" doc/
+    - xvfb-run python3 -m pytest --doctest-modules --cov=atomap atomap/
+    - xvfb-run python3 -m pytest --doctest-glob="*.rst" doc/
 
 anaconda_install_tests:
     image: continuumio/anaconda3
@@ -49,9 +20,9 @@ anaconda_install_tests:
     - python3 -m unittest discover
 
 pages:
-    image: ubuntu:latest
+    image: ubuntu:rolling
     stage: deploy
-    script: 
+    script:
     - apt-get update -q
     - apt-get install -qy python3-sphinx python3-sphinx-rtd-theme python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-traitlets python3-traits python3-natsort python3-sklearn python3-dill python3-ipython-genutils
     - apt-get install -qy python3-sympy --no-install-recommends
