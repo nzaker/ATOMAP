@@ -269,11 +269,11 @@ class test_make_circular_mask(unittest.TestCase):
 class test_fit_atom_positions_gaussian(unittest.TestCase):
 
     def setUp(self):
-        x, y = np.mgrid[0:100:10j, 0:100:10j]
+        test_data = MakeTestData(100, 100)
+        x, y = np.mgrid[5:95:10j, 5:95:10j]
         x, y = x.flatten(), y.flatten()
-        s, g_list = make_artifical_atomic_signal(x, y, image_pad=0)
-        position_list = np.array((x, y)).swapaxes(0, 1)
-        sublattice = Sublattice(position_list, s.data)
+        test_data.add_atom_list(x, y)
+        sublattice = test_data.sublattice
         sublattice.construct_zone_axes()
         self.sublattice = sublattice
         self.x, self.y = x, y
