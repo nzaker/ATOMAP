@@ -139,6 +139,9 @@ class Atom_Lattice():
 
         Change sublattice colour
 
+        >>> test_data = tt.MakeTestData(50, 50)
+        >>> test_data.add_atom_list(np.arange(5, 45, 5), np.arange(5, 45, 5))
+        >>> atom_lattice = test_data.atom_lattice
         >>> atom_lattice.sublattice_list[0]._plot_color = 'red'
 
         See also
