@@ -1,5 +1,3 @@
-import matplotlib
-matplotlib.use('Agg')
 import os
 import tempfile
 import unittest
@@ -7,6 +5,7 @@ import numpy as np
 from atomap.atom_lattice import Atom_Lattice
 from atomap.sublattice import Sublattice
 from atomap.io import load_atom_lattice_from_hdf5
+
 
 class test_atom_lattice_input_output(unittest.TestCase):
 
@@ -102,17 +101,16 @@ class test_atom_lattice_input_output(unittest.TestCase):
         sl0 = atom_lattice_load.sublattice_list[0]
         sl1 = atom_lattice_load.sublattice_list[1]
 
-        self.assertTrue((sl0.x_position==atom0_pos[:,0]).all())
-        self.assertTrue((sl0.y_position==atom0_pos[:,1]).all())
-        self.assertTrue((sl1.x_position==atom1_pos[:,0]).all())
-        self.assertTrue((sl1.y_position==atom1_pos[:,1]).all())
-        self.assertTrue((sl0.sigma_x==atom0_sigma_x).all())
-        self.assertTrue((sl0.sigma_y==atom0_sigma_y).all())
-        self.assertTrue((sl1.sigma_x==atom1_sigma_x).all())
-        self.assertTrue((sl1.sigma_y==atom1_sigma_y).all())
-        self.assertTrue((sl0.rotation==atom0_rot).all())
-        self.assertTrue((sl1.rotation==atom1_rot).all())
-
+        self.assertTrue((sl0.x_position == atom0_pos[:, 0]).all())
+        self.assertTrue((sl0.y_position == atom0_pos[:, 1]).all())
+        self.assertTrue((sl1.x_position == atom1_pos[:, 0]).all())
+        self.assertTrue((sl1.y_position == atom1_pos[:, 1]).all())
+        self.assertTrue((sl0.sigma_x == atom0_sigma_x).all())
+        self.assertTrue((sl0.sigma_y == atom0_sigma_y).all())
+        self.assertTrue((sl1.sigma_x == atom1_sigma_x).all())
+        self.assertTrue((sl1.sigma_y == atom1_sigma_y).all())
+        self.assertTrue((sl0.rotation == atom0_rot).all())
+        self.assertTrue((sl1.rotation == atom1_rot).all())
 
     @unittest.expectedFailure
     def test_save_atom_lattice_already_exist(self):
@@ -123,5 +121,3 @@ class test_atom_lattice_input_output(unittest.TestCase):
         self.atom_lattice.save(
                 filename=save_path)
         tmpdir.cleanup()
-
-

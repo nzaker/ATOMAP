@@ -1,7 +1,5 @@
 import unittest
-import numpy as np
 from atomap.testing_tools import make_artifical_atomic_signal
-from atomap.sublattice import Sublattice
 from atomap.initial_position_finding import (
         find_dumbbell_vector, _get_dumbbell_arrays,
         make_atom_lattice_dumbbell_structure)

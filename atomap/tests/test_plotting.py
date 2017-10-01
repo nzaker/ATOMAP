@@ -1,5 +1,3 @@
-import matplotlib
-matplotlib.use('Agg')
 import unittest
 from atomap.plotting import _make_atom_position_marker_list
 from atomap.atom_position import Atom_Position

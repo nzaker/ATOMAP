@@ -1,5 +1,3 @@
-import matplotlib
-matplotlib.use('Agg')
 import unittest
 from atomap.testing_tools import make_artifical_atomic_signal
 from atomap.testing_tools import find_atom_position_match
@@ -11,7 +9,7 @@ import numpy as np
 class test_fitting_accuracy(unittest.TestCase):
 
     def setUp(self):
-        x, y = np.mgrid[0:500:5j,0:500:5j]
+        x, y = np.mgrid[0:500:5j, 0:500:5j]
         x, y = x.flatten(), y.flatten()
         sigma_value = 10
         sigma = [sigma_value]*len(x)
@@ -38,7 +36,7 @@ class test_fitting_accuracy(unittest.TestCase):
         match_list = find_atom_position_match(
                 g_list, atom_list, scale=sublattice.pixel_size, delta=3)
         fit_miss = get_fit_miss_array(match_list)
-        mean_diff = fit_miss[:,2].mean()
+        mean_diff = fit_miss[:, 2].mean()
         self.assertAlmostEqual(mean_diff, 0., places=4)
 
     def test_gaussian_2d(self):
@@ -53,7 +51,7 @@ class test_fitting_accuracy(unittest.TestCase):
         match_list = find_atom_position_match(
                 g_list, atom_list, scale=sublattice.pixel_size, delta=3)
         fit_miss = get_fit_miss_array(match_list)
-        mean_diff = fit_miss[:,2].mean()
+        mean_diff = fit_miss[:, 2].mean()
         self.assertAlmostEqual(mean_diff, 0., places=7)
         sigma_x_list = []
         sigma_y_list = []
