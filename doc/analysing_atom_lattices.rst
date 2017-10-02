@@ -205,7 +205,7 @@ Angle between atoms
 
 This example shows how the angle between atoms can be visualized.
 :py:meth:`atomap.sublattice.Sublattice.get_atom_angles_from_zone_vector` is used, and this function returns three lists: x- and y- coordinates of the atoms, and a list of the angle
-between two zone axies at each atom.
+between two zone axes at each atom.
 
 .. code-block:: python
 
@@ -235,8 +235,48 @@ Line profiles
 =============
 
 Often it can be a good idea to integrate parts of the image, for example to improve the signal-to-noise ratio or to reduce the information of fewer dimensions.
-This example will introduce how line profiles of properties can be made, by projecting the property onto a specific atom plane.
-The difference between mapping line profiles and maps, is that you need to decide the projection of the line profile.
+This example will introduce how line profiles of properties can be made. 
+
+Explain how projection work, with respect to zone and plane.
+
+.. code-block:: python
+
+    >>> zone = sublattice_A.zones_axis_average_distances[1]
+    >>> plane = sublattice_A.atom_planes_by_zone_vector[zone][4]
+    >>> s_elli_line = sublattice_A.get_ellipticity_line_profile(plane)
+
+.. image:: images/plotting_tutorial/line_ellip.png
+    :scale: 50 %
+
+.. image:: images/plotting_tutorial/line_ellip_plane.png
+    :scale: 50 %
+
+In the above example, `plane` is atom plane number 4 in the right figure.
+This the "last plane" where the atomic columns in `sublattice_A` are circular.
+In plane 5, the columns become elliptical.
+This plane is therefore sent into the function :py:meth:`atomap.sublattice.Sublattice.get_ellipticity_line_profile`, as the definition of where the interface is.
+The values for ellipticity are integrated and averaged in the same direction as the plane (downwards), and plotted in the left figure.
+Average ellipticity is on the y-axis, while the x-axis is the distance from the interface (plane 4).
+The x-axis is inverted, negative values are to the left of the interface and positive values to the right of the interface.
+
+:py:meth:`atomap.sublattice.Sublattice.get_ellipticity_line_profile` calls :py:meth:`atomap.sublattice.Sublattice._get_property_line_profile`,  which takes in 3 lists: x and y coordinates for the atoms, and a list of value for a property (in this case ellipticity).
+It then sorts the atoms after distance from interface.
+The atoms with the same distance from the interface belong to the same plane, parallel to the interface, and the value for a property (such as ellipticity) for these atoms are averaged.
+
+There are also functions to make such line profiles for monolayer separation (:py:meth:`atomap.sublattice.Sublattice.get_monolayer_distance_line_profile`), and "distance difference" (:py:meth:`atomap.sublattice.Sublattice.get_atom_distance_difference_line_profile`).
+These two properties are "directional", which means that the zone axis for the distance measurement must be given in addition to the "interface" plane.
+
+.. code-block:: python
+
+    >>> zone = sublattice_B.zones_axis_average_distances[1]
+    >>> plane = sublattice_B.atom_planes_by_zone_vector[zone][4]
+    >>> s_monolayer_line = sublattice_B.get_monolayer_distance_line_profile(zone,plane)
+
+.. image:: images/plotting_tutorial/line_monolayer.png
+    :scale: 50 %
+    :align: center
+    
+The property of interest here was the separation of monolayers, and the separation between two specific monolayers is plotted at the point between these two monolayers.
 
 Plotting for publication
 ========================
@@ -253,9 +293,9 @@ This makes it quick to load the data when using for example matplotlib to make f
 .. code-block:: python
 
     >>> import numpy as np
-    >>> np.savez("datafile.npz", x=sublattice_A.x_position, y=sublattice_A.y_position)
+    >>> np.savez("datafile.npz", x=sublattice_A.x_position, y=sublattice_A.y_position, e=sublattice_A.ellipticity)
 
-Alternatively, the data can  ve saved in comma-separated values (CSV) file, which can be opened in spreadsheet software:
+Alternatively, the data can be saved in comma-separated values (CSV) file, which can be opened in spreadsheet software:
 
 .. code-block:: python
 
