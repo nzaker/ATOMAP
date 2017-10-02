@@ -18,7 +18,7 @@ from atomap.tools import (
 from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
         _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
-        _make_zone_vector_text_marker_list)
+        _make_zone_vector_text_marker_list, plot_vector_field)
 from atomap.atom_finding_refining import construct_zone_axes_from_sublattice
 from atomap.atom_finding_refining import _make_circular_mask
 
@@ -2061,3 +2061,49 @@ class Sublattice():
                       add_numbers=add_numbers,
                       color=color)
         signal.plot(**kwargs)
+        
+    def plot_ellipticity_vectors(self, save=False):
+        """
+        Make a quiver plot showing the rotation and ellipticity
+        of the sublattice. If the sublattice hasn't been refined with 
+        2D-Gaussians, the value for ellipticity and rotation are default,
+        1 and 0 respectively. When sigma_x and sigma_y are equal (circle)
+        the ellipticity is 1. To better visualize changes in ellipticity, 
+        the 0-point for ellipticity in the plot is set to circular atomic
+        columns.
+        
+        Parameters
+        ----------
+        save : bool
+            If true, the figure is saved as 'vector_field.png'.
+            
+        Examples
+        --------
+        """
+        ellipticity = np.asarray(self.ellipticity) - 1
+        rot = -np.asarray(self.rotation_ellipticity)
+        u_quiver = ellipticity*np.cos(rot)
+        v_quiver = ellipticity*np.sin(rot)
+        u_quiver *= -1
+
+        plot_vector_field(
+                self.x_position, 
+                self.y_position,
+                u_quiver,
+                v_quiver,
+                save=save)
+                
+    def plot_ellipticity_map(self, **kwargs):
+        """
+        Plot the magnitude of the ellipticity.
+        
+        Parameters
+        ----------
+        **kwargs
+            Addition keywords passed to HyperSpy's signal plot function.
+        
+        Examples
+        --------
+        """
+        s_elli = self.get_ellipticity_map()
+        s_elli.plot(**kwargs)
