@@ -8,6 +8,15 @@ pip_install_unittest_docstring_documentation_coverage:
     - xvfb-run python3 -m pytest --doctest-modules --cov=atomap atomap/
     - xvfb-run python3 -m pytest --doctest-glob="*.rst" doc/
 
+style_checks:
+    image: ubuntu:rolling
+    script:
+    - apt-get update -q
+    - apt-get install -qy python3-flake8 python3-pydocstyle
+    - python3 -m flake8 atomap/
+    - python3 -m pydocstyle atomap/
+    allow_failure: true
+
 anaconda_install_tests:
     image: continuumio/anaconda3
     script:
