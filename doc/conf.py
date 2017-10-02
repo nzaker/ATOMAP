@@ -34,6 +34,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.autosectionlabel',
+    'sphinx.ext.imgmath',
 ]
 
 napoleon_numpy_docstring = True
