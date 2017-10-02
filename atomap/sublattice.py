@@ -2034,12 +2034,15 @@ class Sublattice():
         signal = self.get_atom_list_on_image(color=color)
         signal.plot(**kwargs, plot_markers=True)
 
-    def plot_planes(self, add_numbers=True, color='red', **kwargs):
+    def plot_planes(self, image=None, add_numbers=True, color='red', **kwargs):
         """
         Show the atomic planes for all zone vectors.
 
         Parameters
         ----------
+        image : 2D Array, optional
+            If image None, the original image of the sublattice is used as
+            background image.
         add_numbers : bool, optional, default True
             If True, will the number of the atom plane at the end of the
             atom plane line. Useful for finding the index of the atom plane.
@@ -2058,6 +2061,7 @@ class Sublattice():
 
         signal = self.get_all_atom_planes_by_zone_vector(
                       zone_vector_list=None,
+                      image = image,
                       add_numbers=add_numbers,
                       color=color)
         signal.plot(**kwargs)
