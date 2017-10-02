@@ -9,7 +9,7 @@ pip_install_unittest_docstring_documentation_coverage:
     - xvfb-run python3 -m pytest --doctest-glob="*.rst" doc/
 
 style_checks:
-    image: ubuntu:rolling
+    image: debian:sid
     script:
     - apt-get update -q
     - apt-get install -qy python3-flake8 python3-pydocstyle
