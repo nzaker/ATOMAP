@@ -19,7 +19,7 @@ After and fitting a 2D-Gaussian each atomic column a variety of structural infor
 This will be dealt with in the tutorial :ref:`analysing_atom_lattices`.
 
 If want to analyse many images of the same atomic structure, the process can be made more automatic by using process parameters.
-Process parameters are treated in :ref:`automatation`.
+Process parameters are treated in :ref:`automation`.
 
 A simple cubic structure
 ========================

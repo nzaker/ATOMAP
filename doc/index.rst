@@ -62,7 +62,7 @@ Contents on this webpage
    start_atomap
    finding_atom_lattices
    analysing_atom_lattices
-   automatation
+   automation
    nanoparticle_example
    make_testdata
    api_documentation
