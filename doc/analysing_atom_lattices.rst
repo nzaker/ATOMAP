@@ -130,8 +130,7 @@ The ellipticity map shows the magnitude of the ellipticity.
 Values are interpolated, giving a continuous map.
 The sublattice B was generated without any ellipticity, and the image to the right is fairly flat, as expected.
 In sublattice A, a region with elliptical atomic columns is clearly visible.
-The ellipticity also increases from left to right towards a maximum, before it starts to fall again.
-This is perfectly in line with how the dummy image of fantasite has been generated.
+The ellipticity gradient is perfectly in line with how the dummy image of fantasite has been generated.
 Maps gives nice visualization of gradual change.
 
 .. code-block:: python
@@ -154,6 +153,7 @@ Vector plots
 While the ellipticity map nicely visualizes the magnitude (and gradual change) of the ellipticity, it does not show the direction of the ellipse.
 In vector (quiver) plots (:py:meth:`atomap.sublattice.Sublattice.plot_ellipticity_vectors`) both the rotation and magnitude are visualized, through the length and angle of the arrows.
 There is one arrow for each atom position.
+This type of visualization also reveals that the ellipticity of the atomic columns have an alternating directionality.
 
 .. code-block:: python
 
@@ -176,6 +176,7 @@ For example, Atomap has been used to study `oxygen octahedron tilt patterns in p
 In this example, Atomap finds the distance between monolayers.
 "Distance between monolayers" is defined in the below figure (a).
 The distance is measured between an atomic column and the nearest monolayer, as shown in this figure.
+The values for monolayer separation is attributed to the midpoint of the atom and monolayer.
 
 .. image:: images/plotting_tutorial/definition.jpg
     :align: center
@@ -200,6 +201,51 @@ The distance is measured between an atomic column and the nearest monolayer, as 
 The left image shows the monolayer separation for one zone axis, namely the separation between the monolayers drawn up by red lines in the right figure.
 Clearly, the position of the B atomic columns are changed in the middle of the image, where every second monolayer is closer and more far apart from the atom. 
 
+Atom distance difference
+========================
+
+An alternative to plotting the monolayer separation is the difference in distance from an atom to the two neighbouring atoms in the monolayer with :py:meth:`atomap.sublattice.Sublattice.get_atom_distance_difference_map`
+In some cases, this is a more robust way of finding superstructures as ....
+The "distance difference" is defined in the below figure.
+The value of the distance difference is attributed to the position of the middle atom.
+
+.. image:: images/plotting_tutorial/definition2.jpg
+    :align: center
+    :scale: 50 %
+
+The B-sublattice of fantasite has two different domains of structural distortion.
+As seen above, the monolayers in (0.0, -30.0) direction are alternatively closer and more far apart.
+The correspinding distance difference will be the distance difference for atoms in the orthogonal planes (index 0, value (15.0,0.0), shown below).
+
+.. code-block:: python
+
+    >>> zone = sublattice_B.zones_axis_average_distances[0]
+    >>> s_dd = sublattice_B.get_atom_distance_difference_map([zone])
+    >>> s_dd.plot(cmap='viridis')
+    >>> sublattice_B.plot_planes(image=atom_lattice.image0)
+
+.. image:: images/plotting_tutorial/Angle_map_z1.png
+    :scale: 50 %
+
+.. image:: images/plotting_tutorial/sublatticeB_dd_map_0.png
+    :scale: 50 %
+
+To the left the monolayers in which the distance difference is found are shown, and the resulting distance difference to the right.
+
+The second structural domain is found in the vertical planes.
+
+.. code-block:: python
+
+    >>> zone = sublattice_B.zones_axis_average_distances[1]
+    >>> s_dd = sublattice_B.get_atom_distance_difference_map([zone])
+    >>> s_dd.plot(cmap='viridis')
+
+.. image:: images/plotting_tutorial/Angle_map_z2.png
+    :scale: 50 %
+    
+.. image:: images/plotting_tutorial/sublatticeB_dd_map_1.png
+    :scale: 50 %
+
 Angle between atoms
 ===================
 
@@ -215,11 +261,6 @@ between two zone axes at each atom.
     >>> s_angle = sublattice_B._get_property_map(x, y, a)
     >>> s_angle.plot()
 
-.. image:: images/plotting_tutorial/Angle_map_z1.png
-    :scale: 50 %
-
-.. image:: images/plotting_tutorial/Angle_map_z2.png
-    :scale: 50 %
 
 .. image:: images/plotting_tutorial/Angle_map.png
     :scale: 50 %
@@ -237,8 +278,6 @@ Line profiles
 Often it can be a good idea to integrate parts of the image, for example to improve the signal-to-noise ratio or to reduce the information of fewer dimensions.
 This example will introduce how line profiles of properties can be made. 
 
-Explain how projection work, with respect to zone and plane.
-
 .. code-block:: python
 
     >>> zone = sublattice_A.zones_axis_average_distances[1]
@@ -254,7 +293,7 @@ Explain how projection work, with respect to zone and plane.
 In the above example, `plane` is atom plane number 4 in the right figure.
 This the "last plane" where the atomic columns in `sublattice_A` are circular.
 In plane 5, the columns become elliptical.
-This plane is therefore sent into the function :py:meth:`atomap.sublattice.Sublattice.get_ellipticity_line_profile`, as the definition of where the interface is.
+This plane is therefore sent into the function :py:meth:`atomap.sublattice.Sublattice.get_ellipticity_line_profile`, as the definition of where the interface (betwwen two structural domains) is.
 The values for ellipticity are integrated and averaged in the same direction as the plane (downwards), and plotted in the left figure.
 Average ellipticity is on the y-axis, while the x-axis is the distance from the interface (plane 4).
 The x-axis is inverted, negative values are to the left of the interface and positive values to the right of the interface.
@@ -269,7 +308,7 @@ These two properties are "directional", which means that the zone axis for the d
 .. code-block:: python
 
     >>> zone = sublattice_B.zones_axis_average_distances[1]
-    >>> plane = sublattice_B.atom_planes_by_zone_vector[zone][4]
+    >>> plane = sublattice_B.atom_planes_by_zone_vector[zone][0]
     >>> s_monolayer_line = sublattice_B.get_monolayer_distance_line_profile(zone,plane)
 
 .. image:: images/plotting_tutorial/line_monolayer.png
@@ -277,6 +316,18 @@ These two properties are "directional", which means that the zone axis for the d
     :align: center
     
 The property of interest here was the separation of monolayers, and the separation between two specific monolayers is plotted at the point between these two monolayers.
+
+.. code-block:: python
+
+    >>> zone = sublattice_B.zones_axis_average_distances[1]
+    >>> plane = sublattice_B.atom_planes_by_zone_vector[zone][21]
+    >>> s_dd_line = sublattice_B.get_atom_distance_difference_line_profile(zone,plane)
+
+.. image:: images/plotting_tutorial/line_dd.png
+    :scale: 50 %
+    :align: center
+
+Naturally, in these functions any atomic plane can be defined as the interface.
 
 Plotting for publication
 ========================
@@ -307,3 +358,8 @@ Signals can be saved by using the inbuilt `save` function.
 .. code-block:: python
 
     >>> s_monolayer.save("monolayer_distances.hdf5",overwrite=True)
+    
+Matplotlib
+----------
+
+Matplotib pyplot is our favourite plotting tool: gridspec,
