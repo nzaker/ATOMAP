@@ -4,11 +4,11 @@
 Automatation of the analysis
 ============================
 
-If you are about to study many atomic resolution images of the same type of structure, you can save time and effort by using tools in Atomap for automatation, by setting process parameters.
+If you are about to study many atomic resolution images of the same type of structure, you can save time and effort by using tools in Atomap for automation, by setting process parameters.
 :py:mod:`atomap.process_parameters` is a module offering classes of predefined process parameters for some types of structures:
 
 1. Perovskite Oxides (projected along the [110] direction), for all sublattices (A, B and Oxygen)
-2. A Generic strucutre
+2. A Generic structure
 
 This tutorial will first show how the use of these process parameters make the procedure for finding the full atom lattice more automatic.
 Currently, predefined process parameters are available for a limited number of materials and projections.
@@ -17,7 +17,7 @@ The last part of this tutorial aims to show how such parameters can be made for 
 Finding atom lattices with process parameters
 ---------------------------------------------
 
-In this tutorial we will use the predefined process parameter `PerovskiteOxide110`, and a dummy image designed to look like an HAADF iamge of the perovskite SrTiO3.
+In this tutorial we will use the predefined process parameter `PerovskiteOxide110`, and a dummy image designed to look like an HAADF image of the perovskite SrTiO3.
 It contains various parameters and names for processing a perovskite oxide structure projected along the [110] direction.
 The master function :py:meth:`atomap.main.make_atom_lattice_from_image` takes the atomic resolution signal, process parameters and optimal feature separation.
 This means that you probably need to run :py:meth:`atomap.atom_finding_refining.get_feature_separation` and find the best pixel separation first.

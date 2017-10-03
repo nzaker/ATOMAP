@@ -215,7 +215,7 @@ The value of the distance difference is attributed to the position of the middle
 
 The B-sublattice of fantasite has two different domains of structural distortion.
 As seen above, the monolayers in (0.0, -30.0) direction are alternatively closer and more far apart.
-The correspinding distance difference will be the distance difference for atoms in the orthogonal planes (index 0, value (15.0,0.0), shown below).
+The corresponding distance difference will be the distance difference for atoms in the orthogonal planes (index 0, value (15.0,0.0), shown below).
 
 .. code-block:: python
 
