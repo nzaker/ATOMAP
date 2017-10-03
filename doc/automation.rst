@@ -4,10 +4,10 @@
 Automatation of the analysis
 ============================
 
-If you are about to study many atomic resolution images of the same type of structure, you can save time and effort by using tools for automatation in Atomap by setting process parameters.
+If you are about to study many atomic resolution images of the same type of structure, you can save time and effort by using tools in Atomap for automatation, by setting process parameters.
 :py:mod:`atomap.process_parameters` is a module offering classes of predefined process parameters for some types of structures:
 
-1. Perovskite Oxides (110-oriented), for all sublattices (A, B and Oxygen)
+1. Perovskite Oxides (projected along the [110] direction), for all sublattices (A, B and Oxygen)
 2. A Generic strucutre
 
 This tutorial will first show how the use of these process parameters make the procedure for finding the full atom lattice more automatic.
@@ -17,16 +17,21 @@ The last part of this tutorial aims to show how such parameters can be made for 
 Finding atom lattices with process parameters
 ---------------------------------------------
 
-In this tutorial we will use the predefined process parameter `PerovskiteOxide110`.
-Tt contains various parameters and names for processing a perovskite oxide structure projected along the [110] direction.
+In this tutorial we will use the predefined process parameter `PerovskiteOxide110`, and a dummy image designed to look like an HAADF iamge of the perovskite SrTiO3.
+It contains various parameters and names for processing a perovskite oxide structure projected along the [110] direction.
 The master function :py:meth:`atomap.main.make_atom_lattice_from_image` takes the atomic resolution signal, process parameters and optimal feature separation.
 This means that you probably need to run :py:meth:`atomap.atom_finding_refining.get_feature_separation` and find the best pixel separation first.
 
 .. code-block:: python
 
     >>> import atomap.api as am
+    >>> s = am.dummy_data.get_two_sublattice_signal()
     >>> process_parameter = am.process_parameters.PerovskiteOxide110()
-    >>> atom_lattice = am.make_atom_lattice_from_image(s, process_parameter=process_parameter, pixel_separation=16) # doctest: +SKIP
+    >>> atom_lattice = am.make_atom_lattice_from_image(s, process_parameter=process_parameter, pixel_separation=14)
+    1/2
+    2/2
+    1/2
+    2/2
 
 Depending on the size of the dataset, this can take a while. 
 The processing will:
@@ -44,12 +49,12 @@ This returns the `atom_lattice` object, which contains the sublattices of both A
 
 .. code-block:: python
 
-    >>> atom_lattice.plot() # doctest: +SKIP
+    >>> atom_lattice.plot()
 
-.. image:: images/tutorial/atomlattice_plot_atoms.jpg
+.. image:: images/tutorial/atom_lattice.png
     :scale: 50 %
     :align: center
-    
+
 Making process parameters
 -------------------------
 
