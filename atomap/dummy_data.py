@@ -57,6 +57,7 @@ def get_dumbbell_signal():
     x, y = np.vstack((x0, x1)).flatten(), np.vstack((y0, y1)).flatten()
     test_data.add_atom_list(x, y, sigma_x=1, sigma_y=1, amplitude=50)
     return test_data.signal
+
     
 def get_fantasite():
     """
