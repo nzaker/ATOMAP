@@ -237,7 +237,7 @@ The second structural domain is found in the vertical planes.
 .. code-block:: python
 
     >>> zone = sublattice_B.zones_axis_average_distances[1]
-    >>> s_dd = sublattice_B.get_atom_distance_difference_map([zone])
+    >>> s_dd = sublattice_B.get_atom_distance_difference_map([zone],add_zero_value_sublattice=sublattice_A)
     >>> s_dd.plot(cmap='viridis')
 
 .. image:: images/plotting_tutorial/Angle_map_z2.png
