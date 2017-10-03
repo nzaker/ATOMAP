@@ -37,6 +37,7 @@ class Atom_Position:
         More parameters
 
         >>> atom_pos = Atom_Position(10, 5, sigma_x=2, sigma_y=4, rotation=2)
+
         """
         self.pixel_x, self.pixel_y = x, y
         self.sigma_x, self.sigma_y = sigma_x, sigma_y
@@ -126,7 +127,7 @@ class Atom_Position:
 
     def get_angle_between_atoms(self, atom0, atom1=None):
         """
-        Returns the angle between itself and two atoms
+        Return the angle between itself and two atoms
         in radians, or between another atom and the
         horizontal axis.
 
@@ -181,8 +182,9 @@ class Atom_Position:
             image_data,
             slice_size):
         """
-        Return a square slice of the image data, with the
-        atom position in the center.
+        Return a square slice of the image data.
+
+        The atom is in the center of this slice.
 
         Parameters
         ----------
@@ -193,6 +195,7 @@ class Atom_Position:
         Returns
         -------
         2D numpy array
+
         """
         x0 = self.pixel_x - slice_size/2
         x1 = self.pixel_x + slice_size/2
@@ -248,6 +251,7 @@ class Atom_Position:
         Returns
         -------
         Atomap atom_position object
+
         """
         closest_neighbor = 100000000000000000
         for neighbor_atom in self.nearest_neighbor_list:
@@ -261,8 +265,11 @@ class Atom_Position:
             self,
             image_data,
             percent_to_nn=0.40):
-        """ If the Gaussian is centered outside the masked area,
-        this function returns False"""
+        """Find the maximum intensity of the atom.
+
+        The maximum is found within the the distance to the nearest
+        neighbor times percent_to_nn.
+        """
         closest_neighbor = self.get_closest_neighbor()
 
         slice_size = closest_neighbor * percent_to_nn * 2
@@ -281,6 +288,8 @@ class Atom_Position:
             percent_to_nn=0.40,
             centre_free=True):
         """
+        Use 2D Gaussian to refine the parameters of the atom position.
+
         Parameters
         ----------
         image_data : Numpy 2D array
@@ -299,6 +308,7 @@ class Atom_Position:
         centre_free : bool, default True
             If True, the centre parameter will be free, meaning that
             the Gaussian can move.
+
         """
         fit_atom_positions_gaussian(
                 [self],
@@ -423,8 +433,7 @@ class Atom_Position:
             return(previous_atom)
 
     def get_next_atom_in_zone_vector(self, zone_vector):
-        """Get the next atom in the atom plane belonging to
-        zone vector"""
+        """Get the next atom in the atom plane belonging to zone vector."""
         atom_plane = self.get_atomic_plane_from_zone_vector(zone_vector)
         if atom_plane is False:
             return(False)
@@ -465,11 +474,12 @@ class Atom_Position:
         return(distance_list)
 
     def find_atom_intensity_inside_mask(self, image_data, radius):
-        """
-        Finds the average intensity inside a "round" area with a radius in
-        pixels. The outside of the area is covered by a mask. The average
-        intensity is saved to self.intensity_mask. The centerpoint of the
-        area is the atom center point.
+        """Find the average intensity inside a circle.
+
+        The circle is defined by the atom position, and the given
+        radius (in pixels).
+        The outside this area is covered by a mask. The average
+        intensity is saved to self.intensity_mask.
         """
         if radius is None:
             radius = 1
