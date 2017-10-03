@@ -1,5 +1,6 @@
 from hyperspy.misc.utils import isiterable
 
+
 def add_marker(
         self, marker, plot_on_signal=True, plot_marker=True,
         permanent=False, plot_signal=True):
@@ -126,4 +127,3 @@ def add_marker(
             self._plot.signal_plot.ax.hspy_fig._draw_animated()
         if self._plot.navigator_plot:
             self._plot.navigator_plot.ax.hspy_fig._draw_animated()
-

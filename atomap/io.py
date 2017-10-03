@@ -78,7 +78,6 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
             if type(sublattice._plot_color) == bytes:
                 sublattice._plot_color = sublattice._plot_color.decode()
 
-
             if 'pixel_separation' in sublattice_set.attrs.keys():
                 sublattice._pixel_separation = sublattice_set.attrs[
                         'pixel_separation']

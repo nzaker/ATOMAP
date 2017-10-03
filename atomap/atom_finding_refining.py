@@ -92,7 +92,7 @@ def _remove_too_close_atoms(atom_positions, pixel_separation_tolerance):
                         index_list.append(index1)
     new_atom_positions = []
     for index, atom in enumerate(atom_positions):
-        if not index in index_list:
+        if index not in index_list:
             new_atom_positions.append(atom)
     new_atom_positions = np.array(new_atom_positions)
     return(new_atom_positions)
@@ -587,12 +587,12 @@ def _fit_atom_positions_with_gaussian_model(
     --------
     >>> import numpy as np
     >>> from atomap.atom_position import Atom_Position
-    >>> from atomap.atom_finding_refining import _fit_atom_positions_with_gaussian_model
+    >>> import atomap.atom_finding_refining as afr
     >>> atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
     >>> image = np.zeros((9, 9))
     >>> image[2, 2] = 1.
     >>> image[4, 4] = 1.
-    >>> g_list = _fit_atom_positions_with_gaussian_model(
+    >>> g_list = afr._fit_atom_positions_with_gaussian_model(
     ...     atom_list=atom_list, image_data=image, mask_radius=2)
     """
     if (not hasattr(atom_list[0], 'pixel_x')) or hasattr(atom_list, 'pixel_x'):

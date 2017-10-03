@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 import hyperspy.api as hs
 from hyperspy.signals import Signal1D, Signal2D
 
-from atomap.atom_finding_refining import _fit_atom_positions_with_gaussian_model
+from atomap.atom_finding_refining import (
+        _fit_atom_positions_with_gaussian_model)
 from sklearn.cluster import DBSCAN
 
 

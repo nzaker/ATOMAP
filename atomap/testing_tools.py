@@ -1,9 +1,7 @@
 import math
 import numpy as np
 from numpy.random import normal
-from hyperspy.signals import Signal2D
 from hyperspy.misc.utils import isiterable
-from atomap.external.gaussian2d import Gaussian2D
 from atomap.sublattice import Sublattice
 from atomap.atom_position import Atom_Position
 from atomap.atom_lattice import Atom_Lattice

@@ -1,6 +1,5 @@
 import unittest
 import numpy as np
-from numpy import mgrid
 import atomap.testing_tools as tt
 
 
@@ -157,10 +156,10 @@ class TestMakeVectorTestGaussian(unittest.TestCase):
         x, y, std, n = 10, 5, 0.5, 5000
         point_list = tt.make_vector_test_gaussian(
                 x, y, standard_deviation=std, n=n)
-        point_list_meanX = point_list[:,0].mean()
-        point_list_meanY = point_list[:,1].mean()
-        point_list_stdX = point_list[:,0].std()
-        point_list_stdY = point_list[:,1].std()
+        point_list_meanX = point_list[:, 0].mean()
+        point_list_meanY = point_list[:, 1].mean()
+        point_list_stdX = point_list[:, 0].std()
+        point_list_stdY = point_list[:, 1].std()
 
         self.assertAlmostEqual(point_list_meanX, x, places=1)
         self.assertAlmostEqual(point_list_meanY, y, places=1)

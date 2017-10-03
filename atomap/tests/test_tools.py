@@ -3,8 +3,6 @@ from atomap.tools import array2signal1d, array2signal2d, Fingerprinter
 from atomap.tools import remove_atoms_from_image_using_2d_gaussian
 import atomap.testing_tools as tt
 import numpy as np
-from atomap.atom_finding_refining import get_atom_positions
-from atomap.sublattice import Sublattice
 
 
 class TestArray2Signal(unittest.TestCase):

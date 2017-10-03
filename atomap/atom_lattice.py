@@ -1,7 +1,4 @@
-import h5py
-import os
 from tqdm import trange
-import numpy as np
 from atomap.atom_finding_refining import\
         construct_zone_axes_from_sublattice, fit_atom_positions_gaussian
 from atomap.plotting import _make_atom_position_marker_list
@@ -138,6 +135,7 @@ class Atom_Lattice():
         >>> import atomap.api as am
         >>> import atomap.testing_tools as tt
         >>> test_data = tt.MakeTestData(50, 50)
+        >>> import numpy as np
         >>> test_data.add_atom_list(np.arange(5, 45, 5), np.arange(5, 45, 5))
         >>> atom_lattice = test_data.atom_lattice
         >>> atom_lattice.plot()
