@@ -60,37 +60,50 @@ def get_dumbbell_signal():
     
 def get_fantasite():
     """
-    Fantasite is a fantasy structure in which several interesting structural
-    variations occur. It contains two sublattices.
+    Fantasite is a fantastic structure with several interesting structural
+    variations. It contains two sublattices, doimains with elliptical atomic
+    columns and tilt-patterns.
     """
-    test_data = MakeTestData(300, 300)
-    xA0, yA0 = np.mgrid[10:295:20, 10:300:34]
+    test_data = MakeTestData(500, 500)
+    xA0, yA0 = np.mgrid[10:495:15, 10:495:30]
     xA0, yA0 = xA0.flatten(), yA0.flatten()
-    xA1, yA1 = xA0[0:(9*5)], yA0[0:(9*5)]
+    xA1, yA1 = xA0[0:8*17], yA0[0:8*17]
     test_data.add_atom_list(xA1, yA1, sigma_x=3, sigma_y=3, amplitude=10)
     dx = 1
-    for i in range(45, 90, 18):
-        xA2 = xA0[i:i+9] + dx
-        xA3 = xA0[i+9:i+18] - dx
-        yA2, yA3 = yA0[i:i+9], yA0[i+9:i+18]
+    for i in range(8*17, 3*7*17, 2*17):
+        xA2 = xA0[i:i+17] + dx
+        xA3 = xA0[i+17:i+34] - dx
+        yA2, yA3 = yA0[i:i+17], yA0[i+17:i+34]
         test_data.add_atom_list(xA2, yA2, sigma_x=3, sigma_y=3, amplitude=10)
         test_data.add_atom_list(xA3, yA3, sigma_x=3, sigma_y=3, amplitude=10)
-    for i in range(99,135,18):
-        xA4, xA5 = xA0[i:i+9], xA0[i+9:i+18]
-        yA4 = yA0[i:i+9] + dx
-        yA5 = yA0[i+9:i+18] - dx
+    down = True
+    for i in range(3*7*17+17,580,17):
+        xA4, xA5 = xA0[i:i+17:2], xA0[i+1:i+17:2]
+        if down:
+            yA4 = yA0[i:i+17:2] + dx
+            yA5 = yA0[i+1:i+17:2] - dx
+        if not down:
+            yA4 = yA0[i:i+17:2] - dx
+            yA5 = yA0[i+1:i+17:2] + dx
         test_data.add_atom_list(xA4, yA4, sigma_x=3, sigma_y=3, amplitude=10)
         test_data.add_atom_list(xA5, yA5, sigma_x=3, sigma_y=3, amplitude=10)
-
-    xB1, yB1 = np.mgrid[10:295:20, 27:290:34]
-    test_data.add_atom_list(
-                xB1.flatten()[:40], yB1.flatten()[:40],
+        down = not down
+        
+    xB0, yB0 = np.mgrid[10:495:15, 25:495:30]
+    xB0, yB0 = xB0.flatten(), yB0.flatten()
+    test_data.add_atom_list(xB0[0:8*16],yB0[0:8*16],
                 sigma_x=3, sigma_y=3, amplitude=20)
-    xB2, yB2 = xB1.flatten()[40:], yB1.flatten()[40:]
-    sigma_y_list = [3, 3.2, 3.4, 3.6, 3.8, 4, 3.8, 3.6, 3.4, 3.2, 3]
+    xB2, yB2 = xB0[8*16:], yB0[8*16:]
+    sig = np.arange(3,4.1,0.2)
+    sigma_y_list = np.hstack((sig, sig[::-1], sig, sig[::-1],np.full(10,3)))
+    down = True
     for i, x in enumerate(xB2):
-        sigma_y = sigma_y_list[i // 8]
+        rotation = 0.39
+        if down:
+            rotation *= -1
+        sigma_y = sigma_y_list[i // 16]
         test_data.add_atom(x, yB2[i], sigma_x=3, sigma_y=sigma_y, 
-                           amplitude=20, rotation=0.39)
+                           amplitude=20, rotation=rotation)
+        down = not down
     test_data.add_image_noise(mu=0, sigma=0.01)
     return test_data.signal
