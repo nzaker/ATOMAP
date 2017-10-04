@@ -20,6 +20,7 @@ from atomap.plotting import (
         _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
         _make_zone_vector_text_marker_list)
 from atomap.atom_finding_refining import construct_zone_axes_from_sublattice
+from atomap.atom_finding_refining import _make_circular_mask
 
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
@@ -182,6 +183,13 @@ class Sublattice():
         for atom in self.atom_list:
             rotation_ellipticity.append(atom.rotation_ellipticity)
         return(rotation_ellipticity)
+
+    @property
+    def intensity_mask(self):
+        intensity_mask = []
+        for atom in self.atom_list:
+            intensity_mask.append(atom.intensity_mask)
+        return(intensity_mask)
 
     def get_zone_vector_index(self, zone_vector_id):
         """Find zone vector index from zone vector name"""
@@ -479,9 +487,8 @@ class Sublattice():
         Example
         -------
         >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> for atom in sublattice.atom_list:
         ...     atom.sigma_x, atom.sigma_y = 0.5*random()+1, 0.5*random()+1
         >>> sublattice.construct_zone_axes()
@@ -813,10 +820,8 @@ class Sublattice():
 
         Examples
         --------
-        >>> import numpy as np
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> sublattice.construct_zone_axes()
         >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions()
         >>> import matplotlib.pyplot as plt
@@ -874,9 +879,8 @@ class Sublattice():
         Examples
         --------
         >>> import numpy as np
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> x_pos, y_pos = sublattice.get_nearest_neighbor_directions_all()
         >>> mask = np.sqrt(x_pos**2 + y_pos**2) < 3
         >>> import matplotlib.pyplot as plt
@@ -1086,10 +1090,8 @@ class Sublattice():
 
         Examples
         --------
-        >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> sublattice.construct_zone_axes()
         >>> zone_vector = sublattice.zones_axis_average_distances[0]
         >>> atom_planes = sublattice.atom_planes_by_zone_vector[zone_vector]
@@ -1139,10 +1141,8 @@ class Sublattice():
         Getting a list signals showing the atomic planes for all the
         zone vectors
 
-        >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> sublattice.construct_zone_axes()
         >>> s = sublattice.get_all_atom_planes_by_zone_vector()
         >>> s.plot()
@@ -1155,7 +1155,8 @@ class Sublattice():
 
         Different image
 
-        >>> im = random((9., 9))
+        >>> from numpy.random import random
+        >>> im = random((9, 9))
         >>> s = sublattice.get_all_atom_planes_by_zone_vector(image=im)
         >>> s.plot()
         """
@@ -1215,10 +1216,8 @@ class Sublattice():
 
         Examples
         --------
-        >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> sublattice.construct_zone_axes()
         >>> s = sublattice.get_atom_list_on_image()
         >>> s.plot()
@@ -1305,10 +1304,8 @@ class Sublattice():
 
         Examples
         --------
-        >>> import numpy as np
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> for atom in sublattice.atom_list:
         ...     atom.sigma_x, atom.sigma_y = 1., 1.2
         >>> s = sublattice.get_ellipticity_vector(vector_scale=20)
@@ -1440,9 +1437,8 @@ class Sublattice():
         Examples
         --------
         >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> for atom in sublattice.atom_list:
         ...     atom.sigma_x, atom.sigma_y = 0.5*random()+1, 0.5*random()+1
         >>> s_elli = sublattice.get_ellipticity_map()
@@ -1471,6 +1467,46 @@ class Sublattice():
             atom_plane,
             invert_line_profile=False,
             interpolate_value=50):
+        """
+        Projects the distance between each atom and the next monolayer along
+        the zone vector, onto an atom plane given by atom_plane. The
+        monolayers belong to the zone vector zone_vector. For more information
+        on the definition of monolayer distance, check
+        sublattice.get_monolayer_distance_list_from_zone_vector()
+
+        Parameters
+        ----------
+
+        zone_vector : tuple
+            Zone vector for the monolayers for which the separation will be
+            found
+        atom_plane : Atomap AtomPlane object
+            Passed to get_monolayer_distance_list_from_zone_vector(). The
+            plane the data is projected onto.
+        invert_line_profile : bool, optional, default False
+            Passed to _get_property_line_profile(). If True, will invert the
+            x-axis values.
+        interpolate_value : int, default 50
+            Passed to _get_property_line_profile(). The amount of data points
+            between in monolayer, due to HyperSpy signals not supporting
+            non-linear axes.
+
+        Returns
+        -------
+        HyperSpy signal1D
+
+        Example
+        -------
+        >>> from numpy.random import random
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> for atom in sublattice.atom_list:
+        ...     atom.sigma_x, atom.sigma_y = 0.5*random()+1, 0.5*random()+1
+        >>> sublattice.construct_zone_axes()
+        >>> zone = sublattice.zones_axis_average_distances[0]
+        >>> plane = sublattice.atom_planes_by_zone_vector[zone][0]
+        >>> s = sublattice.get_monolayer_distance_line_profile(zone,plane)
+        """
         data_list = self.get_monolayer_distance_list_from_zone_vector(
                 zone_vector)
         signal = self._get_property_line_profile(
@@ -1640,8 +1676,26 @@ class Sublattice():
         signal.metadata.General.title = title
         return signal
 
-    def get_atom_model(self):
-        model_image = np.zeros(self.image.shape)
+    def get_model_image(self, image_shape=None, progressbar=True):
+        """
+        Generate an image of the atomic positions from the
+        atom positions Gaussian parameter's.
+
+        Parameters
+        ----------
+        image_shape : tuple (x, y), optional
+            Size of the image generated. Note that atoms might be
+            outside the image if (x, y) is too small.
+
+        Returns
+        -------
+        signal, HyperSpy 2D signal
+
+        """
+        if image_shape is None:
+            model_image = np.zeros(self.image.shape)
+        else:
+            model_image = np.zeros(image_shape[::-1])
         X, Y = np.meshgrid(np.arange(
             model_image.shape[1]), np.arange(model_image.shape[0]))
 
@@ -1653,7 +1707,7 @@ class Sublattice():
             rotation=1.0,
             A=1.0)
 
-        for atom in tqdm(self.atom_list):
+        for atom in tqdm(self.atom_list, disable=(not progressbar)):
             g.A.value = atom.amplitude_gaussian
             g.centre_x.value = atom.pixel_x
             g.centre_y.value = atom.pixel_y
@@ -1771,10 +1825,8 @@ class Sublattice():
 
         Example
         -------
-        >>> from numpy.random import random
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, random((9, 9)))
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> fp = sublattice._get_fingerprint()
         >>> fp_distance = fp.fingerprint_
         >>> fp_vector = fp.cluster_centers_
@@ -1810,10 +1862,8 @@ class Sublattice():
 
         Example
         -------
-        >>> import numpy as np
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> fp = sublattice.get_fingerprint_2d()
         >>> import matplotlib.pyplot as plt
         >>> cax = plt.scatter(fp[:,0], fp[:,1], marker='o')
@@ -1827,10 +1877,8 @@ class Sublattice():
 
         Example
         -------
-        >>> import numpy as np
-        >>> from atomap.sublattice import Sublattice
-        >>> pos = [[x, y] for x in range(9) for y in range(9)]
-        >>> sublattice = Sublattice(pos, np.random.random((9, 9)))
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> fp = sublattice.get_fingerprint_1d()
         >>> import matplotlib.pyplot as plt
         >>> cax = plt.plot(fp, marker='o')
@@ -1904,3 +1952,112 @@ class Sublattice():
 
         s.add_marker(marker_list, permanent=True, plot_marker=False)
         return(s)
+
+    def mask_image_around_sublattice(self, image_data, radius=1):
+        """
+        Returns a HyperSpy signal containing a masked image. The mask covers
+        the area around each atom position in the sublattice, from a given
+        radius away from the center position of the atom. This radius is given
+        in pixels.
+
+        Parameters
+        ----------
+        image_data : 2-D NumPy array, optional
+            Image data for plotting. If none is given, will use
+            the original_image.
+
+        radius : int, optional
+            The radius in pixels away from the atom centre pixels, determining
+            the area that shall not be masked. The default radius is 3 pixels.
+
+        Returns
+        -------
+        HyperSpy 2D-signal containing the masked image.
+        """
+        if image_data is None:
+            image_data = self.original_image
+        mask = np.full_like(image_data, False)
+        for atom in self.atom_list:
+            centerX, centerY = atom.pixel_x, atom.pixel_y
+            temp_mask = _make_circular_mask(
+                        centerY, centerX, image_data.shape[0],
+                        image_data.shape[1], radius)
+            mask[np.where(temp_mask)] = True
+        s = hs.signals.Signal2D(mask*image_data)
+        return(s)
+
+    def find_sublattice_intensity_from_masked_image(self, image_data, radius):
+        """
+        Find the image intensity of each atom in the sublattice by
+        finding the average intensity of the pixels inside an unmasked area.
+        """
+        if image_data is None:
+            image_data = self.original_image
+        for atom in self.atom_list:
+            atom.find_atom_intensity_inside_mask(image_data, radius)
+
+    def plot(self, color=None, add_numbers=False, markersize=20, **kwargs):
+        """
+        Plot all atom positions in the sublattice on the image data.
+
+        The sublattice.original_image attribute is used as the image.
+
+        Parameters
+        ----------
+        color : string, optional
+            Color of the atom positions. If none is specific the value
+            set in sublattice._plot_color is used.
+        add_numbers : bool, default False
+            Plot the number of the atom beside each atomic position in the
+            plot. Useful for locating misfitted atoms.
+        markersize : number, default 20
+            Size of the atom position markers
+        **kwargs
+            Addition keywords passed to HyperSpy's signal plot function.
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.plot()
+
+        Setting color and color map
+
+        >>> sublattice.plot(color='green', cmap='viridis')
+
+        See also
+        --------
+        get_atom_list_on_image : get HyperSpy signal with atom positions
+                                 as markers. More customizability.
+
+        """
+        signal = self.get_atom_list_on_image(color=color)
+        signal.plot(**kwargs, plot_markers=True)
+
+    def plot_planes(self, add_numbers=True, color='red', **kwargs):
+        """
+        Show the atomic planes for all zone vectors.
+
+        Parameters
+        ----------
+        add_numbers : bool, optional, default True
+            If True, will the number of the atom plane at the end of the
+            atom plane line. Useful for finding the index of the atom plane.
+        color : string, optional, default red
+            The color of the lines and text used to show the atom planes.
+        **kwargs
+            Addition keywords passed to HyperSpy's signal plot function.
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.construct_zone_axes()
+        >>> sublattice.plot_planes()
+        """
+
+        signal = self.get_all_atom_planes_by_zone_vector(
+                      zone_vector_list=None,
+                      add_numbers=add_numbers,
+                      color=color)
+        signal.plot(**kwargs)

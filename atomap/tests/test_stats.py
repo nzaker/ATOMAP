@@ -1,5 +1,3 @@
-import matplotlib
-matplotlib.use('Agg')
 import unittest
 import numpy as np
 from atomap.sublattice import Sublattice
@@ -10,7 +8,6 @@ from atomap.stats import (
         plot_atom_column_histogram_amplitude_gauss2d,
         plot_atom_column_histogram_max_intensity,
         plot_amplitude_sigma_scatter,
-        plot_amplitude_sigma_hist2d,
         get_atom_list_atom_sigma_range,
         )
 
@@ -19,8 +16,8 @@ class test_stats(unittest.TestCase):
 
     def setUp(self):
         self.atoms_N = 10
-        image_data = np.arange(10000).reshape(100,100)
-        peaks = np.arange(20).reshape(self.atoms_N,2)
+        image_data = np.arange(10000).reshape(100, 100)
+        peaks = np.arange(20).reshape(self.atoms_N, 2)
         sublattice = Sublattice(
                 peaks,
                 image_data)

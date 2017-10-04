@@ -8,3 +8,5 @@ atomap.egg-info
 dist
 manifest
 build
+.cache
+.coverage

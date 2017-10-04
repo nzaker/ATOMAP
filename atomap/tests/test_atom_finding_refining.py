@@ -1,14 +1,20 @@
+import os
 import unittest
 import numpy as np
+from hyperspy.api import load
 from atomap.atom_position import Atom_Position
 from atomap.sublattice import Sublattice
-from atomap.testing_tools import make_artifical_atomic_signal
+from atomap.testing_tools import MakeTestData
 from atomap.atom_finding_refining import (
-        _make_mask_from_positions,_crop_mask_slice_indices,
+        _make_mask_from_positions, _crop_mask_slice_indices,
         _find_background_value, _find_median_upper_percentile,
         _make_model_from_atom_list, _fit_atom_positions_with_gaussian_model,
         _atom_to_gaussian_component, _make_circular_mask,
-        fit_atom_positions_gaussian)
+        fit_atom_positions_gaussian, subtract_average_background,
+        do_pca_on_signal, get_atom_positions)
+
+my_path = os.path.dirname(__file__)
+
 
 class test_make_mask_from_positions(unittest.TestCase):
 
@@ -61,7 +67,6 @@ class test_make_mask_from_positions(unittest.TestCase):
         x, y, r = 10, 5, 2
         pos = [[x, y]]
         rad = [r, r]
-        mask = (pos, rad, (40, 40))
         self.assertRaises(
                 ValueError,
                 _make_mask_from_positions,
@@ -174,20 +179,14 @@ class test_make_model_from_atom_list(unittest.TestCase):
 class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
 
     def setUp(self):
-        x_list, y_list = [], []
-        for x in range(10, 100, 10):
-            for y in range(10, 100, 10):
-                x_list.append(x)
-                y_list.append(y)
-        sigma_value = 1
-        sigma = [sigma_value]*len(x_list)
-        A = [50]*len(x_list)
-        s, g_list = make_artifical_atomic_signal(
-                x_list, y_list, sigma_x=sigma, sigma_y=sigma, A=A, image_pad=0)
-        position_list = np.array([x_list, y_list]).T
-        sublattice = Sublattice(np.array(position_list), s.data)
-        sublattice.find_nearest_neighbors()
-        self.sublattice = sublattice
+        test_data = MakeTestData(100, 100)
+        x, y = np.mgrid[10:90:10j, 10:90:10j]
+        x, y = x.flatten(), y.flatten()
+        sigma, A = 1, 50
+        test_data.add_atom_list(
+                x, y, sigma_x=sigma, sigma_y=sigma, amplitude=A)
+        self.sublattice = test_data.sublattice
+        self.sublattice.find_nearest_neighbors()
 
     def test_1_atom(self):
         sublattice = self.sublattice
@@ -213,14 +212,14 @@ class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
     @unittest.expectedFailure
     def test_wrong_input_0(self):
         sublattice = self.sublattice
-        g_list = _fit_atom_positions_with_gaussian_model(
+        _fit_atom_positions_with_gaussian_model(
                 sublattice.atom_list[5],
                 sublattice.image)
 
     @unittest.expectedFailure
     def test_wrong_input_1(self):
         sublattice = self.sublattice
-        g_list = _fit_atom_positions_with_gaussian_model(
+        _fit_atom_positions_with_gaussian_model(
                 [sublattice.atom_list[5:7]],
                 sublattice.image)
 
@@ -248,7 +247,7 @@ class test_make_circular_mask(unittest.TestCase):
         mask = _make_circular_mask(1, 1, imX, imY, 1)
         self.assertEqual(mask.size, imX*imY)
         self.assertEqual(mask.sum(), 5)
-        true_index = [[1, 0], [0, 1], [1, 1],  [2, 1], [1 ,2]]
+        true_index = [[1, 0], [0, 1], [1, 1],  [2, 1], [1, 2]]
         false_index = [[0, 0], [0, 2], [2, 0],  [2, 2]]
         for index in true_index:
             self.assertTrue(mask[index[0], index[1]])
@@ -270,11 +269,11 @@ class test_make_circular_mask(unittest.TestCase):
 class test_fit_atom_positions_gaussian(unittest.TestCase):
 
     def setUp(self):
-        x, y = np.mgrid[0:100:10j,0:100:10j]
+        test_data = MakeTestData(100, 100)
+        x, y = np.mgrid[5:95:10j, 5:95:10j]
         x, y = x.flatten(), y.flatten()
-        s, g_list = make_artifical_atomic_signal(x, y, image_pad=0)
-        position_list = np.array((x, y)).swapaxes(0, 1)
-        sublattice = Sublattice(position_list, s.data)
+        test_data.add_atom_list(x, y)
+        sublattice = test_data.sublattice
         sublattice.construct_zone_axes()
         self.sublattice = sublattice
         self.x, self.y = x, y
@@ -339,3 +338,22 @@ class test_fit_atom_positions_gaussian(unittest.TestCase):
             self.assertAlmostEqual(
                     sublattice.atom_list[atom_index].pixel_y,
                     self.y[atom_index], places=4)
+
+
+class test_get_atom_positions(unittest.TestCase):
+
+    def setUp(self):
+        s_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
+        peak_separation = 0.15
+
+        s_adf = load(s_filename)
+        s_adf.change_dtype('float64')
+        s_adf_modified = subtract_average_background(s_adf)
+        self.s_adf_modified = do_pca_on_signal(s_adf_modified)
+        self.pixel_separation = peak_separation/s_adf.axes_manager[0].scale
+
+    def test_find_number_of_columns(self):
+        peaks = get_atom_positions(
+                self.s_adf_modified,
+                self.pixel_separation)
+        self.assertEqual(len(peaks), 238)

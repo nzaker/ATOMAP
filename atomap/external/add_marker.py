@@ -1,5 +1,6 @@
 from hyperspy.misc.utils import isiterable
 
+
 def add_marker(
         self, marker, plot_on_signal=True, plot_marker=True,
         permanent=False, plot_signal=True):
@@ -29,30 +30,31 @@ def add_marker(
     Examples
     --------
     >>> import scipy.misc
+    >>> import hyperspy.api as hs
     >>> im = hs.signals.Signal2D(scipy.misc.ascent())
-    >>> m = hs.markers.rectangle(x1=150, y1=100, x2=400,
-    >>>                                  y2=400, color='red')
+    >>> m = hs.markers.rectangle(x1=150, y1=100, x2=400, y2=400, color='red')
     >>> im.add_marker(m)
 
     Adding to a 1D signal, where the point will change
     when the navigation index is changed
+    >>> import numpy as np
     >>> s = hs.signals.Signal1D(np.random.random((3, 100)))
     >>> marker = hs.markers.point((19, 10, 60), (0.2, 0.5, 0.9))
     >>> s.add_marker(marker, permanent=True, plot_marker=True)
-    >>> s.plot(plot_markers=True) #doctest: +SKIP
+    >>> s.plot(plot_markers=True)
 
     Add permanent marker
     >>> s = hs.signals.Signal2D(np.random.random((100, 100)))
     >>> marker = hs.markers.point(50, 60)
     >>> s.add_marker(marker, permanent=True, plot_marker=True)
-    >>> s.plot(plot_markers=True) #doctest: +SKIP
+    >>> s.plot(plot_markers=True)
 
     Add permanent marker which changes with navigation position, and
     do not add it to a current plot
     >>> s = hs.signals.Signal2D(np.random.randint(10, size=(3, 100, 100)))
     >>> marker = hs.markers.point((10, 30, 50), (30, 50, 60), color='red')
     >>> s.add_marker(marker, permanent=True, plot_marker=False)
-    >>> s.plot(plot_markers=True) #doctest: +SKIP
+    >>> s.plot(plot_markers=True)
 
     Removing a permanent marker
     >>> s = hs.signals.Signal2D(np.random.randint(10, size=(100, 100)))
@@ -66,8 +68,8 @@ def add_marker(
     >>> s = hs.signals.Signal2D(np.random.randint(10, size=(100, 100)))
     >>> marker_list = []
     >>> for i in range(100):
-    >>>     marker = hs.markers.point(random()*100, random()*100, color='red')
-    >>>     marker_list.append(marker)
+    ...     marker = hs.markers.point(random()*100, random()*100, color='red')
+    ...     marker_list.append(marker)
     >>> s.add_marker(marker_list, permanent=True)
 
     """
@@ -125,4 +127,3 @@ def add_marker(
             self._plot.signal_plot.ax.hspy_fig._draw_animated()
         if self._plot.navigator_plot:
             self._plot.navigator_plot.ax.hspy_fig._draw_animated()
-

@@ -1,12 +1,8 @@
-import matplotlib
-matplotlib.use('Agg')
 import unittest
 from atomap.tools import array2signal1d, array2signal2d, Fingerprinter
 from atomap.tools import remove_atoms_from_image_using_2d_gaussian
 import atomap.testing_tools as tt
 import numpy as np
-from atomap.atom_finding_refining import get_atom_positions
-from atomap.sublattice import Sublattice
 
 
 class TestArray2Signal(unittest.TestCase):
@@ -62,23 +58,17 @@ class TestFingerprinter(unittest.TestCase):
 class test_remove_atoms_from_image_using_2d_gaussian(unittest.TestCase):
 
     def setUp(self):
-        x, y = np.mgrid[0:500:20j,0:500:20j]
+        test_data = tt.MakeTestData(520, 520)
+        x, y = np.mgrid[10:510:8j, 10:510:8j]
         x, y = x.flatten(), y.flatten()
-        s, g_list = tt.make_artifical_atomic_signal(x, y, image_pad=10)
-        atom_positions = get_atom_positions(
-                signal=s,
-                separation=10,
-                threshold_rel=0.02,
-                )
-        sublattice = Sublattice(
-                atom_position_list=atom_positions,
-                image=s.data)
+        test_data.add_atom_list(x, y)
+        sublattice = test_data.sublattice
         sublattice.find_nearest_neighbors()
         self.sublattice = sublattice
 
     def test_running(self):
         sublattice = self.sublattice
-        subtracted_image = remove_atoms_from_image_using_2d_gaussian(
+        remove_atoms_from_image_using_2d_gaussian(
                 sublattice.image,
                 sublattice,
                 percent_to_nn=0.40)

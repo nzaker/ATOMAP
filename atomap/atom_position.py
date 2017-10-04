@@ -5,11 +5,14 @@ from scipy import ndimage
 import math
 from atomap.atom_finding_refining import _make_circular_mask
 from atomap.atom_finding_refining import fit_atom_positions_gaussian
+from atomap.atom_finding_refining import _atom_to_gaussian_component
 
 
 class Atom_Position:
 
-    def __init__(self, x, y, sigma_x=1., sigma_y=1., rotation=0.01):
+    def __init__(
+            self, x, y, sigma_x=1., sigma_y=1., rotation=0.01,
+            amplitude=1.):
         """
         Parameters
         ----------
@@ -19,6 +22,8 @@ class Atom_Position:
         sigma_y : float, optional
         rotation : float, optional
             In radians
+        amplitude : float, optional
+            Amplitude of Gaussian. Stored as amplitude_gaussian attribute.
 
         Attributes
         ----------
@@ -32,6 +37,7 @@ class Atom_Position:
         More parameters
 
         >>> atom_pos = Atom_Position(10, 5, sigma_x=2, sigma_y=4, rotation=2)
+
         """
         self.pixel_x, self.pixel_y = x, y
         self.sigma_x, self.sigma_y = sigma_x, sigma_y
@@ -44,9 +50,10 @@ class Atom_Position:
         self._tag = ''
         self.old_pixel_x_list = []
         self.old_pixel_y_list = []
-        self.amplitude_gaussian = 1.0
+        self.amplitude_gaussian = amplitude
         self._gaussian_fitted = False
         self.amplitude_max_intensity = 1.0
+        self.intensity_mask = 0.
 
     def __repr__(self):
         return '<%s, %s (x:%s,y:%s,sx:%s,sy:%s,r:%s,e:%s)>' % (
@@ -104,6 +111,11 @@ class Atom_Position:
         else:
             return(self.sigma_y/self.sigma_x)
 
+    def as_gaussian(self):
+        g = _atom_to_gaussian_component(self)
+        g.A.value = self.amplitude_gaussian
+        return(g)
+
     def get_pixel_position(self):
         return((self.pixel_x, self.pixel_y))
 
@@ -115,7 +127,7 @@ class Atom_Position:
 
     def get_angle_between_atoms(self, atom0, atom1=None):
         """
-        Returns the angle between itself and two atoms
+        Return the angle between itself and two atoms
         in radians, or between another atom and the
         horizontal axis.
 
@@ -170,8 +182,9 @@ class Atom_Position:
             image_data,
             slice_size):
         """
-        Return a square slice of the image data, with the
-        atom position in the center.
+        Return a square slice of the image data.
+
+        The atom is in the center of this slice.
 
         Parameters
         ----------
@@ -182,6 +195,7 @@ class Atom_Position:
         Returns
         -------
         2D numpy array
+
         """
         x0 = self.pixel_x - slice_size/2
         x1 = self.pixel_x + slice_size/2
@@ -237,6 +251,7 @@ class Atom_Position:
         Returns
         -------
         Atomap atom_position object
+
         """
         closest_neighbor = 100000000000000000
         for neighbor_atom in self.nearest_neighbor_list:
@@ -250,8 +265,11 @@ class Atom_Position:
             self,
             image_data,
             percent_to_nn=0.40):
-        """ If the Gaussian is centered outside the masked area,
-        this function returns False"""
+        """Find the maximum intensity of the atom.
+
+        The maximum is found within the the distance to the nearest
+        neighbor times percent_to_nn.
+        """
         closest_neighbor = self.get_closest_neighbor()
 
         slice_size = closest_neighbor * percent_to_nn * 2
@@ -270,6 +288,8 @@ class Atom_Position:
             percent_to_nn=0.40,
             centre_free=True):
         """
+        Use 2D Gaussian to refine the parameters of the atom position.
+
         Parameters
         ----------
         image_data : Numpy 2D array
@@ -288,6 +308,7 @@ class Atom_Position:
         centre_free : bool, default True
             If True, the centre parameter will be free, meaning that
             the Gaussian can move.
+
         """
         fit_atom_positions_gaussian(
                 [self],
@@ -412,8 +433,7 @@ class Atom_Position:
             return(previous_atom)
 
     def get_next_atom_in_zone_vector(self, zone_vector):
-        """Get the next atom in the atom plane belonging to
-        zone vector"""
+        """Get the next atom in the atom plane belonging to zone vector."""
         atom_plane = self.get_atomic_plane_from_zone_vector(zone_vector)
         if atom_plane is False:
             return(False)
@@ -452,3 +472,20 @@ class Atom_Position:
             dist = math.hypot(x - previous_x, y - previous_y)
             distance_list.append(dist)
         return(distance_list)
+
+    def find_atom_intensity_inside_mask(self, image_data, radius):
+        """Find the average intensity inside a circle.
+
+        The circle is defined by the atom position, and the given
+        radius (in pixels).
+        The outside this area is covered by a mask. The average
+        intensity is saved to self.intensity_mask.
+        """
+        if radius is None:
+            radius = 1
+        centerX, centerY = self.pixel_x, self.pixel_y
+        mask = _make_circular_mask(
+                centerY, centerX,
+                image_data.shape[0], image_data.shape[1], radius)
+        data_mask = image_data*mask
+        self.intensity_mask = np.mean(data_mask[np.nonzero(mask)])

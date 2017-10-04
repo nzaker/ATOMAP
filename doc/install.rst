@@ -14,15 +14,15 @@ To install the requirements in Ubuntu (16.10):
 
 .. code-block:: bash
 
-    $ sudo apt-get install python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-skimage
-    $ sudo apt-get install python3-sympy --no-install-recommends
+    $ sudo apt-get install python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-skimage
+    $ sudo apt-get install python3-sympy --no-install-recommends
     $ pip3 install --user hyperspy[all]
 
 Installing Atomap itself:
 
 .. code-block:: bash
 
-    $ pip3 install --user atomap
+    $ pip3 install --user atomap
 
 `HyperSpy <http://hyperspy.org/>`_ is also included, due to Atomap relying heavily on the modelling functionality in HyperSpy.
 
@@ -78,7 +78,7 @@ In this prompt run:
 
 .. code-block:: bash
 
-    $ pip install atomap
+    $ pip install atomap
 
 
 Development version
@@ -88,11 +88,11 @@ Grab the development version using the version control system git:
 
 .. code-block:: bash
 
-    $ git clone https://gitlab.com/atomap/atomap.git
+    $ git clone https://gitlab.com/atomap/atomap.git
 
 Then install it using pip:
 
 .. code-block:: bash
 
-    $ cd atomap
-    $ pip3 install -e .
+    $ cd atomap
+    $ pip3 install -e .

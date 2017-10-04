@@ -1,7 +1,5 @@
 import os
 import unittest
-import matplotlib
-matplotlib.use('Agg')
 from atomap.main import (
         make_atom_lattice_from_image,
         _get_signal_name)

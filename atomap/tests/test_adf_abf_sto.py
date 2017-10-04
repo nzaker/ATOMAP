@@ -1,5 +1,3 @@
-import matplotlib
-matplotlib.use('Agg')
 import os
 import unittest
 from atomap.atom_finding_refining import\
@@ -34,7 +32,6 @@ class test_adf_abf_sto_autoprocess(unittest.TestCase):
                 my_path, "datasets", "test_ABF_cropped.hdf5")
         s_abf = load(s_abf_filename)
         s_abf.change_dtype('float64')
-        s_abf_modified = subtract_average_background(s_abf)
 
         self.peaks = get_atom_positions(
                 self.s_adf_modified,
@@ -92,5 +89,5 @@ class test_adf_abf_sto_manualprocess(unittest.TestCase):
         sublattice.refine_atom_positions_using_2d_gaussian(
                 sublattice.image, percent_to_nn=0.4)
 
-        atom_lattice = Atom_Lattice(image=s.data, sublattice_list=[sublattice])
+        Atom_Lattice(image=s.data, sublattice_list=[sublattice])
         sublattice.construct_zone_axes()

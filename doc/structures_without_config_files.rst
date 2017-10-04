@@ -22,7 +22,7 @@ The script can be used by navigating to the folder with a IPython terminal, then
 
 .. code-block:: python
 
-    >>> run no_config_parameters.py
+    >>> run no_config_parameters.py # doctest: +SKIP
 
 A more advanced example is found in no_config_parameters_two_sublattices.py,
 which fits two separate sublattices in the same image.

@@ -1,0 +1,59 @@
+import numpy as np
+from atomap.testing_tools import MakeTestData
+
+
+def get_simple_cubic_signal(image_noise=False):
+    simple_cubic = MakeTestData(300, 300)
+    x, y = np.mgrid[10:290:20j, 10:290:20j]
+    simple_cubic.add_atom_list(x.flatten(), y.flatten(), sigma_x=3, sigma_y=3)
+    if image_noise:
+        simple_cubic.add_image_noise(mu=0, sigma=0.002)
+    return simple_cubic.signal
+
+
+def get_simple_cubic_sublattice():
+    simple_cubic = MakeTestData(300, 300)
+    x, y = np.mgrid[10:290:20j, 10:290:20j]
+    simple_cubic.add_atom_list(x.flatten(), y.flatten(), sigma_x=3, sigma_y=3)
+    sublattice = simple_cubic.sublattice
+    sublattice.image = simple_cubic.signal.data
+    sublattice.original_image = simple_cubic.signal.data
+    return sublattice
+
+
+def get_two_sublattice_signal():
+    test_data = MakeTestData(300, 300)
+    x0, y0 = np.mgrid[10:295:20, 10:300:34]
+    test_data.add_atom_list(
+            x0.flatten(), y0.flatten(), sigma_x=3, sigma_y=3, amplitude=20)
+
+    x1, y1 = np.mgrid[10:295:20, 27:290:34]
+    test_data.add_atom_list(
+            x1.flatten(), y1.flatten(), sigma_x=3, sigma_y=3, amplitude=10)
+
+    test_data.add_image_noise(mu=0, sigma=0.01)
+    return test_data.signal
+
+
+def get_simple_heterostructure_signal():
+    test_data = MakeTestData(400, 400)
+    x0, y0 = np.mgrid[10:390:15, 10:200:15]
+    test_data.add_atom_list(
+            x0.flatten(), y0.flatten(), sigma_x=3, sigma_y=3, amplitude=5)
+
+    y0_max = y0.max()
+    x1, y1 = np.mgrid[10:390:15, y0_max+16:395:16]
+    test_data.add_atom_list(
+            x1.flatten(), y1.flatten(), sigma_x=3, sigma_y=3, amplitude=5)
+
+    test_data.add_image_noise(mu=0.0, sigma=0.005)
+    return test_data.signal
+
+
+def get_dumbbell_signal():
+    test_data = MakeTestData(200, 200)
+    x0, y0 = np.mgrid[10:200:20, 10:200:20]
+    x1, y1 = np.mgrid[10:200:20, 16:200:20]
+    x, y = np.vstack((x0, x1)).flatten(), np.vstack((y0, y1)).flatten()
+    test_data.add_atom_list(x, y, sigma_x=1, sigma_y=1, amplitude=50)
+    return test_data.signal

@@ -1,5 +1,3 @@
-import matplotlib
-matplotlib.use('Agg')
 import unittest
 from atomap import process_parameters
 
