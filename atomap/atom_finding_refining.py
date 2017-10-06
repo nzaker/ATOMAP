@@ -488,6 +488,8 @@ def _make_model_from_atom_list(
     -------
     model : HyperSpy model
         Model where the atoms are added as gaussian components.
+    mask : NumPy 2D array
+        The mask from _make_mask_from_positions()
 
     See also
     --------
@@ -501,7 +503,7 @@ def _make_model_from_atom_list(
     >>> from atomap.atom_finding_refining import _make_model_from_atom_list
     >>> atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
     >>> image = np.random.random((100, 100))
-    >>> m = _make_model_from_atom_list(
+    >>> m, mask = _make_model_from_atom_list(
     ...     atom_list=atom_list, image_data=image, mask_radius=3)
     >>> m.fit()
     """
@@ -540,7 +542,7 @@ def _make_model_from_atom_list(
     s.axes_manager[1].offset = x0
     m = s.create_model()
     m.extend(gaussian_list)
-    return(m)
+    return(m,mask)
 
 
 def _fit_atom_positions_with_gaussian_model(
@@ -599,11 +601,11 @@ def _fit_atom_positions_with_gaussian_model(
         raise TypeError(
             "atom_list argument must be a list of Atom_Position objects")
 
-    model = _make_model_from_atom_list(
-            atom_list,
-            image_data,
-            mask_radius=mask_radius,
-            percent_to_nn=percent_to_nn)
+    model, mask = _make_model_from_atom_list(
+                                atom_list,
+                                image_data,
+                                mask_radius=mask_radius,
+                                percent_to_nn=percent_to_nn)
     x0, x1, y0, y1 = model.axes_manager.signal_extent
 
     if centre_free is False:
@@ -622,11 +624,9 @@ def _fit_atom_positions_with_gaussian_model(
     for atom, g in zip(atom_list, model):
         # If the Gaussian centre is located outside the masked region,
         # return False
-        if (g.centre_x.value < x0) or (g.centre_x.value > x1):
+        inside_mask = mask[int(g.centre_y.value)][int(g.centre_x.value)]
+        if not inside_mask:
             return(False)
-        elif (g.centre_y.value < y0) or (g.centre_y.value > y1):
-            return(False)
-
         if g.A.value < 0.0:
             return(False)
 

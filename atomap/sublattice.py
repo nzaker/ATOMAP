@@ -1953,6 +1953,38 @@ class Sublattice():
         s.add_marker(marker_list, permanent=True, plot_marker=False)
         return(s)
 
+    def _get_sublattice_atom_list_mask(self, image_data=None, radius=1):
+        """
+        Returns a list of indices, where mask_list[0] is the indices
+        for a circular mask with the given radus around the atom in
+        atom_list[0]
+
+        Parameters
+        ----------
+        image_data : NumPy 2D array
+            Image data from which the shape of the mask array is found.
+            By default, the sublattice.original_image is used.
+        radius : float,
+            radius of the circular mask
+
+        Returns
+        -------
+        A list of mask indices lists. Mask_list has the same length as
+        atom_list, and each element in the list is an array of indices
+        """
+        if image_data is None:
+            image_data = self.original_image
+        mask_list = []
+        for atom in self.atom_list:
+            centerX, centerY = atom.pixel_x, atom.pixel_y
+            temp_mask = _make_circular_mask(
+                        centerY, centerX, image_data.shape[0],
+                        image_data.shape[1], radius)
+            indices = np.where(temp_mask)
+            mask_list.append(indices)
+        return(mask_list)
+
+
     def mask_image_around_sublattice(self, image_data, radius=1):
         """
         Returns a HyperSpy signal containing a masked image. The mask covers
