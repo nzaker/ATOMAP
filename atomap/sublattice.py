@@ -18,7 +18,7 @@ from atomap.tools import (
 from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
         _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
-        _make_zone_vector_text_marker_list)
+        _make_zone_vector_text_marker_list, plot_vector_field)
 from atomap.atom_finding_refining import construct_zone_axes_from_sublattice
 from atomap.atom_finding_refining import _make_circular_mask
 
@@ -1400,6 +1400,38 @@ class Sublattice():
             atom_plane,
             invert_line_profile=False,
             interpolate_value=50):
+        """
+        Returns a signal with the ellipticity line profile,
+        meaning the ellipticity as a funciton of distance from a
+        given atom plane (interface).
+
+        Parameters
+        ----------
+        atom_plane : Atomap AtomPlane object
+            The plane which is defined as the 0-point in the space
+            dimention.
+        invert_line_profile : bool, optional, default False
+            Passed to _get_property_line_profile(). If True, will invert the
+            x-axis values.
+        interpolate_value : int, default 50
+            Passed to _get_property_line_profile(). The amount of data points
+            between in monolayer, due to HyperSpy signals not supporting
+            non-linear axes.
+
+        Returns
+        -------
+        HyperSpy signal1D
+
+        Example
+        -------
+        >>> from numpy.random import random
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.construct_zone_axes()
+        >>> zone = sublattice.zones_axis_average_distances[1]
+        >>> plane = sublattice.atom_planes_by_zone_vector[zone][4]
+        >>> s_elli_line = sublattice.get_ellipticity_line_profile(plane)
+        """
         signal = self._get_property_line_profile(
             self.x_position,
             self.y_position,
@@ -1468,10 +1500,10 @@ class Sublattice():
             invert_line_profile=False,
             interpolate_value=50):
         """
-        Projects the distance between each atom and the next monolayer along
-        the zone vector, onto an atom plane given by atom_plane. The
-        monolayers belong to the zone vector zone_vector. For more information
-        on the definition of monolayer distance, check
+        Finds the distance between each atom and the next monolayer, and the
+        distance to atom_plane (the 0-point). The monolayers belong to the
+        zone vector zone_vector. For more information on the definition of
+        monolayer distance, check
         sublattice.get_monolayer_distance_list_from_zone_vector()
 
         Parameters
@@ -1481,8 +1513,8 @@ class Sublattice():
             Zone vector for the monolayers for which the separation will be
             found
         atom_plane : Atomap AtomPlane object
-            Passed to get_monolayer_distance_list_from_zone_vector(). The
-            plane the data is projected onto.
+            Passed to get_monolayer_distance_list_from_zone_vector().
+            0-point in the line profile.
         invert_line_profile : bool, optional, default False
             Passed to _get_property_line_profile(). If True, will invert the
             x-axis values.
@@ -2034,12 +2066,15 @@ class Sublattice():
         signal = self.get_atom_list_on_image(color=color)
         signal.plot(**kwargs, plot_markers=True)
 
-    def plot_planes(self, add_numbers=True, color='red', **kwargs):
+    def plot_planes(self, image=None, add_numbers=True, color='red', **kwargs):
         """
         Show the atomic planes for all zone vectors.
 
         Parameters
         ----------
+        image : 2D Array, optional
+            If image None, the original image of the sublattice is used as
+            background image.
         add_numbers : bool, optional, default True
             If True, will the number of the atom plane at the end of the
             atom plane line. Useful for finding the index of the atom plane.
@@ -2058,6 +2093,53 @@ class Sublattice():
 
         signal = self.get_all_atom_planes_by_zone_vector(
                       zone_vector_list=None,
+                      image=image,
                       add_numbers=add_numbers,
                       color=color)
         signal.plot(**kwargs)
+
+    def plot_ellipticity_vectors(self, save=False):
+        """
+        Make a quiver plot showing the rotation and ellipticity
+        of the sublattice. If the sublattice hasn't been refined with
+        2D-Gaussians, the value for ellipticity and rotation are default,
+        1 and 0 respectively. When sigma_x and sigma_y are equal (circle)
+        the ellipticity is 1. To better visualize changes in ellipticity,
+        the 0-point for ellipticity in the plot is set to circular atomic
+        columns.
+
+        Parameters
+        ----------
+        save : bool
+            If true, the figure is saved as 'vector_field.png'.
+
+        Examples
+        --------
+        """
+        ellipticity = np.asarray(self.ellipticity) - 1
+        rot = -np.asarray(self.rotation_ellipticity)
+        u_quiver = ellipticity*np.cos(rot)
+        v_quiver = ellipticity*np.sin(rot)
+        u_quiver *= -1
+
+        plot_vector_field(
+                self.x_position,
+                self.y_position,
+                u_quiver,
+                v_quiver,
+                save=save)
+
+    def plot_ellipticity_map(self, **kwargs):
+        """
+        Plot the magnitude of the ellipticity.
+
+        Parameters
+        ----------
+        **kwargs
+            Addition keywords passed to HyperSpy's signal plot function.
+
+        Examples
+        --------
+        """
+        s_elli = self.get_ellipticity_map()
+        s_elli.plot(**kwargs)

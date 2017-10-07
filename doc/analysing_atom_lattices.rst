@@ -4,111 +4,362 @@
 Analysing atom lattices
 =======================
 
-After finding and refining the atom lattices as shown in ref:`finding_atom_lattices` , the atomic structure can be analysed through
+After finding and refining the atom lattices as shown in :ref:`finding_atom_lattices`, the atomic structure can be analysed through
 
-1. The distance between neighbouring atoms
+1. Ellipticity of the atomic columns
 2. Monolayer separation
-3. Ellipticity of the atomic columns
-4. (Intensity)
+3. Angle between monolayers
+4. Intensity (coming soon)
 
-Load atom lattice
-===================
+In this tutorial we will use a dummy image containing two sublattices.
+Different structural distortions have been introduced in the image, and this tutorial will study these distortions.
+The plots that are made are simple plots that clearly shows the structural change of the sublattices.
+It is also possible to make more fancy figures for publications (such as in the paper presenting `Atomap <https://dx.doi.org/10.1186/s40679-017-0042-5>`_), and some tips for doing this will be presented at the end of this tutorial.
+
+Fantasite, the dummy structure
+==============================
+
+The procedure for finding and refining the sublattices in fantasite is similar as in :ref:`Images with more than one sublattice`.
 
 .. code-block:: python
 
     >>> import atomap.api as am
-    >>> atom_lattice = am.load_atom_lattice_from_hdf5("test_ADF_cropped_atom_lattice.hdf5") # doctest: +SKIP
+    >>> from atomap.tools import remove_atoms_from_image_using_2d_gaussian
+    
+    >>> s = am.dummy_data.get_fantasite()
+    >>> A_positions = am.get_atom_positions(s,separation=12)
+    >>> sublattice_A = am.Sublattice(A_positions,image=s.data, color='r', name='A')
+    >>> sublattice_A.find_nearest_neighbors()
+    >>> sublattice_A.refine_atom_positions_using_center_of_mass()
+    >>> sublattice_A.refine_atom_positions_using_2d_gaussian()
+    >>> sublattice_A.construct_zone_axes()
+    
+    >>> direction_001 = sublattice_A.zones_axis_average_distances[1]
+    >>> B_positions = sublattice_A._find_missing_atoms_from_zone_vector(direction_001)
+    >>> image_without_A = remove_atoms_from_image_using_2d_gaussian(sublattice_A.image, sublattice_A)
+    
+    >>> sublattice_B = am.Sublattice(B_positions, image_without_A, color='blue', name='B')
+    >>> sublattice_B.construct_zone_axes()
+    >>> sublattice_B.refine_atom_positions_using_center_of_mass()
+    >>> sublattice_B.refine_atom_positions_using_2d_gaussian()
+    >>> atom_lattice = am.Atom_Lattice(image=s.data, name='fantasite', sublattice_list=[sublattice_A, sublattice_B])
+    >>> atom_lattice.save("fantasite.hdf5", overwrite=True)
+    >>> s.plot() 
+    >>> atom_lattice.plot()
 
-Introduce the `atom_lattice` object, and how information is accessed.
+.. image:: images/plotting_tutorial/fantasite.png
+    :scale: 50 %
 
-.. code-block:: python
+.. image:: images/plotting_tutorial/atom_lattice.png
+    :scale: 50 %
 
-    >>> x = sublattice.x_position # doctest: +SKIP
-    >>> y = sublattice.y_position # doctest: +SKIP
-    >>> sigma_x = sublattice.sigma_x # doctest: +SKIP
-    >>> sigmal_y = sublattice.sigma_y # doctest: +SKIP
-    >>> ellipticity = sublattice.ellipticity # doctest: +SKIP
-    >>> rotation = sublattice.rotation # doctest: +SKIP
+Fantasite is shown in the left image, and it is possible to see some variations in ellipticity and atom positions with the naked eye.
+The right figure shown the atom positions after refinement.
+As refinement of the sublattice can be time consuming, it is a good idea to save the final atom lattice.
 
-These can be saved in different formats such as Numpy npz file:
+The `Atom_Lattice` object 
+=========================
 
-.. code-block:: python
-
-    >>> import numpy as np
-    >>> np.savez("datafile.npz", x=sublattice.x_position, y=sublattice.y_position) # doctest: +SKIP
-
-Or comma-separated values (CSV) file, which can be opened in spreadsheet software:
-
-.. code-block:: python
-
-    >>> np.savetxt("datafile.csv", (sublattice.x_position, sublattice.y_position, sublattice.sigma_x, sublattice.sigma_y, sublattice.ellipticity), delimiter=',') # doctest: +SKIP
-
-Visualize structural properties
-===============================
-
-`sublattice` objects also contain a several plotting functions.
-Since the image is from a |SrTiO3| single crystal, there should be no variations in the structure.
-So any variations are due to factors such as scanning noise, sample drift and possibly bad fitting.
-
-.. code-block:: python
-
-    >>> s_monolayer = sublattice.get_monolayer_distance_map() # doctest: +SKIP
-    >>> s_monolayer.plot() # doctest: +SKIP
-    >>> s_elli = sublattice.get_ellipticity_map() # doctest: +SKIP
-    >>> s_elli.plot() # doctest: +SKIP
-
-These signals can be saved by using the inbuilt `save` function in the signals.
+The atom lattice can be loaded:
 
 .. code-block:: python
 
-    >>> s_monolayer.save("monolayer_distances.hdf5",overwrite=True) # doctest: +SKIP
+    >>> import atomap.api as am
+    >>> atom_lattice = am.load_atom_lattice_from_hdf5("fantasite.hdf5")
+    >>> atom_lattice  # doctest: +SKIP
+    <Atom_Lattice, fantasite (sublattice(s): 2)> # doctest: +SKIP
+    >>> atom_lattice.sublattice_list  # doctest: +SKIP
+    [<Sublattice,  (atoms:104,planes:6)>, <Sublattice,  (atoms:91,planes:6)>]  # doctest: +SKIP
+    >>> image = atom_lattice.image0
 
-The `sublattice` objects also contain a list of all the atomic planes:
+:py:class:`atomap.atom_lattice.Atom_Lattice` is an object containing the sublattices, and other types of information.
+The fantasite atom lattice contains two sublattices (red and blue dots in the image above).
+Atom positions, sigma, ellipticity and rotation for the atomic columns in a sublattice can be accessed.
 
 .. code-block:: python
 
-    >>> atom_plane_list = sublattice.atom_plane_list # doctest: +SKIP
+    >>> sublattice_A = atom_lattice.sublattice_list[0]
+    >>> x = sublattice_A.x_position
+    >>> y = sublattice_A.y_position
+    >>> sigma_x = sublattice_A.sigma_x
+    >>> sigmal_y = sublattice_A.sigma_y
+    >>> ellipticity = sublattice_A.ellipticity
+    >>> rotation = sublattice_A.rotation_ellipticity
 
-The `atom_plane` objects contain the atomic columns belonging to the same specific plane.
+Similarly, properties of a single atomic column :py:class:`atomap.atom_position.Atom_Position` can be accessed though :py:attr:`atomap.sublattice.Sublattice.atom_list`.
+The :py:class:`atomap.atom_position.Atom_Position` object contain information related to a specific atomic column.
+
+.. code-block:: python
+
+    >>> atom_position_list = sublattice_A.atom_list
+    >>> atom_position = atom_position_list[0]
+    >>> x = atom_position.pixel_x
+    >>> y = atom_position.pixel_y
+    >>> sigma_x = atom_position.sigma_x
+    >>> sigma_y = atom_position.sigma_y
+
+The :py:class:`atomap.atom_plane.Atom_Plane` objects contain the atomic columns belonging to the same specific plane.
 Atom plane objects are defined by the direction vector parallel to the atoms in the plane, for example (58.81, -41.99).
 These can be accessed by:
 
 .. code-block:: python
 
-    >>> atom_plane = atom_plane_list[0] # doctest: +SKIP
-    >>> atom_list = atom_plane.atom_list # doctest: +SKIP
-    
-The atom planes can be plotted by using the `get_all_atom_planes_by_zone_vector` function, where the zone vector is changed by using the left-right arrow keys:
+    >>> atom_plane_list = sublattice_A.atom_plane_list
+    >>> atom_plane = atom_plane_list[0]
+    >>> atoms_in_plane_list = atom_plane.atom_list
+
+Ellipticity
+===========
+
+Elliptical atomic columns may occur when atoms parallel to the electron beam have sifted position in the plane orthogonal to the beam.
+In the image, circular atomic columns have an ellipticity (:math:`\epsilon`) of 1, as `sigma_x`  = `sigma_y` (:math:`\sigma_x = \sigma_y`).
+Ellipticity is defined as
+
+.. math::
+
+    \epsilon = 
+        \begin{cases}
+                \frac{\sigma_x}{\sigma_y},& \text{if } \sigma_x > \sigma_y\\
+                        \frac{\sigma_y}{\sigma_x},& \text{if } \sigma_y > \sigma_x\\
+                            \end{cases}
+
+
+Ellipticity maps
+----------------
+The ellipticity map shows the magnitude of the ellipticity.
+Values are interpolated, giving a continuous map.
+The sublattice B was generated without any ellipticity, and the image to the right is fairly flat, as expected.
+In sublattice A, a region with elliptical atomic columns is clearly visible.
+The ellipticity gradient is perfectly in line with how the dummy image of fantasite has been generated.
+Maps gives nice visualization of gradual change.
 
 .. code-block:: python
 
-    >>> sublattice.get_all_atom_planes_by_zone_vector().plot() # doctest: +SKIP
+    >>> sublattice_A = atom_lattice.sublattice_list[0]
+    >>> sublattice_B = atom_lattice.sublattice_list[1]
+    >>> sublattice_A.plot_ellipticity_map(cmap='viridis',vmin=0.95,vmax=1.3)
+    >>> sublattice_B.plot_ellipticity_map(cmap='viridis',vmin=0.95,vmax=1.3)
 
-.. image:: images/tutorial/atomic_planes.jpg
+.. image:: images/plotting_tutorial/ellipticity_map_A.png
+    :scale: 50 %
+    
+.. image:: images/plotting_tutorial/ellipticity_map_B.png
+    :scale: 50 %
+
+The :py:meth:`atomap.sublattice.Sublattice.plot_ellipticity_map` function calls :py:meth:`atomap.sublattice.Sublattice.get_ellipticity_map`, which calls :py:meth:`atomap.sublattice.Sublattice._get_property_map`. 
+
+Vector plots
+------------
+While the ellipticity map nicely visualizes the magnitude (and gradual change) of the ellipticity, it does not show the direction of the ellipse.
+In vector (quiver) plots (:py:meth:`atomap.sublattice.Sublattice.plot_ellipticity_vectors`) both the rotation and magnitude are visualized, through the length and angle of the arrows.
+There is one arrow for each atom position.
+This type of visualization also reveals that the ellipticity of the atomic columns have an alternating directionality.
+
+.. code-block:: python
+
+    >>> sublattice_A.plot_ellipticity_vectors()
+
+.. image:: images/plotting_tutorial/ellipticity_vectors.png
+    :align: center
+    :scale: 50 %
+
+In this function, a value of 1 is subtracted from the magnitude of the ellipticity.
+This makes it easier to study changes in ellipticity, as the 0-point of the plot is set to the perfect circle.
+:py:meth:`atomap.plotting.plot_vector_field` is called, and this function uses `Matplotlib's quiver plot function <https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.quiver.html?highlight=quiver#matplotlib.axes.Axes.quiver>`_.
+
+Distance between monolayers
+===========================
+
+As Atomap knows the positions of all atoms, it can also tell you if you have strain or other types of structural distortions.
+For example, Atomap has been used to study `oxygen octahedron tilt patterns in perovskite thin films <https://journals.aps.org/prb/abstract/10.1103/PhysRevB.94.201115>`_. 
+
+In this example, Atomap finds the distance between monolayers.
+"Distance between monolayers" is defined in the below figure (a).
+The distance is measured between an atomic column and the nearest monolayer, as shown in this figure.
+The values for monolayer separation is attributed to the midpoint of the atom and monolayer.
+
+.. image:: images/plotting_tutorial/definition.jpg
+    :align: center
+    :scale: 50 %
+
+`s_monolayer` is a `HyperSpy signal stack <http://hyperspy.org/hyperspy-doc/current/user_guide/tools.html>`_, where the navigation axis is a zone vector (the values in the zone axis tuple are in principle the vector parallel to the monolayer) and the signal axes shows monolayer separation at each atom position.
+:py:meth:`atomap.sublattice.Sublattice.get_monolayer_distance_map` can also take in a subset of zone vectors, but the default is to find the monolayer separation for all the zone axis.
+
+.. code-block:: python
+
+    >>> s_monolayer = sublattice_B.get_monolayer_distance_map()
+    >>> s_monolayer.plot(cmap='viridis')
+
+
+.. image:: images/plotting_tutorial/Sublattice_B_monolayer_distance_a.png
+    :scale: 50 %
+
+.. image:: images/plotting_tutorial/Sublattice_B_monolayer_distance_b.png
+    :scale: 50 %
+
+
+The left image shows the monolayer separation for one zone axis, namely the separation between the monolayers drawn up by red lines in the right figure.
+Clearly, the position of the B atomic columns are changed in the middle of the image, where every second monolayer is closer and more far apart from the atom. 
+
+Atom distance difference
+========================
+
+An alternative to plotting the monolayer separation is the difference in distance from an atom to the two neighbouring atoms in the monolayer with :py:meth:`atomap.sublattice.Sublattice.get_atom_distance_difference_map`
+In some cases, this is a more robust way of finding superstructures as ....
+The "distance difference" is defined in the below figure.
+The value of the distance difference is attributed to the position of the middle atom.
+
+.. image:: images/plotting_tutorial/definition2.jpg
+    :align: center
+    :scale: 50 %
+
+The B-sublattice of fantasite has two different domains of structural distortion.
+As seen above, the monolayers in (0.0, -30.0) direction are alternatively closer and more far apart.
+The corresponding distance difference will be the distance difference for atoms in the orthogonal planes (index 0, value (15.0,0.0), shown below).
+
+.. code-block:: python
+
+    >>> zone = sublattice_B.zones_axis_average_distances[0]
+    >>> s_dd = sublattice_B.get_atom_distance_difference_map([zone])
+    >>> s_dd.plot(cmap='viridis')
+    >>> sublattice_B.plot_planes(image=atom_lattice.image0)
+
+.. image:: images/plotting_tutorial/Angle_map_z1.png
+    :scale: 50 %
+
+.. image:: images/plotting_tutorial/sublatticeB_dd_map_0.png
+    :scale: 50 %
+
+To the left the monolayers in which the distance difference is found are shown, and the resulting distance difference to the right.
+
+The second structural domain is found in the vertical planes.
+
+.. code-block:: python
+
+    >>> zone = sublattice_B.zones_axis_average_distances[1]
+    >>> s_dd = sublattice_B.get_atom_distance_difference_map([zone],add_zero_value_sublattice=sublattice_A)
+    >>> s_dd.plot(cmap='viridis')
+
+.. image:: images/plotting_tutorial/Angle_map_z2.png
+    :scale: 50 %
+    
+.. image:: images/plotting_tutorial/sublatticeB_dd_map_1.png
+    :scale: 50 %
+
+Angle between atoms
+===================
+
+This example shows how the angle between atoms can be visualized.
+:py:meth:`atomap.sublattice.Sublattice.get_atom_angles_from_zone_vector` is used, and this function returns three lists: x- and y- coordinates of the atoms, and a list of the angle
+between two zone axes at each atom.
+
+.. code-block:: python
+
+    >>> z1 =  sublattice_B.zones_axis_average_distances[0]
+    >>> z2 =  sublattice_B.zones_axis_average_distances[1]
+    >>> x, y, a = sublattice_B.get_atom_angles_from_zone_vector(z1, z2, degrees=True)
+    >>> s_angle = sublattice_B._get_property_map(x, y, a)
+    >>> s_angle.plot()
+
+
+.. image:: images/plotting_tutorial/Angle_map.png
+    :scale: 50 %
+
+.. image:: images/plotting_tutorial/Angle_map_zoom.png
+    :scale: 50 %
+
+Atomic columns start to "zigzag" in the rightmost part of the image.
+This is also clear with the naked eye (atomic columns marked with blue dots). 
+:py:meth:`atomap.sublattice.Sublattice._get_property_map` is a very general function, and can plot a map of any property.
+
+Line profiles
+=============
+
+Often it can be a good idea to integrate parts of the image, for example to improve the signal-to-noise ratio or to reduce the information of fewer dimensions.
+This example will introduce how line profiles of properties can be made. 
+
+.. code-block:: python
+
+    >>> zone = sublattice_A.zones_axis_average_distances[1]
+    >>> plane = sublattice_A.atom_planes_by_zone_vector[zone][4]
+    >>> s_elli_line = sublattice_A.get_ellipticity_line_profile(plane)
+
+.. image:: images/plotting_tutorial/line_ellip.png
+    :scale: 50 %
+
+.. image:: images/plotting_tutorial/line_ellip_plane.png
+    :scale: 50 %
+
+In the above example, `plane` is atom plane number 4 in the right figure.
+This the "last plane" where the atomic columns in `sublattice_A` are circular.
+In plane 5, the columns become elliptical.
+This plane is therefore sent into the function :py:meth:`atomap.sublattice.Sublattice.get_ellipticity_line_profile`, as the definition of where the interface (betwwen two structural domains) is.
+The values for ellipticity are integrated and averaged in the same direction as the plane (downwards), and plotted in the left figure.
+Average ellipticity is on the y-axis, while the x-axis is the distance from the interface (plane 4).
+The x-axis is inverted, negative values are to the left of the interface and positive values to the right of the interface.
+
+:py:meth:`atomap.sublattice.Sublattice.get_ellipticity_line_profile` calls :py:meth:`atomap.sublattice.Sublattice._get_property_line_profile`,  which takes in 3 lists: x and y coordinates for the atoms, and a list of value for a property (in this case ellipticity).
+It then sorts the atoms after distance from interface.
+The atoms with the same distance from the interface belong to the same plane, parallel to the interface, and the value for a property (such as ellipticity) for these atoms are averaged.
+
+There are also functions to make such line profiles for monolayer separation (:py:meth:`atomap.sublattice.Sublattice.get_monolayer_distance_line_profile`), and "distance difference" (:py:meth:`atomap.sublattice.Sublattice.get_atom_distance_difference_line_profile`).
+These two properties are "directional", which means that the zone axis for the distance measurement must be given in addition to the "interface" plane.
+
+.. code-block:: python
+
+    >>> zone = sublattice_B.zones_axis_average_distances[1]
+    >>> plane = sublattice_B.atom_planes_by_zone_vector[zone][0]
+    >>> s_monolayer_line = sublattice_B.get_monolayer_distance_line_profile(zone,plane)
+
+.. image:: images/plotting_tutorial/line_monolayer.png
+    :scale: 50 %
+    :align: center
+    
+The property of interest here was the separation of monolayers, and the separation between two specific monolayers is plotted at the point between these two monolayers.
+
+.. code-block:: python
+
+    >>> zone = sublattice_B.zones_axis_average_distances[1]
+    >>> plane = sublattice_B.atom_planes_by_zone_vector[zone][21]
+    >>> s_dd_line = sublattice_B.get_atom_distance_difference_line_profile(zone,plane)
+
+.. image:: images/plotting_tutorial/line_dd.png
     :scale: 50 %
     :align: center
 
-The `atom_position` objects contain information related to a specific atomic column.
-For example:
+Naturally, in these functions any atomic plane can be defined as the interface.
+
+Plotting for publication
+========================
+
+Please consider to cite `Atomap: a new software tool for the automated analysis of atomic resolution images using two-dimensional Gaussian fitting <https://ascimaging.springeropen.com/articles/10.1186/s40679-017-0042-5>`_ when you publish work where you have used Atomap as a tool.
+Figures for publication are often customized, and here are a few tips on how to extract the data you wish to plot in a fancy plot.
+
+Saving specific data
+--------------------
+
+When making advanced figures containing specific data for publication, it can be a good idea to save this data for example in separate numpy files.
+This makes it quick to load the data when using for example matplotlib to make figures.
 
 .. code-block:: python
 
-    >>> atom_position = sublattice.atom_list[0] # doctest: +SKIP
-    >>> x = atom_position.pixel_x # doctest: +SKIP
-    >>> y = atom_position.pixel_y # doctest: +SKIP
-    >>> sigma_x = atom_position.sigma_x # doctest: +SKIP
-    >>> sigma_y = atom_position.sigma_y # doctest: +SKIP
-    >>> sublattice.plot() # doctest: +SKIP
+    >>> import numpy as np
+    >>> np.savez("datafile.npz", x=sublattice_A.x_position, y=sublattice_A.y_position, e=sublattice_A.ellipticity)
 
-Basic information about the `atom_lattice`, `sublattice`, `atom_plane` and `atom_position` objects can be accessed by simply:
+Alternatively, the data can be saved in comma-separated values (CSV) file, which can be opened in spreadsheet software:
 
 .. code-block:: python
 
-    >>> atom_lattice # doctest: +SKIP
-    <Atom_Lattice, signal (sublattice(s): 2)>
-    >>> sublattice # doctest: +SKIP
-    <Sublattice, A-cation (atoms:238,planes:6)>
-    >>> atom_plane # doctest: +SKIP
-    <Atom_Plane, (-0.19, -29.5) (atoms:17)>
-    >>> atom_position # doctest: +SKIP
-    <Atom_Position,  (x:322.4,y:498.8,sx:4.4,sy:5.1,r:1.3,e:1.2)>
+    >>> np.savetxt("datafile.csv", (sublattice_A.x_position, sublattice_A.y_position, sublattice_A.sigma_x, sublattice_A.sigma_y, sublattice_A.ellipticity), delimiter=',')
+    
+ 
+Signals can be saved by using the inbuilt `save` function.
+
+.. code-block:: python
+
+    >>> s_monolayer.save("monolayer_distances.hdf5",overwrite=True)
+    
+Matplotlib
+----------
+
+Matplotib pyplot is our favourite plotting tool: gridspec,
