@@ -1,24 +1,59 @@
 import numpy as np
 from atomap.testing_tools import MakeTestData
 
-
-def get_simple_cubic_signal(image_noise=False):
+def _make_simple_cubic_testdata(image_noise=False):
     simple_cubic = MakeTestData(300, 300)
     x, y = np.mgrid[10:290:20j, 10:290:20j]
     simple_cubic.add_atom_list(x.flatten(), y.flatten(), sigma_x=3, sigma_y=3)
     if image_noise:
         simple_cubic.add_image_noise(mu=0, sigma=0.002)
-    return simple_cubic.signal
+    return simple_cubic
 
 
-def get_simple_cubic_sublattice():
-    simple_cubic = MakeTestData(300, 300)
-    x, y = np.mgrid[10:290:20j, 10:290:20j]
-    simple_cubic.add_atom_list(x.flatten(), y.flatten(), sigma_x=3, sigma_y=3)
-    sublattice = simple_cubic.sublattice
-    sublattice.image = simple_cubic.signal.data
-    sublattice.original_image = simple_cubic.signal.data
-    return sublattice
+def get_simple_cubic_signal(image_noise=False):
+    """Generate a test image signal of a simple cubic atomic structure.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    signal : HyperSpy 2D
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_simple_cubic_signal()
+    >>> s.plot()
+
+    """
+    test_data = _make_simple_cubic_testdata(image_noise=image_noise)
+    return test_data.signal
+
+
+def get_simple_cubic_sublattice(image_noise=False):
+    """Generate a test sublattice of a simple cubic atomic structure.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    sublattice : Atomap Sublattice
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+    >>> sublattice.plot()
+
+    """
+    test_data = _make_simple_cubic_testdata(image_noise=image_noise)
+    return test_data.sublattice
 
 
 def get_two_sublattice_signal():
