@@ -1,15 +1,16 @@
 import os
 import unittest
 import numpy as np
+from hyperspy.api import load
 from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
         construct_zone_axes_from_sublattice,\
         get_atom_positions
 from atomap.sublattice import Sublattice
-from hyperspy.api import load
 from atomap.atom_finding_refining import refine_sublattice
 import atomap.testing_tools as tt
+import atomap.dummy_data as dd
 from atomap.testing_tools import MakeTestData
 
 my_path = os.path.dirname(__file__)
@@ -526,30 +527,21 @@ class test_sublattice_mask(unittest.TestCase):
         self.assertEqual(np.count_nonzero(s.data), len(sublattice.atom_list))
 
 
-class test_sublattice_plot(unittest.TestCase):
+class test_plot_functions(unittest.TestCase):
 
     def setUp(self):
-        test_data = tt.MakeTestData(50, 50)
-        test_data.add_atom_list(np.arange(5, 45, 5), np.arange(5, 45, 5))
-        self.sublattice = test_data.sublattice
+        self.sublattice = dd.get_simple_cubic_sublattice()
 
     def test_plot(self):
         self.sublattice.plot()
         self.sublattice.plot(color='green', cmap='viridis')
 
-
-class test_plot_planes(unittest.TestCase):
-
-    def setUp(self):
-        image_data = np.random.random(size=(100, 100))
-        position_list = []
-        for x in range(10, 100, 10):
-            for y in range(10, 100, 10):
-                position_list.append([x, y])
-        self.sublattice = Sublattice(np.array(position_list), image_data)
-
     def test_plot_planes(self):
-        sublattice = self.sublattice
-        sublattice.find_nearest_neighbors()
-        sublattice.construct_zone_axes()
-        sublattice.plot_planes(color='green')
+        self.sublattice.construct_zone_axes()
+        self.sublattice.plot_planes(color='green', add_numbers=True, cmap='viridis')
+
+    def test_plot_ellipticity_vectors(self):
+        self.sublattice.plot_ellipticity_vectors(save=True)
+
+    def test_plot_ellipticity_map(self):
+        self.sublattice.plot_ellipticity_map(cmap='viridis')
