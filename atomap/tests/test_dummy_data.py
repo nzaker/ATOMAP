@@ -18,3 +18,9 @@ class test_dummy_data(unittest.TestCase):
 
     def test_get_dumbbell_signal(self):
         dd.get_dumbbell_signal()
+
+    def test_get_fantasite(self):
+        dd.get_fantasite()
+
+    def test_get_fantasite_sublattice(self):
+        dd.get_fantasite_sublattice()

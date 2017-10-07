@@ -58,13 +58,8 @@ def get_dumbbell_signal():
     test_data.add_atom_list(x, y, sigma_x=1, sigma_y=1, amplitude=50)
     return test_data.signal
 
-    
-def get_fantasite():
-    """
-    Fantasite is a fantastic structure with several interesting structural
-    variations. It contains two sublattices, doimains with elliptical atomic
-    columns and tilt-patterns.
-    """
+
+def _make_fantasite_test_data():
     test_data = MakeTestData(500, 500)
     xA0, yA0 = np.mgrid[10:495:15, 10:495:30]
     xA0, yA0 = xA0.flatten(), yA0.flatten()
@@ -89,7 +84,7 @@ def get_fantasite():
         test_data.add_atom_list(xA4, yA4, sigma_x=3, sigma_y=3, amplitude=10)
         test_data.add_atom_list(xA5, yA5, sigma_x=3, sigma_y=3, amplitude=10)
         down = not down
-        
+
     xB0, yB0 = np.mgrid[10:495:15, 25:495:30]
     xB0, yB0 = xB0.flatten(), yB0.flatten()
     test_data.add_atom_list(xB0[0:8*16],yB0[0:8*16],
@@ -107,4 +102,50 @@ def get_fantasite():
                            amplitude=20, rotation=rotation)
         down = not down
     test_data.add_image_noise(mu=0, sigma=0.01)
+    return test_data
+
+
+def get_fantasite():
+    """
+    Fantasite is a fantastic structure with several interesting structural
+    variations.
+
+    It contains two sublattices, domains with elliptical atomic
+    columns and tilt-patterns. This function returns a HyperSpy 2D signal.
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_fantasite()
+    >>> s.plot()
+
+    See also
+    --------
+    get_fantasite_sublattice : get a sublattice object of the fantasite.
+
+    """
+    test_data = _make_fantasite_test_data()
     return test_data.signal
+
+
+def get_fantasite_sublattice():
+    """
+    Fantasite is a fantastic structure with several interesting structural
+    variations.
+
+    It contains two sublattices, domains with elliptical atomic
+    columns and tilt-patterns. This function returns an Atomap sublattice.
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> sublattice = am.dummy_data.get_fantasite_sublattice()
+    >>> sublattice.plot()
+
+    See also
+    --------
+    get_fantasite : get a Signal2D object of the fantasite.
+
+    """
+    test_data = _make_fantasite_test_data()
+    return test_data.sublattice
