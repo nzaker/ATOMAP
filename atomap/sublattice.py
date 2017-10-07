@@ -915,6 +915,19 @@ class Sublattice():
         return nn
 
     def _make_translation_symmetry(self, pixel_separation_factor=7):
+        """Find the major translation symmetries for the atom positions.
+
+        Essentially finds the (x, y) vectors between all the atom positions,
+        and uses nearest neighbor statistics to generate a list of the
+        nearest ones. I.e. the most high-index zone axes for the positions.
+
+        Only the unique vectors are kept, meaning parallel and antiparallel
+        ones are removed.
+
+        See also
+        --------
+        get_fingerprint_2d : function used to get full vector list
+        """
         pixel_radius = self._pixel_separation*pixel_separation_factor
         fp_2d = self.get_fingerprint_2d(pixel_radius=pixel_radius)
         clusters = []
