@@ -542,7 +542,7 @@ def _make_model_from_atom_list(
     s.axes_manager[1].offset = x0
     m = s.create_model()
     m.extend(gaussian_list)
-    return(m,mask)
+    return(m, mask)
 
 
 def _fit_atom_positions_with_gaussian_model(
@@ -667,6 +667,7 @@ def fit_atom_positions_gaussian(
     Parameters
     ----------
     atom_list : list of Atom_Position objects
+        For example the members of a dumbbell.
     image_data : NumPy 2D array
     rotation_enabled : bool, optional
         If True (default), the 2D gaussian will be able to rotate.
@@ -703,8 +704,11 @@ def fit_atom_positions_gaussian(
 
     Not using `mask_radius`, populating the nearest_neighbor_list manually
 
+    >>> image = np.zeros((9, 9))
+    >>> image[2, 2] = 1.
+    >>> image[5, 5] = 1.
     >>> atom0 = Atom_Position(2, 2, 0.5, 0.5)
-    >>> atom1 = Atom_Position(4, 4, 0.5, 0.5)
+    >>> atom1 = Atom_Position(5, 5, 0.5, 0.5)
     >>> atom0.nearest_neighbor_list = [atom1]
     >>> atom1.nearest_neighbor_list = [atom0]
     >>> g_list = fit_atom_positions_gaussian([atom0, atom1], image)
