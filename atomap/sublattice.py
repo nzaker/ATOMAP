@@ -1401,15 +1401,16 @@ class Sublattice():
             invert_line_profile=False,
             interpolate_value=50):
         """
-        Returns a signal with the ellipticity line profile,
-        meaning the ellipticity as a funciton of distance from a
+        Returns a line profile of the atoms ellipticity.
+
+        This gives the ellipticity as a function of the distance from a
         given atom plane (interface).
 
         Parameters
         ----------
         atom_plane : Atomap AtomPlane object
-            The plane which is defined as the 0-point in the space
-            dimention.
+            The plane which is defined as the 0-point in the spatial
+            dimension.
         invert_line_profile : bool, optional, default False
             Passed to _get_property_line_profile(). If True, will invert the
             x-axis values.
@@ -1420,17 +1421,17 @@ class Sublattice():
 
         Returns
         -------
-        HyperSpy signal1D
+        signal : HyperSpy Signal1D
 
         Example
         -------
-        >>> from numpy.random import random
         >>> import atomap.api as am
         >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> sublattice.construct_zone_axes()
         >>> zone = sublattice.zones_axis_average_distances[1]
         >>> plane = sublattice.atom_planes_by_zone_vector[zone][4]
         >>> s_elli_line = sublattice.get_ellipticity_line_profile(plane)
+
         """
         signal = self._get_property_line_profile(
             self.x_position,
@@ -2081,7 +2082,7 @@ class Sublattice():
         color : string, optional, default red
             The color of the lines and text used to show the atom planes.
         **kwargs
-            Addition keywords passed to HyperSpy's signal plot function.
+            Additional keywords passed to HyperSpy's signal plot function.
 
         Examples
         --------
@@ -2100,13 +2101,15 @@ class Sublattice():
 
     def plot_ellipticity_vectors(self, save=False):
         """
-        Make a quiver plot showing the rotation and ellipticity
-        of the sublattice. If the sublattice hasn't been refined with
-        2D-Gaussians, the value for ellipticity and rotation are default,
-        1 and 0 respectively. When sigma_x and sigma_y are equal (circle)
-        the ellipticity is 1. To better visualize changes in ellipticity,
-        the 0-point for ellipticity in the plot is set to circular atomic
-        columns.
+        Get a quiver plot of the rotation and ellipticity for the sublattice.
+
+        sublattice.refine_atom_positions_using_2d_gaussian has to be run
+        at least once before using this function.
+        If the sublattice hasn't been refined with 2D-Gaussians, the value
+        for ellipticity and rotation are default, 1 and 0 respectively.
+        When sigma_x and sigma_y are equal (circle) the ellipticity is 1.
+        To better visualize changes in ellipticity, the 0-point for
+        ellipticity in the plot is set to circular atomic columns.
 
         Parameters
         ----------
@@ -2115,6 +2118,12 @@ class Sublattice():
 
         Examples
         --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_fantasite_sublattice()
+        >>> sublattice.construct_zone_axes()
+        >>> sublattice.refine_atom_positions_using_2d_gaussian()
+        >>> sublattice.plot_ellipticity_vectors()
+
         """
         ellipticity = np.asarray(self.ellipticity) - 1
         rot = -np.asarray(self.rotation_ellipticity)
@@ -2140,6 +2149,12 @@ class Sublattice():
 
         Examples
         --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_fantasite_sublattice()
+        >>> sublattice.construct_zone_axes()
+        >>> sublattice.refine_atom_positions_using_2d_gaussian()
+        >>> sublattice.plot_ellipticity_map()
+
         """
         s_elli = self.get_ellipticity_map()
         s_elli.plot(**kwargs)
