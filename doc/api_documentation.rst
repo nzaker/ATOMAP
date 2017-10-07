@@ -96,3 +96,9 @@ Tools
 =====
 .. automodule:: atomap.tools
     :members:
+
+Dummy data
+==========
+.. automodule:: atomap.dummy_data
+    :members:
+    :undoc-members:

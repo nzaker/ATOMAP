@@ -5,9 +5,9 @@ News
 ----
 **2017-10-08: Atomap 0.1.0 released!**
 
-We are happy to announce our new Atomap release.
+We are happy to announce a new Atomap release.
 It includes a **major makeover** of the tutorial, if you already have Atomap up and running you can begin with :ref:`finding_atom_lattices`.
-New feautres in this version are methods for finding atomic column intensity, new and simple plotting tools and a module for generating test data.
+New features in this version are methods for finding atomic column intensity, new and simple plotting tools and a module for generating test data.
 
 
 *2017-07-03: version 0.0.8 released!*
@@ -37,7 +37,7 @@ atomic resolution images using two-dimensional Gaussian fitting <https://dx.doi.
 
 Atomap is under development and still in alpha, so bugs and errors can be expected.
 Bug reports and feature requests are welcome on the `issue tracker <https://gitlab.com/atomap/atomap/issues>`_.
-Contributers are welcome too!
+Contributors are welcome too!
 
 If you publish scientific articles using Atomap, please consider citing the article `Atomap: a new software tool for the automated analysis of
 atomic resolution images using two-dimensional Gaussian fitting <https://dx.doi.org/10.1186/s40679-017-0042-5>`_.
