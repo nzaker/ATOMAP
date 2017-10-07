@@ -553,3 +553,37 @@ class test_plot_planes(unittest.TestCase):
         sublattice.find_nearest_neighbors()
         sublattice.construct_zone_axes()
         sublattice.plot_planes(color='green')
+
+
+class test_mask_indices(unittest.TestCase):
+
+    def setUp(self):
+        t1 = tt.MakeTestData(20, 10)
+        t1.add_atom_list([5, 15], [5, 5])
+        sublattice = t1.sublattice
+        self.mask_list = sublattice._get_sublattice_atom_list_mask()
+        s = sublattice.mask_image_around_sublattice(sublattice.image)
+        self.s_i = np.asarray(np.nonzero(s.data))
+
+    def test_mask_atom_list_len(self):
+        mask_list = self.mask_list
+        self.assertTrue(len(mask_list) == 2)
+
+    def test_mask_image_len(self):
+        s_i_size = self.s_i[0].size
+        b_size = self.mask_list[1][0].size
+        a_size = self.mask_list[0][0].size
+        self.assertTrue(s_i_size == (b_size + a_size))
+
+    def test_indices_equal(self):
+        mask_list = self.mask_list
+        a = np.asarray(mask_list[0]).T
+        b = np.asarray(mask_list[1]).T
+        j = 0
+        s_i = self.s_i
+        for x in s_i[0]:
+            y = s_i[1][j]
+            j += 1
+            A = ((np.array([x, y]) == a).all(1).any())
+            B = ((np.array([x, y]) == b).all(1).any())
+            self.assertTrue(A or B)
