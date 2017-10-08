@@ -60,6 +60,7 @@ Contents on this webpage
    automation
    nanoparticle_example
    make_testdata
+   making_nice_figures
    api_documentation
 
 * :ref:`genindex`

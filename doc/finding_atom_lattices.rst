@@ -295,3 +295,11 @@ The `Atom_Lattice` object with all the atom positions can be saved:
 
 This will make a HDF5-file in the current working directory.
 To save single sublattices, initialize an `Atom_Lattice` object with your sublattice as the only sublattice, and save the `Atom_Lattice`.
+
+.. code-block:: python
+
+    >>> import atomap.api as am
+    >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+    >>> atom_lattice = am.Atom_Lattice(image=sublattice.image, sublattice_list=[sublattice])
+    >>> atom_lattice.save("simple_cubic_atom_lattice.hdf5")
+
