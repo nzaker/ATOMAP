@@ -509,6 +509,72 @@ class test_get_atom_list_between_four_atom_planes(unittest.TestCase):
         self.assertEqual(num_atoms, len(apos_list))
 
 
+class test_make_translation_symmetry(unittest.TestCase):
+
+    def test_cubic_simple(self):
+        vX, vY = 10, 10
+        x, y = np.mgrid[5:95:vX, 5:95:vY]
+        test_data = MakeTestData(100, 100)
+        test_data.add_atom_list(x.flatten(), y.flatten(), sigma_x=2, sigma_y=2)
+        sublattice = test_data.sublattice
+        sublattice._pixel_separation = sublattice._get_pixel_separation()
+        sublattice._make_translation_symmetry()
+        zone_vectors = sublattice.zones_axis_average_distances
+        self.assertEqual(zone_vectors[0], (0, vY))
+        self.assertEqual(zone_vectors[1], (vX, 0))
+        self.assertEqual(zone_vectors[2], (vX, vY))
+        self.assertEqual(zone_vectors[3], (vX, -vY))
+        self.assertEqual(zone_vectors[4], (vX, 2*vY))
+        self.assertEqual(zone_vectors[5], (2*vX, vY))
+
+    def test_rectangle_simple(self):
+        vX, vY = 10, 15
+        x, y = np.mgrid[5:95:vX, 5:95:vY]
+        test_data = MakeTestData(100, 100)
+        test_data.add_atom_list(x.flatten(), y.flatten(), sigma_x=2, sigma_y=2)
+        sublattice = test_data.sublattice
+        sublattice._pixel_separation = sublattice._get_pixel_separation()
+        sublattice._make_translation_symmetry()
+        zone_vectors = sublattice.zones_axis_average_distances
+        self.assertEqual(zone_vectors[0], (vX, 0))
+        self.assertEqual(zone_vectors[1], (0, vY))
+        self.assertEqual(zone_vectors[2], (vX, vY))
+        self.assertEqual(zone_vectors[3], (-vX, vY))
+        self.assertEqual(zone_vectors[4], (2*vX, vY))
+        self.assertEqual(zone_vectors[5], (2*vX, -vY))
+
+
+class test_construct_zone_axes(unittest.TestCase):
+
+    def test_cubic_simple(self):
+        vX, vY = 10, 10
+        x, y = np.mgrid[5:95:vX, 5:95:vY]
+        test_data = MakeTestData(100, 100)
+        test_data.add_atom_list(x.flatten(), y.flatten(), sigma_x=2, sigma_y=2)
+        sublattice = test_data.sublattice
+        sublattice.construct_zone_axes()
+        zone_vectors = sublattice.zones_axis_average_distances
+        self.assertEqual(zone_vectors[0], (0, vY))
+        self.assertEqual(zone_vectors[1], (vX, 0))
+        self.assertEqual(zone_vectors[2], (vX, vY))
+        self.assertEqual(zone_vectors[3], (vX, -vY))
+
+    def test_rectangle(self):
+        vX, vY = 15, 10
+        x, y = np.mgrid[5:95:vX, 5:95:vY]
+        test_data = MakeTestData(100, 100)
+        test_data.add_atom_list(x.flatten(), y.flatten(), sigma_x=2, sigma_y=2)
+        sublattice = test_data.sublattice
+        sublattice.construct_zone_axes()
+        zone_vectors = sublattice.zones_axis_average_distances
+        self.assertEqual(zone_vectors[0], (0, vY))
+        self.assertEqual(zone_vectors[1], (vX, 0))
+        self.assertEqual(zone_vectors[2], (vX, vY))
+        self.assertEqual(zone_vectors[3], (vX, -vY))
+        self.assertEqual(zone_vectors[4], (vX, 2*vY))
+        self.assertEqual(zone_vectors[5], (-vX, 2*vY))
+
+
 class test_sublattice_mask(unittest.TestCase):
 
     def setUp(self):

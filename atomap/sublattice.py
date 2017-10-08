@@ -24,6 +24,7 @@ from atomap.atom_finding_refining import _make_circular_mask
 
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
+from atomap.symmetry_finding import _remove_parallel_vectors
 
 from atomap.external.add_marker import add_marker
 from atomap.external.gaussian2d import Gaussian2D
@@ -924,9 +925,29 @@ class Sublattice():
         Only the unique vectors are kept, meaning parallel and antiparallel
         ones are removed.
 
+        This function populates sublattice.zones_axis_average_distances and
+        sublattice.zones_axis_average_distances_names
+
+        Note: this function requires sublattice._pixel_separation to be set
+        before running this function. This is normally done by calling
+        sublattice._get_pixel_separation()
+
+        Parameters
+        ----------
+        pixel_separation_factor : default 7
+
+        Example
+        -------
+        >>> import atomap.dummy_data as dd
+        >>> sublattice = dd.get_simple_cubic_sublattice()
+        >>> sublattice._pixel_separation = sublattice._get_pixel_separation()
+        >>> sublattice._make_translation_symmetry()
+        >>> zone_vectors = sublattice.zones_axis_average_distances
+
         See also
         --------
         get_fingerprint_2d : function used to get full vector list
+
         """
         pixel_radius = self._pixel_separation*pixel_separation_factor
         fp_2d = self.get_fingerprint_2d(pixel_radius=pixel_radius)
@@ -936,10 +957,9 @@ class Sublattice():
                     float(format(zone_vector[0], '.2f')),
                     float(format(zone_vector[1], '.2f')))
             clusters.append(cluster)
-        clusters = self._sort_vectors_by_length(clusters)
-        clusters = self._remove_parallel_vectors(
+        clusters = _remove_parallel_vectors(
                 clusters,
-                tolerance=self._pixel_separation/1.5)
+                distance_tolerance=self._pixel_separation/1.5)
 
         new_zone_vector_name_list = []
         for zone_vector in clusters:
@@ -947,48 +967,6 @@ class Sublattice():
 
         self.zones_axis_average_distances = clusters
         self.zones_axis_average_distances_names = new_zone_vector_name_list
-
-    def _sort_vectors_by_length(self, old_vector_list):
-        vector_list = copy.deepcopy(old_vector_list)
-        zone_vector_distance_list = []
-        for vector in vector_list:
-            distance = math.hypot(vector[0], vector[1])
-            zone_vector_distance_list.append(distance)
-
-        vector_list.sort(key=dict(zip(
-            vector_list, zone_vector_distance_list)).get)
-        return(vector_list)
-
-    def _find_shortest_vector(self, vector_list):
-        shortest_atom_distance = 100000000000000000000000000000
-        for vector in vector_list:
-            distance = math.hypot(vector[0], vector[1])
-            if distance < shortest_atom_distance:
-                shortest_atom_distance = distance
-        return(shortest_atom_distance)
-
-    def _remove_parallel_vectors(self, old_vector_list, tolerance=7):
-        """
-        Remove parallel and antiparallel zone vectors.
-        """
-        vector_list = copy.deepcopy(old_vector_list)
-        element_prune_list = []
-        for zone_index, zone_vector in enumerate(vector_list):
-            for n in range(-4, 5):
-                n_vector = (n*zone_vector[0], n*zone_vector[1])
-                for temp_index, temp_zone_vector in enumerate(
-                        vector_list[zone_index+1:]):
-                    dist_x = temp_zone_vector[0]-n_vector[0]
-                    dist_y = temp_zone_vector[1]-n_vector[1]
-                    distance = math.hypot(dist_x, dist_y)
-                    if distance < tolerance:
-                        element_prune_list.append(zone_index+temp_index+1)
-        element_prune_list = list(set(element_prune_list))
-        element_prune_list.sort()
-        element_prune_list.reverse()
-        for element_prune in element_prune_list:
-            del(vector_list[element_prune])
-        return(vector_list)
 
     def _get_atom_plane_list_from_zone_vector(self, zone_vector):
         temp_atom_plane_list = []
