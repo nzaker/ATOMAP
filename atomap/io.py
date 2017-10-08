@@ -1,3 +1,4 @@
+"""Module containing functions to save and load Atom_Lattice objects."""
 import h5py
 import os
 from atomap.atom_lattice import Atom_Lattice
@@ -21,6 +22,7 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
     Returns
     -------
     Atomap Atom_Lattice object
+
     """
     h5f = h5py.File(filename, 'r')
     atom_lattice = Atom_Lattice()
@@ -122,6 +124,15 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
 
 
 def save_atom_lattice_to_hdf5(atom_lattice, filename, overwrite=False):
+    """Store an Atom_Lattice object as an HDF5-file.
+
+    Parameters
+    ----------
+    atom_lattice : Atomap Atom_Lattice object
+    filename : string
+    overwrite : bool, default False
+
+    """
     if os.path.isfile(filename) and not overwrite:
         raise FileExistsError(
                 "The file %s already exist, either change the name or "
