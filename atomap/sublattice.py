@@ -1936,6 +1936,7 @@ class Sublattice():
         -------
         HyperSpy 2D-signal
             The atom positions as permanent markers stored in the metadata.
+
         """
         if image is None:
             image = self.original_image
@@ -1980,21 +1981,22 @@ class Sublattice():
     def _get_sublattice_atom_list_mask(self, image_data=None, radius=1):
         """
         Returns a list of indices, where mask_list[0] is the indices
-        for a circular mask with the given radus around the atom in
-        atom_list[0]
+        for a circular mask with the given radius around the atom in
+        atom_list[0].
 
         Parameters
         ----------
         image_data : NumPy 2D array
             Image data from which the shape of the mask array is found.
             By default, the sublattice.original_image is used.
-        radius : float,
+        radius : float
             radius of the circular mask
 
         Returns
         -------
         A list of mask indices lists. Mask_list has the same length as
         atom_list, and each element in the list is an array of indices
+
         """
         if image_data is None:
             image_data = self.original_image
@@ -2029,6 +2031,7 @@ class Sublattice():
         Returns
         -------
         HyperSpy 2D-signal containing the masked image.
+
         """
         if image_data is None:
             image_data = self.original_image
