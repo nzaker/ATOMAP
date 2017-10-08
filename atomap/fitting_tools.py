@@ -34,8 +34,8 @@ def ODR_linear_fitter(x, y):
     return(beta)
     
 def get_shortest_distance_point_to_line(x_list,y_list,line):
-    """Calculates the shortest distance from a point to a line given by a
-    function.
+    """Calculates the shortest distance from each point in a list to a line
+    y = ax + b, given by in the form [a, b].
     
     """
     x0, y0 = np.asarray(x_list), np.asarray(y_list)
