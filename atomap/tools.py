@@ -11,8 +11,8 @@ from hyperspy.signals import Signal1D, Signal2D
 
 from atomap.atom_finding_refining import (
         _fit_atom_positions_with_gaussian_model)
+from atomap.fitting_tools import ODR_linear_fitter, linear_fit_func
 from sklearn.cluster import DBSCAN
-
 
 # From Vidars HyperSpy repository
 def _line_profile_coordinates(src, dst, linewidth=1):
@@ -636,25 +636,11 @@ def project_position_property_sum_planes(
 
     x_pos = interface_plane.get_x_position_list()
     y_pos = interface_plane.get_y_position_list()
-    fit = np.polyfit(x_pos, y_pos, 1)
-    fit_fn = np.poly1d(fit)
-    x_pos_range = max(x_pos) - min(x_pos)
-    interface_x = np.linspace(
-        min(x_pos)-x_pos_range,
-        max(x_pos)+x_pos_range,
-        len(x_pos)*2000)
-    interface_y = fit_fn(interface_x)
+    beta = ODR_linear_fitter(x_pos, y_pos)
 
-    data_list = []
-    for x_pos, y_pos, z_pos in zip(x_pos_list, y_pos_list, z_pos_list):
-        closest_distance, direction =\
-                interface_plane.get_closest_distance_and_angle_to_point(
-                    (x_pos, y_pos),
-                    use_precalculated_line=[interface_x, interface_y],
-                    plot_debug=False)
-        position = closest_distance*math.copysign(1, direction)*-1
-        data_list.append([position, z_pos])
-    data_list = np.array(data_list)
+    dist = interface_plane.get_closest_distance_and_angle_to_point(x_pos_list, y_pos_list, use_precalculated_line=beta)
+
+    data_list = np.stack((dist,z_pos_list)).T
     data_list = data_list[data_list[:, 0].argsort()]
 
     if rebin_data:
