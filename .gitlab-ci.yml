@@ -8,12 +8,20 @@ pip_install_unittest_docstring_documentation_coverage:
     - xvfb-run python3 -m pytest --doctest-modules --cov=atomap atomap/
     - xvfb-run python3 -m pytest --doctest-glob="*.rst" doc/
 
-style_checks:
+style_checks_flake8:
+    image: debian:sid
+    script:
+    - apt-get update -q
+    - apt-get install -qy python3-flake8
+    - python3 -m flake8 atomap/
+    allow_failure: true
+
+style_checks_flake8_docstrings:
     image: debian:sid
     script:
     - apt-get update -q
     - apt-get install -qy python3-flake8 python3-flake8-docstrings
-    - python3 -m flake8 atomap/
+    - python3 -m flake8 --exclude atomap/tests/ atomap/
     allow_failure: true
 
 anaconda_install_tests:
