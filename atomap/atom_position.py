@@ -1,3 +1,8 @@
+"""This module contains the Atom_Position class.
+
+The Atom_Position is the "base unit" in Atomap, since it contains
+the information about the individual atomic columns.
+"""
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,6 +19,8 @@ class Atom_Position:
             self, x, y, sigma_x=1., sigma_y=1., rotation=0.01,
             amplitude=1.):
         """
+        The Atom_Position class contain information about a single atom column.
+
         Parameters
         ----------
         x : float
@@ -96,7 +103,9 @@ class Atom_Position:
     @property
     def rotation_ellipticity(self):
         """Rotation between the "x-axis" and longest sigma.
-        Basically giving the direction of the ellipticity."""
+
+        Basically giving the direction of the ellipticity.
+        """
         if self.sigma_x > self.sigma_y:
             temp_rotation = self.__rotation % math.pi
         else:
@@ -127,9 +136,10 @@ class Atom_Position:
 
     def get_angle_between_atoms(self, atom0, atom1=None):
         """
-        Return the angle between itself and two atoms
-        in radians, or between another atom and the
-        horizontal axis.
+        Return the angle between atoms in radians.
+
+        Can either find the angle between self and two other atoms,
+        or between another atom and the horizontal axis.
 
         Parameters
         ----------
@@ -144,6 +154,18 @@ class Atom_Position:
         -------
         Angle : float
             Angle in radians
+
+        Examples
+        --------
+        >>> from atomap.atom_position import Atom_Position
+        >>> atom0 = Atom_Position(0, 0)
+        >>> atom1 = Atom_Position(1, 1)
+        >>> atom2 = Atom_Position(-1, 1)
+        >>> atom0.get_angle_between_atoms(atom1, atom2)
+        1.5707963267948966
+        >>> atom0.get_angle_between_atoms(atom1)
+        0.78539816339744828
+
         """
         vector0 = np.array([
             atom0.pixel_x - self.pixel_x,
