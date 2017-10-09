@@ -11,8 +11,9 @@ from hyperspy.signals import Signal1D, Signal2D
 
 from atomap.atom_finding_refining import (
         _fit_atom_positions_with_gaussian_model)
-from atomap.fitting_tools import ODR_linear_fitter, linear_fit_func
 from sklearn.cluster import DBSCAN
+import logging
+
 
 # From Vidars HyperSpy repository
 def _line_profile_coordinates(src, dst, linewidth=1):
@@ -149,39 +150,107 @@ def get_atom_planes_square(
 
 
 def find_average_distance_between_atoms(
-        input_data_list, crop_start=3, crop_end=3):
+        input_data_list, crop_start=3, crop_end=3, threshold=0.4):
+    """Returns the distance between monolayers.
+
+    Returns the maximal separation between two adjacent points in
+    input_data_list[:,0], as a good approximation for monolayer separation.
+
+    Parameters
+    ----------
+    input_data_list : NumPy array
+        An array where the distance from a point to a line is in
+        input_data_list[:, 0]
+    crop_start, crop_end : int
+        Before and after the index given by crop_start and crop_end, the data
+        is ignored. By default 3, to ignore outliers.
+    threshold : float, default 0.4
+        Atoms with a separation of more than the threshold times the largest
+        atom separation will be counted as members of different planes.
+
+    Returns
+    -------
+    first_peak : float
+        The monolayer separation.
+    monolayer_sep : array
+        An array with monolayer separations
+    mean_separation : float
+        The mean monolayer separation
+
+    """
     data_list = input_data_list[:, 0]
     data_list.sort()
     atom_distance_list = data_list[1:]-data_list[:-1]
-    normalized_atom_distance_list = atom_distance_list/atom_distance_list.max()
-    first_peak_index = np.argmax(
-            normalized_atom_distance_list[
-                crop_start:-crop_end] > 0.4) + crop_start
+    norm_atom_distance_list = atom_distance_list/atom_distance_list.max()
+    is_monolayers = norm_atom_distance_list[crop_start:-crop_end] > threshold
+    atoms_wo_outliers = atom_distance_list[crop_start:-crop_end]
+    monolayer_sep = atoms_wo_outliers[np.argwhere(is_monolayers)]
+    mean_separation = monolayer_sep.mean()
+    first_peak_index = np.argmax(is_monolayers) + crop_start
     first_peak = atom_distance_list[first_peak_index]
-    return(first_peak)
+    if abs(mean_separation - first_peak) > 0.10*first_peak:
+        str1 = '\nThe mean monolayer separation and distance to the first \
+                \nmonolayer deviate with more than 10 %. Consider if there \
+                \nare too many outliers'
+        logging.warning(str1)
+    return(first_peak, monolayer_sep, mean_separation)
 
 
 def combine_clustered_positions_into_layers(
         data_list, layer_distance, combine_layers=True):
+    """"Combines clustered positions into groups.
+
+    Atoms with a similar distance for a line belong to the same plane parallel
+    to this line. Atoms in data_list are grouped based on which plane they
+    belong to.
+
+    Parameters
+    ----------
+    data_list : NumPy array
+        An array where the distance from a point to a line is in
+        input_data_list[:, 0], and the property of the point (atom)
+        is in [:,1]
+    layer_distance : float
+        The half width of a layer, used to determine which layer an atom
+        belongs to.
+    combine_layers : bool, default True
+        If True, the values for distance and property is averaged for each
+        layer.
+
+    Returns
+    -------
+    A list, layer_list. If combine_layers is True, a list of the average
+    position and property of the points in the layer. If False, a nested
+    list where each element in layer_list contains a list the atoms (position
+    and property) in the layer.
+
+    """
     layer_list = []
     one_layer_list = [data_list[0].tolist()]
+    i = 0
     for atom_pos in data_list[1:]:
         if np.abs(atom_pos[0] - one_layer_list[-1][0]) < layer_distance:
             one_layer_list.append(atom_pos.tolist())
+            i += 1
         else:
             if not (len(one_layer_list) == 1):
                 if combine_layers is True:
                     one_layer_list = np.array(
                             one_layer_list).mean(0).tolist()
                 layer_list.append(one_layer_list)
+            i += 1
             one_layer_list = [atom_pos.tolist()]
+    if combine_layers is True:
+        one_layer_list = np.array(one_layer_list).mean(0).tolist()
+        layer_list.append(one_layer_list)
     return(layer_list)
 
 
 def combine_clusters_using_average_distance(data_list, margin=0.5):
-    first_peak = find_average_distance_between_atoms(data_list)*margin
+    first_peak, monolayer_sep, mean_separation = \
+            find_average_distance_between_atoms(data_list)
     layer_list = combine_clustered_positions_into_layers(
-            data_list, first_peak)
+            data_list, first_peak*margin)
     return(layer_list)
 
 
@@ -634,13 +703,10 @@ def project_position_property_sum_planes(
     y_pos_list = input_data_list[:, 1]
     z_pos_list = input_data_list[:, 2]
 
-    x_pos = interface_plane.get_x_position_list()
-    y_pos = interface_plane.get_y_position_list()
-    beta = ODR_linear_fitter(x_pos, y_pos)
+    dist = interface_plane.get_closest_distance_and_angle_to_point(
+                    x_pos_list, y_pos_list)
 
-    dist = interface_plane.get_closest_distance_and_angle_to_point(x_pos_list, y_pos_list, use_precalculated_line=beta)
-
-    data_list = np.stack((dist,z_pos_list)).T
+    data_list = np.stack((dist, z_pos_list)).T
     data_list = data_list[data_list[:, 0].argsort()]
 
     if rebin_data:
