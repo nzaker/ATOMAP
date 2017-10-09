@@ -625,3 +625,41 @@ class test_project_property_line_profile(unittest.TestCase):
                         plane)
         self.assertTrue((s.data == (5./9)).all())
         self.assertTrue(len(s.metadata['Markers'].keys()) == 9)
+
+
+class test_project_property_line_crossing(unittest.TestCase):
+
+    def setUp(self):
+        t = tt.MakeTestData(50, 50)
+        x, y = np.mgrid[5:50:5, 5:50:5]
+        x, y = x.flatten(), y.flatten()
+        t.add_atom_list(x, y)
+        sublattice = t.sublattice
+        sublattice.construct_zone_axes()
+        self.sublattice = sublattice
+
+        x0, x1, idx = 1, 8, []
+        for j in range(1, 9):
+            span = np.arange(x0, x0+x1, 1)
+            x0 += 10
+            x1 -= 1
+            idx.extend(span)
+
+        idx = np.asarray(idx)
+
+        z_list = np.full_like(sublattice.x_position, 0)
+        z_list[idx] = 1
+        self.property_list = z_list
+
+    def test_projection_orhogonal(self):
+        sublattice = self.sublattice
+        property_list = self.property_list
+        zone = sublattice.zones_axis_average_distances[2]
+        plane = sublattice.atom_planes_by_zone_vector[zone][8]
+        s = sublattice._get_property_line_profile(
+                        sublattice.x_position,
+                        sublattice.y_position,
+                        property_list,
+                        plane)
+        self.assertAlmostEqual(s.isig[:0.].data.all(), 1, places=2)
+        self.assertAlmostEqual(s.isig[5.:].data.all(), 0, places=2)
