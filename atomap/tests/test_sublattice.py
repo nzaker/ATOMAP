@@ -538,10 +538,90 @@ class test_plot_functions(unittest.TestCase):
 
     def test_plot_planes(self):
         self.sublattice.construct_zone_axes()
-        self.sublattice.plot_planes(color='green', add_numbers=True, cmap='viridis')
+        self.sublattice.plot_planes(
+                        color='green',
+                        add_numbers=True,
+                        cmap='viridis')
 
     def test_plot_ellipticity_vectors(self):
         self.sublattice.plot_ellipticity_vectors(save=True)
 
     def test_plot_ellipticity_map(self):
         self.sublattice.plot_ellipticity_map(cmap='viridis')
+
+
+class test_project_property_line_profile(unittest.TestCase):
+
+    def setUp(self):
+        x, y = np.mgrid[5:50:5, 5:50:5]
+        x, y = x.flatten(), y.flatten()
+
+        tV = tt.MakeTestData(50, 50)
+        tV.add_atom_list(x, y)
+        sublatticeV = tV.sublattice
+        sublatticeV.construct_zone_axes()
+        self.sublatticeV = sublatticeV
+
+        tH = tt.MakeTestData(50, 50)
+        tH.add_atom_list(y, x)
+        sublatticeH = tH.sublattice
+        sublatticeH.construct_zone_axes()
+        self.sublatticeH = sublatticeH
+
+        z_list = np.full_like(sublatticeV.x_position, 0)
+        z_list[36:] = 1
+        self.property_list = z_list
+
+    def test_vertical_interface_horizontal_projection_plane(self):
+        sublattice = self.sublatticeV
+        property_list = self.property_list
+        zone = sublattice.zones_axis_average_distances[0]
+        plane = sublattice.atom_planes_by_zone_vector[zone][4]
+        s = sublattice._get_property_line_profile(
+                        sublattice.x_position,
+                        sublattice.y_position,
+                        property_list,
+                        plane)
+        self.assertAlmostEqual(s.isig[:-5.].data.all(), 0, places=2)
+        self.assertAlmostEqual(s.isig[0.:].data.all(), 1, places=2)
+        self.assertTrue(len(s.metadata['Markers'].keys()) == 9)
+
+    def test_vertical_interface_vertical_projection_plane(self):
+        sublattice = self.sublatticeV
+        property_list = self.property_list
+        zone = sublattice.zones_axis_average_distances[1]
+        plane = sublattice.atom_planes_by_zone_vector[zone][0]
+        s = sublattice._get_property_line_profile(
+                        sublattice.x_position,
+                        sublattice.y_position,
+                        property_list,
+                        plane)
+        self.assertTrue((s.data == (5./9)).all())
+        self.assertTrue(len(s.metadata['Markers'].keys()) == 9)
+
+    def test_horizontal_interface_vertical_projection_plane(self):
+        sublattice = self.sublatticeH
+        property_list = self.property_list
+        zone = sublattice.zones_axis_average_distances[0]
+        plane = sublattice.atom_planes_by_zone_vector[zone][4]
+        s = sublattice._get_property_line_profile(
+                        sublattice.x_position,
+                        sublattice.y_position,
+                        property_list,
+                        plane)
+        self.assertAlmostEqual(s.isig[:0.].data.all(), 1, places=2)
+        self.assertAlmostEqual(s.isig[5.:].data.all(), 0, places=2)
+        self.assertTrue(len(s.metadata['Markers'].keys()) == 9)
+
+    def test_horizontal_interface_horizontal_projection_plane(self):
+        sublattice = self.sublatticeH
+        property_list = self.property_list
+        zone = sublattice.zones_axis_average_distances[1]
+        plane = sublattice.atom_planes_by_zone_vector[zone][0]
+        s = sublattice._get_property_line_profile(
+                        sublattice.x_position,
+                        sublattice.y_position,
+                        property_list,
+                        plane)
+        self.assertTrue((s.data == (5./9)).all())
+        self.assertTrue(len(s.metadata['Markers'].keys()) == 9)
