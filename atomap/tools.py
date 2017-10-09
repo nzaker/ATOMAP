@@ -202,7 +202,8 @@ def combine_clustered_positions_into_layers(
 
     Atoms with a similar distance for a line belong to the same plane parallel
     to this line. Atoms in data_list are grouped based on which plane they
-    belong to.
+    belong to. If there is only one atom in a layer, it will be disregarded as
+    it gives a high uncertainty.
 
     Parameters
     ----------
@@ -241,8 +242,9 @@ def combine_clustered_positions_into_layers(
             i += 1
             one_layer_list = [atom_pos.tolist()]
     if combine_layers is True:
-        one_layer_list = np.array(one_layer_list).mean(0).tolist()
-        layer_list.append(one_layer_list)
+        if not (len(one_layer_list) == 1):
+            one_layer_list = np.array(one_layer_list).mean(0).tolist()
+            layer_list.append(one_layer_list)
     return(layer_list)
 
 
