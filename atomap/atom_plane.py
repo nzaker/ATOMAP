@@ -5,6 +5,9 @@ import math
 from scipy.stats import linregress
 from scipy import interpolate
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from atomap.fitting_tools import (
+    ODR_linear_fitter, linear_fit_func, get_shortest_distance_point_to_line)
 
 
 class Atom_Plane():
@@ -359,70 +362,59 @@ class Atom_Plane():
 
     def get_closest_distance_and_angle_to_point(
             self,
-            point_position,
+            points_x, points_y,
             plot_debug=False,
             use_precalculated_line=False):
-        x_pos = self.get_x_position_list()
-        y_pos = self.get_y_position_list()
+        """Returns the smallest distances from each point in a list to
+        the atom plane.
 
+        Parameters
+        ----------
+        points_x, points_y : list
+            The x and y coordinates for the atoms.
+        plot_debug : bool, default False
+            If true, a debug plot is saved. The plot is a 3D plot of x and
+            y positions and distance to the plane.
+        use_precalculated line: bool or list/array
+            The coefficients [a, b] for the linear line y = ax + b to which
+            the shortest distance should be found. By default False, in which
+            the coefficients are found by fitting a staight line to
+            self (atom plane).
+
+        Returns
+        -------
+        A list of shortest distances.
+
+        """
         if (use_precalculated_line is False):
-            fit = np.polyfit(x_pos, y_pos, 1)
-            fit_fn = np.poly1d(fit)
-            x_pos_range = x_pos[-1] - x_pos[0]
-            new_x = np.arange(
-                    x_pos[0]-x_pos_range,
-                    x_pos[-1]+x_pos_range,
-                    0.00001)
-            new_y = fit_fn(new_x)
+            x_pos = self.get_x_position_list()
+            y_pos = self.get_y_position_list()
+            beta = ODR_linear_fitter(x_pos, y_pos)
         else:
-            new_x = use_precalculated_line[0]
-            new_y = use_precalculated_line[1]
+            beta = use_precalculated_line
 
-        x_position_point = point_position[0]
-        y_position_point = point_position[1]
-
-        dist_x = new_x - x_position_point
-        dist_y = new_y - y_position_point
-
-        distance = (dist_x**2 + dist_y**2)**0.5
-        closest_index = distance.argmin()
-        closest_distance = distance[closest_index]
-
-        point0 = (new_x[closest_index], new_y[closest_index])
-        if closest_index == (len(new_x) - 1):
-            point1 = (
-                    -1*new_x[closest_index-1],
-                    -1*new_y[closest_index-1])
-        else:
-            point1 = (new_x[closest_index+1], new_y[closest_index+1])
-
-        vector0 = (point1[0]-point0[0], point1[1]-point0[1])
-        vector1 = (
-                point_position[0]-point0[0],
-                point_position[1]-point0[1])
-
-        direction = np.cross(vector0, vector1)
+        dist = get_shortest_distance_point_to_line(points_x, points_y, beta)
 
         if plot_debug:
+            x_pos = self.get_x_position_list()
+            y_pos = self.get_y_position_list()
+            x0, x1 = min(x_pos), max(x_pos)
+            new_x = np.linspace(x0, x1, 200)
+            new_y = linear_fit_func(beta, new_x)
             plt.ioff()
-            fig, ax = plt.subplots()
-            ax.plot(
-                    self.get_x_position_list(),
-                    self.get_y_position_list())
-            ax.plot(new_x, new_y)
-            ax.plot(
-                    [point_position[0], point0[0]],
-                    [point_position[1], point0[1]])
-            ax.set_xlim(0, 1000)
-            ax.set_ylim(0, 1000)
-            ax.text(
-                    0.2,
-                    0.2,
-                    str(closest_distance*math.copysign(1, direction)))
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.plot(new_x, new_y, color='r', lw=1)
+            ax.scatter(x_pos, y_pos, color='r')
+            ax.scatter(points_x, points_y, dist, s=1)
+            ax.set_zlabel('Distance to plane')
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+            ax.view_init(elev=0, azim=10)
             fig.savefig(str(np.random.randint(1000, 20000)) + ".png")
             plt.close()
 
-        return(closest_distance, direction)
+        return(dist)
 
     def _plot_debug_atom_plane(self):
         fig, ax = plt.subplots(figsize=(10, 10))
