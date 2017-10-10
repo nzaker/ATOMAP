@@ -357,12 +357,12 @@ class test_get_atom_positions(unittest.TestCase):
                 self.s_adf_modified,
                 self.pixel_separation)
         self.assertEqual(len(peaks), 238)
-        
-        
+
+
 class test_bad_fit_condition(unittest.TestCase):
 
     def setUp(self):
-        t =  MakeTestData(40,40)
+        t = MakeTestData(40, 40)
         x, y = np.mgrid[5:40:10, 5:40:10]
         x, y = x.flatten(), y.flatten()
         t.add_atom_list(x, y)
@@ -374,21 +374,24 @@ class test_bad_fit_condition(unittest.TestCase):
         atom = [sublattice.atom_list[6]]
         x0 = atom[0].pixel_x
         atom[0].pixel_x += 2
-        g = _fit_atom_positions_with_gaussian_model(atom, sublattice.image, mask_radius=4)
+        g = _fit_atom_positions_with_gaussian_model(
+                atom, sublattice.image, mask_radius=4)
         self.assertAlmostEqual(g[0].centre_x.value, x0, places=1)
-        
+
     def test_initial_position_outside_mask_x(self):
         sublattice = self.sublattice
         atom = [sublattice.atom_list[6]]
         atom[0].pixel_x += 3
-        g = _fit_atom_positions_with_gaussian_model(atom, sublattice.image, mask_radius=2)
+        g = _fit_atom_positions_with_gaussian_model(
+                atom, sublattice.image, mask_radius=2)
         self.assertFalse(g)
 
     def test_initial_position_outside_mask_y(self):
         sublattice = self.sublattice
         atom = [sublattice.atom_list[6]]
         atom[0].pixel_y -= 4
-        g = _fit_atom_positions_with_gaussian_model(atom, sublattice.image, mask_radius=2)
+        g = _fit_atom_positions_with_gaussian_model(
+                atom, sublattice.image, mask_radius=2)
         self.assertFalse(g)
 
     def test_initial_position_outside_mask_xy(self):
@@ -396,5 +399,6 @@ class test_bad_fit_condition(unittest.TestCase):
         atom = [sublattice.atom_list[6]]
         atom[0].pixel_y += 3
         atom[0].pixel_x += 3
-        g = _fit_atom_positions_with_gaussian_model(atom, sublattice.image, mask_radius=2)
+        g = _fit_atom_positions_with_gaussian_model(
+                atom, sublattice.image, mask_radius=2)
         self.assertFalse(g)

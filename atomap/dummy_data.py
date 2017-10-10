@@ -1,6 +1,7 @@
 import numpy as np
 from atomap.testing_tools import MakeTestData
 
+
 def _make_simple_cubic_testdata(image_noise=False):
     simple_cubic = MakeTestData(300, 300)
     x, y = np.mgrid[10:290:20j, 10:290:20j]
@@ -109,7 +110,7 @@ def _make_fantasite_test_data():
         test_data.add_atom_list(xA2, yA2, sigma_x=3, sigma_y=3, amplitude=10)
         test_data.add_atom_list(xA3, yA3, sigma_x=3, sigma_y=3, amplitude=10)
     down = True
-    for i in range(3*7*17+17,580,17):
+    for i in range(3*7*17+17, 580, 17):
         xA4, xA5 = xA0[i:i+17:2], xA0[i+1:i+17:2]
         if down:
             yA4 = yA0[i:i+17:2] + dx
@@ -123,19 +124,21 @@ def _make_fantasite_test_data():
 
     xB0, yB0 = np.mgrid[10:495:15, 25:495:30]
     xB0, yB0 = xB0.flatten(), yB0.flatten()
-    test_data.add_atom_list(xB0[0:8*16],yB0[0:8*16],
-                sigma_x=3, sigma_y=3, amplitude=20)
+    test_data.add_atom_list(
+            xB0[0:8*16], yB0[0:8*16],
+            sigma_x=3, sigma_y=3, amplitude=20)
     xB2, yB2 = xB0[8*16:], yB0[8*16:]
-    sig = np.arange(3,4.1,0.2)
-    sigma_y_list = np.hstack((sig, sig[::-1], sig, sig[::-1],np.full(10,3)))
+    sig = np.arange(3, 4.1, 0.2)
+    sigma_y_list = np.hstack((sig, sig[::-1], sig, sig[::-1], np.full(10, 3)))
     down = True
     for i, x in enumerate(xB2):
         rotation = 0.39
         if down:
             rotation *= -1
         sigma_y = sigma_y_list[i // 16]
-        test_data.add_atom(x, yB2[i], sigma_x=3, sigma_y=sigma_y, 
-                           amplitude=20, rotation=rotation)
+        test_data.add_atom(
+                x, yB2[i], sigma_x=3, sigma_y=sigma_y,
+                amplitude=20, rotation=rotation)
         down = not down
     test_data.add_image_noise(mu=0, sigma=0.01)
     return test_data

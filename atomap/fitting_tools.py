@@ -36,10 +36,9 @@ def ODR_linear_fitter(x, y):
     """
     Model = scipy.odr.Model(linear_fit_func)
     Data = scipy.odr.RealData(x, y)
-    Odr = scipy.odr.ODR(Data, Model, [10000, 1], maxit = 10000)
+    Odr = scipy.odr.ODR(Data, Model, [10000, 1], maxit=10000)
     output = Odr.run()
     beta = output.beta
-    betastd = output.sd_beta
     return(beta)
 
 

@@ -1,7 +1,6 @@
 import numpy as np
 import operator
 import copy
-import math
 from scipy.stats import linregress
 from scipy import interpolate
 import matplotlib.pyplot as plt
@@ -403,7 +402,7 @@ class Atom_Plane():
             new_y = linear_fit_func(beta, new_x)
             plt.ioff()
             fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
+            ax = fig.gca(projection=Axes3D.name)
             ax.plot(new_x, new_y, color='r', lw=1)
             ax.scatter(x_pos, y_pos, color='r')
             ax.scatter(points_x, points_y, dist, s=1)

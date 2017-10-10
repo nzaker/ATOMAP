@@ -2,11 +2,9 @@ import numpy as np
 import scipy as sp
 from tqdm import tqdm, trange
 import matplotlib.pyplot as plt
-import math
 from scipy.spatial import cKDTree
 import hyperspy.api as hs
 from hyperspy.signals import Signal2D
-import copy
 from hyperspy.drawing._markers.point import Point
 
 from atomap.tools import (
@@ -2009,7 +2007,6 @@ class Sublattice():
             indices = np.where(temp_mask)
             mask_list.append(indices)
         return(mask_list)
-
 
     def mask_image_around_sublattice(self, image_data, radius=1):
         """

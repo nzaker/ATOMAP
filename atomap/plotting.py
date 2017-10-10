@@ -667,7 +667,7 @@ def plot_line_profiles_from_parameter_input(
         for ax in fig.axes:
             ax.set_xlim(x_lim[0], x_lim[1])
 
-    if extra_line_marker is not None:
+    if extra_line_marker_list is not None:
         for extra_line_marker in extra_line_marker_list:
             for ax in fig.axes:
                 ax.axvline(extra_line_marker, color='red')
