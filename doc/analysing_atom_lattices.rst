@@ -70,8 +70,8 @@ The atom lattice can be loaded:
     >>> atom_lattice = am.load_atom_lattice_from_hdf5("fantasite.hdf5")
     >>> atom_lattice
     <Atom_Lattice, fantasite (sublattice(s): 2)>
-    >>> atom_lattice.sublattice_list
-    [<Sublattice, A (atoms:497,planes:6)>, <Sublattice, B (atoms:465,planes:6)>]
+    >>> atom_lattice.sublattice_list # doctest: +SKIP
+    [<Sublattice, A (atoms:497,planes:6)>, <Sublattice, B (atoms:465,planes:6)>] # doctest: +SKIP
     >>> image = atom_lattice.image0
 
 :py:class:`atomap.atom_lattice.Atom_Lattice` is an object containing the sublattices, and other types of information.
@@ -115,7 +115,7 @@ Atom planes for a specific direction can also be accessed:
 .. code-block:: python
 
     >>> zone_axis0 = sublattice_A.zones_axis_average_distances[0]
-    >>> atom_plane_list0 = sublattice.atom_planes_by_zone_vector[zone_axis0]
+    >>> atom_plane_list0 = sublattice_A.atom_planes_by_zone_vector[zone_axis0]
 
 
 .. _getting_ellipticity:

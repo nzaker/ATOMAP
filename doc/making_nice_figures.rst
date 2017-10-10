@@ -16,20 +16,20 @@ This makes it quick to load the data when using for example matplotlib to make f
 .. code-block:: python
 
     >>> import numpy as np
-    >>> np.savez("datafile.npz", x=sublattice_A.x_position, y=sublattice_A.y_position, e=sublattice_A.ellipticity)
+    >>> np.savez("datafile.npz", x=sublattice_A.x_position, y=sublattice_A.y_position, e=sublattice_A.ellipticity) # doctest: +SKIP
 
 Alternatively, the data can be saved in comma-separated values (CSV) file, which can be opened in spreadsheet software:
 
 .. code-block:: python
 
-    >>> np.savetxt("datafile.csv", (sublattice_A.x_position, sublattice_A.y_position, sublattice_A.sigma_x, sublattice_A.sigma_y, sublattice_A.ellipticity), delimiter=',')
+    >>> np.savetxt("datafile.csv", (sublattice_A.x_position, sublattice_A.y_position, sublattice_A.sigma_x, sublattice_A.sigma_y, sublattice_A.ellipticity), delimiter=',') # doctest: +SKIP
 
 
 Signals can be saved by using the inbuilt `save` function.
 
 .. code-block:: python
 
-    >>> s_monolayer.save("monolayer_distances.hdf5",overwrite=True)
+    >>> s_monolayer.save("monolayer_distances.hdf5",overwrite=True) # doctest: +SKIP
 
 Matplotlib
 ----------
