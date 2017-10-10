@@ -363,27 +363,27 @@ class Atom_Plane():
     def get_closest_distance_and_angle_to_point(
             self,
             points_x, points_y,
-            plot_debug=False,
-            use_precalculated_line=False):
-        """Returns the smallest distances from each point in a list to
+            use_precalculated_line=False,
+            plot_debug=False):
+        """Return the smallest distances from each point in a list to
         the atom plane.
 
         Parameters
         ----------
-        points_x, points_y : list
+        points_x, points_y : list of numbers
             The x and y coordinates for the atoms.
+        use_precalculated_line : bool or list/array
+            The coefficients [a, b] for the linear line y = ax + b to which
+            the shortest distance should be found. By default False, in which
+            the coefficients are found by fitting a straight line to
+            self (atom plane).
         plot_debug : bool, default False
             If true, a debug plot is saved. The plot is a 3D plot of x and
             y positions and distance to the plane.
-        use_precalculated line: bool or list/array
-            The coefficients [a, b] for the linear line y = ax + b to which
-            the shortest distance should be found. By default False, in which
-            the coefficients are found by fitting a staight line to
-            self (atom plane).
 
         Returns
         -------
-        A list of shortest distances.
+        list of numbers : list of the shortest distances.
 
         """
         if (use_precalculated_line is False):

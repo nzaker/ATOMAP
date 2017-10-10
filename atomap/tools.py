@@ -151,7 +151,7 @@ def get_atom_planes_square(
 
 def find_average_distance_between_atoms(
         input_data_list, crop_start=3, crop_end=3, threshold=0.4):
-    """Returns the distance between monolayers.
+    """Return the distance between monolayers.
 
     Returns the maximal separation between two adjacent points in
     input_data_list[:,0], as a good approximation for monolayer separation.
@@ -198,7 +198,7 @@ def find_average_distance_between_atoms(
 
 def combine_clustered_positions_into_layers(
         data_list, layer_distance, combine_layers=True):
-    """"Combines clustered positions into groups.
+    """Combine clustered positions into groups.
 
     Atoms with a similar distance for a line belong to the same plane parallel
     to this line. Atoms in data_list are grouped based on which plane they
