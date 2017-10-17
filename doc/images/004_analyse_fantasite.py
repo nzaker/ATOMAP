@@ -78,7 +78,7 @@ def plot_al_zoom():
 
 def elli_line():
     zone = sublattice_A.zones_axis_average_distances[1]
-    plane = sublattice_A.atom_planes_by_zone_vector[zone][8]
+    plane = sublattice_A.atom_planes_by_zone_vector[zone][23]
     s_elli_line = sublattice_A.get_ellipticity_line_profile(plane)
     s_elli_line.plot()
     s_elli_line._plot.signal_plot.figure.savefig(

@@ -301,7 +301,7 @@ This example will introduce how line profiles of properties can be made.
 .. code-block:: python
 
     >>> zone = sublattice_A.zones_axis_average_distances[1]
-    >>> plane = sublattice_A.atom_planes_by_zone_vector[zone][4]
+    >>> plane = sublattice_A.atom_planes_by_zone_vector[zone][23]
     >>> s_elli_line = sublattice_A.get_ellipticity_line_profile(plane)
 
 .. image:: images/plotting_tutorial/line_ellip.png
@@ -310,12 +310,12 @@ This example will introduce how line profiles of properties can be made.
 .. image:: images/plotting_tutorial/line_ellip_plane.png
     :scale: 50 %
 
-In the above example, `plane` is atom plane number 4 in the right figure.
-This the "last plane" where the atomic columns in `sublattice_A` are circular.
-In plane 5, the columns become elliptical.
+In the above example, `plane` is atom plane number 23 in the right figure.
+This the "last plane" from the left where the atomic columns in `sublattice_A` are circular.
+In plane 22, the columns become elliptical.
 This plane is therefore sent into the function :py:meth:`atomap.sublattice.Sublattice.get_ellipticity_line_profile`, as the definition of where the interface (betwwen two structural domains) is.
 The values for ellipticity are integrated and averaged in the same direction as the plane (downwards), and plotted in the left figure.
-Average ellipticity is on the y-axis, while the x-axis is the distance from the interface (plane 4).
+Average ellipticity is on the y-axis, while the x-axis is the distance from the interface (plane 23).
 The x-axis is inverted, negative values are to the left of the interface and positive values to the right of the interface.
 
 :py:meth:`atomap.sublattice.Sublattice.get_ellipticity_line_profile` calls :py:meth:`atomap.sublattice.Sublattice._get_property_line_profile`,  which takes in 3 lists: x and y coordinates for the atoms, and a list of value for a property (in this case ellipticity).
@@ -340,7 +340,7 @@ The property of interest here was the separation of monolayers, and the separati
 .. code-block:: python
 
     >>> zone = sublattice_B.zones_axis_average_distances[1]
-    >>> plane = sublattice_B.atom_planes_by_zone_vector[zone][21]
+    >>> plane = sublattice_B.atom_planes_by_zone_vector[zone][-1]
     >>> s_dd_line = sublattice_B.get_atom_distance_difference_line_profile(zone,plane)
 
 .. image:: images/plotting_tutorial/line_dd.png
