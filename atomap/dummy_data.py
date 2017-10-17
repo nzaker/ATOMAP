@@ -70,21 +70,7 @@ def get_two_sublattice_signal():
     test_data.add_image_noise(mu=0, sigma=0.01)
     return test_data.signal
 
-def get_simple_heterostructure_signal_rotated(image_noise=True):
-    test_data = MakeTestData(400, 400)
-    x0, y0 = np.mgrid[10:390:15, 10:200:15]
-    test_data.add_atom_list(
-            y0.flatten(), x0.flatten(), sigma_x=3, sigma_y=3, amplitude=5)
 
-    y0_max = y0.max()
-    x1, y1 = np.mgrid[10:390:15, y0_max+16:395:16]
-    test_data.add_atom_list(
-            y1.flatten(), x1.flatten(), sigma_x=3, sigma_y=3, amplitude=5)
-
-    if image_noise:
-        test_data.add_image_noise(mu=0.0, sigma=0.005)
-    return test_data.signal
-    
 def get_simple_heterostructure_signal(image_noise=True):
     test_data = MakeTestData(400, 400)
     x0, y0 = np.mgrid[10:390:15, 10:200:15]
