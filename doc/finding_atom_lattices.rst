@@ -303,3 +303,84 @@ To save single sublattices, initialize an `Atom_Lattice` object with your sublat
     >>> atom_lattice = am.Atom_Lattice(image=sublattice.image, sublattice_list=[sublattice])
     >>> atom_lattice.save("simple_cubic_atom_lattice.hdf5")
 
+Finding the oxygen sublattice
+=============================
+Light elements such as oxygen and fluorine can be imaged in Annular Bright Field (ABF) mode.
+While the sublattices of heavier atoms such as the A and B cations in perovskites are best found in Annular Dark Field (ADF) image, the ABF image can be used to find the oxygen positions.
+In this example, we will use the sublattices found above to find the third and last sublattice in an ABF type of image.
+
+.. code-block:: python
+
+    >>> s_ABF = am.dummy_data.get_perovskite110_ABF_signal(image_noise=True)
+    >>> s_ABF.plot()
+
+.. image:: images/finding_atom_lattices/s_ABF.png
+    :align: center
+
+First, we need to "subtract" the intensity of the A and B cations in this image.
+In practice this means that the A and B sublattices in the ABF image must be found.
+We already have good atom positions for both the A and B sublattice from above, and these positions will be used as initial positions.
+Furthermore, the inverse of the ABF image is used, such that the intensities of the atoms in the image are higher than the surroundings.
+
+.. code-block:: python
+
+    >>> initial_positions = np.asarray(sublattice_A.atom_positions)
+    >>> initial_positions = np.swapaxes(initial_positions, 0, 1)
+    >>> sublattice_A2 = am.Sublattice(initial_positions, image=np.divide(1, s_ABF.data), color='r')
+    >>> sublattice_A2.find_nearest_neighbors()
+    >>> sublattice_A2.refine_atom_positions_using_center_of_mass()
+    >>> sublattice_A2.refine_atom_positions_using_2d_gaussian()
+    >>> sublattice_A2.construct_zone_axes()
+    >>> image_without_A2 = remove_atoms_from_image_using_2d_gaussian(sublattice_A2.image, sublattice_A2)
+    
+The same is done for the B-sublattice
+
+.. code-block:: python
+
+    >>> initial_positions = np.asarray(sublattice_B.atom_positions)
+    >>> initial_positions = np.swapaxes(initial_positions, 0, 1)
+    >>> sublattice_B2 = am.Sublattice(xy, image=image_without_A2, color='b')
+    >>> sublattice_B2.find_nearest_neighbors()
+    >>> sublattice_B2.refine_atom_positions_using_center_of_mass()
+    >>> sublattice_B2.refine_atom_positions_using_2d_gaussian()
+    >>> sublattice_B2.construct_zone_axes()
+    >>> sublattice_B2.plot_planes()
+
+.. image:: images/finding_atom_lattices/sublattice_B2.png
+    :align: center
+
+We know that the oxygen atoms are between B atoms in the horizontal direction.
+A similar method to the method for finding the first B-positions above, in the "ADF"-image, is used to find the O-columns in the "ABF" image.
+
+.. code-block:: python
+
+    >>> zone_axis_002 = sublattice_B2.zones_axis_average_distances[0]
+    >>> O_positions = sublattice_B2._find_missing_atoms_from_zone_vector(zone_axis_002)
+    >>> image_without_AB = remove_atoms_from_image_using_2d_gaussian(sublattice_B2.image, sublattice_B2)
+
+.. code-block:: python
+
+    >>> sublattice_O = am.Sublattice(O_positions, image_without_AB, color='g')
+    >>> sublattice_O.construct_zone_axes()
+    >>> sublattice_O.refine_atom_positions_using_center_of_mass()
+    >>> sublattice_O.refine_atom_positions_using_2d_gaussian()
+
+Zooming in to see some of the oxygen positions, indicated by the green dots.
+
+.. image:: images/finding_atom_lattices/oxygen_positions.png
+    :align: center
+    :scale: 50 %
+
+All three sublattices can now be added to an atom lattice: The A and B sublattices from the ADF image, and the O-sublattice from the ABF image.
+
+.. code-block:: python
+
+    >>> atom_lattice = am.Atom_Lattice(image=s_ABF.data, name='ABO3', sublattice_list=[sublattice_A, sublattice_B, sublattice_O])
+    
+Below the sublattices are show on both and ABF and ADF background.
+
+.. image:: images/finding_atom_lattices/ABO3.png
+    :scale: 50 %
+    
+.. image:: images/finding_atom_lattices/ABO3-ADF.png
+    :scale: 50 %
