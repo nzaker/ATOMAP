@@ -206,7 +206,7 @@ def get_perovskite110_ABF_signal(image_noise=False):
     Examples
     --------
     >>> import atomap.api as am
-    >>> s_ABF = am.get_perovskite110_ABF_signal()
+    >>> s_ABF = am.dummy_data.get_perovskite110_ABF_signal()
 
     """
     test_data = MakeTestData(300, 300)
