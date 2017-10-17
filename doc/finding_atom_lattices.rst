@@ -377,7 +377,7 @@ All three sublattices can now be added to an atom lattice: The A and B sublattic
 
     >>> atom_lattice = am.Atom_Lattice(image=s_ABF.data, name='ABO3', sublattice_list=[sublattice_A, sublattice_B, sublattice_O])
     
-Below the sublattices are show on both and ABF and ADF background.
+Below the sublattices are shown on both and ABF and ADF background.
 
 .. image:: images/finding_atom_lattices/ABO3.png
     :scale: 50 %
