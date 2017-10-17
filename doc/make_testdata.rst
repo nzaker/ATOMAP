@@ -17,7 +17,7 @@ The functionality for generating specific test data is useful for
     >>> s = am.dummy_data.get_dumbbell_signal()
     >>> s.plot()
 
-.. image:: images/testdata/dumbell.png
+.. image:: images/testdata/dumbbell.png
     :scale: 50 %
     :align: center
 
