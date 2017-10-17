@@ -1,5 +1,6 @@
 import numpy as np
 from atomap.testing_tools import MakeTestData
+import hyperspy.api as hs
 
 
 def _make_simple_cubic_testdata(image_noise=False):
@@ -188,3 +189,40 @@ def get_fantasite_sublattice():
     """
     test_data = _make_fantasite_test_data()
     return test_data.sublattice
+
+
+def get_perovskite110_ABF_signal(image_noise=False):
+    """Returns signals representing an ABF image of Perovskite100.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    signal : HyperSpy 2D,
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> s_ADF, s_ABF = am.dummy_data.get_perovskite110_signals()
+
+    """
+    test_data = MakeTestData(300, 300)
+    x_A, y_A = np.mgrid[10:295:20, 10:300:34]
+    test_data.add_atom_list(x_A.flatten(), y_A.flatten(),
+                            sigma_x=5, sigma_y=5, amplitude=40)
+    x_B, y_B = np.mgrid[10:295:20, 27:290:34]
+    test_data.add_atom_list(x_B.flatten(), y_B.flatten(),
+                            sigma_x=3, sigma_y=3, amplitude=10)
+    x_O, y_O = np.mgrid[0:295:20, 27:290:34]
+    test_data.add_atom_list(x_O.flatten(), y_O.flatten(),
+                            sigma_x=2, sigma_y=2, amplitude=1.2)
+
+    if image_noise:
+        test_data.add_image_noise(mu=0, sigma=0.01)
+
+    ABF = 1-test_data.signal.data
+    s_ABF = hs.signals.Signal2D(ABF)
+    return(s_ABF)
