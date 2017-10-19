@@ -1835,11 +1835,34 @@ class Sublattice():
         mean_angle = np.array(angle_list).mean()
         return(mean_angle)
 
-    def construct_zone_axes(self, debug_plot=False, zone_axis_para_list=False):
+    def construct_zone_axes(self, zone_axis_para_list=False):
+        """Constructs the zone axes for an atomic resolution image.
+
+        The zone axes are found by finding the 15 nearest neighbors for each
+        atom position in the sublattice, and finding major translation
+        symmetries among the nearest neighbours. Only unique zone axes are
+        kept, and "bad" ones are removed.
+
+        Parameters
+        ----------
+        zone_axis_para_list : parameter list or bool, default False
+            A zone axes parameter list is used to name and index the zone
+            axes. See atomap.process_parameters for more info. Useful for
+            automation.
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.construct_zone_axes()
+
+        See also
+        --------
+        atom_finding_refining.construct_zone_axes_from_sublattice
+
+        """
         construct_zone_axes_from_sublattice(
-                self,
-                debug_plot=debug_plot,
-                zone_axis_para_list=zone_axis_para_list)
+                self, zone_axis_para_list=zone_axis_para_list)
 
     def _get_fingerprint(self, pixel_radius=100):
         """

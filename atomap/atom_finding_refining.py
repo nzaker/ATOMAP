@@ -247,8 +247,29 @@ def find_feature_density(
     return(separation_list, peakN_list)
 
 
-def construct_zone_axes_from_sublattice(
-        sublattice, debug_plot=False, zone_axis_para_list=False):
+def construct_zone_axes_from_sublattice(sublattice, zone_axis_para_list=False):
+    """Constructs zone axes for a sublattice
+
+    The zone axes are found by finding the 15 nearest neighbors for each atom
+    position in the sublattice, and finding major translation symmetries among
+    the nearest neighbours. Only unique zone axes are kept, and
+    "bad" ones are removed.
+
+    Parameters
+    ----------
+    sublattice : Atomap Sublattice
+    zone_axis_para_list : parameter list or bool, default False
+        A zone axes parameter list is used to name and index the zone axes.
+        See atomap.process_parameters for more info. Useful for automation.
+
+    See also
+    --------
+    sublattice._make_translation_symmetry : How unique zone axes are found
+    sublattice._remove_bad_zone_vectors : How fragmented ("bad zone axis")
+        are identified and removed.
+    atomap.process_parameters : more info on zone axes parameter list
+
+    """
     if sublattice._pixel_separation == 0.0:
         sublattice._pixel_separation = sublattice._get_pixel_separation()
     sublattice.find_nearest_neighbors(nearest_neighbors=15)
@@ -271,9 +292,6 @@ def construct_zone_axes_from_sublattice(
     sublattice._generate_all_atom_plane_list()
     sublattice._sort_atom_planes_by_zone_vector()
     sublattice._remove_bad_zone_vectors()
-    if debug_plot:
-        sublattice.plot_all_atom_planes(
-                fignameprefix=sublattice.name + "_atom_plane")
 
 
 def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
