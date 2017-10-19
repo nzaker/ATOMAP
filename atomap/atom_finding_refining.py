@@ -721,7 +721,7 @@ def fit_atom_positions_gaussian(
     >>> atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
     >>> image = np.zeros((9, 9))
     >>> for atom_position in atom_list:
-    >>>     g_list = fit_atom_positions_gaussian(
+    ...     g_list = fit_atom_positions_gaussian(
     ...         atom_list=[atom_position], image_data=image, mask_radius=2)
 
     Fitting two atoms together
