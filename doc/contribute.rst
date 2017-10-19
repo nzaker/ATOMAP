@@ -66,17 +66,17 @@ When testing the functionality you are developing, you need to use the developme
 Here is a tip for how to do this.
 
 1. Make a virtual working environment for the development version. Install `virtualenvwrapper <https://virtualenvwrapper.readthedocs.io/en/latest/install.html#basic-installation>`_. Make a "workon" for Atomap development by writing in the terminal ``mkvirtualenv atomap_dev``. Got to your new "workon" by ``workon atomap_dev``.
-2. In your atomap workon install the development version by going to the atomap folder in a terminal and write `pip install -e .`
+2. In your atomap workon install the development version by going to the atomap folder in a terminal and write ``pip install -e .``
 
 Have good habits
 ^^^^^^^^^^^^^^^^
 Work out what you want to contribute and break it down in to manageable chunks.
-When you’ve decided what you’re going to work on - let people know using the online forums!
-It may be that someone else is doing something similar and can help, it’s also good to make sure that those working on related projects are pulling in the same direction.
+When you have decided what you are going to work on - let people know using the online forums!
+It may be that someone else is doing something similar and can help, it's also good to make sure that those working on related projects are pulling in the same direction.
 There are 3 key points to get right when starting out as a contributor - keep work separated in manageable sections, make sure that your code style is good, and bear in mind that every new function you write will need a test and user documentation!
 
 Learn more
 ^^^^^^^^^^
 1. `What is git? <https://www.git-scm.com/about>`_
-2. Atomap follows the Style Guide for Python Code - these are just some rules for consistency that you can read all about in the `Python Style Guide <https://www.python.org/dev/peps/pep-0008/>`_.
+2. Atomap follows the Style Guide for Python Code. These are just some rules for consistency that you can read all about in the `Python Style Guide <https://www.python.org/dev/peps/pep-0008/>`_.
 3. Write tests and documentation. 
