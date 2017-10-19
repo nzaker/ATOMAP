@@ -15,14 +15,24 @@ import atomap.process_parameters as pp
 
 
 def run_image_filtering(signal, invert_signal=False):
-    """Subtracts background, filters noise with PCA, and normalizes the
-    signal.
+    """Subtracts background, filters noise with PCA, and normalizes a signal.
 
     Parameters
     ----------
-    signal : HyperSpy signal
+    signal : HyperSpy Signal2D
     invert_signal : bool, default False
         Inverts the image to 1./signal.data
+
+    Returns
+    -------
+    filtered_signal : HyperSpy Signal2D
+
+    Example
+    -------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_simple_cubic_signal()
+    >>> from atomap.main import run_image_filtering
+    >>> s_new = run_image_filtering(s)
 
     """
     signal.change_dtype('float64')
