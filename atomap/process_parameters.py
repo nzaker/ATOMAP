@@ -15,6 +15,37 @@ class SublatticeParameterBase:
 
 
 class GenericSublattice(SublatticeParameterBase):
+
+    """Process parameters for a generic sublattice
+
+    Attributes
+    ----------
+    color : 'red' , color of the markers indicating atom positions
+    image_type : 0
+        The image will not be inverted.
+    name : 'S0' , name of the sublattice
+    sublattice_order : 0
+        The sublattice will get the order 0.
+        Higher orders can be used for less intense sublattices in
+        images with multiple sublattices.
+    zone_axis_list : list
+        Can have up to 11 zone axis with name from 0-10.
+    refinement_config : dict
+        Dict with configuration settings for the refinement of atom positions.
+        1st refinement : center-of-mass on image modified with background
+        removal, PCA noise filtering and normalization.
+        2nd refinement : Center of mass on the original image.
+        3rd refinement : Fitting 2D gaussians to the original image.
+        neighbor_distance : 0.35
+            Mask radius for fitting, set to 0.35 of the distance to
+            nearest neighbor.
+    atom_subtract_config : list
+        Configuration for how to subtract higher order sublattices
+        from the image. (Not really used in this structure, but included
+        as an example.)
+
+    """
+
     def __init__(self):
         SublatticeParameterBase.__init__(self)
         self.color = 'red'
@@ -50,6 +81,28 @@ class GenericSublattice(SublatticeParameterBase):
 
 
 class PerovskiteOxide110SublatticeACation(SublatticeParameterBase):
+
+    """Process parameters for the most intense atoms (typically A) in
+    Perovskite Oxides with the (110)-projection.
+
+    Attributes
+    ----------
+    color : 'blue' , color of the markers indicating atom positions
+    image_type : 0
+        The image will not be inverted for finding atom positions.
+    name : 'A-cation' , name of the sublattice
+    sublattice_order : 0
+        The most intense sublattice gets order 0.
+    zone_axis_list : list
+         A list of numbers and names for the zone axes in this projection.
+    refinement_config : dict
+        Dict with configuration settings for the refinement of atom positions.
+        Two refinements by fitting 2D gaussians to the original image.
+        neighbor_distance : 0.35
+            Mask radius for fitting set to 0.35 of nearest neighbor.
+
+    """
+
     def __init__(self):
         SublatticeParameterBase.__init__(self)
         self.name = "A-cation"
@@ -72,6 +125,36 @@ class PerovskiteOxide110SublatticeACation(SublatticeParameterBase):
 
 
 class PerovskiteOxide110SublatticeBCation(SublatticeParameterBase):
+
+    """Process parameters for the second most intense atoms (typically B) in
+    Perovskite Oxides with the (110)-projection.
+
+    Attributes
+    ----------
+    color : 'green' , color of the markers indicating atom positions
+    image_type : 0
+        The image will not be inverted.
+    name : 'B-cation' , name of the sublattice
+    sublattice_order : 1
+        The sublattice will get the order 1.
+        Higher orders can be used for less intense sublattices in
+        images with multiple sublattices. Lower order is for more intense
+        sublattices.
+    zone_axis_list : list
+         A list of numbers and names for the zone axes in this projection.
+    refinement_config : dict
+        Dict with configuration settings for the refinement of atom positions.
+        1st refinement : center-of-mass on the original image.
+        2nd refinement : Fitting 2D gaussians to the original image.
+        neighbor_distance : 0.25
+            Mask radius for fitting set to 0.25 of nearest neighbor.
+    atom_subtract_config : list
+        Configuration for how to subtract higher order sublattices
+        from the image. Subtracts a sublattice with name 'A-cation' from the
+        original image.
+
+    """
+
     def __init__(self):
         SublatticeParameterBase.__init__(self)
         self.name = "B-cation"
@@ -102,6 +185,34 @@ class PerovskiteOxide110SublatticeBCation(SublatticeParameterBase):
 
 
 class PerovskiteOxide110SublatticeOxygen(SublatticeParameterBase):
+    """Process parameters for the least intense atoms (typically O) in
+    Perovskite Oxides with the (110)-projection.
+
+    Attributes
+    ----------
+    color : 'red' , color of the markers indicating atom positions
+    image_type : 1
+        The image will be inverted. Oxygen can be visible in ABF images.
+        The image is inverted such that the atoms are bright dots on a dark
+        background.
+    name : 'Oxygen' , name of the sublattice
+    sublattice_order : 2
+        The sublattice will get the order 2, being the third most intense
+        sublattice.
+    zone_axis_list : list
+         A list of numbers and names for the zone axes in this projection.
+    refinement_config : dict
+        Dict with configuration settings for the refinement of atom positions.
+        1st refinement : center-of-mass on the original image.
+        2nd refinement : Fitting 2D gaussians to the original image.
+        neighbor_distance : 0.25
+            Mask radius for fitting set to 0.25 of nearest neighbor.
+    atom_subtract_config : list
+        Configuration for how to subtract higher order sublattices
+        from the image. Subtracts first a sublattice with name 'A-cation'
+        from the inverted image, then a sublattice with name 'B-cation'.
+
+    """
     def __init__(self):
         SublatticeParameterBase.__init__(self)
         self.name = "Oxygen"
@@ -184,6 +295,20 @@ class ModelParametersBase:
 
 
 class GenericStructure(ModelParametersBase):
+
+    """A Generic structure with one sublattice, the GenericSublattice.
+
+    Parameters
+    ----------
+    peak_separation : None
+        No peak separation is set, pixel_separation must be given separately
+        in order to find initial atom positions.
+    name : 'A structure'
+    sublattice_list : list of Sublattices
+        Contains one GenericSublattice
+
+    """
+
     def __init__(self):
         ModelParametersBase.__init__(self)
         self.peak_separation = None
@@ -195,6 +320,24 @@ class GenericStructure(ModelParametersBase):
 
 
 class PerovskiteOxide110(ModelParametersBase):
+
+    """The Perovskite Oxide structure in the 110 projection.
+
+    Parameters
+    ----------
+    name : 'Perovskite 110'
+    peak_separation : 0.127 , distance in nm
+        Approximately half the distance between the most intense atoms
+        in the structure, used to get initial atom position by
+        peak finding.
+    sublattice_list : list of Sublattices
+        Contains 3 sublattices, for A, B and O:
+        PerovskiteOxide110SublatticeACation,
+        PerovskiteOxide110SublatticeBCation,
+        PerovskiteOxide110SublatticeOxygen
+
+    """
+
     def __init__(self):
         ModelParametersBase.__init__(self)
         self.name = "Perovskite 110"
