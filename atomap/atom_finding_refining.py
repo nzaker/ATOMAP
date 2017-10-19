@@ -250,10 +250,10 @@ def find_feature_density(
 def construct_zone_axes_from_sublattice(sublattice, zone_axis_para_list=False):
     """Constructs zone axes for a sublattice.
 
-    The zone axes are constructed by finding the 15 nearest neighbors for each atom
-    position in the sublattice, and finding major translation symmetries among
-    the nearest neighbours. Only unique zone axes are kept, and
-    "bad" ones are removed.
+    The zone axes are constructed by finding the 15 nearest neighbors for
+    each atom position in the sublattice, and finding major translation
+    symmetries among the nearest neighbours. Only unique zone axes are kept,
+    and "bad" ones are removed.
 
     Parameters
     ----------

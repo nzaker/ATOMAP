@@ -4,9 +4,6 @@ from hyperspy.io import load
 from hyperspy.signals import Signal2D
 import atomap.main as amm
 import atomap.dummy_data as dd
-from atomap.main import (
-        make_atom_lattice_from_image,
-        _get_signal_name, run_image_filtering)
 from atomap.process_parameters import PerovskiteOxide110
 
 my_path = os.path.dirname(__file__)
