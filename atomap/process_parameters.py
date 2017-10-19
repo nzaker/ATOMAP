@@ -35,7 +35,7 @@ class GenericSublattice(SublatticeParameterBase):
         1st refinement : center-of-mass on image modified with background
         removal, PCA noise filtering and normalization.
         2nd refinement : Center of mass on the original image.
-        3rd refinement : Fitting 2D gaussians to the original image.
+        3rd refinement : Fitting 2D Gaussians to the original image.
         neighbor_distance : 0.35
             Mask radius for fitting, set to 0.35 of the distance to
             nearest neighbor.
@@ -43,6 +43,11 @@ class GenericSublattice(SublatticeParameterBase):
         Configuration for how to subtract higher order sublattices
         from the image. (Not really used in this structure, but included
         as an example.)
+
+    Examples
+    --------
+    >>> import atomap.process_parameters as pp
+    >>> generic_sublattice = pp.GenericSublattice()
 
     """
 
@@ -81,9 +86,8 @@ class GenericSublattice(SublatticeParameterBase):
 
 
 class PerovskiteOxide110SublatticeACation(SublatticeParameterBase):
-
-    """Process parameters for the most intense atoms (typically A) in
-    Perovskite Oxides with the (110)-projection.
+    """Process parameters for the most intense atoms (typically the A-cations)
+    in a Perovskite Oxide structure projected along the (110) direction.
 
     Attributes
     ----------
@@ -97,7 +101,7 @@ class PerovskiteOxide110SublatticeACation(SublatticeParameterBase):
          A list of numbers and names for the zone axes in this projection.
     refinement_config : dict
         Dict with configuration settings for the refinement of atom positions.
-        Two refinements by fitting 2D gaussians to the original image.
+        Two refinements by fitting 2D Gaussians to the original image.
         neighbor_distance : 0.35
             Mask radius for fitting set to 0.35 of nearest neighbor.
 
@@ -125,9 +129,9 @@ class PerovskiteOxide110SublatticeACation(SublatticeParameterBase):
 
 
 class PerovskiteOxide110SublatticeBCation(SublatticeParameterBase):
-
-    """Process parameters for the second most intense atoms (typically B) in
-    Perovskite Oxides with the (110)-projection.
+    """Process parameters for the second most intense atoms
+    (typically the B-cations) in a Perovskite Oxide structure projected along
+    the (110) direction.
 
     Attributes
     ----------
@@ -145,7 +149,7 @@ class PerovskiteOxide110SublatticeBCation(SublatticeParameterBase):
     refinement_config : dict
         Dict with configuration settings for the refinement of atom positions.
         1st refinement : center-of-mass on the original image.
-        2nd refinement : Fitting 2D gaussians to the original image.
+        2nd refinement : Fitting 2D Gaussians to the original image.
         neighbor_distance : 0.25
             Mask radius for fitting set to 0.25 of nearest neighbor.
     atom_subtract_config : list
@@ -185,8 +189,9 @@ class PerovskiteOxide110SublatticeBCation(SublatticeParameterBase):
 
 
 class PerovskiteOxide110SublatticeOxygen(SublatticeParameterBase):
-    """Process parameters for the least intense atoms (typically O) in
-    Perovskite Oxides with the (110)-projection.
+    """Process parameters for the least intense atoms
+    (typically the Oxygen) in a Perovskite Oxide structure projected along
+    the (110) direction.
 
     Attributes
     ----------
@@ -204,7 +209,7 @@ class PerovskiteOxide110SublatticeOxygen(SublatticeParameterBase):
     refinement_config : dict
         Dict with configuration settings for the refinement of atom positions.
         1st refinement : center-of-mass on the original image.
-        2nd refinement : Fitting 2D gaussians to the original image.
+        2nd refinement : Fitting 2D Gaussians to the original image.
         neighbor_distance : 0.25
             Mask radius for fitting set to 0.25 of nearest neighbor.
     atom_subtract_config : list

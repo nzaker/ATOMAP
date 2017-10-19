@@ -248,9 +248,9 @@ def find_feature_density(
 
 
 def construct_zone_axes_from_sublattice(sublattice, zone_axis_para_list=False):
-    """Constructs zone axes for a sublattice
+    """Constructs zone axes for a sublattice.
 
-    The zone axes are found by finding the 15 nearest neighbors for each atom
+    The zone axes are constructed by finding the 15 nearest neighbors for each atom
     position in the sublattice, and finding major translation symmetries among
     the nearest neighbours. Only unique zone axes are kept, and
     "bad" ones are removed.
@@ -261,6 +261,17 @@ def construct_zone_axes_from_sublattice(sublattice, zone_axis_para_list=False):
     zone_axis_para_list : parameter list or bool, default False
         A zone axes parameter list is used to name and index the zone axes.
         See atomap.process_parameters for more info. Useful for automation.
+
+    Example
+    -------
+    >>> import atomap.api as am
+    >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+    >>> sublattice
+    <Sublattice,  (atoms:400,planes:0)>
+    >>> import atomap.atom_finding_refining as afr
+    >>> afr.construct_zone_axes_from_sublattice(sublattice)
+    >>> sublattice
+    <Sublattice,  (atoms:400,planes:4)>
 
     See also
     --------
@@ -667,7 +678,8 @@ def fit_atom_positions_gaussian(
         mask_radius=None,
         centre_free=True):
     """
-    Fit a list of Atom_Positions to an image using 2D gaussians.
+    Fit a list of Atom_Positions to an image using 2D Gaussians.
+
     The results of the fitting will be saved in the Atom_Position objects
     themselves, and the old positions will be added to
     atom.old_pixel_x_list and atom.old_pixel_y_list.
@@ -688,7 +700,7 @@ def fit_atom_positions_gaussian(
         For example the members of a dumbbell.
     image_data : NumPy 2D array
     rotation_enabled : bool, optional
-        If True (default), the 2D gaussian will be able to rotate.
+        If True (default), the 2D Gaussian will be able to rotate.
     percent_to_nn : float, optional
     mask_radius : float, optional
         Radius of the mask around each atom. If this is not set,
@@ -699,7 +711,7 @@ def fit_atom_positions_gaussian(
         through the sublattice class, but can also be done manually.
         See below for an example how to do this.
     centre_free : bool, optional
-        If True (default), the gaussian will be free to move. Setting this
+        If True (default), the Gaussian will be free to move. Setting this
         to False can be used to find better values for the other parameters
         like sigma and A, without the centre positions causing bad fitting.
 

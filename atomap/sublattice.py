@@ -1843,6 +1843,8 @@ class Sublattice():
         symmetries among the nearest neighbours. Only unique zone axes are
         kept, and "bad" ones are removed.
 
+        After finding the zone axes, atom planes are constructed.
+
         Parameters
         ----------
         zone_axis_para_list : parameter list or bool, default False
@@ -1854,7 +1856,11 @@ class Sublattice():
         -------
         >>> import atomap.api as am
         >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice
+        <Sublattice,  (atoms:400,planes:0)>
         >>> sublattice.construct_zone_axes()
+        >>> sublattice
+        <Sublattice,  (atoms:400,planes:4)>
 
         See also
         --------
