@@ -21,6 +21,7 @@ Open source software has many advantages:
 
 Version control
 ^^^^^^^^^^^^^^^
+
 For software development projects it is important to have a good system for keeping different versions of the software.
 Atomap uses Git as version control system.
 One version of Atomap is the newest released version, another is the `development version <https://gitlab.com/atomap/atomap>`_.
@@ -33,7 +34,7 @@ Those are how to fork a project, `clone`
 First steps
 ^^^^^^^^^^^
 
-1. Create a user on `GitLab <https://gitlab.com/>`_ and `install <https://gist.github.com/derhuerst/1b15ff4652a867391f03>`_ git on your computer 
+1. Create a user on `GitLab <https://gitlab.com/>`_ and `install <https://gist.github.com/derhuerst/1b15ff4652a867391f03>`_ git on your computer.
 2. Make your own fork of Atomap `here <https://gitlab.com/atomap/atomap>`_ , from which you can do development. Click on the fork button. You need to be logged in.
 
 .. figure:: images/misc/fork.jpg
@@ -52,9 +53,9 @@ First steps
 When starting some new branch, remember to update your master fork by pulling from Atomap (upstream master).
 
 1. Return to your master branch ``git checkout master``
-2. Pull the newest changes from Atomap ``git pull upstream master``. 
+2. Pull the newest changes from Atomap ``git pull upstream master``.
 3. If upstream master is not set, set it by writing ``git remote add upstream git@gitlab.com:atomap/atomap.git``
-4. Check if it is there with ``git remote -v``. Upstream should be the main Atomap project. Origin Should be you fork. 
+4. Check if it is there with ``git remote -v``. Upstream should be the main Atomap project. Origin Should be you fork.
 
 Consult the nice Gitlab `userguide <https://docs.gitlab.com/ce/gitlab-basics/README.html>`_.
 Google stuff.
@@ -79,4 +80,4 @@ Learn more
 ^^^^^^^^^^
 1. `What is git? <https://www.git-scm.com/about>`_
 2. Atomap follows the Style Guide for Python Code. These are just some rules for consistency that you can read all about in the `Python Style Guide <https://www.python.org/dev/peps/pep-0008/>`_.
-3. Write tests and documentation. 
+3. Write tests and documentation.
