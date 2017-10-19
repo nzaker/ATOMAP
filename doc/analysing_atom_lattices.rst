@@ -313,7 +313,7 @@ This example will introduce how line profiles of properties can be made.
 In the above example, `plane` is atom plane number 23 in the right figure.
 This the "last plane" from the left where the atomic columns in `sublattice_A` are circular.
 In plane 22, the columns become elliptical.
-This plane is therefore sent into the function :py:meth:`atomap.sublattice.Sublattice.get_ellipticity_line_profile`, as the definition of where the interface (betwwen two structural domains) is.
+This plane is therefore sent into the function :py:meth:`atomap.sublattice.Sublattice.get_ellipticity_line_profile`, as the definition of where the interface (between two structural domains) is.
 The values for ellipticity are integrated and averaged in the same direction as the plane (downwards), and plotted in the left figure.
 Average ellipticity is on the y-axis, while the x-axis is the distance from the interface (plane 23).
 The x-axis is inverted, negative values are to the left of the interface and positive values to the right of the interface.
