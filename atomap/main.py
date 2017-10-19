@@ -144,8 +144,7 @@ def make_atom_lattice_from_image(
             atom.sigma_y = sublattice._pixel_separation/10.
         if not(sublattice_para.sublattice_order == 0):
             construct_zone_axes_from_sublattice(
-                    sublattice, debug_plot=debug_plot,
-                    zone_axis_para_list=zone_axis_para_list)
+                    sublattice, zone_axis_para_list=zone_axis_para_list)
             atom_subtract_config = sublattice_para.atom_subtract_config
             image_data = sublattice.image
             for atom_subtract_para in atom_subtract_config:
@@ -177,7 +176,6 @@ def make_atom_lattice_from_image(
 
         if sublattice_para.sublattice_order == 0:
             sublattice.construct_zone_axes(
-                    debug_plot=debug_plot,
                     zone_axis_para_list=zone_axis_para_list)
 
     return(atom_lattice)
