@@ -707,12 +707,25 @@ def fit_atom_positions_gaussian(
     --------
     _make_model_from_atom_list
     _fit_atom_positions_with_gaussian_model
+    atom_lattice.Dumbbell_Lattice for examples on how associated atom
+    positions can be fitted together.
 
     Examples
     --------
     >>> import numpy as np
     >>> from atomap.atom_position import Atom_Position
     >>> from atomap.atom_finding_refining import fit_atom_positions_gaussian
+
+    Fitting atomic columns one-by-one
+
+    >>> atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
+    >>> image = np.zeros((9, 9))
+    >>> for atom_position in atom_list:
+    >>>     g_list = fit_atom_positions_gaussian(
+    ...         atom_list=[atom_position], image_data=image, mask_radius=2)
+
+    Fitting two atoms together
+
     >>> atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
     >>> image = np.zeros((9, 9))
     >>> image[2, 2] = 1.
@@ -730,6 +743,7 @@ def fit_atom_positions_gaussian(
     >>> atom0.nearest_neighbor_list = [atom1]
     >>> atom1.nearest_neighbor_list = [atom0]
     >>> g_list = fit_atom_positions_gaussian([atom0, atom1], image)
+
     """
     if (not hasattr(atom_list[0], 'pixel_x')) or hasattr(atom_list, 'pixel_x'):
         raise TypeError(
