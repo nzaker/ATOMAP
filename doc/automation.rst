@@ -58,7 +58,7 @@ This returns the `atom_lattice` object, which contains the sublattices of both A
 Making process parameters
 -------------------------
 
-You can make customized process parameters for the structures you are studying in order to make analysis with Atomap more automatic.
+You can make customized process parameters for the structures you are studying in order to make analysis with Atomap more automated.
 In the atomap.process_parameters you can add your own classes with process parameters for your own structures.
 This section will give an example of how to construct these classes.
 It is assumed you have read :ref:`contribute` first, where there is some information on how to develop code for Atomap.
@@ -67,7 +67,7 @@ YourStructure
 ^^^^^^^^^^^^^
 
 Our example is the imaginary *YourStructure*, which consists of two sublattices, *SublatticeA* and *SublatticeO*.
-*SublatticeA* is a sublattice of heavy transition metal atoms, while *SublatticeO* is oxygen (light atoms).
+*SublatticeA* is a sublattice consisting of heavy transition metal atoms, while *SublatticeO* is oxygen (light atoms).
 This means that *SublatticeA* will have good contrast in ADF-images, while *SublatticeO* is only visible in ABF-images (together with A, of course).
 The example is constructed to give an insight in how you program the parameters to use the different images to find the atom positions.
 Of course, if all the sublattices in your real material are best resolved in ADF, this image can be used for all.
@@ -83,11 +83,11 @@ A class for the process parameters for *SublatticeA* can look like this:
 .. code-block:: python
 
      class SublatticeA(SublatticeParameterBase):
-    
-         """Docstring describing your sublattice
-    
+
+         """Docstring describing your sublattice.
+
          """
-    
+
         def __init__(self):
             SublatticeParameterBase.__init__(self)
             self.color = 'red'
@@ -122,11 +122,11 @@ To find the atom positions in *SublatticeO*, an ABF image is used.
 .. code-block:: python
 
      class SublatticeO(SublatticeParameterBase):
-    
-         """Docstring describing your sublattice
-    
+
+         """Docstring describing your sublattice.
+
          """
-    
+
         def __init__(self):
             SublatticeParameterBase.__init__(self)
             self.color = 'green'
@@ -156,7 +156,7 @@ To find the atom positions in *SublatticeO*, an ABF image is used.
 * With ``image_type = 1``, the atomic resolution image used to find atom positions will be inverted. This is because in the bright field image the atoms are dark and surroundings are bright. For Atomap to work, the atoms must be the bright dots.
 * The zone axes is the same as for the other sublattice, they are both a part of YourStructure.
 * ``sublattice_position_sublattice = "A"`` and  ``self.sublattice_position_zoneaxis = "111"`` : The O columns are located between the columns in sublattice "A" in the direction of the zone axis 111. This setting is used to find the initial positions of the atomic columns in *SublatticeO*.
-* ``atom_subtract_config`` is the configuration for how brighter sublattices should be removed from the image prior to fitting the less bright sublattices. Here, the sublattice 'A' is removed from the image. An appropriate ``neighbor_distance`` gill give the size of the mask around the A atoms. If no atoms should be removed from the image, this list can be removed from the class (as for *SublatticeA* above).
+* ``atom_subtract_config`` is the configuration for how the brighter sublattices should be removed from the image prior to fitting the less bright sublattices. Here, the sublattice 'A' is removed from the image. An appropriate ``neighbor_distance`` gives the size of the mask around the A atoms. If no atoms should be removed from the image, this list can be removed from the class (as for *SublatticeA* above).
 * ``refinement_config`` is different here, to illustrate the possibilities:
 
     1. Atom positions are refined one time by using center-of-mass on an image which has been inverted and with the A sublattice removed, and modified by background removal, noise filtering and normalization.
@@ -172,11 +172,11 @@ This class inherits from :py:class:`ModelParametersBase` can look like this:
 .. code-block:: python
 
         class YourStructure(ModelParametersBase):
-    
+
          """Docstring describing your sublattice
-    
+
          """
-    
+
             def __init__(self):
                 ModelParametersBase.__init__(self)
                 self.name = "Wondermaterial"
