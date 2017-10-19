@@ -17,7 +17,7 @@ The functionality for generating specific test data is useful for
     >>> s = am.dummy_data.get_dumbbell_signal()
     >>> s.plot()
 
-.. image:: images/testdata/dumbbell.png
+.. image:: images/maketestdata/dumbbell.png
     :scale: 50 %
     :align: center
 
@@ -31,7 +31,7 @@ This tutorial will show how to make your own test data.
     >>> t1.add_atom(10,10)
     >>> t1.signal.plot()
     
-.. image:: images/testdata/t1.png
+.. image:: images/maketestdata/t1.png
     :scale: 50 %
     :align: center
     
@@ -46,7 +46,7 @@ To a MakeTestData object you can add single atoms, or lists of atoms.
     >>> t2.add_atom_list(x, y)
     >>> t2.signal.plot()
     
-.. image:: images/testdata/t2.png
+.. image:: images/maketestdata/t2.png
     :scale: 50 %
     :align: center
 
@@ -68,7 +68,7 @@ You can add many sublattices, and for each sublattice you can set the properties
     >>> t3.add_image_noise(sigma=0.1)  
     >>> t3.signal.plot()
 
-.. image:: images/testdata/t3.png
+.. image:: images/maketestdata/t3.png
     :scale: 50 %
     :align: center
 
