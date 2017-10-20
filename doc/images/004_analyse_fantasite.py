@@ -61,7 +61,7 @@ def plot_angle_figs():
     z1 =  sublattice_B.zones_axis_average_distances[0]
     z2 =  sublattice_B.zones_axis_average_distances[1]
     x, y, a = sublattice_B.get_atom_angles_from_zone_vector(z1, z2, degrees=True)
-    s_angle = sublattice_B._get_property_map(x, y, a)
+    s_angle = sublattice_B.get_property_map(x, y, a)
     s_angle.plot(cmap='magma')
     s_angle._plot.signal_plot.figure.savefig(
              'plotting_tutorial/Angle_map.png',

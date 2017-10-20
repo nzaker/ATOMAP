@@ -21,7 +21,7 @@ sublattice_A.refine_atom_positions_using_2d_gaussian()
 sublattice_A.construct_zone_axes()
 
 direction_001 = sublattice_A.zones_axis_average_distances[1]
-B_positions = sublattice_A._find_missing_atoms_from_zone_vector(direction_001)
+B_positions = sublattice_A.find_missing_atoms_from_zone_vector(direction_001)
 image_without_A = remove_atoms_from_image_using_2d_gaussian(sublattice_A.image, sublattice_A)
 
 sublattice_B = am.Sublattice(B_positions, image_without_A, color='blue', name='B')

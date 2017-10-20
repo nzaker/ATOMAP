@@ -411,27 +411,67 @@ class Sublattice():
 
         return(new_data)
 
-    def _get_property_map(
+    def get_property_map(
             self,
-            x_list,
-            y_list,
-            z_list,
+            x_list, y_list, z_list,
             atom_plane_list=None,
-            data_scale_z=1.0,
             add_zero_value_sublattice=None,
             upscale_map=2):
+        """Returns an interpolated signal map of a property.
+
+        Maps the property in z_list.
+        The map is interpolated, and the upscale factor of the interpolation
+        can be set (default 2).
+
+        Parameters
+        ----------
+        x_list, y_list : list of numbers
+            Lists of x and y positions
+        z_list : list of numbers
+            List of properties for positions. z[0] is the property of
+            the position at x[0] and y[0]. z_list must have the same length as
+            x_list and y_list.
+        atom_plane_list : list of Atomap Atom_Plane objects, default None
+            List of atom planes which will be added as markers in the signal.
+        add_zero_value_sublattice : Sublattice
+            The sublattice for A-cations in a perovskite oxide can be included
+            here, when maps of oxygen tilt patterns are made. The principle is
+            that another sublattice can given as a parameter, in order to add
+            zero-value points in the map. This means that he atom positions in
+            this sublattice will be included in the map, and the property at
+            these coordinate is set to 0. This helps in the visualization of
+            tilt patterns. For example, the "tilt" property" outside oxygen
+            octahedron in perovskite oxides is 0. The A-cations are outside
+            the octahedra.
+        upscale_map : int, default 2
+            Upscaling factor for the interpolated map.
+
+        Returns
+        -------
+        interpolated_signal : HyperSpy Signal2D
+
+        Examples
+        --------
+
+        Example with ellipticity as property.
+
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> s = sublattice.get_property_map(
+        ...                    sublattice.x_position,
+        ...                    sublattice.y_position,
+        ...                    sublattice.ellipticity)
+        >>> s.plot()
+
+        """
         data_scale = self.pixel_size
-        if not(add_zero_value_sublattice is None):
+        if add_zero_value_sublattice is not None:
             self._add_zero_position_to_data_list_from_atom_list(
-                x_list,
-                y_list,
-                z_list,
+                x_list, y_list, z_list,
                 add_zero_value_sublattice.x_position,
                 add_zero_value_sublattice.y_position)
         data_map = self._get_regular_grid_from_unregular_property(
-            x_list,
-            y_list,
-            z_list)
+                x_list, y_list, z_list, upscale=upscale_map)
         signal = array2signal2d(
                 data_map[2], self.pixel_size/upscale_map, rotate_flip=True)
         if atom_plane_list is not None:
@@ -1035,14 +1075,36 @@ class Sublattice():
             zone_axis_list1.extend(zone_axis_list2[1:])
         return(zone_axis_list1)
 
-    def _find_missing_atoms_from_zone_vector(
-            self, zone_vector, new_atom_tag=''):
+    def find_missing_atoms_from_zone_vector(self, zone_vector):
+        """Returns a list of coordinates between atoms given by a zone vector.
+
+        These coordinates are given by the mid-point between adjacent atoms
+        in the atom planes with the given zone_vector.
+
+        Parameters
+        ----------
+        zone_vector : tuple
+            Zone vector for the atom planes where the new atoms are positioned
+            between the atoms in the sublattice.
+
+        Returns
+        -------
+        xy_coordinates : List of tuples
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice_A = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice_A.construct_zone_axes()
+        >>> zone_axis = sublattice_A.zones_axis_average_distances[0]
+        >>> B_pos = sublattice_A.find_missing_atoms_from_zone_vector(
+        ...                       zone_axis)
+
+        """
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
 
         new_atom_list = []
-        new_atom_plane_list = []
         for atom_plane in atom_plane_list:
-            temp_new_atom_list = []
             for atom_index, atom in enumerate(atom_plane.atom_list[1:]):
                 previous_atom = atom_plane.atom_list[atom_index]
                 difference_vector = previous_atom.get_pixel_difference(atom)
@@ -1050,11 +1112,7 @@ class Sublattice():
                     difference_vector[0]*0.5
                 new_atom_y = previous_atom.pixel_y -\
                     difference_vector[1]*0.5
-                new_atom = Atom_Position(new_atom_x, new_atom_y)
-                new_atom._tag = new_atom_tag
-                temp_new_atom_list.append(new_atom)
                 new_atom_list.append((new_atom_x, new_atom_y))
-            new_atom_plane_list.append(temp_new_atom_list)
         return(new_atom_list)
 
     def get_atom_planes_on_image(
@@ -1473,7 +1531,7 @@ class Sublattice():
         >>> s_elli = sublattice.get_ellipticity_map(atom_plane_list=atom_plane)
         >>> s_elli.plot()
         """
-        signal = self._get_property_map(
+        signal = self.get_property_map(
             self.x_position,
             self.y_position,
             self.ellipticity,
@@ -1555,7 +1613,7 @@ class Sublattice():
             signal_title = 'Monolayer distance {}'.format(zone_index)
             data_list = self.get_monolayer_distance_list_from_zone_vector(
                     zone_vector)
-            signal = self._get_property_map(
+            signal = self.get_property_map(
                 data_list[0],
                 data_list[1],
                 data_list[2],
@@ -1587,7 +1645,6 @@ class Sublattice():
             self,
             zone_vector_list=None,
             atom_plane_list=None,
-            data_scale_z=1.0,
             prune_outer_values=False,
             invert_line_profile=False,
             add_zero_value_sublattice=None,
@@ -1603,11 +1660,10 @@ class Sublattice():
             data_list = self.get_atom_distance_list_from_zone_vector(
                     zone_vector)
 
-            signal = self._get_property_map(
+            signal = self.get_property_map(
                 data_list[0],
                 data_list[1],
                 data_list[2],
-                data_scale_z=data_scale_z,
                 add_zero_value_sublattice=add_zero_value_sublattice,
                 upscale_map=upscale_map)
             signal.metadata.General.Title = signal_title
@@ -1656,7 +1712,6 @@ class Sublattice():
             self,
             zone_vector_list=None,
             atom_plane_list=None,
-            data_scale_z=1.0,
             prune_outer_values=False,
             invert_line_profile=False,
             add_zero_value_sublattice=None,
@@ -1669,11 +1724,10 @@ class Sublattice():
             data_list = self.get_atom_distance_difference_from_zone_vector(
                     zone_vector)
             if len(data_list[2]) is not 0:
-                signal = self._get_property_map(
+                signal = self.get_property_map(
                     data_list[0],
                     data_list[1],
                     data_list[2],
-                    data_scale_z=data_scale_z,
                     add_zero_value_sublattice=add_zero_value_sublattice,
                     upscale_map=upscale_map)
                 signal_list.append(signal)

@@ -41,7 +41,7 @@ save_sub_A_image(sublattice_A)
 plot_planes_figure(sublattice_A)
 
 zone_axis_001 = sublattice_A.zones_axis_average_distances[1]
-B_positions = sublattice_A._find_missing_atoms_from_zone_vector(zone_axis_001)
+B_positions = sublattice_A.find_missing_atoms_from_zone_vector(zone_axis_001)
 image_without_A = remove_atoms_from_image_using_2d_gaussian(sublattice_A.image, sublattice_A)
 
 plot_image_wo_A(image_without_A)
