@@ -139,7 +139,7 @@ def make_atom_lattice_from_image(
                     sublattice_para.sublattice_position_zoneaxis)
             zone_vector = temp_sublattice.zones_axis_average_distances[
                     temp_zone_vector_index]
-            atom_list = temp_sublattice._find_missing_atoms_from_zone_vector(
+            atom_list = temp_sublattice.find_missing_atoms_from_zone_vector(
                     zone_vector, new_atom_tag=sublattice_para.name)
 
             sublattice = Sublattice(

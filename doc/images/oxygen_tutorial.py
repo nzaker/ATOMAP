@@ -22,7 +22,7 @@ sublattice_A.construct_zone_axes()
 
 # Finding sublattice_B from ADF
 zone_axis_001 = sublattice_A.zones_axis_average_distances[1]
-B_positions = sublattice_A._find_missing_atoms_from_zone_vector(zone_axis_001)
+B_positions = sublattice_A.find_missing_atoms_from_zone_vector(zone_axis_001)
 image_without_A = remove_atoms_from_image_using_2d_gaussian(
         sublattice_A.image,
         sublattice_A)
@@ -57,7 +57,7 @@ plt.gcf().savefig('finding_atom_lattices/sublattice_B2.png')
 
 # Finding Oxygen
 zone_axis_002 = sublattice_B2.zones_axis_average_distances[0]
-O_positions = sublattice_B2._find_missing_atoms_from_zone_vector(zone_axis_002)
+O_positions = sublattice_B2.find_missing_atoms_from_zone_vector(zone_axis_002)
 image_without_AB = remove_atoms_from_image_using_2d_gaussian(
         sublattice_B2.image,
         sublattice_B2)

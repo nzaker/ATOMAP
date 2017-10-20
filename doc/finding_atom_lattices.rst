@@ -245,7 +245,7 @@ Knowing this, the trick to find the initial positions for the "B"-columns is:
 .. code-block:: python
 
     >>> zone_axis_001 = sublattice_A.zones_axis_average_distances[1]
-    >>> B_positions = sublattice_A._find_missing_atoms_from_zone_vector(zone_axis_001)
+    >>> B_positions = sublattice_A.find_missing_atoms_from_zone_vector(zone_axis_001)
 
 Explain the function, update with new name
 
@@ -357,7 +357,7 @@ A similar method to the method for finding the first B-positions above, in the "
 .. code-block:: python
 
     >>> zone_axis_002 = sublattice_B2.zones_axis_average_distances[0]
-    >>> O_positions = sublattice_B2._find_missing_atoms_from_zone_vector(zone_axis_002)
+    >>> O_positions = sublattice_B2.find_missing_atoms_from_zone_vector(zone_axis_002)
     >>> image_without_AB = remove_atoms_from_image_using_2d_gaussian(sublattice_B2.image, sublattice_B2)
 
 .. code-block:: python

@@ -1081,8 +1081,34 @@ class Sublattice():
             zone_axis_list1.extend(zone_axis_list2[1:])
         return(zone_axis_list1)
 
-    def _find_missing_atoms_from_zone_vector(
+    def find_missing_atoms_from_zone_vector(
             self, zone_vector, new_atom_tag=''):
+        """Returns a list of atom positions coordinates, given by the
+        mid-point between adjacent atoms in the plane given by
+        zone_vecor.
+
+        Parameters
+        ----------
+        zone_vector : tuple
+            Zone vector for the atom planes where the new atoms are positioned
+            between the atoms in the sublattice.
+        new_atom_tag : string, default empty
+            A tag for the atoms
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice_A = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice_A.construct_zone_axes()
+        >>> zone_axis = sublattice_A.zones_axis_average_distances[0]
+        >>> B_positions = \
+        ...        sublattice_A.find_missing_atoms_from_zone_vector(zone_axis)
+
+        Returns
+        -------
+        List ot tuples, with x and y coordinates
+
+        """
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
 
         new_atom_list = []
