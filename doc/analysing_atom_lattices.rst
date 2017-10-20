@@ -158,7 +158,7 @@ Maps gives nice visualization of gradual change.
 .. image:: images/plotting_tutorial/ellipticity_map_B.png
     :scale: 50 %
 
-The :py:meth:`atomap.sublattice.Sublattice.plot_ellipticity_map` function calls :py:meth:`atomap.sublattice.Sublattice.get_ellipticity_map`, which calls :py:meth:`atomap.sublattice.Sublattice._get_property_map`.
+The :py:meth:`atomap.sublattice.Sublattice.plot_ellipticity_map` function calls :py:meth:`atomap.sublattice.Sublattice.get_ellipticity_map`, which calls :py:meth:`atomap.sublattice.Sublattice.get_property_map`.
 
 Vector plots
 ------------
@@ -276,7 +276,7 @@ between two zone axes at each atom.
     >>> z1 = sublattice_B.zones_axis_average_distances[0]
     >>> z2 = sublattice_B.zones_axis_average_distances[1]
     >>> x, y, a = sublattice_B.get_atom_angles_from_zone_vector(z1, z2, degrees=True)
-    >>> s_angle = sublattice_B._get_property_map(x, y, a)
+    >>> s_angle = sublattice_B.get_property_map(x, y, a)
     >>> s_angle.plot()
 
 
@@ -288,7 +288,7 @@ between two zone axes at each atom.
 
 The atomic columns start to "zigzag" in the rightmost part of the image.
 This is also clear with the naked eye (atomic columns marked with blue dots).
-:py:meth:`atomap.sublattice.Sublattice._get_property_map` is a very general function, and can plot a map of any property.
+:py:meth:`atomap.sublattice.Sublattice.get_property_map` is a very general function, and can plot a map of any property.
 
 .. _making_line_profiles:
 

@@ -763,3 +763,45 @@ class test_project_property_line_crossing(unittest.TestCase):
                         plane)
         self.assertAlmostEqual(s.isig[:0.].data.all(), 1, places=2)
         self.assertAlmostEqual(s.isig[5.:].data.all(), 0, places=2)
+
+
+class test_get_property_map(unittest.TestCase):
+
+    def setUp(self):
+        t = tt.MakeTestData(30, 30)
+        x, y = np.mgrid[5:30:5, 5:30:5]
+        x, y = x.flatten(), y.flatten()
+        t.add_atom_list(x, y)
+        self.sublattice = t.sublattice
+        self.z_list = np.full_like(t.sublattice.x_position, 1).tolist()
+
+    def test_simple_map(self):
+        sublattice = self.sublattice
+        z_list = self.z_list
+        s = sublattice.get_property_map(
+                    sublattice.x_position,
+                    sublattice.y_position,
+                    z_list)
+        self.assertTrue(s.axes_manager[0].scale == 0.5)
+        self.assertTrue(s.axes_manager[1].scale == 0.5)
+        self.assertTrue(s.data[10:50, 10:50].mean() == 1)
+
+    def test_all_parameters(self):
+        sublattice = self.sublattice
+        sublattice.construct_zone_axes()
+        z_list = self.z_list
+        sub0 = Sublattice(np.array([[18, 15]]), image=sublattice.image)
+        s = sublattice.get_property_map(
+                    sublattice.x_position,
+                    sublattice.y_position,
+                    z_list,
+                    atom_plane_list=[sublattice.atom_plane_list[0]],
+                    add_zero_value_sublattice=sub0,
+                    upscale_map=4
+                    )
+        self.assertTrue(s.axes_manager[0].scale == 0.25)
+        self.assertTrue(s.axes_manager[1].scale == 0.25)
+        self.assertTrue(s.data[20:100, 20:100].mean() <= 1)
+        self.assertTrue(s.axes_manager[0].size == 120)
+        self.assertTrue(s.axes_manager[1].size == 120)
+        self.assertTrue(len(s.metadata['Markers'].keys()) == 4)
