@@ -1098,8 +1098,8 @@ class Sublattice():
         >>> sublattice_A = am.dummy_data.get_simple_cubic_sublattice()
         >>> sublattice_A.construct_zone_axes()
         >>> zone_axis = sublattice_A.zones_axis_average_distances[0]
-        >>> B_positions = \
-        ...        sublattice_A.find_missing_atoms_from_zone_vector(zone_axis)
+        >>> B_pos = sublattice_A.find_missing_atoms_from_zone_vector(
+        ...                       zone_axis)
 
         Returns
         -------
