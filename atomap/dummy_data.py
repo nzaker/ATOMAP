@@ -1,6 +1,6 @@
 import numpy as np
-from atomap.testing_tools import MakeTestData
 import hyperspy.api as hs
+from atomap.testing_tools import MakeTestData
 from atomap.atom_lattice import Atom_Lattice
 
 
@@ -87,7 +87,15 @@ def get_two_sublattice_signal():
 
 
 def get_simple_atom_lattice_two_sublattices(image_noise=False):
-    """Returns a simple atom_lattice with two sublattices
+    """Returns a simple atom_lattice with two sublattices.
+
+    Parameters
+    ----------
+    image_noise : bool, default False
+
+    Returns
+    -------
+    simple_atom_lattice : Atom_Lattice object
 
     Examples
     --------
@@ -95,15 +103,12 @@ def get_simple_atom_lattice_two_sublattices(image_noise=False):
     >>> al = am.dummy_data.get_simple_atom_lattice_two_sublattices()
     >>> al.plot()
 
-    Returns
-    -------
-    Atom_Lattice object
-
     """
     test_data_1 = MakeTestData(300, 300)
     test_data_2 = MakeTestData(300, 300)
     test_data_3 = MakeTestData(300, 300)
-    test_data_3.add_image_noise(mu=0, sigma=0.02)
+    if image_noise:
+        test_data_3.add_image_noise(mu=0, sigma=0.02)
     _make_atom_lists_two_sublattices(test_data_1, test_data_2)
     _make_atom_lists_two_sublattices(test_data_3)
 
@@ -112,9 +117,8 @@ def get_simple_atom_lattice_two_sublattices(image_noise=False):
     sublattice_2._plot_color = 'b'
     image = test_data_3.signal.data
     atom_lattice = Atom_Lattice(
-                            image=image,
-                            name='Simple Atom Lattice',
-                            sublattice_list=[sublattice_1, sublattice_2])
+            image=image, name='Simple Atom Lattice',
+            sublattice_list=[sublattice_1, sublattice_2])
     return(atom_lattice)
 
 
