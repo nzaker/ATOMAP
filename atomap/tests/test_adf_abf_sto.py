@@ -46,7 +46,7 @@ class test_adf_abf_sto_autoprocess(unittest.TestCase):
 
         zone_vector_100 = a_sublattice.zones_axis_average_distances[1]
         b_atom_list = a_sublattice.find_missing_atoms_from_zone_vector(
-                zone_vector_100, new_atom_tag='B')
+                zone_vector_100)
         b_sublattice = Sublattice(
                 b_atom_list, np.rot90(
                     np.fliplr(self.s_adf_modified.data)))
@@ -61,7 +61,7 @@ class test_adf_abf_sto_autoprocess(unittest.TestCase):
 
         zone_vector_100 = a_sublattice.zones_axis_average_distances[1]
         b_atom_list = a_sublattice.find_missing_atoms_from_zone_vector(
-                zone_vector_100, new_atom_tag='B')
+                zone_vector_100)
         b_sublattice = Sublattice(
                 b_atom_list, np.rot90(
                     np.fliplr(self.s_adf_modified.data)))
