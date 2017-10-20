@@ -1081,9 +1081,8 @@ class Sublattice():
             zone_axis_list1.extend(zone_axis_list2[1:])
         return(zone_axis_list1)
 
-    def find_missing_atoms_from_zone_vector(
-            self, zone_vector, new_atom_tag=''):
-        """Returns a list of atom positions coordinates, given by the
+    def find_missing_atoms_from_zone_vector(self, zone_vector):
+        """Returns a list of atom position coordinates, given by the
         mid-point between adjacent atoms in the plane given by
         zone_vecor.
 
@@ -1092,8 +1091,6 @@ class Sublattice():
         zone_vector : tuple
             Zone vector for the atom planes where the new atoms are positioned
             between the atoms in the sublattice.
-        new_atom_tag : string, default empty
-            A tag for the atoms
 
         Example
         -------
@@ -1112,9 +1109,7 @@ class Sublattice():
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
 
         new_atom_list = []
-        new_atom_plane_list = []
         for atom_plane in atom_plane_list:
-            temp_new_atom_list = []
             for atom_index, atom in enumerate(atom_plane.atom_list[1:]):
                 previous_atom = atom_plane.atom_list[atom_index]
                 difference_vector = previous_atom.get_pixel_difference(atom)
@@ -1122,11 +1117,7 @@ class Sublattice():
                     difference_vector[0]*0.5
                 new_atom_y = previous_atom.pixel_y -\
                     difference_vector[1]*0.5
-                new_atom = Atom_Position(new_atom_x, new_atom_y)
-                new_atom._tag = new_atom_tag
-                temp_new_atom_list.append(new_atom)
                 new_atom_list.append((new_atom_x, new_atom_y))
-            new_atom_plane_list.append(temp_new_atom_list)
         return(new_atom_list)
 
     def get_atom_planes_on_image(
