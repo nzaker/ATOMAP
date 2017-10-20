@@ -40,3 +40,8 @@ class test_dummy_data(unittest.TestCase):
         dd.get_perovskite110_ABF_signal()
         dd.get_perovskite110_ABF_signal(image_noise=False)
         dd.get_perovskite110_ABF_signal(image_noise=True)
+
+    def test_get_simple_atom_lattice_two_sublattices(self):
+        dd.get_simple_atom_lattice_two_sublattices()
+        dd.get_simple_atom_lattice_two_sublattices(image_noise=True)
+        dd.get_simple_atom_lattice_two_sublattices(image_noise=False)
