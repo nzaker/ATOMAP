@@ -1,6 +1,7 @@
 import numpy as np
 from atomap.testing_tools import MakeTestData
 import hyperspy.api as hs
+from atomap.atom_lattice import Atom_Lattice
 
 
 def _make_simple_cubic_testdata(image_noise=False):
@@ -58,6 +59,19 @@ def get_simple_cubic_sublattice(image_noise=False):
     return test_data.sublattice
 
 
+def _make_atom_lists_two_sublattices(test_data_1, test_data_2=None):
+    x0, y0 = np.mgrid[10:295:20, 10:300:34]
+    test_data_1.add_atom_list(
+            x0.flatten(), y0.flatten(), sigma_x=3, sigma_y=3, amplitude=20)
+
+    if test_data_2 is None:
+        test_data_2 = test_data_1
+
+    x1, y1 = np.mgrid[10:295:20, 27:290:34]
+    test_data_2.add_atom_list(
+            x1.flatten(), y1.flatten(), sigma_x=3, sigma_y=3, amplitude=10)
+
+
 def get_two_sublattice_signal():
     test_data = MakeTestData(300, 300)
     x0, y0 = np.mgrid[10:295:20, 10:300:34]
@@ -70,6 +84,38 @@ def get_two_sublattice_signal():
 
     test_data.add_image_noise(mu=0, sigma=0.01)
     return test_data.signal
+
+
+def get_simple_atom_lattice_two_sublattices(image_noise=False):
+    """Returns a simple atom_lattice with two sublattices
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> al = am.dummy_data.get_simple_atom_lattice_two_sublattices()
+    >>> al.plot()
+
+    Returns
+    -------
+    Atom_Lattice object
+
+    """
+    test_data_1 = MakeTestData(300, 300)
+    test_data_2 = MakeTestData(300, 300)
+    test_data_3 = MakeTestData(300, 300)
+    test_data_3.add_image_noise(mu=0, sigma=0.02)
+    _make_atom_lists_two_sublattices(test_data_1, test_data_2)
+    _make_atom_lists_two_sublattices(test_data_3)
+
+    sublattice_1 = test_data_1.sublattice
+    sublattice_2 = test_data_2.sublattice
+    sublattice_2._plot_color = 'b'
+    image = test_data_3.signal.data
+    atom_lattice = Atom_Lattice(
+                            image=image,
+                            name='Simple Atom Lattice',
+                            sublattice_list=[sublattice_1, sublattice_2])
+    return(atom_lattice)
 
 
 def get_simple_heterostructure_signal(image_noise=True):
