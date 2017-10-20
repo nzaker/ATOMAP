@@ -413,13 +413,11 @@ class Sublattice():
 
     def get_property_map(
             self,
-            x_list,
-            y_list,
-            z_list,
+            x_list, y_list, z_list,
             atom_plane_list=None,
             add_zero_value_sublattice=None,
             upscale_map=2):
-        """Returns a signal mapping a property.
+        """Returns an interpolated signal map of a property.
 
         Maps the property in z_list.
         The map is interpolated, and the upscale factor of the interpolation
@@ -427,13 +425,13 @@ class Sublattice():
 
         Parameters
         ----------
-        x_list, y_list : list
-            Lists of atom position x and y coordinates
-        z_list : list
-            List of properties for each atom position. z[0] is the property of
-            the atom position (x[0], y[0]). Must have the same length as
+        x_list, y_list : list of numbers
+            Lists of x and y positions
+        z_list : list of numbers
+            List of properties for positions. z[0] is the property of
+            the position at x[0] and y[0]. z_list must have the same length as
             x_list and y_list.
-        atom_plane_list : list, default None
+        atom_plane_list : list of Atomap Atom_Plane objects, default None
             List of atom planes which will be added as markers in the signal.
         add_zero_value_sublattice : Sublattice
             The sublattice for A-cations in a perovskite oxide can be included
@@ -444,9 +442,13 @@ class Sublattice():
             these coordinate is set to 0. This helps in the visualization of
             tilt patterns. For example, the "tilt" property" outside oxygen
             octahedron in perovskite oxides is 0. The A-cations are outside
-            the octahedra
+            the octahedra.
         upscale_map : int, default 2
             Upscaling factor for the interpolated map.
+
+        Returns
+        -------
+        interpolated_signal : HyperSpy Signal2D
 
         Examples
         --------
@@ -459,25 +461,17 @@ class Sublattice():
         ...                    sublattice.x_position,
         ...                    sublattice.y_position,
         ...                    sublattice.ellipticity)
-
-        Returns
-        -------
-        HyperSpy Signal2D
+        >>> s.plot()
 
         """
         data_scale = self.pixel_size
-        if not(add_zero_value_sublattice is None):
+        if add_zero_value_sublattice is not None:
             self._add_zero_position_to_data_list_from_atom_list(
-                x_list,
-                y_list,
-                z_list,
+                x_list, y_list, z_list,
                 add_zero_value_sublattice.x_position,
                 add_zero_value_sublattice.y_position)
         data_map = self._get_regular_grid_from_unregular_property(
-            x_list,
-            y_list,
-            z_list,
-            upscale=upscale_map)
+                x_list, y_list, z_list, upscale=upscale_map)
         signal = array2signal2d(
                 data_map[2], self.pixel_size/upscale_map, rotate_flip=True)
         if atom_plane_list is not None:
@@ -1082,15 +1076,20 @@ class Sublattice():
         return(zone_axis_list1)
 
     def find_missing_atoms_from_zone_vector(self, zone_vector):
-        """Returns a list of atom position coordinates, given by the
-        mid-point between adjacent atoms in the plane given by
-        zone_vecor.
+        """Returns a list of coordinates between atoms given by a zone vector.
+
+        These coordinates are given by the mid-point between adjacent atoms
+        in the atom planes with the given zone_vector.
 
         Parameters
         ----------
         zone_vector : tuple
             Zone vector for the atom planes where the new atoms are positioned
             between the atoms in the sublattice.
+
+        Returns
+        -------
+        xy_coordinates : List of tuples
 
         Example
         -------
@@ -1100,10 +1099,6 @@ class Sublattice():
         >>> zone_axis = sublattice_A.zones_axis_average_distances[0]
         >>> B_pos = sublattice_A.find_missing_atoms_from_zone_vector(
         ...                       zone_axis)
-
-        Returns
-        -------
-        List ot tuples, with x and y coordinates
 
         """
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
