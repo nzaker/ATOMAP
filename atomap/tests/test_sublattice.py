@@ -623,7 +623,7 @@ class test_mask_indices(unittest.TestCase):
         t1.add_atom_list([5, 15], [5, 5])
         sublattice = t1.sublattice
         self.mask_list = sublattice._get_sublattice_atom_list_mask()
-        s = sublattice.mask_image_around_sublattice(sublattice.image)
+        s = sublattice.mask_image_around_sublattice(sublattice.image, radius=1)
         self.s_i = np.asarray(np.nonzero(s.data))
 
     def test_mask_atom_list_len(self):
