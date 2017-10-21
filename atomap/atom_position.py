@@ -28,7 +28,9 @@ class Atom_Position:
         sigma_x : float, optional
         sigma_y : float, optional
         rotation : float, optional
-            In radians
+            In radians. The rotation of the axes of the 2D-gaussian relative
+            to the image axes. For the rotation of the ellipticity, see
+            rotation_ellipticity.
         amplitude : float, optional
             Amplitude of Gaussian. Stored as amplitude_gaussian attribute.
 
@@ -94,6 +96,11 @@ class Atom_Position:
 
     @property
     def rotation(self):
+        """In radians the rotation of the axes of each 2D-gaussian
+        relative to the image axes.
+
+        For the rotation of the ellipticity, see rotation_ellipticity.
+        """
         return(self.__rotation)
 
     @rotation.setter

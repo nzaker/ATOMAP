@@ -60,7 +60,13 @@ class Sublattice():
         sigma_y : list of floats
         sigma_average : list of floats
         rotation : list of floats
+            In radians. The rotation of the axes of each 2D-gaussian relative
+            to the image axes. For the rotation of the ellipticity, see
+            rotation_ellipticity.
         ellipticity : list of floats
+        rotation_ellipticity : list of floats
+            In radians, the rotation between the "x-axis" and the major axis
+            of the ellipse. Basically giving the direction of the ellipticity.
         name : string
 
         Examples
