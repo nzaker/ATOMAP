@@ -589,7 +589,7 @@ class test_sublattice_mask(unittest.TestCase):
     def test_radius_is_0(self):
         sublattice = self.sublattice
         s = sublattice.mask_image_around_sublattice(
-            sublattice.image, radius=0)
+            image_data=sublattice.image, radius=0)
         self.assertEqual(np.count_nonzero(s.data), len(sublattice.atom_list))
 
 
