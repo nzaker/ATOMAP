@@ -102,7 +102,7 @@ class Atom_Position:
 
     @property
     def rotation_ellipticity(self):
-        """Rotation between the "x-axis" and longest sigma.
+        """Rotation between the "x-axis" and the major axis of the ellipse.
 
         Basically giving the direction of the ellipticity.
         """

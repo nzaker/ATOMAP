@@ -1384,6 +1384,27 @@ class Sublattice():
             self,
             image=None,
             percent_to_nn=0.40):
+        """Finds the maximal intensity for each atomic column
+
+        Finds the maximal image intensity of each atomic column inside
+        an area covering the atomic column.
+
+        Parameters
+        ----------
+        image : NumPy 2D array, default None
+            Uses original image if None
+        percent_to_nn : float, default 0.4
+            Determines the boundary of the area sourrounding each atomic
+            column, as fraction of the distance to the nearest neighbour,
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.get_atom_column_amplitude_max_intensity()
+        >>> sublattice.atom_amplitude_max_intensity
+
+        """
         if image is None:
             image = self.original_image
 
