@@ -36,9 +36,9 @@ class GenericSublattice(SublatticeParameterBase):
         removal, PCA noise filtering and normalization.
         2nd refinement : Center of mass on the original image.
         3rd refinement : Fitting 2D Gaussians to the original image.
-        neighbor_distance : 0.35
-            Mask radius for fitting, set to 0.35 of the distance to
-            nearest neighbor.
+    neighbor_distance : 0.35
+        Mask radius for fitting, set to 0.35 of the distance to
+        nearest neighbor.
     atom_subtract_config : list
         Configuration for how to subtract higher order sublattices
         from the image. (Not really used in this structure, but included
@@ -102,8 +102,8 @@ class PerovskiteOxide110SublatticeACation(SublatticeParameterBase):
     refinement_config : dict
         Dict with configuration settings for the refinement of atom positions.
         Two refinements by fitting 2D Gaussians to the original image.
-        neighbor_distance : 0.35
-            Mask radius for fitting set to 0.35 of nearest neighbor.
+    neighbor_distance : 0.35
+        Mask radius for fitting set to 0.35 of nearest neighbor.
 
     """
 
@@ -150,8 +150,8 @@ class PerovskiteOxide110SublatticeBCation(SublatticeParameterBase):
         Dict with configuration settings for the refinement of atom positions.
         1st refinement : center-of-mass on the original image.
         2nd refinement : Fitting 2D Gaussians to the original image.
-        neighbor_distance : 0.25
-            Mask radius for fitting set to 0.25 of nearest neighbor.
+    neighbor_distance : 0.25
+        Mask radius for fitting set to 0.25 of nearest neighbor.
     atom_subtract_config : list
         Configuration for how to subtract higher order sublattices
         from the image. Subtracts a sublattice with name 'A-cation' from the
@@ -210,8 +210,8 @@ class PerovskiteOxide110SublatticeOxygen(SublatticeParameterBase):
         Dict with configuration settings for the refinement of atom positions.
         1st refinement : center-of-mass on the original image.
         2nd refinement : Fitting 2D Gaussians to the original image.
-        neighbor_distance : 0.25
-            Mask radius for fitting set to 0.25 of nearest neighbor.
+    neighbor_distance : 0.25
+        Mask radius for fitting set to 0.25 of nearest neighbor.
     atom_subtract_config : list
         Configuration for how to subtract higher order sublattices
         from the image. Subtracts first a sublattice with name 'A-cation'
