@@ -1407,6 +1407,7 @@ class Sublattice():
         -------
         >>> import atomap.api as am
         >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.find_nearest_neighbors()
         >>> sublattice.get_atom_column_amplitude_max_intensity()
         >>> sublattice.atom_amplitude_max_intensity
 
