@@ -1,8 +1,8 @@
 .. _automation:
 
-============================
-Automatation of the analysis
-============================
+==========================
+Automation of the analysis
+==========================
 
 If you are about to study many atomic resolution images of the same type of structure, you can save time and effort by using tools in Atomap for automation, by setting process parameters.
 :py:mod:`atomap.process_parameters` is a module offering classes of predefined process parameters for some types of structures:
