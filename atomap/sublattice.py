@@ -60,7 +60,13 @@ class Sublattice():
         sigma_y : list of floats
         sigma_average : list of floats
         rotation : list of floats
+            In radians. The rotation of the axes of each 2D-gaussian relative
+            to the image axes. For the rotation of the ellipticity, see
+            rotation_ellipticity.
         ellipticity : list of floats
+        rotation_ellipticity : list of floats
+            In radians, the rotation between the "x-axis" and the major axis
+            of the ellipse. Basically giving the direction of the ellipticity.
         name : string
 
         Examples
@@ -1384,6 +1390,28 @@ class Sublattice():
             self,
             image=None,
             percent_to_nn=0.40):
+        """Finds the maximal intensity for each atomic column
+
+        Finds the maximal image intensity of each atomic column inside
+        an area covering the atomic column.
+
+        Parameters
+        ----------
+        image : NumPy 2D array, default None
+            Uses original image if None
+        percent_to_nn : float, default 0.4
+            Determines the boundary of the area sourrounding each atomic
+            column, as fraction of the distance to the nearest neighbour,
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.find_nearest_neighbors()
+        >>> sublattice.get_atom_column_amplitude_max_intensity()
+        >>> intensity_list = sublattice.atom_amplitude_max_intensity
+
+        """
         if image is None:
             image = self.original_image
 
@@ -2091,7 +2119,7 @@ class Sublattice():
             mask_list.append(indices)
         return(mask_list)
 
-    def mask_image_around_sublattice(self, image_data, radius=1):
+    def mask_image_around_sublattice(self, image_data=None, radius=2):
         """
         Returns a HyperSpy signal containing a masked image. The mask covers
         the area around each atom position in the sublattice, from a given
@@ -2106,7 +2134,7 @@ class Sublattice():
 
         radius : int, optional
             The radius in pixels away from the atom centre pixels, determining
-            the area that shall not be masked. The default radius is 3 pixels.
+            the area that shall not be masked. The default radius is 2 pixels.
 
         Returns
         -------
@@ -2125,10 +2153,32 @@ class Sublattice():
         s = hs.signals.Signal2D(mask*image_data)
         return(s)
 
-    def find_sublattice_intensity_from_masked_image(self, image_data, radius):
-        """
-        Find the image intensity of each atom in the sublattice by
-        finding the average intensity of the pixels inside an unmasked area.
+    def find_sublattice_intensity_from_masked_image(
+                            self, image_data=None, radius=2):
+        """Find the image intensity of each atomic column in the sublattice.
+
+        The intensity of the atomic column is given by the average intensity
+        of the pixels inside an area within a radius in pixels from each
+        atom position.
+
+        Parameters
+        ----------
+        image_data : 2-D NumPy array, optional
+            Image data for plotting. If none is given, will use
+            the original_image.
+
+        radius : int, optional, default 2
+            The radius in pixels away from the atom centre pixels, determining
+            the area that shall not be masked. The default radius is 3 pixels.
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.find_sublattice_intensity_from_masked_image(
+        ...     sublattice.image, 3)
+        >>> intensity = sublattice.intensity_mask
+
         """
         if image_data is None:
             image_data = self.original_image
