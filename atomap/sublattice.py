@@ -60,8 +60,8 @@ class Sublattice():
         sigma_y : list of floats
         sigma_average : list of floats
         rotation : list of floats
-            In radians. The rotation of the axes of each 2D-gaussian relative
-            to the image axes. For the rotation of the ellipticity, see
+            In radians. The rotation of the axes of each 2D-Gaussian relative
+            to the horizontal axes. For the rotation of the ellipticity, see
             rotation_ellipticity.
         ellipticity : list of floats
         rotation_ellipticity : list of floats
@@ -88,6 +88,7 @@ class Sublattice():
         >>> sublattice = Sublattice(atom_positions, image_data, color='yellow',
         ...     name='the sublattice')
         >>> sublattice.get_atom_list_on_image(markersize=50).plot()
+
         """
         self.atom_list = []
         for atom_position in atom_position_list:
@@ -1390,18 +1391,22 @@ class Sublattice():
             self,
             image=None,
             percent_to_nn=0.40):
-        """Finds the maximal intensity for each atomic column
+        """Finds the maximal intensity for each atomic column.
 
         Finds the maximal image intensity of each atomic column inside
         an area covering the atomic column.
 
+        Results are stored in each Atom_Position object as
+        amplitude_max_intensity, which can most easily be accessed in
+        through the sublattice object (see the examples below).
+
         Parameters
         ----------
         image : NumPy 2D array, default None
-            Uses original image if None
+            Uses original_image by default.
         percent_to_nn : float, default 0.4
-            Determines the boundary of the area sourrounding each atomic
-            column, as fraction of the distance to the nearest neighbour,
+            Determines the boundary of the area surrounding each atomic
+            column, as fraction of the distance to the nearest neighbour.
 
         Example
         -------
@@ -2138,7 +2143,14 @@ class Sublattice():
 
         Returns
         -------
-        HyperSpy 2D-signal containing the masked image.
+        masked_signal : HyperSpy 2D-signal
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> s = sublattice.mask_image_around_sublattice(radius=3)
+        >>> s.plot()
 
         """
         if image_data is None:

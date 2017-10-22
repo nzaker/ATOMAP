@@ -28,15 +28,26 @@ class Atom_Position:
         sigma_x : float, optional
         sigma_y : float, optional
         rotation : float, optional
-            In radians. The rotation of the axes of the 2D-gaussian relative
-            to the image axes. For the rotation of the ellipticity, see
-            rotation_ellipticity.
+            In radians. The rotation of the axes of the 2D-Gaussian relative
+            to the image axes. In other words: the rotation of the sigma_x
+            relative to the horizontal axis (x-axis). This is different
+            from the rotation_ellipticity, which is the rotation of the
+            largest sigma in relation to the horizontal axis.
+            For the rotation of the ellipticity, see rotation_ellipticity.
         amplitude : float, optional
             Amplitude of Gaussian. Stored as amplitude_gaussian attribute.
 
         Attributes
         ----------
         ellipticity : float
+        rotation : float
+            The rotation of sigma_x axis, relative to the x-axis in radians.
+            This value will always be between 0 and pi, as the elliptical
+            2D-Gaussian used here is always symmetric in the rotation
+            direction, and the perpendicular rotation direction.
+        rotation_ellipticity : float
+            The rotation of the longest sigma, relative to the x-axis in
+            radians.
 
         Examples
         --------
@@ -96,9 +107,9 @@ class Atom_Position:
 
     @property
     def rotation(self):
-        """In radians the rotation of the axes of each 2D-gaussian
-        relative to the image axes.
+        """The rotation of the atom relative to the horizontal axis.
 
+        Given in radians.
         For the rotation of the ellipticity, see rotation_ellipticity.
         """
         return(self.__rotation)
@@ -111,6 +122,8 @@ class Atom_Position:
     def rotation_ellipticity(self):
         """Rotation between the "x-axis" and the major axis of the ellipse.
 
+        Rotation between the horizontal axis, and the longest part of the
+        atom position, given by the longest sigma.
         Basically giving the direction of the ellipticity.
         """
         if self.sigma_x > self.sigma_y:
