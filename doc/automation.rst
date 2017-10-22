@@ -4,7 +4,7 @@
 Automation of the analysis
 ==========================
 
-If you are about to study many atomic resolution images of the same type of structure, you can save time and effort by using tools in Atomap for automation, by setting process parameters.
+If you are want to study many atomic resolution images of the same type of structure, you can save time and effort by using tools in Atomap for automation, by setting process parameters.
 :py:mod:`atomap.process_parameters` is a module offering classes of predefined process parameters for some types of structures:
 
 1. Perovskite Oxides (projected along the [110] direction), for all sublattices (A, B and Oxygen)
@@ -17,7 +17,7 @@ The last part of this tutorial aims to show how such parameters can be made for 
 Finding atom lattices with process parameters
 ---------------------------------------------
 
-In this tutorial we will use the predefined process parameter `PerovskiteOxide110`, and a dummy image designed to look like an HAADF image of the perovskite SrTiO3.
+In this tutorial we will use the predefined process parameter `PerovskiteOxide110`, and a dummy image designed to look like an HAADF image of the perovskite |STO|.
 It contains various parameters and names for processing a perovskite oxide structure projected along the [110] direction.
 The master function :py:meth:`atomap.main.make_atom_lattice_from_image` takes the atomic resolution signal, process parameters and optimal feature separation.
 This means that you probably need to run :py:meth:`atomap.atom_finding_refining.get_feature_separation` and find the best pixel separation first.
@@ -33,7 +33,7 @@ This means that you probably need to run :py:meth:`atomap.atom_finding_refining.
     1/2
     2/2
 
-Depending on the size of the dataset, this can take a while. 
+Depending on the size of the dataset, this can take a while.
 The processing will:
     1. Locate the most intense atomic columns (A-cations, Strontium).
     2. Refine the position using center of mass.
@@ -113,7 +113,7 @@ A class for the process parameters for *SublatticeA* can look like this:
 
     1. Atom positions are refined one time by using center-of-mass on an image where the background has been removed, noise has been filtered with PCA and the image is normalized.
     2. Atom positions are refined one time by using center-of-mass on the original image.
-    3. Atom positions are refined one time by fitting 2D-gaussians to the original image.
+    3. Atom positions are refined one time by fitting 2D-Gaussians to the original image.
 
 * An appropriate ``neighbor_distance`` must be given to set the mask size for the fitting of the Gaussians. Here, it is 35 % of the distance to the nearest neighbor.
 
@@ -160,7 +160,7 @@ To find the atom positions in *SublatticeO*, an ABF image is used.
 * ``refinement_config`` is different here, to illustrate the possibilities:
 
     1. Atom positions are refined one time by using center-of-mass on an image which has been inverted and with the A sublattice removed, and modified by background removal, noise filtering and normalization.
-    2. Atom positions are refined two times by fitting 2D-gaussians to the inverted image where the A sublattice has been removed.
+    2. Atom positions are refined two times by fitting 2D-Gaussians to the inverted image where the A sublattice has been removed.
 
 * 0.25 is found to be an appropriate ``neighbor_distance`` for this example structure.
 
@@ -186,3 +186,6 @@ An important setting here is the ``peak_separation``.
 The peak separation is a distance in nanometer, approximately half the distance between the atoms in 'A'.
 The number is used to find the ``pixel_separation`` for the initial peak finding for the brightest sublattice.
 Therefore, the scale of the image must be calibrated prior to processing.
+
+
+.. |STO| replace:: SrTiO\ :sub:`3`
