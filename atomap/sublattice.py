@@ -920,7 +920,8 @@ class Sublattice():
 
         Returns
         -------
-        Pixel Position : np.array([x_position, y_position])
+        nn_position_array : NumPy array
+            In the form [x_pos, y_pos].
 
         Examples
         --------
