@@ -8,16 +8,26 @@ Become a contributer
 Why contribute
 ^^^^^^^^^^^^^^
 
-As a scientist, contributing to open source software can increase you impact on science.
+As a scientist, contributing to open source software projects can increase you impact on science.
 The tools you help developing can be used by many researchers, doing many discoveries.
-You can check out who is contributing to Atomap `here <https://gitlab.com/atomap/atomap/graphs/master>`_.
+Since the tools are openly available, lot's of double work can be avoided.
+You may find that often, several researchers are working on their own to develop the same data analysis tools.
 
 Open source software has many advantages:
 
 1. It is better. Since the source code is open, anyone can help finding errors, improving the code and adding functionality. More about that `here <https://www.dwheeler.com/oss_fs_why.html>`_.
-2. It is free.
+2. It is free. You can make the tools you want and need, not needing to wait for a company to care.
 3. It is for free.
 
+By contributing to open source projects you will gain more experience with programming and how program as a part of a community.
+
+You can check out who is contributing to Atomap `here <https://gitlab.com/atomap/atomap/graphs/master>`_.
+
+What to contribute
+^^^^^^^^^^^^^^^^^^
+Firstly, as an Atomap user you may find that you miss some functionality. Obviously, you can develop the tools you are missing, and improve existing tools. 
+Contributing documentation, and doing language checks is also highly appreciated.
+You can read more about contributing to open source projects `here <https://opensource.guide/how-to-contribute/>`_. 
 
 Version control
 ^^^^^^^^^^^^^^^
@@ -29,7 +39,10 @@ When new functionality is created or old functionality improved, new branches of
 The branch is merged back into the master development version when they are done.
 
 You only need to know a few basic things about git to be able to start developing.
-Those are how to fork a project, `clone`
+Git is the most commonly used version control system, so there is a lot of user guides out there.
+You may consult the nice Gitlab `userguide <https://docs.gitlab.com/ce/gitlab-basics/README.html>`_.
+Below, you'll also find and outline of the basic first steps.
+Often as with tools, the best way to learn is by using.
 
 First steps
 ^^^^^^^^^^^
@@ -80,4 +93,6 @@ Learn more
 ^^^^^^^^^^
 1. `What is git? <https://www.git-scm.com/about>`_
 2. Atomap follows the Style Guide for Python Code. These are just some rules for consistency that you can read all about in the `Python Style Guide <https://www.python.org/dev/peps/pep-0008/>`_.
-3. Write tests and documentation.
+3. Write tests
+4. Write documentation.
+5. The Python programming language, `for beginners <https://www.python.org/about/gettingstarted/>`_.
