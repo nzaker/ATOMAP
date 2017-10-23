@@ -14,7 +14,8 @@ from atomap.tools import\
         project_position_property_sum_planes
 
 
-def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list):
+def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list,
+                      save=True):
     fig, ax = plt.subplots()
     ax.quiver(
             x_pos_list,
@@ -28,7 +29,8 @@ def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list):
             pivot='middle')
     ax.set_xlim(min(x_pos_list), max(x_pos_list))
     ax.set_ylim(min(y_pos_list), max(y_pos_list))
-    fig.savefig("vector_field.png", dpi=200)
+    if save:
+        fig.savefig("vector_field.png", dpi=200)
 
 
 def plot_zone_vector_and_atom_distance_map(
@@ -665,7 +667,7 @@ def plot_line_profiles_from_parameter_input(
         for ax in fig.axes:
             ax.set_xlim(x_lim[0], x_lim[1])
 
-    if extra_line_marker is not None:
+    if extra_line_marker_list is not None:
         for extra_line_marker in extra_line_marker_list:
             for ax in fig.axes:
                 ax.axvline(extra_line_marker, color='red')

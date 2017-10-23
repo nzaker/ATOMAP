@@ -2,11 +2,9 @@ import numpy as np
 import scipy as sp
 from tqdm import tqdm, trange
 import matplotlib.pyplot as plt
-import math
 from scipy.spatial import cKDTree
 import hyperspy.api as hs
 from hyperspy.signals import Signal2D
-import copy
 from hyperspy.drawing._markers.point import Point
 
 from atomap.tools import (
@@ -18,12 +16,13 @@ from atomap.tools import (
 from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
         _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
-        _make_zone_vector_text_marker_list)
+        _make_zone_vector_text_marker_list, plot_vector_field)
 from atomap.atom_finding_refining import construct_zone_axes_from_sublattice
 from atomap.atom_finding_refining import _make_circular_mask
 
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
+from atomap.symmetry_finding import _remove_parallel_vectors
 
 from atomap.external.add_marker import add_marker
 from atomap.external.gaussian2d import Gaussian2D
@@ -61,7 +60,13 @@ class Sublattice():
         sigma_y : list of floats
         sigma_average : list of floats
         rotation : list of floats
+            In radians. The rotation of the axes of each 2D-Gaussian relative
+            to the horizontal axes. For the rotation of the ellipticity, see
+            rotation_ellipticity.
         ellipticity : list of floats
+        rotation_ellipticity : list of floats
+            In radians, the rotation between the "x-axis" and the major axis
+            of the ellipse. Basically giving the direction of the ellipticity.
         name : string
 
         Examples
@@ -83,6 +88,7 @@ class Sublattice():
         >>> sublattice = Sublattice(atom_positions, image_data, color='yellow',
         ...     name='the sublattice')
         >>> sublattice.get_atom_list_on_image(markersize=50).plot()
+
         """
         self.atom_list = []
         for atom_position in atom_position_list:
@@ -412,27 +418,67 @@ class Sublattice():
 
         return(new_data)
 
-    def _get_property_map(
+    def get_property_map(
             self,
-            x_list,
-            y_list,
-            z_list,
+            x_list, y_list, z_list,
             atom_plane_list=None,
-            data_scale_z=1.0,
             add_zero_value_sublattice=None,
             upscale_map=2):
+        """Returns an interpolated signal map of a property.
+
+        Maps the property in z_list.
+        The map is interpolated, and the upscale factor of the interpolation
+        can be set (default 2).
+
+        Parameters
+        ----------
+        x_list, y_list : list of numbers
+            Lists of x and y positions
+        z_list : list of numbers
+            List of properties for positions. z[0] is the property of
+            the position at x[0] and y[0]. z_list must have the same length as
+            x_list and y_list.
+        atom_plane_list : list of Atomap Atom_Plane objects, default None
+            List of atom planes which will be added as markers in the signal.
+        add_zero_value_sublattice : Sublattice
+            The sublattice for A-cations in a perovskite oxide can be included
+            here, when maps of oxygen tilt patterns are made. The principle is
+            that another sublattice can given as a parameter, in order to add
+            zero-value points in the map. This means that he atom positions in
+            this sublattice will be included in the map, and the property at
+            these coordinate is set to 0. This helps in the visualization of
+            tilt patterns. For example, the "tilt" property" outside oxygen
+            octahedron in perovskite oxides is 0. The A-cations are outside
+            the octahedra.
+        upscale_map : int, default 2
+            Upscaling factor for the interpolated map.
+
+        Returns
+        -------
+        interpolated_signal : HyperSpy Signal2D
+
+        Examples
+        --------
+
+        Example with ellipticity as property.
+
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> s = sublattice.get_property_map(
+        ...                    sublattice.x_position,
+        ...                    sublattice.y_position,
+        ...                    sublattice.ellipticity)
+        >>> s.plot()
+
+        """
         data_scale = self.pixel_size
-        if not(add_zero_value_sublattice is None):
+        if add_zero_value_sublattice is not None:
             self._add_zero_position_to_data_list_from_atom_list(
-                x_list,
-                y_list,
-                z_list,
+                x_list, y_list, z_list,
                 add_zero_value_sublattice.x_position,
                 add_zero_value_sublattice.y_position)
         data_map = self._get_regular_grid_from_unregular_property(
-            x_list,
-            y_list,
-            z_list)
+                x_list, y_list, z_list, upscale=upscale_map)
         signal = array2signal2d(
                 data_map[2], self.pixel_size/upscale_map, rotate_flip=True)
         if atom_plane_list is not None:
@@ -874,7 +920,8 @@ class Sublattice():
 
         Returns
         -------
-        Pixel Position : np.array([x_position, y_position])
+        nn_position_array : NumPy array
+            In the form [x_pos, y_pos].
 
         Examples
         --------
@@ -915,6 +962,39 @@ class Sublattice():
         return nn
 
     def _make_translation_symmetry(self, pixel_separation_factor=7):
+        """Find the major translation symmetries for the atom positions.
+
+        Essentially finds the (x, y) vectors between all the atom positions,
+        and uses nearest neighbor statistics to generate a list of the
+        nearest ones. I.e. the most high-index zone axes for the positions.
+
+        Only the unique vectors are kept, meaning parallel and antiparallel
+        ones are removed.
+
+        This function populates sublattice.zones_axis_average_distances and
+        sublattice.zones_axis_average_distances_names
+
+        Note: this function requires sublattice._pixel_separation to be set
+        before running this function. This is normally done by calling
+        sublattice._get_pixel_separation()
+
+        Parameters
+        ----------
+        pixel_separation_factor : default 7
+
+        Example
+        -------
+        >>> import atomap.dummy_data as dd
+        >>> sublattice = dd.get_simple_cubic_sublattice()
+        >>> sublattice._pixel_separation = sublattice._get_pixel_separation()
+        >>> sublattice._make_translation_symmetry()
+        >>> zone_vectors = sublattice.zones_axis_average_distances
+
+        See also
+        --------
+        get_fingerprint_2d : function used to get full vector list
+
+        """
         pixel_radius = self._pixel_separation*pixel_separation_factor
         fp_2d = self.get_fingerprint_2d(pixel_radius=pixel_radius)
         clusters = []
@@ -923,10 +1003,9 @@ class Sublattice():
                     float(format(zone_vector[0], '.2f')),
                     float(format(zone_vector[1], '.2f')))
             clusters.append(cluster)
-        clusters = self._sort_vectors_by_length(clusters)
-        clusters = self._remove_parallel_vectors(
+        clusters = _remove_parallel_vectors(
                 clusters,
-                tolerance=self._pixel_separation/1.5)
+                distance_tolerance=self._pixel_separation/1.5)
 
         new_zone_vector_name_list = []
         for zone_vector in clusters:
@@ -934,48 +1013,6 @@ class Sublattice():
 
         self.zones_axis_average_distances = clusters
         self.zones_axis_average_distances_names = new_zone_vector_name_list
-
-    def _sort_vectors_by_length(self, old_vector_list):
-        vector_list = copy.deepcopy(old_vector_list)
-        zone_vector_distance_list = []
-        for vector in vector_list:
-            distance = math.hypot(vector[0], vector[1])
-            zone_vector_distance_list.append(distance)
-
-        vector_list.sort(key=dict(zip(
-            vector_list, zone_vector_distance_list)).get)
-        return(vector_list)
-
-    def _find_shortest_vector(self, vector_list):
-        shortest_atom_distance = 100000000000000000000000000000
-        for vector in vector_list:
-            distance = math.hypot(vector[0], vector[1])
-            if distance < shortest_atom_distance:
-                shortest_atom_distance = distance
-        return(shortest_atom_distance)
-
-    def _remove_parallel_vectors(self, old_vector_list, tolerance=7):
-        """
-        Remove parallel and antiparallel zone vectors.
-        """
-        vector_list = copy.deepcopy(old_vector_list)
-        element_prune_list = []
-        for zone_index, zone_vector in enumerate(vector_list):
-            for n in range(-4, 5):
-                n_vector = (n*zone_vector[0], n*zone_vector[1])
-                for temp_index, temp_zone_vector in enumerate(
-                        vector_list[zone_index+1:]):
-                    dist_x = temp_zone_vector[0]-n_vector[0]
-                    dist_y = temp_zone_vector[1]-n_vector[1]
-                    distance = math.hypot(dist_x, dist_y)
-                    if distance < tolerance:
-                        element_prune_list.append(zone_index+temp_index+1)
-        element_prune_list = list(set(element_prune_list))
-        element_prune_list.sort()
-        element_prune_list.reverse()
-        for element_prune in element_prune_list:
-            del(vector_list[element_prune])
-        return(vector_list)
 
     def _get_atom_plane_list_from_zone_vector(self, zone_vector):
         temp_atom_plane_list = []
@@ -1046,14 +1083,36 @@ class Sublattice():
             zone_axis_list1.extend(zone_axis_list2[1:])
         return(zone_axis_list1)
 
-    def _find_missing_atoms_from_zone_vector(
-            self, zone_vector, new_atom_tag=''):
+    def find_missing_atoms_from_zone_vector(self, zone_vector):
+        """Returns a list of coordinates between atoms given by a zone vector.
+
+        These coordinates are given by the mid-point between adjacent atoms
+        in the atom planes with the given zone_vector.
+
+        Parameters
+        ----------
+        zone_vector : tuple
+            Zone vector for the atom planes where the new atoms are positioned
+            between the atoms in the sublattice.
+
+        Returns
+        -------
+        xy_coordinates : List of tuples
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice_A = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice_A.construct_zone_axes()
+        >>> zone_axis = sublattice_A.zones_axis_average_distances[0]
+        >>> B_pos = sublattice_A.find_missing_atoms_from_zone_vector(
+        ...                       zone_axis)
+
+        """
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
 
         new_atom_list = []
-        new_atom_plane_list = []
         for atom_plane in atom_plane_list:
-            temp_new_atom_list = []
             for atom_index, atom in enumerate(atom_plane.atom_list[1:]):
                 previous_atom = atom_plane.atom_list[atom_index]
                 difference_vector = previous_atom.get_pixel_difference(atom)
@@ -1061,11 +1120,7 @@ class Sublattice():
                     difference_vector[0]*0.5
                 new_atom_y = previous_atom.pixel_y -\
                     difference_vector[1]*0.5
-                new_atom = Atom_Position(new_atom_x, new_atom_y)
-                new_atom._tag = new_atom_tag
-                temp_new_atom_list.append(new_atom)
                 new_atom_list.append((new_atom_x, new_atom_y))
-            new_atom_plane_list.append(temp_new_atom_list)
         return(new_atom_list)
 
     def get_atom_planes_on_image(
@@ -1337,6 +1392,32 @@ class Sublattice():
             self,
             image=None,
             percent_to_nn=0.40):
+        """Finds the maximal intensity for each atomic column.
+
+        Finds the maximal image intensity of each atomic column inside
+        an area covering the atomic column.
+
+        Results are stored in each Atom_Position object as
+        amplitude_max_intensity, which can most easily be accessed in
+        through the sublattice object (see the examples below).
+
+        Parameters
+        ----------
+        image : NumPy 2D array, default None
+            Uses original_image by default.
+        percent_to_nn : float, default 0.4
+            Determines the boundary of the area surrounding each atomic
+            column, as fraction of the distance to the nearest neighbour.
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.find_nearest_neighbors()
+        >>> sublattice.get_atom_column_amplitude_max_intensity()
+        >>> intensity_list = sublattice.atom_amplitude_max_intensity
+
+        """
         if image is None:
             image = self.original_image
 
@@ -1400,6 +1481,39 @@ class Sublattice():
             atom_plane,
             invert_line_profile=False,
             interpolate_value=50):
+        """
+        Returns a line profile of the atoms ellipticity.
+
+        This gives the ellipticity as a function of the distance from a
+        given atom plane (interface).
+
+        Parameters
+        ----------
+        atom_plane : Atomap AtomPlane object
+            The plane which is defined as the 0-point in the spatial
+            dimension.
+        invert_line_profile : bool, optional, default False
+            Passed to _get_property_line_profile(). If True, will invert the
+            x-axis values.
+        interpolate_value : int, default 50
+            Passed to _get_property_line_profile(). The amount of data points
+            between in monolayer, due to HyperSpy signals not supporting
+            non-linear axes.
+
+        Returns
+        -------
+        signal : HyperSpy Signal1D
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.construct_zone_axes()
+        >>> zone = sublattice.zones_axis_average_distances[1]
+        >>> plane = sublattice.atom_planes_by_zone_vector[zone][4]
+        >>> s_elli_line = sublattice.get_ellipticity_line_profile(plane)
+
+        """
         signal = self._get_property_line_profile(
             self.x_position,
             self.y_position,
@@ -1451,7 +1565,7 @@ class Sublattice():
         >>> s_elli = sublattice.get_ellipticity_map(atom_plane_list=atom_plane)
         >>> s_elli.plot()
         """
-        signal = self._get_property_map(
+        signal = self.get_property_map(
             self.x_position,
             self.y_position,
             self.ellipticity,
@@ -1468,10 +1582,10 @@ class Sublattice():
             invert_line_profile=False,
             interpolate_value=50):
         """
-        Projects the distance between each atom and the next monolayer along
-        the zone vector, onto an atom plane given by atom_plane. The
-        monolayers belong to the zone vector zone_vector. For more information
-        on the definition of monolayer distance, check
+        Finds the distance between each atom and the next monolayer, and the
+        distance to atom_plane (the 0-point). The monolayers belong to the
+        zone vector zone_vector. For more information on the definition of
+        monolayer distance, check
         sublattice.get_monolayer_distance_list_from_zone_vector()
 
         Parameters
@@ -1481,8 +1595,8 @@ class Sublattice():
             Zone vector for the monolayers for which the separation will be
             found
         atom_plane : Atomap AtomPlane object
-            Passed to get_monolayer_distance_list_from_zone_vector(). The
-            plane the data is projected onto.
+            Passed to get_monolayer_distance_list_from_zone_vector().
+            0-point in the line profile.
         invert_line_profile : bool, optional, default False
             Passed to _get_property_line_profile(). If True, will invert the
             x-axis values.
@@ -1533,7 +1647,7 @@ class Sublattice():
             signal_title = 'Monolayer distance {}'.format(zone_index)
             data_list = self.get_monolayer_distance_list_from_zone_vector(
                     zone_vector)
-            signal = self._get_property_map(
+            signal = self.get_property_map(
                 data_list[0],
                 data_list[1],
                 data_list[2],
@@ -1565,7 +1679,6 @@ class Sublattice():
             self,
             zone_vector_list=None,
             atom_plane_list=None,
-            data_scale_z=1.0,
             prune_outer_values=False,
             invert_line_profile=False,
             add_zero_value_sublattice=None,
@@ -1581,11 +1694,10 @@ class Sublattice():
             data_list = self.get_atom_distance_list_from_zone_vector(
                     zone_vector)
 
-            signal = self._get_property_map(
+            signal = self.get_property_map(
                 data_list[0],
                 data_list[1],
                 data_list[2],
-                data_scale_z=data_scale_z,
                 add_zero_value_sublattice=add_zero_value_sublattice,
                 upscale_map=upscale_map)
             signal.metadata.General.Title = signal_title
@@ -1634,7 +1746,6 @@ class Sublattice():
             self,
             zone_vector_list=None,
             atom_plane_list=None,
-            data_scale_z=1.0,
             prune_outer_values=False,
             invert_line_profile=False,
             add_zero_value_sublattice=None,
@@ -1647,11 +1758,10 @@ class Sublattice():
             data_list = self.get_atom_distance_difference_from_zone_vector(
                     zone_vector)
             if len(data_list[2]) is not 0:
-                signal = self._get_property_map(
+                signal = self.get_property_map(
                     data_list[0],
                     data_list[1],
                     data_list[2],
-                    data_scale_z=data_scale_z,
                     add_zero_value_sublattice=add_zero_value_sublattice,
                     upscale_map=upscale_map)
                 signal_list.append(signal)
@@ -1813,11 +1923,40 @@ class Sublattice():
         mean_angle = np.array(angle_list).mean()
         return(mean_angle)
 
-    def construct_zone_axes(self, debug_plot=False, zone_axis_para_list=False):
+    def construct_zone_axes(self, zone_axis_para_list=False):
+        """Constructs the zone axes for an atomic resolution image.
+
+        The zone axes are found by finding the 15 nearest neighbors for each
+        atom position in the sublattice, and finding major translation
+        symmetries among the nearest neighbours. Only unique zone axes are
+        kept, and "bad" ones are removed.
+
+        After finding the zone axes, atom planes are constructed.
+
+        Parameters
+        ----------
+        zone_axis_para_list : parameter list or bool, default False
+            A zone axes parameter list is used to name and index the zone
+            axes. See atomap.process_parameters for more info. Useful for
+            automation.
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice
+        <Sublattice,  (atoms:400,planes:0)>
+        >>> sublattice.construct_zone_axes()
+        >>> sublattice
+        <Sublattice,  (atoms:400,planes:4)>
+
+        See also
+        --------
+        atom_finding_refining.construct_zone_axes_from_sublattice
+
+        """
         construct_zone_axes_from_sublattice(
-                self,
-                debug_plot=debug_plot,
-                zone_axis_para_list=zone_axis_para_list)
+                self, zone_axis_para_list=zone_axis_para_list)
 
     def _get_fingerprint(self, pixel_radius=100):
         """
@@ -1912,6 +2051,7 @@ class Sublattice():
         -------
         HyperSpy 2D-signal
             The atom positions as permanent markers stored in the metadata.
+
         """
         if image is None:
             image = self.original_image
@@ -1953,7 +2093,39 @@ class Sublattice():
         s.add_marker(marker_list, permanent=True, plot_marker=False)
         return(s)
 
-    def mask_image_around_sublattice(self, image_data, radius=1):
+    def _get_sublattice_atom_list_mask(self, image_data=None, radius=1):
+        """
+        Returns a list of indices, where mask_list[0] is the indices
+        for a circular mask with the given radius around the atom in
+        atom_list[0].
+
+        Parameters
+        ----------
+        image_data : NumPy 2D array
+            Image data from which the shape of the mask array is found.
+            By default, the sublattice.original_image is used.
+        radius : float
+            radius of the circular mask
+
+        Returns
+        -------
+        A list of mask indices lists. Mask_list has the same length as
+        atom_list, and each element in the list is an array of indices
+
+        """
+        if image_data is None:
+            image_data = self.original_image
+        mask_list = []
+        for atom in self.atom_list:
+            centerX, centerY = atom.pixel_x, atom.pixel_y
+            temp_mask = _make_circular_mask(
+                        centerY, centerX, image_data.shape[0],
+                        image_data.shape[1], radius)
+            indices = np.where(temp_mask)
+            mask_list.append(indices)
+        return(mask_list)
+
+    def mask_image_around_sublattice(self, image_data=None, radius=2):
         """
         Returns a HyperSpy signal containing a masked image. The mask covers
         the area around each atom position in the sublattice, from a given
@@ -1968,11 +2140,19 @@ class Sublattice():
 
         radius : int, optional
             The radius in pixels away from the atom centre pixels, determining
-            the area that shall not be masked. The default radius is 3 pixels.
+            the area that shall not be masked. The default radius is 2 pixels.
 
         Returns
         -------
-        HyperSpy 2D-signal containing the masked image.
+        masked_signal : HyperSpy 2D-signal
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> s = sublattice.mask_image_around_sublattice(radius=3)
+        >>> s.plot()
+
         """
         if image_data is None:
             image_data = self.original_image
@@ -1986,10 +2166,32 @@ class Sublattice():
         s = hs.signals.Signal2D(mask*image_data)
         return(s)
 
-    def find_sublattice_intensity_from_masked_image(self, image_data, radius):
-        """
-        Find the image intensity of each atom in the sublattice by
-        finding the average intensity of the pixels inside an unmasked area.
+    def find_sublattice_intensity_from_masked_image(
+                            self, image_data=None, radius=2):
+        """Find the image intensity of each atomic column in the sublattice.
+
+        The intensity of the atomic column is given by the average intensity
+        of the pixels inside an area within a radius in pixels from each
+        atom position.
+
+        Parameters
+        ----------
+        image_data : 2-D NumPy array, optional
+            Image data for plotting. If none is given, will use
+            the original_image.
+
+        radius : int, optional, default 2
+            The radius in pixels away from the atom centre pixels, determining
+            the area that shall not be masked. The default radius is 3 pixels.
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.find_sublattice_intensity_from_masked_image(
+        ...     sublattice.image, 3)
+        >>> intensity = sublattice.intensity_mask
+
         """
         if image_data is None:
             image_data = self.original_image
@@ -2034,19 +2236,22 @@ class Sublattice():
         signal = self.get_atom_list_on_image(color=color)
         signal.plot(**kwargs, plot_markers=True)
 
-    def plot_planes(self, add_numbers=True, color='red', **kwargs):
+    def plot_planes(self, image=None, add_numbers=True, color='red', **kwargs):
         """
         Show the atomic planes for all zone vectors.
 
         Parameters
         ----------
+        image : 2D Array, optional
+            If image None, the original image of the sublattice is used as
+            background image.
         add_numbers : bool, optional, default True
             If True, will the number of the atom plane at the end of the
             atom plane line. Useful for finding the index of the atom plane.
         color : string, optional, default red
             The color of the lines and text used to show the atom planes.
         **kwargs
-            Addition keywords passed to HyperSpy's signal plot function.
+            Additional keywords passed to HyperSpy's signal plot function.
 
         Examples
         --------
@@ -2058,6 +2263,67 @@ class Sublattice():
 
         signal = self.get_all_atom_planes_by_zone_vector(
                       zone_vector_list=None,
+                      image=image,
                       add_numbers=add_numbers,
                       color=color)
         signal.plot(**kwargs)
+
+    def plot_ellipticity_vectors(self, save=False):
+        """
+        Get a quiver plot of the rotation and ellipticity for the sublattice.
+
+        sublattice.refine_atom_positions_using_2d_gaussian has to be run
+        at least once before using this function.
+        If the sublattice hasn't been refined with 2D-Gaussians, the value
+        for ellipticity and rotation are default, 1 and 0 respectively.
+        When sigma_x and sigma_y are equal (circle) the ellipticity is 1.
+        To better visualize changes in ellipticity, the 0-point for
+        ellipticity in the plot is set to circular atomic columns.
+
+        Parameters
+        ----------
+        save : bool
+            If true, the figure is saved as 'vector_field.png'.
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_fantasite_sublattice()
+        >>> sublattice.construct_zone_axes()
+        >>> sublattice.refine_atom_positions_using_2d_gaussian()
+        >>> sublattice.plot_ellipticity_vectors()
+
+        """
+        ellipticity = np.asarray(self.ellipticity) - 1
+        rot = -np.asarray(self.rotation_ellipticity)
+        u_quiver = ellipticity*np.cos(rot)
+        v_quiver = ellipticity*np.sin(rot)
+        u_quiver *= -1
+
+        plot_vector_field(
+                self.x_position,
+                self.y_position,
+                u_quiver,
+                v_quiver,
+                save=save)
+
+    def plot_ellipticity_map(self, **kwargs):
+        """
+        Plot the magnitude of the ellipticity.
+
+        Parameters
+        ----------
+        **kwargs
+            Addition keywords passed to HyperSpy's signal plot function.
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_fantasite_sublattice()
+        >>> sublattice.construct_zone_axes()
+        >>> sublattice.refine_atom_positions_using_2d_gaussian()
+        >>> sublattice.plot_ellipticity_map()
+
+        """
+        s_elli = self.get_ellipticity_map()
+        s_elli.plot(**kwargs)

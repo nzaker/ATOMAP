@@ -76,23 +76,34 @@ Atom finding refining
 =====================
 .. automodule:: atomap.atom_finding_refining
     :members:
+    :undoc-members:
 
 Input output (IO)
 =================
 .. automodule:: atomap.io
     :members:
+    :undoc-members:
 
 Main
 ====
 .. automodule:: atomap.main
     :members:
+    :undoc-members:
 
 Plotting
 ========
 .. automodule:: atomap.plotting
     :members:
+    :undoc-members:
 
 Tools
 =====
 .. automodule:: atomap.tools
     :members:
+    :undoc-members:
+
+Dummy data
+==========
+.. automodule:: atomap.dummy_data
+    :members:
+    :undoc-members:

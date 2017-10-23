@@ -15,6 +15,26 @@ import atomap.process_parameters as pp
 
 
 def run_image_filtering(signal, invert_signal=False):
+    """Subtracts background, filters noise with PCA, and normalizes a signal.
+
+    Parameters
+    ----------
+    signal : HyperSpy Signal2D
+    invert_signal : bool, default False
+        Inverts the image to 1./signal.data
+
+    Returns
+    -------
+    filtered_signal : HyperSpy Signal2D
+
+    Example
+    -------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_simple_cubic_signal()
+    >>> from atomap.main import run_image_filtering
+    >>> s_new = run_image_filtering(s)
+
+    """
     signal.change_dtype('float64')
     signal_modified = subtract_average_background(signal)
     signal_modified = do_pca_on_signal(signal_modified)
@@ -119,8 +139,8 @@ def make_atom_lattice_from_image(
                     sublattice_para.sublattice_position_zoneaxis)
             zone_vector = temp_sublattice.zones_axis_average_distances[
                     temp_zone_vector_index]
-            atom_list = temp_sublattice._find_missing_atoms_from_zone_vector(
-                    zone_vector, new_atom_tag=sublattice_para.name)
+            atom_list = temp_sublattice.find_missing_atoms_from_zone_vector(
+                    zone_vector)
 
             sublattice = Sublattice(
                 atom_list,
@@ -144,8 +164,7 @@ def make_atom_lattice_from_image(
             atom.sigma_y = sublattice._pixel_separation/10.
         if not(sublattice_para.sublattice_order == 0):
             construct_zone_axes_from_sublattice(
-                    sublattice, debug_plot=debug_plot,
-                    zone_axis_para_list=zone_axis_para_list)
+                    sublattice, zone_axis_para_list=zone_axis_para_list)
             atom_subtract_config = sublattice_para.atom_subtract_config
             image_data = sublattice.image
             for atom_subtract_para in atom_subtract_config:
@@ -177,7 +196,6 @@ def make_atom_lattice_from_image(
 
         if sublattice_para.sublattice_order == 0:
             sublattice.construct_zone_axes(
-                    debug_plot=debug_plot,
                     zone_axis_para_list=zone_axis_para_list)
 
     return(atom_lattice)

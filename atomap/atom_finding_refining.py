@@ -247,8 +247,40 @@ def find_feature_density(
     return(separation_list, peakN_list)
 
 
-def construct_zone_axes_from_sublattice(
-        sublattice, debug_plot=False, zone_axis_para_list=False):
+def construct_zone_axes_from_sublattice(sublattice, zone_axis_para_list=False):
+    """Constructs zone axes for a sublattice.
+
+    The zone axes are constructed by finding the 15 nearest neighbors for
+    each atom position in the sublattice, and finding major translation
+    symmetries among the nearest neighbours. Only unique zone axes are kept,
+    and "bad" ones are removed.
+
+    Parameters
+    ----------
+    sublattice : Atomap Sublattice
+    zone_axis_para_list : parameter list or bool, default False
+        A zone axes parameter list is used to name and index the zone axes.
+        See atomap.process_parameters for more info. Useful for automation.
+
+    Example
+    -------
+    >>> import atomap.api as am
+    >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+    >>> sublattice
+    <Sublattice,  (atoms:400,planes:0)>
+    >>> import atomap.atom_finding_refining as afr
+    >>> afr.construct_zone_axes_from_sublattice(sublattice)
+    >>> sublattice
+    <Sublattice,  (atoms:400,planes:4)>
+
+    See also
+    --------
+    sublattice._make_translation_symmetry : How unique zone axes are found
+    sublattice._remove_bad_zone_vectors : How fragmented ("bad zone axis")
+        are identified and removed.
+    atomap.process_parameters : more info on zone axes parameter list
+
+    """
     if sublattice._pixel_separation == 0.0:
         sublattice._pixel_separation = sublattice._get_pixel_separation()
     sublattice.find_nearest_neighbors(nearest_neighbors=15)
@@ -271,9 +303,6 @@ def construct_zone_axes_from_sublattice(
     sublattice._generate_all_atom_plane_list()
     sublattice._sort_atom_planes_by_zone_vector()
     sublattice._remove_bad_zone_vectors()
-    if debug_plot:
-        sublattice.plot_all_atom_planes(
-                fignameprefix=sublattice.name + "_atom_plane")
 
 
 def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
@@ -488,6 +517,8 @@ def _make_model_from_atom_list(
     -------
     model : HyperSpy model
         Model where the atoms are added as gaussian components.
+    mask : NumPy 2D array
+        The mask from _make_mask_from_positions()
 
     See also
     --------
@@ -501,7 +532,7 @@ def _make_model_from_atom_list(
     >>> from atomap.atom_finding_refining import _make_model_from_atom_list
     >>> atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
     >>> image = np.random.random((100, 100))
-    >>> m = _make_model_from_atom_list(
+    >>> m, mask = _make_model_from_atom_list(
     ...     atom_list=atom_list, image_data=image, mask_radius=3)
     >>> m.fit()
     """
@@ -540,7 +571,7 @@ def _make_model_from_atom_list(
     s.axes_manager[1].offset = x0
     m = s.create_model()
     m.extend(gaussian_list)
-    return(m)
+    return(m, mask)
 
 
 def _fit_atom_positions_with_gaussian_model(
@@ -599,11 +630,11 @@ def _fit_atom_positions_with_gaussian_model(
         raise TypeError(
             "atom_list argument must be a list of Atom_Position objects")
 
-    model = _make_model_from_atom_list(
-            atom_list,
-            image_data,
-            mask_radius=mask_radius,
-            percent_to_nn=percent_to_nn)
+    model, mask = _make_model_from_atom_list(
+                                atom_list,
+                                image_data,
+                                mask_radius=mask_radius,
+                                percent_to_nn=percent_to_nn)
     x0, x1, y0, y1 = model.axes_manager.signal_extent
 
     if centre_free is False:
@@ -622,11 +653,9 @@ def _fit_atom_positions_with_gaussian_model(
     for atom, g in zip(atom_list, model):
         # If the Gaussian centre is located outside the masked region,
         # return False
-        if (g.centre_x.value < x0) or (g.centre_x.value > x1):
+        inside_mask = mask[int(g.centre_y.value)][int(g.centre_x.value)]
+        if not inside_mask:
             return(False)
-        elif (g.centre_y.value < y0) or (g.centre_y.value > y1):
-            return(False)
-
         if g.A.value < 0.0:
             return(False)
 
@@ -649,7 +678,8 @@ def fit_atom_positions_gaussian(
         mask_radius=None,
         centre_free=True):
     """
-    Fit a list of Atom_Positions to an image using 2D gaussians.
+    Fit a list of Atom_Positions to an image using 2D Gaussians.
+
     The results of the fitting will be saved in the Atom_Position objects
     themselves, and the old positions will be added to
     atom.old_pixel_x_list and atom.old_pixel_y_list.
@@ -667,9 +697,10 @@ def fit_atom_positions_gaussian(
     Parameters
     ----------
     atom_list : list of Atom_Position objects
+        For example the members of a dumbbell.
     image_data : NumPy 2D array
     rotation_enabled : bool, optional
-        If True (default), the 2D gaussian will be able to rotate.
+        If True (default), the 2D Gaussian will be able to rotate.
     percent_to_nn : float, optional
     mask_radius : float, optional
         Radius of the mask around each atom. If this is not set,
@@ -680,7 +711,7 @@ def fit_atom_positions_gaussian(
         through the sublattice class, but can also be done manually.
         See below for an example how to do this.
     centre_free : bool, optional
-        If True (default), the gaussian will be free to move. Setting this
+        If True (default), the Gaussian will be free to move. Setting this
         to False can be used to find better values for the other parameters
         like sigma and A, without the centre positions causing bad fitting.
 
@@ -688,12 +719,25 @@ def fit_atom_positions_gaussian(
     --------
     _make_model_from_atom_list
     _fit_atom_positions_with_gaussian_model
+    atom_lattice.Dumbbell_Lattice for examples on how associated atom
+    positions can be fitted together.
 
     Examples
     --------
     >>> import numpy as np
     >>> from atomap.atom_position import Atom_Position
     >>> from atomap.atom_finding_refining import fit_atom_positions_gaussian
+
+    Fitting atomic columns one-by-one
+
+    >>> atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
+    >>> image = np.zeros((9, 9))
+    >>> for atom_position in atom_list:
+    ...     g_list = fit_atom_positions_gaussian(
+    ...         atom_list=[atom_position], image_data=image, mask_radius=2)
+
+    Fitting two atoms together
+
     >>> atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
     >>> image = np.zeros((9, 9))
     >>> image[2, 2] = 1.
@@ -703,11 +747,15 @@ def fit_atom_positions_gaussian(
 
     Not using `mask_radius`, populating the nearest_neighbor_list manually
 
+    >>> image = np.zeros((9, 9))
+    >>> image[2, 2] = 1.
+    >>> image[5, 5] = 1.
     >>> atom0 = Atom_Position(2, 2, 0.5, 0.5)
-    >>> atom1 = Atom_Position(4, 4, 0.5, 0.5)
+    >>> atom1 = Atom_Position(5, 5, 0.5, 0.5)
     >>> atom0.nearest_neighbor_list = [atom1]
     >>> atom1.nearest_neighbor_list = [atom0]
     >>> g_list = fit_atom_positions_gaussian([atom0, atom1], image)
+
     """
     if (not hasattr(atom_list[0], 'pixel_x')) or hasattr(atom_list, 'pixel_x'):
         raise TypeError(

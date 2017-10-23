@@ -38,8 +38,8 @@ Tutorials
 ---------
 
 To get you started with using Atomap, and getting and overview and understanding of how Atomap works there are tutorials available.
-The first tutorial :ref:`finding_atom_lattices` aims at showing how atom positions are found, while :ref:`analysing_atom_lattices` shows how this information can be visualized. 
-There is also a tutorial showing how you can make your analysis semi-automatic, :ref:`automatation`.
+The first tutorial :ref:`finding_atom_lattices` aims at showing how atom positions are found, while :ref:`analysing_atom_lattices` shows how this information can be visualized.
+There is also a tutorial showing how you can make your analysis semi-automatic, :ref:`automation`.
 
 The `>>>` used in the tutorials and documentation means the comment should be typed inside some kind of Python prompt, so do not include these when actually running the code.
 

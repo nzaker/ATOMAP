@@ -5,6 +5,7 @@ atomap.egg-info
 *.png
 *.npz
 *.hdf5
+*.csv
 dist
 manifest
 build

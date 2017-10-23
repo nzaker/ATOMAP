@@ -147,21 +147,21 @@ class test_make_model_from_atom_list(unittest.TestCase):
 
     def test_1_atom(self):
         sublattice = self.sublattice
-        model = _make_model_from_atom_list(
+        model, mask = _make_model_from_atom_list(
                 [sublattice.atom_list[10]],
                 sublattice.image)
         self.assertEqual(len(model), 1)
 
     def test_2_atom(self):
         sublattice = self.sublattice
-        model = _make_model_from_atom_list(
+        model, mask = _make_model_from_atom_list(
                 sublattice.atom_list[10:12],
                 sublattice.image)
         self.assertEqual(len(model), 2)
 
     def test_5_atom(self):
         sublattice = self.sublattice
-        model = _make_model_from_atom_list(
+        model, mask = _make_model_from_atom_list(
                 sublattice.atom_list[10:15],
                 sublattice.image)
         self.assertEqual(len(model), 5)
@@ -169,7 +169,7 @@ class test_make_model_from_atom_list(unittest.TestCase):
     def test_set_mask_radius_atom(self):
         atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
         image = np.random.random((20, 20))
-        model = _make_model_from_atom_list(
+        model, mask = _make_model_from_atom_list(
                 atom_list=atom_list,
                 image_data=image,
                 mask_radius=3)
@@ -357,3 +357,48 @@ class test_get_atom_positions(unittest.TestCase):
                 self.s_adf_modified,
                 self.pixel_separation)
         self.assertEqual(len(peaks), 238)
+
+
+class test_bad_fit_condition(unittest.TestCase):
+
+    def setUp(self):
+        t = MakeTestData(40, 40)
+        x, y = np.mgrid[5:40:10, 5:40:10]
+        x, y = x.flatten(), y.flatten()
+        t.add_atom_list(x, y)
+        self.sublattice = t.sublattice
+        self.sublattice.find_nearest_neighbors()
+
+    def test_initial_position_inside_mask_x(self):
+        sublattice = self.sublattice
+        atom = [sublattice.atom_list[6]]
+        x0 = atom[0].pixel_x
+        atom[0].pixel_x += 2
+        g = _fit_atom_positions_with_gaussian_model(
+                atom, sublattice.image, mask_radius=4)
+        self.assertAlmostEqual(g[0].centre_x.value, x0, places=1)
+
+    def test_initial_position_outside_mask_x(self):
+        sublattice = self.sublattice
+        atom = [sublattice.atom_list[6]]
+        atom[0].pixel_x += 3
+        g = _fit_atom_positions_with_gaussian_model(
+                atom, sublattice.image, mask_radius=2)
+        self.assertFalse(g)
+
+    def test_initial_position_outside_mask_y(self):
+        sublattice = self.sublattice
+        atom = [sublattice.atom_list[6]]
+        atom[0].pixel_y -= 4
+        g = _fit_atom_positions_with_gaussian_model(
+                atom, sublattice.image, mask_radius=2)
+        self.assertFalse(g)
+
+    def test_initial_position_outside_mask_xy(self):
+        sublattice = self.sublattice
+        atom = [sublattice.atom_list[6]]
+        atom[0].pixel_y += 3
+        atom[0].pixel_x += 3
+        g = _fit_atom_positions_with_gaussian_model(
+                atom, sublattice.image, mask_radius=2)
+        self.assertFalse(g)

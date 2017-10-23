@@ -4,8 +4,9 @@
 Installing
 ==========
 
-Linux
------
+
+Installing in Linux
+-------------------
 
 The recommended way to install Atomap is using PIP, which is a package manager for python.
 It is recommended to install the precompiled requirements using the system package manager.
@@ -33,13 +34,16 @@ To check that everything is working, open a terminal and run :code:`ipython3 --m
     import hyperspy.api as hs
     import atomap.api as am
 
-If this works, continue with the :ref:`tutorial`.
+If this works, continue with the :ref:`finding_atom_lattices`.
 If you get some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
 Note, having the system and pip version of matplotlib installed at the same might cause an error with matplotlib not finding matplotlib.external.
 The easiest way of fixing this is by removing the system version of matplotlib.
 
-Windows
--------
+
+.. _install_windows:
+
+Installing in Windows
+---------------------
 
 WinPython HyperSpy installer
 ############################
@@ -65,7 +69,7 @@ This will open a new window. In this window, run:
     import hyperspy.api as hs
     import atomap.api as am
 
-If this works, continue with the :ref:`tutorial`.
+If this works, continue with the :ref:`finding_atom_lattices`.
 If you get some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
 
 

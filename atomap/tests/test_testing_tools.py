@@ -44,8 +44,8 @@ class TestMakeTestData(unittest.TestCase):
         mu2, sigma2 = 154.2, 1.98
         test_data2.add_image_noise(mu=mu2, sigma=sigma2, only_positive=False)
         s2 = test_data2.signal
-        self.assertAlmostEqual(s2.data.mean(), mu2, places=2)
-        self.assertAlmostEqual(s2.data.std(), sigma2, places=2)
+        self.assertAlmostEqual(s2.data.mean(), mu2, places=1)
+        self.assertAlmostEqual(s2.data.std(), sigma2, places=1)
 
     def test_add_image_noise_only_positive(self):
         test_data0 = tt.MakeTestData(1000, 1000)
