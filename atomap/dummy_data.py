@@ -191,7 +191,7 @@ def _make_fantasite_test_data():
                 x, yB2[i], sigma_x=3, sigma_y=sigma_y,
                 amplitude=20, rotation=rotation)
         down = not down
-    test_data.add_image_noise(mu=0, sigma=0.01)
+    test_data.add_image_noise(mu=0, sigma=0.01, random_seed=0)
     return test_data
 
 
@@ -208,6 +208,10 @@ def get_fantasite():
     >>> import atomap.api as am
     >>> s = am.dummy_data.get_fantasite()
     >>> s.plot()
+
+    Returns
+    -------
+    fantasite_signal : HyperSpy 2D signal
 
     See also
     --------

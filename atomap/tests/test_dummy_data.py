@@ -10,38 +10,59 @@ class test_dummy_data(unittest.TestCase):
         dd._make_simple_cubic_testdata(image_noise=True)
 
     def test_get_simple_cubic_signal(self):
-        dd.get_simple_cubic_signal()
-        dd.get_simple_cubic_signal(image_noise=False)
-        dd.get_simple_cubic_signal(image_noise=True)
+        s0 = dd.get_simple_cubic_signal()
+        s0.plot()
+        s1 = dd.get_simple_cubic_signal(image_noise=False)
+        s1.plot()
+        s2 = dd.get_simple_cubic_signal(image_noise=True)
+        s2.plot()
 
     def test_get_simple_cubic_sublattice(self):
-        dd.get_simple_cubic_sublattice()
-        dd.get_simple_cubic_sublattice(image_noise=False)
-        dd.get_simple_cubic_sublattice(image_noise=True)
+        s0 = dd.get_simple_cubic_sublattice()
+        s0.plot()
+        s1 = dd.get_simple_cubic_sublattice(image_noise=False)
+        s1.plot()
+        s2 = dd.get_simple_cubic_sublattice(image_noise=True)
+        s2.plot()
 
     def test_get_two_sublattice_signal(self):
-        dd.get_two_sublattice_signal()
+        s = dd.get_two_sublattice_signal()
+        s.plot()
 
     def test_get_simple_heterostructure_signal(self):
-        dd.get_simple_heterostructure_signal()
-        dd.get_simple_heterostructure_signal(image_noise=False)
-        dd.get_simple_heterostructure_signal(image_noise=True)
+        s0 = dd.get_simple_heterostructure_signal()
+        s0.plot()
+        s1 = dd.get_simple_heterostructure_signal(image_noise=False)
+        s1.plot()
+        s2 = dd.get_simple_heterostructure_signal(image_noise=True)
+        s2.plot()
 
     def test_get_dumbbell_signal(self):
-        dd.get_dumbbell_signal()
+        s = dd.get_dumbbell_signal()
+        s.plot()
 
     def test_get_fantasite(self):
-        dd.get_fantasite()
+        s = dd.get_fantasite()
+        s.plot()
+        s1 = dd.get_fantasite()
+        self.assertTrue((s.data == s1.data).all())
 
     def test_get_fantasite_sublattice(self):
-        dd.get_fantasite_sublattice()
+        s = dd.get_fantasite_sublattice()
+        s.plot()
 
     def test_get_perovskite110_ABF_signal(self):
-        dd.get_perovskite110_ABF_signal()
-        dd.get_perovskite110_ABF_signal(image_noise=False)
-        dd.get_perovskite110_ABF_signal(image_noise=True)
+        s0 = dd.get_perovskite110_ABF_signal()
+        s0.plot()
+        s1 = dd.get_perovskite110_ABF_signal(image_noise=False)
+        s1.plot()
+        s2 = dd.get_perovskite110_ABF_signal(image_noise=True)
+        s2.plot()
 
     def test_get_simple_atom_lattice_two_sublattices(self):
-        dd.get_simple_atom_lattice_two_sublattices()
-        dd.get_simple_atom_lattice_two_sublattices(image_noise=True)
-        dd.get_simple_atom_lattice_two_sublattices(image_noise=False)
+        s0 = dd.get_simple_atom_lattice_two_sublattices()
+        s0.plot()
+        s1 = dd.get_simple_atom_lattice_two_sublattices(image_noise=True)
+        s1.plot()
+        s2 = dd.get_simple_atom_lattice_two_sublattices(image_noise=False)
+        s2.plot()
