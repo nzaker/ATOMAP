@@ -93,7 +93,7 @@ With a pixel separation of 2, too many atoms are found.
 
 With a pixel separation of 7, all atoms are identified.
 Often, the program will have difficulties with finding the atoms in the rows at the boundary of the image.
-This does not matter, the important thing is that all atoms in the middle of the image are found.
+This does not matter, the important thing is that all atoms in the central part of the image are found.
 
 .. image:: images/finding_atom_lattices/peak_finding_3a.png
     :scale: 50 %
@@ -101,7 +101,7 @@ This does not matter, the important thing is that all atoms in the middle of the
 .. image:: images/finding_atom_lattices/peak_finding_3b.png
     :scale: 50 %
 
-12 is a too large pixel separation, not all atoms in the "centre" of the image are found.
+12 is a too large pixel separation, not all atoms in the interior of the image are found.
 This will create issues when the zone axes are constructed and atom planes are found (part 4).
 
 2. Generate the initial positions for the atomic columns and initialize a *Sublattice*
