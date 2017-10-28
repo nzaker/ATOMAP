@@ -183,6 +183,9 @@ This class inherits from :py:class:`ModelParametersBase` can look like this:
                 self.name = "Wondermaterial"
                 self.peak_separation = 0.127
 
+                self.sublattice_list = [SublatticeA(), SublatticeO()]
+
+
 An important setting here is the ``peak_separation``.
 The peak separation is a distance in nanometer, approximately half the distance between the atoms in 'A'.
 The number is used to find the ``pixel_separation`` for the initial peak finding for the brightest sublattice.
