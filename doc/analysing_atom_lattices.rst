@@ -29,7 +29,7 @@ The procedure for finding and refining the sublattices in fantasite is similar a
     >>> from atomap.tools import remove_atoms_from_image_using_2d_gaussian
 
     >>> s = am.dummy_data.get_fantasite()
-    >>> A_positions = am.get_atom_positions(s,separation=12)
+    >>> A_positions = am.get_atom_positions(s, separation=12, pca=True)
     >>> sublattice_A = am.Sublattice(A_positions, image=s.data, color='r', name='A')
     >>> sublattice_A.find_nearest_neighbors()
     >>> sublattice_A.refine_atom_positions_using_center_of_mass()
