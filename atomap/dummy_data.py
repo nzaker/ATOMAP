@@ -146,6 +146,7 @@ def get_dumbbell_signal():
     test_data.add_atom_list(x, y, sigma_x=1, sigma_y=1, amplitude=50)
     return test_data.signal
 
+
 def _add_fantasite_sublattice_A(test_data):
     xA0, yA0 = np.mgrid[10:495:15, 10:495:30]
     xA0, yA0 = xA0.flatten(), yA0.flatten()
@@ -172,6 +173,7 @@ def _add_fantasite_sublattice_A(test_data):
         down = not down
     return(test_data)
 
+
 def _add_fantasite_sublattice_B(test_data):
     xB0, yB0 = np.mgrid[10:495:15, 25:495:30]
     xB0, yB0 = xB0.flatten(), yB0.flatten()
@@ -194,6 +196,7 @@ def _add_fantasite_sublattice_B(test_data):
     test_data.add_image_noise(mu=0, sigma=0.01, random_seed=0)
     return(test_data)
 
+
 def _get_fantasite_atom_lattice():
     test_data1 = MakeTestData(500, 500)
     test_data1 = _add_fantasite_sublattice_A(test_data1)
@@ -212,7 +215,8 @@ def _get_fantasite_atom_lattice():
             image=image, name='Fantasite Atom Lattice',
             sublattice_list=[sublattice_1, sublattice_2])
     return(atom_lattice)
-    
+
+
 def _make_fantasite_test_data():
     test_data = MakeTestData(500, 500)
     xA0, yA0 = np.mgrid[10:495:15, 10:495:30]
@@ -310,6 +314,7 @@ def get_fantasite_sublattice():
     test_data = _make_fantasite_test_data()
     return test_data.sublattice
 
+
 def get_fantasite_atom_lattice():
     """
     Fantasite is a fantastic structure with several interesting structural
@@ -327,6 +332,7 @@ def get_fantasite_atom_lattice():
     """
     atom_lattice = _get_fantasite_atom_lattice()
     return(atom_lattice)
+
 
 def get_perovskite110_ABF_signal(image_noise=False):
     """Returns signals representing an ABF image of Perovskite100.
