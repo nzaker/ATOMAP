@@ -201,14 +201,6 @@ class test_sublattice_get_signal(unittest.TestCase):
     def test_get_nearest_neighbor_directions(self):
         self.sublattice.get_nearest_neighbor_directions()
 
-    def test_get_property_line_profile(self):
-        plane = self.sublattice.atom_plane_list[3]
-        self.sublattice._get_property_line_profile(
-                self.sublattice.x_position,
-                self.sublattice.y_position,
-                self.sublattice.ellipticity,
-                atom_plane=plane)
-
     def test_get_ellipticity_vector(self):
         sublattice = self.sublattice
         s0 = sublattice.get_ellipticity_vector(
@@ -650,7 +642,7 @@ class test_mask_indices(unittest.TestCase):
             self.assertTrue(A or B)
 
 
-class test_project_property_line_profile(unittest.TestCase):
+class test_get_property_line_profile(unittest.TestCase):
 
     def setUp(self):
         x, y = np.mgrid[5:50:5, 5:50:5]
@@ -725,6 +717,39 @@ class test_project_property_line_profile(unittest.TestCase):
                         plane)
         self.assertTrue((s.data == (5./9)).all())
         self.assertTrue(len(s.metadata['Markers'].keys()) == 9)
+
+    def test_metadata_line_profile_data(self):
+        sublattice = self.sublatticeH
+        zv = sublattice.zones_axis_average_distances[0]
+        ap = sublattice.atom_planes_by_zone_vector[zv][4]
+        data = sublattice.get_monolayer_distance_list_from_zone_vector(zv)
+        s_l = sublattice._get_property_line_profile(
+                data[0], data[1], data[2],
+                atom_plane=ap)
+        y_list = s_l.metadata.line_profile_data.y_list
+        self.assertEqual(len(y_list), 8)
+        np.testing.assert_allclose(y_list, np.ones_like(y_list)*5, atol=0.01)
+
+    def test_wrong_input(self):
+        sublattice = self.sublatticeH
+        zv = sublattice.zones_axis_average_distances[0]
+        ap = sublattice.atom_planes_by_zone_vector[zv][4]
+        data = sublattice.get_monolayer_distance_list_from_zone_vector(zv)
+        with self.assertRaises(ValueError):
+            sublattice._get_property_line_profile(
+                    data[0][:-2], data[1], data[2], atom_plane=ap)
+        with self.assertRaises(ValueError):
+            sublattice._get_property_line_profile(
+                    data[0], data[1][:-3], data[2], atom_plane=ap)
+        with self.assertRaises(ValueError):
+            sublattice._get_property_line_profile(
+                    data[0], data[1], data[2][:-1], atom_plane=ap)
+        with self.assertRaises(ValueError):
+            sublattice._get_property_line_profile(
+                    data[0][:-3], data[1], data[2][:-3], atom_plane=ap)
+        s_l = sublattice._get_property_line_profile(
+                data[0][:-2], data[1][:-2], data[2][:-2], atom_plane=ap)
+        s_l.plot()
 
 
 class test_project_property_line_crossing(unittest.TestCase):

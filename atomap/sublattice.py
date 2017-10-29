@@ -366,10 +366,14 @@ class Sublattice():
             x_position = self.x_position
         if y_position is None:
             y_position = self.y_position
-        data_list = np.array([
-                        x_position,
-                        y_position,
-                        property_list])
+        x, y = np.array(x_position), np.array(y_position)
+        z = np.array(property_list)
+        xs, ys, zs = x.shape, y.shape, z.shape
+        if (xs != ys) or (xs != zs) or (ys != zs):
+            raise ValueError(
+                    "x_position, y_position and property_list must have the "
+                    "same shape")
+        data_list = np.array([x, y, z])
         data_list = np.swapaxes(data_list, 0, 1)
         line_profile_data = \
             project_position_property_sum_planes(
@@ -507,6 +511,9 @@ class Sublattice():
         of these values, since HyperSpy signals currently does not support
         non-linear axes.
 
+        The raw non-interpolated line profile data is stored in the
+        output signal metadata: signal.metadata.line_profile_data.
+
         Parameters
         ----------
         x_list, y_list : Numpy 1D array
@@ -544,12 +551,24 @@ class Sublattice():
         >>> plane = sublattice.atom_plane_list[20]
         >>> s = sublattice._get_property_line_profile(x, y, z, plane)
         >>> s.plot()
+
+        Accessing the raw non-interpolated data
+
+        >>> x_list = s.metadata.line_profile_data.x_list
+        >>> y_list = s.metadata.line_profile_data.y_list
+
         """
+        xA, yA, zA = np.array(x_list), np.array(y_list), np.array(z_list)
+        xs, ys, zs = xA.shape, yA.shape, zA.shape
+        if (xs != ys) or (xs != zs) or (ys != zs):
+            raise ValueError(
+                    "x_list, y_list and z_list must have the "
+                    "same shape")
         line_profile_data_list = self._property_position_projection(
             interface_plane=atom_plane,
-            property_list=z_list,
-            x_position=x_list,
-            y_position=y_list,
+            property_list=zA,
+            x_position=xA,
+            y_position=yA,
             scale_xy=data_scale_xy,
             scale_z=data_scale_z)
         x_new = np.linspace(
@@ -569,14 +588,17 @@ class Sublattice():
                 y_new,
                 scale=data_scale,
                 offset=offset)
+        if invert_line_profile:
+            x_profile_list = line_profile_data_list[0]*-1
+        else:
+            x_profile_list = line_profile_data_list[0]
+        y_profile_list = line_profile_data_list[1]
+        signal.metadata.add_node('line_profile_data')
+        signal.metadata.line_profile_data.x_list = x_profile_list
+        signal.metadata.line_profile_data.y_list = y_profile_list
         if add_markers:
-            if invert_line_profile:
-                x_list = line_profile_data_list[0]*-1
-            else:
-                x_list = line_profile_data_list[0]
-            y_list = line_profile_data_list[1]
             marker_list = []
-            for x, y in zip(x_list, y_list):
+            for x, y in zip(x_profile_list, y_profile_list):
                 marker_list.append(Point(x, y))
             add_marker(signal, marker_list, permanent=True, plot_marker=False)
         return signal
