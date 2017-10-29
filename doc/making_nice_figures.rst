@@ -36,6 +36,9 @@ Matplotlib
 
 Om hva som skal plottes
 
+.. literalinclude:: images/plot_for_pub.py
+
+
 .. code-block:: python
 
     >>> import atomap.api as am

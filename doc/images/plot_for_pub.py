@@ -7,26 +7,16 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 import matplotlib.font_manager as fm
 import matplotlib.patheffects as patheffects
 
-atom_lattice = am.dummy_data.get_fantasite_atom_lattice()
+# Load the atomic resolution image
+s_adf = hs.load('ADF_image.dm3')
 
-####
-im = atom_lattice.image0
-s_adf = hs.signals.Signal2D(im)
-####
+# Load the structural data
+atoms_A = np.load('sublattice_A.npz')
+atoms_B = np.load('sublattice_B.npz')
+dd_map = hs.load('distance_difference_map.hdf5')
+dd_line = hs.load('ADF_image.hdf5', overwrite=True)
 
-sublattice_B = atom_lattice.sublattice_list[0]
-sublattice_B.construct_zone_axes()
-zone = sublattice_B.zones_axis_average_distances[0]
-s_dd = sublattice_B.get_atom_distance_difference_map([zone])
-s_dd = s_dd.isig[40.:460.,40.:460.]
-s_adf = s_adf.isig[40.:460.,40.:460.]
-
-z1 = sublattice_B.zones_axis_average_distances[0]
-z2 = sublattice_B.zones_axis_average_distances[1]
-plane = sublattice_B.atom_planes_by_zone_vector[z2][23]
-s_dd_line = sublattice_B.get_atom_distance_difference_line_profile(z1,plane)
-
-###
+# 
 fig = plt.figure(figsize=(4.3, 2)) # in inches
 gs = gridspec.GridSpec(1, 5)
 
