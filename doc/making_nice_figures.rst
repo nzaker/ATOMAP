@@ -1,11 +1,11 @@
 .. _making_nice_figures:
 
-========================
-Plotting for publication
-========================
+=========================
+Plotting for publications
+=========================
 
 Please consider to cite `Atomap: a new software tool for the automated analysis of atomic resolution images using two-dimensional Gaussian fitting <https://ascimaging.springeropen.com/articles/10.1186/s40679-017-0042-5>`_ when you publish work where you have used Atomap as a tool.
-Figures for publication are often customized, and here are a few tips on how to extract the data you wish to plot in a fancy plot.
+Figures for publications are often customized, and here are a few tips on how to extract the data you wish to plot in a fancy plot.
 
 Saving specific data
 --------------------
@@ -34,7 +34,7 @@ Signals can be saved by using the inbuilt `save` function.
 Here, we will first save analysis data for the fantasite dummy data atom lattice.
 It can be a good idea to save analysis results as numpy, csv or hyperspy signals, as the analysis can take time.
 Making nice figures often require a lot of tweaking, trial and error, so it is nice to have the data readily available.
-First, analysis results can be saved.
+First, analysis results are generated, and then saved.
 
 .. literalinclude:: images/save_data_for_plot_for_pub.py
 
@@ -43,9 +43,7 @@ Matplotlib
 
 The saved results can then be loaded into the script that is making nice figures.
 The below code block will create this figure.
-PS: the scalebar is added to the image to show the functionality, but the fantasite image is not calibrated.
 
 .. image:: images/Atom_lattice.png
 
 .. literalinclude:: images/plot_for_pub.py
-
