@@ -44,7 +44,16 @@ pages_development_branch:
     - apt-get install -qy python3-sympy --no-install-recommends
     - apt-get install -qy xvfb python3-sphinx python3-sphinx-rtd-theme build-essential
     - pip3 install --user .
-    - cd doc
+    - cd doc/
+    - xvfb-run -a python3 images/001_finding_atom_lattices_images_sc.py
+    - xvfb-run -a python3 images/002_finding_atom_lattices_images_2sub.py
+    - xvfb-run -a python3 images/003_make_fantasite.py
+    - xvfb-run -a python3 images/004_analyse_fantasite.py
+    - xvfb-run -a python3 images/automation_of_analysis_plotting.py
+    - xvfb-run -a python3 images/make_nice_figures_generate_data.py
+    - xvfb-run -a python3 images/make_nice_figures_plotting.py
+    - xvfb-run -a python3 images/make_test_data_figures.py
+    - xvfb-run -a python3 images/oxygen_tutorial.py
     - make html
     - cd ..
     - mv doc/_build/html pages_development
