@@ -33,6 +33,7 @@ Ubuntu 16.04
     $ pip3 install --user hyperspy[all]
     $ pip3 install --user atomap
 
+
 Starting Atomap
 ---------------
 
@@ -54,7 +55,7 @@ Installing in Windows
 ---------------------
 
 WinPython HyperSpy installer
-############################
+****************************
 
 Currently the easiest way to install Atomap is by using the WinPython HyperSpy installer.
 Firstly download and install the `WinPython HyperSpy bundle <http://hyperspy.org/download.html#windows-bundle-installers>`_:
@@ -82,7 +83,7 @@ If you get some kind of error, please report it as a New issue on the `Atomap Gi
 
 
 Alternative Windows installation
-################################
+********************************
 
 If you already have HyperSpy running in an Anaconda Python environment `Anaconda environment <https://www.continuum.io/downloads>`_,
 Atomap can be installed from the `Anaconda prompt` (Start menu - Anaconda3), this will open a command line prompt.
