@@ -52,7 +52,7 @@ This returns the `atom_lattice` object, which contains the sublattices of both A
 
     >>> atom_lattice.plot()
 
-.. image:: images/tutorial/atom_lattice.png
+.. image:: images/automation/atom_lattice.png
     :scale: 50 %
     :align: center
 
