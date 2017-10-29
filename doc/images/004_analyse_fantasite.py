@@ -1,22 +1,28 @@
-import atomap.api as am
+import os
 import matplotlib.pyplot as plt
+import atomap.api as am
+
+my_path = os.path.dirname(__file__) + '/plotting_tutorial/'
+if not os.path.exists(my_path):
+    os.makedirs(my_path)
+
 
 def plot_elli_maps():
     sublattice_A.plot_ellipticity_map(cmap='viridis',vmin=0.95,vmax=1.3)
-    plt.gcf().savefig('plotting_tutorial/ellipticity_map_A.png')
+    plt.gcf().savefig(my_path + 'ellipticity_map_A.png')
 
     sublattice_B.plot_ellipticity_map(cmap='viridis',vmin=0.95,vmax=1.3)
-    plt.gcf().savefig('plotting_tutorial/ellipticity_map_B.png')
+    plt.gcf().savefig(my_path + 'ellipticity_map_B.png')
 
     sublattice_A.plot_ellipticity_vectors()
-    plt.gcf().savefig('plotting_tutorial/ellipticity_vectors.png')
+    plt.gcf().savefig(my_path + 'ellipticity_vectors.png')
 
 def plot_monolayer_map():
     s_monolayer = sublattice_B.get_monolayer_distance_map()
     s_monolayer.plot(cmap='viridis')
     s_monolayer.axes_manager.indices = (1,)
     s_monolayer._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/Sublattice_B_monolayer_distance_a.png',
+             my_path + 'Sublattice_B_monolayer_distance_a.png',
              overwrite=True)
 
 def plot_atom_plane_monolayer_map():
@@ -25,7 +31,7 @@ def plot_atom_plane_monolayer_map():
     s.plot()
     s.axes_manager.indices = (1,)
     s._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/Sublattice_B_monolayer_distance_b.png',
+             my_path + 'Sublattice_B_monolayer_distance_b.png',
              overwrite=True)
 
 def plot_atom_dd():
@@ -33,7 +39,7 @@ def plot_atom_dd():
     s_dd = sublattice_B.get_atom_distance_difference_map([zone])
     s_dd.plot(cmap='viridis')
     s_dd._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/sublatticeB_dd_map_0.png',
+             my_path + 'sublatticeB_dd_map_0.png',
              overwrite=True)
 
     zone = sublattice_B.zones_axis_average_distances[1]
@@ -41,7 +47,7 @@ def plot_atom_dd():
                     add_zero_value_sublattice=sublattice_A)
     s_dd.plot(cmap='viridis')
     s_dd._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/sublatticeB_dd_map_1.png',
+             my_path + 'sublatticeB_dd_map_1.png',
              overwrite=True)
 
 def plot_dd_plane():
@@ -50,11 +56,11 @@ def plot_dd_plane():
     s.plot()
     s.axes_manager.indices = (0,)
     s._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/Angle_map_z1.png',
+             my_path + 'Angle_map_z1.png',
              overwrite=True)
     s.axes_manager.indices = (1,)
     s._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/Angle_map_z2.png',
+             my_path + 'Angle_map_z2.png',
              overwrite=True)
       
 def plot_angle_figs():
@@ -64,7 +70,7 @@ def plot_angle_figs():
     s_angle = sublattice_B.get_property_map(x, y, a)
     s_angle.plot(cmap='magma')
     s_angle._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/Angle_map.png',
+             my_path + 'Angle_map.png',
              overwrite=True)
 
 def plot_al_zoom():
@@ -73,7 +79,7 @@ def plot_al_zoom():
     s._plot.signal_plot.ax.set_xlim(364,437)
     s._plot.signal_plot.ax.set_ylim(184,259)
     s._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/Angle_map_zoom.png',
+             my_path + 'Angle_map_zoom.png',
              overwrite=True)
 
 def elli_line():
@@ -82,7 +88,7 @@ def elli_line():
     s_elli_line = sublattice_A.get_ellipticity_line_profile(plane)
     s_elli_line.plot()
     s_elli_line._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/line_ellip.png',
+             my_path + 'line_ellip.png',
              overwrite=True)
 
 def plot_line_plane():
@@ -90,7 +96,7 @@ def plot_line_plane():
     s.plot()
     s.axes_manager.indices = (1,)
     s._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/line_ellip_plane.png',
+             my_path + 'line_ellip_plane.png',
              overwrite=True)
 
 def monolayer_line():
@@ -99,7 +105,7 @@ def monolayer_line():
     s_line = sublattice_B.get_monolayer_distance_line_profile(zone,plane)
     s_line.plot()
     s_line._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/line_monolayer.png',
+             my_path + 'line_monolayer.png',
              overwrite=True)
              
 def dd_line():
@@ -108,11 +114,11 @@ def dd_line():
     s_line = sublattice_B.get_atom_distance_difference_line_profile(zone,plane)
     s_line.plot()
     s_line._plot.signal_plot.figure.savefig(
-             'plotting_tutorial/line_dd.png',
+             my_path + 'line_dd.png',
              overwrite=True)
 
 
-atom_lattice = am.load_atom_lattice_from_hdf5('fantasite.hdf5')
+atom_lattice = am.load_atom_lattice_from_hdf5(my_path + 'fantasite.hdf5')
 sublattice_A = atom_lattice.sublattice_list[0]
 sublattice_B = atom_lattice.sublattice_list[1]
 

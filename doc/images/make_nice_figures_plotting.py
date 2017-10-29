@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -7,14 +8,18 @@ import matplotlib.patheffects as patheffects
 import hyperspy.api as hs
 import atomap.api as am
 
+my_path = os.path.dirname(__file__) + '/make_nice_figures/'
+if not os.path.exists(my_path):
+    os.makedirs(my_path)
+
 # Load the atomic resolution image
-s_adf = hs.load('ADF_image.hdf5')
+s_adf = hs.load(my_path + 'ADF_image.hdf5')
 
 # Load the structural data
-atoms_A = np.load('sublattice_A.npz')
-atoms_B = np.load('sublattice_B.npz')
-dd_map = hs.load('distance_difference_map.hdf5')
-dd_line = hs.load('dd_line.hdf5')
+atoms_A = np.load(my_path + 'sublattice_A.npz')
+atoms_B = np.load(my_path + 'sublattice_B.npz')
+dd_map = hs.load(my_path + 'distance_difference_map.hdf5')
+dd_line = hs.load(my_path + 'dd_line.hdf5')
 
 # Scaling the data
 scale = 0.142
@@ -125,4 +130,4 @@ ax_lp.text(
 gs.update(left=0.01, wspace=0.05, top=0.95, bottom=0.2, right=0.89)
 
 # Save
-fig.savefig('Atom_lattice.png', dpi=300)
+fig.savefig(my_path + 'Atom_lattice.png', dpi=300)

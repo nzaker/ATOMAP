@@ -17,7 +17,7 @@ The last part of this tutorial aims to show how such parameters can be made for 
 Finding atom lattices with process parameters
 ---------------------------------------------
 
-In this tutorial we will use the predefined process parameter `PerovskiteOxide110`, and a dummy image designed to look like an HAADF image of the perovskite |STO|.
+In this tutorial we will use the predefined process parameter ``PerovskiteOxide110``, and a dummy image designed to look like an HAADF image of the perovskite |STO|.
 It contains various parameters and names for processing a perovskite oxide structure projected along the [110] direction.
 The master function :py:meth:`atomap.main.make_atom_lattice_from_image` takes the atomic resolution signal, process parameters and optimal feature separation.
 This means that you probably need to run :py:meth:`atomap.atom_finding_refining.get_feature_separation` and find the best pixel separation first.
@@ -46,7 +46,7 @@ The processing will:
 8. Refine the position of the B-cations using 2-D Gaussian distributions
 9. Construct atomic planes in the same way as for the first sublattice.
 
-This returns the `atom_lattice` object, which contains the sublattices of both A and B cations.
+This returns the ``atom_lattice`` object, which contains the sublattices of both A and B cations.
 
 .. code-block:: python
 
@@ -76,7 +76,7 @@ Of course, if all the sublattices in your real material are best resolved in ADF
 First, you should create a class for each of the sublattices in the structure.
 The sublattice process parameter class contains information about how the sublattice should be refined, zone axes and which order it has in the structure.
 The most intense sublattice has order 0, the second most intense sublattice has order 1, etc.
-Also, the sublattice inherits the class :py:class:`SublatticeParameterBase`.
+Also, the sublattice inherits the class :py:class:`~atomap.process_parameters.SublatticeParameterBase`.
 
 As the heavy A-atoms are best resolved in ADF/HAADF images, the dark field image will be used to find the atom positions of A.
 A class for the process parameters for *SublatticeA* can look like this:

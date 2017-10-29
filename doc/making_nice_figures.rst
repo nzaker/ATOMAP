@@ -36,7 +36,7 @@ It can be a good idea to save analysis results as numpy, csv or hyperspy signals
 Making nice figures often require a lot of tweaking, trial and error, so it is nice to have the data readily available.
 First, analysis results are generated, and then saved.
 
-.. literalinclude:: images/save_data_for_plot_for_pub.py
+.. literalinclude:: images/make_nice_figures_generate_data.py
 
 Matplotlib
 ----------
@@ -44,6 +44,6 @@ Matplotlib
 The saved results can then be loaded into the script that is making nice figures.
 The below code block will create this figure.
 
-.. image:: images/Atom_lattice.png
+.. image:: images/make_nice_figures/Atom_lattice.png
 
-.. literalinclude:: images/plot_for_pub.py
+.. literalinclude:: images/make_nice_figures_plotting.py

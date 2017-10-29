@@ -1,16 +1,24 @@
+import os
 import atomap.api as am
 from atomap.tools import remove_atoms_from_image_using_2d_gaussian
+
+my_path = os.path.dirname(__file__) + '/plotting_tutorial/'
+if not os.path.exists(my_path):
+    os.makedirs(my_path)
+
 
 def plot_fantasite(s):
     s.plot()
     s._plot.signal_plot.figure.savefig(
-            'plotting_tutorial/fantasite.png', overwrite=True)
+            my_path + 'fantasite.png', overwrite=True)
+
 
 def plot_atom_lattice(atom_lattice):
     s = atom_lattice.get_sublattice_atom_list_on_image()
     s.plot()
     s._plot.signal_plot.figure.savefig(
-            'plotting_tutorial/atom_lattice.png', overwrite=True)
+            my_path + 'atom_lattice.png', overwrite=True)
+
 
 s = am.dummy_data.get_fantasite()
 A_positions = am.get_atom_positions(s, separation=12, pca=True)
@@ -33,7 +41,7 @@ sublattice_B.refine_atom_positions_using_2d_gaussian()
 atom_lattice = am.Atom_Lattice(
         image=s.data, name='fantasite',
         sublattice_list=[sublattice_A, sublattice_B])
-atom_lattice.save("fantasite.hdf5", overwrite=True)
+atom_lattice.save(my_path + "fantasite.hdf5", overwrite=True)
 
 plot_fantasite(s)
 plot_atom_lattice(atom_lattice)
