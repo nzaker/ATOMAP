@@ -171,7 +171,8 @@ def _add_fantasite_sublattice_A(test_data):
         test_data.add_atom_list(xA4, yA4, sigma_x=3, sigma_y=3, amplitude=10)
         test_data.add_atom_list(xA5, yA5, sigma_x=3, sigma_y=3, amplitude=10)
         down = not down
-    return(test_data)
+    test_data.add_image_noise(mu=0, sigma=0.01, random_seed=10)
+    return test_data
 
 
 def _add_fantasite_sublattice_B(test_data):
@@ -194,7 +195,7 @@ def _add_fantasite_sublattice_B(test_data):
                 amplitude=20, rotation=rotation)
         down = not down
     test_data.add_image_noise(mu=0, sigma=0.01, random_seed=0)
-    return(test_data)
+    return test_data
 
 
 def _get_fantasite_atom_lattice():
