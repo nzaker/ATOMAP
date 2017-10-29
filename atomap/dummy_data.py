@@ -287,7 +287,7 @@ def get_fantasite_atom_lattice():
     variations.
 
     It contains two sublattices, domains with elliptical atomic
-    columns and tilt-patterns. This function returns an Atomap sublattice.
+    columns and tilt-patterns. This function returns an Atomap Atom_Lattice.
 
     Examples
     --------
@@ -301,7 +301,7 @@ def get_fantasite_atom_lattice():
 
 
 def get_perovskite110_ABF_signal(image_noise=False):
-    """Returns signals representing an ABF image of Perovskite100.
+    """Returns signals representing an ABF image of a perovskite <110>.
 
     Parameters
     ----------
