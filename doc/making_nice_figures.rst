@@ -31,7 +31,21 @@ Signals can be saved by using the inbuilt `save` function.
 
     >>> s_monolayer.save("monolayer_distances.hdf5",overwrite=True) # doctest: +SKIP
 
+Here, we will first save analysis data for the fantasite dummy data atom lattice.
+It can be a good idea to save analysis results as numpy, csv or hyperspy signals, as the analysis can take time.
+Making nice figures often require a lot of tweaking, trial and error, so it is nice to have the data readily available.
+First, analysis results can be saved.
+
+.. literalinclude:: images/save_data_for_plot_for_pub.py
+
 Matplotlib
 ----------
 
-Matplotib pyplot is our favourite plotting tool: gridspec,
+The saved results can then be loaded into the script that is making nice figures.
+The below code block will create this figure.
+PS: the scalebar is added to the image to show the functionality, but the fantasite image is not calibrated.
+
+.. image:: images/Atom_lattice.png
+
+.. literalinclude:: images/plot_for_pub.py
+

@@ -147,8 +147,7 @@ def get_dumbbell_signal():
     return test_data.signal
 
 
-def _make_fantasite_test_data():
-    test_data = MakeTestData(500, 500)
+def _add_fantasite_sublattice_A(test_data):
     xA0, yA0 = np.mgrid[10:495:15, 10:495:30]
     xA0, yA0 = xA0.flatten(), yA0.flatten()
     xA1, yA1 = xA0[0:8*17], yA0[0:8*17]
@@ -172,7 +171,10 @@ def _make_fantasite_test_data():
         test_data.add_atom_list(xA4, yA4, sigma_x=3, sigma_y=3, amplitude=10)
         test_data.add_atom_list(xA5, yA5, sigma_x=3, sigma_y=3, amplitude=10)
         down = not down
+    return(test_data)
 
+
+def _add_fantasite_sublattice_B(test_data):
     xB0, yB0 = np.mgrid[10:495:15, 25:495:30]
     xB0, yB0 = xB0.flatten(), yB0.flatten()
     test_data.add_atom_list(
@@ -191,6 +193,34 @@ def _make_fantasite_test_data():
                 x, yB2[i], sigma_x=3, sigma_y=sigma_y,
                 amplitude=20, rotation=rotation)
         down = not down
+    test_data.add_image_noise(mu=0, sigma=0.01, random_seed=0)
+    return(test_data)
+
+
+def _get_fantasite_atom_lattice():
+    test_data1 = MakeTestData(500, 500)
+    test_data1 = _add_fantasite_sublattice_A(test_data1)
+    test_data2 = MakeTestData(500, 500)
+    test_data2 = _add_fantasite_sublattice_B(test_data2)
+    test_data3 = MakeTestData(500, 500)
+    test_data3 = _add_fantasite_sublattice_A(test_data3)
+    test_data3 = _add_fantasite_sublattice_B(test_data3)
+    test_data3.add_image_noise(mu=0, sigma=0.01, random_seed=0)
+
+    sublattice_1 = test_data1.sublattice
+    sublattice_2 = test_data2.sublattice
+    sublattice_1._plot_color = 'b'
+    image = test_data3.signal.data
+    atom_lattice = Atom_Lattice(
+            image=image, name='Fantasite Atom Lattice',
+            sublattice_list=[sublattice_1, sublattice_2])
+    return(atom_lattice)
+
+
+def _make_fantasite_test_data():
+    test_data = MakeTestData(500, 500)
+    test_data = _add_fantasite_sublattice_A(test_data)
+    test_data = _add_fantasite_sublattice_B(test_data)
     test_data.add_image_noise(mu=0, sigma=0.01, random_seed=0)
     return test_data
 
@@ -230,6 +260,9 @@ def get_fantasite_sublattice():
     It contains two sublattices, domains with elliptical atomic
     columns and tilt-patterns. This function returns an Atomap sublattice.
 
+    Currently this function returns the two sublattices as one sublattice.
+    To get these sublattices separately, see get_fantasite_atom_lattice
+
     Examples
     --------
     >>> import atomap.api as am
@@ -239,10 +272,31 @@ def get_fantasite_sublattice():
     See also
     --------
     get_fantasite : get a Signal2D object of the fantasite.
+    get_fantasite_atom_lattice : get the atom lattice
+        for fantasite, with both sublattices.
 
     """
     test_data = _make_fantasite_test_data()
     return test_data.sublattice
+
+
+def get_fantasite_atom_lattice():
+    """
+    Fantasite is a fantastic structure with several interesting structural
+    variations.
+
+    It contains two sublattices, domains with elliptical atomic
+    columns and tilt-patterns. This function returns an Atomap sublattice.
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> atom_lattice = am.dummy_data.get_fantasite_atom_lattice()
+    >>> atom_lattice.plot()
+
+    """
+    atom_lattice = _get_fantasite_atom_lattice()
+    return(atom_lattice)
 
 
 def get_perovskite110_ABF_signal(image_noise=False):
