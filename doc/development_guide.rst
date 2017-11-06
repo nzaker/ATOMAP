@@ -57,3 +57,9 @@ Continuous integration
 
 The Continuous integration (CI) settings is contained in ``.gitlab-ci.yml``.
 This runs all the above-mentioned tests, style checks and sphinx page generation on each branch.
+
+
+Documentation from development branch
+-------------------------------------
+
+The most recent documentation generated from the development branch can be accessed `here <https://gitlab.com/atomap/atomap/builds/artifacts/master/file/pages_development/index.html?job=pages_development_branch>`_.
