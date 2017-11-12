@@ -110,6 +110,7 @@ class Atom_Lattice():
         save_atom_lattice_to_hdf5(self, filename=filename, overwrite=overwrite)
 
     def plot(self,
+             image=None,
              add_numbers=False,
              markersize=20,
              **kwargs):
@@ -122,6 +123,7 @@ class Atom_Lattice():
 
         Parameters
         ----------
+        image : 2D NumPy array, optional
         add_numbers : bool, default False
             Plot the number of the atom beside each atomic position in the
             plot. Useful for locating misfitted atoms.
@@ -151,6 +153,7 @@ class Atom_Lattice():
             positions as markers. More customizability.
         """
         signal = self.get_sublattice_atom_list_on_image(
+            image=image,
             add_numbers=add_numbers,
             markersize=markersize)
         signal.plot(**kwargs, plot_markers=True)
