@@ -29,10 +29,13 @@ Windows
 ^^^^^^^
 
 This depends on the installation method.
+
+If the HyperSpy bundle was installed, go to the "HyperSpy WinPython Bundle" in the start-menu and start "Jupyter QtConsole".
+
 If Anaconda was used, there should be an *Anaconda3* folder in the start menu.
 Start the interactive Python environment, it should be called either *IPython* or *Jupyter QtConsole*.
-This will open a command line prompt.
-This prompt will be referred to as the *IPython terminal*.
+
+This will open a command line prompt, which will referred to as the *IPython terminal*.
 
 Tutorials
 ---------
@@ -41,7 +44,7 @@ To get you started with using Atomap, and getting and overview and understanding
 The first tutorial :ref:`finding_atom_lattices` aims at showing how atom positions are found, while :ref:`analysing_atom_lattices` shows how this information can be visualized.
 There is also a tutorial showing how you can make your analysis semi-automatic, :ref:`automation`.
 
-The `>>>` used in the tutorials and documentation means the comment should be typed inside some kind of Python prompt, so do not include these when actually running the code.
+The `>>>` used in the tutorials and documentation means the comment should be typed inside some kind of Python prompt, and can be copy-pasted directly into both the *QtConsole*, and *Jupyter Notebooks*.
 
 Jupyter Notebook
 ----------------
