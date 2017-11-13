@@ -4,20 +4,21 @@
 Automation of the analysis
 ==========================
 
-If you are want to study many atomic resolution images of the same type of structure, you can save time and effort by using tools in Atomap for automation, by setting process parameters.
+If you want to study many atomic resolution images of the same type of structure, you can save time and effort by using tools in Atomap for automation, by setting process parameters.
 :py:mod:`atomap.process_parameters` is a module offering classes of predefined process parameters for some types of structures:
 
 1. Perovskite Oxides (projected along the [110] direction), for all sublattices (A, B and Oxygen)
 2. A Generic structure
 
-This tutorial will first show how the use of these process parameters make the procedure for finding the full atom lattice more automatic.
+This tutorial will first show how the use of these process parameters to make the procedure for finding the full atom lattice more automatic.
 Currently, predefined process parameters are available for a limited number of materials and projections.
 The last part of this tutorial aims to show how such parameters can be made for new materials.
+
 
 Finding atom lattices with process parameters
 ---------------------------------------------
 
-In this tutorial we will use the predefined process parameter ``PerovskiteOxide110``, and a dummy image designed to look like an HAADF image of the perovskite |STO|.
+In this tutorial we will use the predefined process parameter :py:class:`~atomap.process_parameters.PerovskiteOxide110`  ``PerovskiteOxide110``, and a dummy image designed to look like an HAADF image of the perovskite |STO|.
 It contains various parameters and names for processing a perovskite oxide structure projected along the [110] direction.
 The master function :py:meth:`atomap.main.make_atom_lattice_from_image` takes the atomic resolution signal, process parameters and optimal feature separation.
 This means that you probably need to run :py:meth:`atomap.atom_finding_refining.get_feature_separation` and find the best pixel separation first.
@@ -67,9 +68,9 @@ It is assumed you have read :ref:`contribute` first, where there is some informa
 YourStructure
 ^^^^^^^^^^^^^
 
-Our example is the imaginary *YourStructure*, which consists of two sublattices, *SublatticeA* and *SublatticeO*.
-*SublatticeA* is a sublattice consisting of heavy transition metal atoms, while *SublatticeO* is oxygen (light atoms).
-This means that *SublatticeA* will have good contrast in ADF-images, while *SublatticeO* is only visible in ABF-images (together with A, of course).
+Our example is the imaginary ``YourStructure``, which consists of two sublattices, ``SublatticeA`` and ``SublatticeO``.
+``SublatticeA`` is a sublattice consisting of heavy transition metal atoms, while ``SublatticeO`` is oxygen (light atoms).
+This means that ``SublatticeA`` will have good contrast in ADF-images, while ``SublatticeO`` is only visible in ABF-images (together with A, of course).
 The example is constructed to give an insight in how you program the parameters to use the different images to find the atom positions.
 Of course, if all the sublattices in your real material are best resolved in ADF, this image can be used for all.
 
@@ -79,7 +80,7 @@ The most intense sublattice has order 0, the second most intense sublattice has 
 Also, the sublattice inherits the class :py:class:`~atomap.process_parameters.SublatticeParameterBase`.
 
 As the heavy A-atoms are best resolved in ADF/HAADF images, the dark field image will be used to find the atom positions of A.
-A class for the process parameters for *SublatticeA* can look like this:
+A class for the process parameters for ``SublatticeA`` can look like this:
 
 .. code-block:: python
 
@@ -109,7 +110,7 @@ A class for the process parameters for *SublatticeA* can look like this:
 
 * In this class, the color of the markers used to show atom positions in the plots will be red, and the name of the sublattice is 'A'.
 * With ``image_type = 0``, the atomic resolution image used to find atom positions will **not** be inverted. In dark field images the atoms are bright, so no inversion is needed.
-* YourStructure has two zone axes, 100 and 111. These are added in the *zone_axis_list* as shown.
+* YourStructure has two zone axes, 100 and 111. These are added in the ``zone_axis_list`` as shown.
 * ``refinement_config`` is the refinement configuration. In this example the positions are refined three times as follows:
 
     1. Atom positions are refined one time by using center-of-mass on an image where the background has been removed, noise has been filtered with PCA and the image is normalized.
@@ -118,7 +119,7 @@ A class for the process parameters for *SublatticeA* can look like this:
 
 * An appropriate ``neighbor_distance`` must be given to set the mask size for the fitting of the Gaussians. Here, it is 35 % of the distance to the nearest neighbor.
 
-To find the atom positions in *SublatticeO*, an ABF image is used.
+To find the atom positions in ``SublatticeO``, an ABF image is used.
 
 .. code-block:: python
 
@@ -154,10 +155,10 @@ To find the atom positions in *SublatticeO*, an ABF image is used.
                     ]
 
 * In this class, the color of the markers used to show atom positions in the plots will be green, and the name of the sublattice is 'O'.
-* With ``image_type = 1``, the atomic resolution image used to find atom positions will be inverted. This is because in the bright field image the atoms are dark and surroundings are bright. For Atomap to work, the atoms must be the bright dots.
+* With ``image_type = 1``, the atomic resolution image used to find atom positions will be inverted. This is because in the bright field image the atoms are dark and surroundings are bright. For Atomap to work, the atoms must be the most intense features.
 * The zone axes is the same as for the other sublattice, they are both a part of YourStructure.
-* ``sublattice_position_sublattice = "A"`` and  ``self.sublattice_position_zoneaxis = "111"`` : The O columns are located between the columns in sublattice "A" in the direction of the zone axis 111. This setting is used to find the initial positions of the atomic columns in *SublatticeO*.
-* ``atom_subtract_config`` is the configuration for how the brighter sublattices should be removed from the image prior to fitting the less bright sublattices. Here, the sublattice 'A' is removed from the image. An appropriate ``neighbor_distance`` gives the size of the mask around the A atoms. If no atoms should be removed from the image, this list can be removed from the class (as for *SublatticeA* above).
+* ``sublattice_position_sublattice = "A"`` and  ``sublattice_position_zoneaxis = "111"`` : The O columns are located between the columns in sublattice "A" in the direction of the zone axis 111. This setting is used to find the initial positions of the atomic columns in ``SublatticeO``.
+* ``atom_subtract_config`` is the configuration for how the brighter sublattices should be removed from the image prior to fitting the less bright sublattices. Here, the sublattice 'A' is removed from the image. An appropriate ``neighbor_distance`` gives the size of the mask around the A atoms. If no atoms should be removed from the image, this list can be removed from the class (as for ``SublatticeA`` above).
 * ``refinement_config`` is different here, to illustrate the possibilities:
 
     1. Atom positions are refined one time by using center-of-mass on an image which has been inverted and with the A sublattice removed, and modified by background removal, noise filtering and normalization.
@@ -167,8 +168,8 @@ To find the atom positions in *SublatticeO*, an ABF image is used.
 
 **Play around with the refinement configurations and neighbor distances to find what works on your images and structures.**
 
-The above sublattices belong to *YourStructure*.
-This class inherits from :py:class:`ModelParametersBase` can look like this:
+The above sublattices belong to ``YourStructure``.
+This class inherits from :py:class:`~atomap.process_parameters.ModelParametersBase` can look like this:
 
 .. code-block:: python
 
@@ -187,7 +188,7 @@ This class inherits from :py:class:`ModelParametersBase` can look like this:
 
 
 An important setting here is the ``peak_separation``.
-The peak separation is a distance in nanometer, approximately half the distance between the atoms in 'A'.
+The peak separation is a distance in nanometer, a little less than half the distance between the atoms in 'A'.
 The number is used to find the ``pixel_separation`` for the initial peak finding for the brightest sublattice.
 Therefore, the scale of the image must be calibrated prior to processing.
 
