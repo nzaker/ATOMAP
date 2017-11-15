@@ -56,7 +56,7 @@ Installing in Linux
 The recommended way to install Atomap is using PIP, which is a package manager for python.
 It is recommended to first install the precompiled dependencies using the system package manager.
 
-`HyperSpy <http://hyperspy.org/>`_ is also included as Atomap relies heavily on the modelling  and visualization functionality in HyperSpy.
+`HyperSpy <http://hyperspy.org/>`_ is also included as Atomap relies heavily on the modelling and visualization functionality in HyperSpy.
 
 Ubuntu 17.10
 ************
