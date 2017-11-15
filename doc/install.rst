@@ -12,7 +12,7 @@ Installing in Windows
 WinPython HyperSpy installer
 ****************************
 
-Currently the easiest way to install Atomap is by using the WinPython HyperSpy installer.
+Currently, the easiest way to install Atomap is by using the WinPython HyperSpy installer.
 Firstly download and install the `WinPython HyperSpy bundle <http://hyperspy.org/download.html#windows-bundle-installers>`_:
 HyperSpy-1.3 for Windows 64-bits.
 
@@ -56,7 +56,7 @@ Installing in Linux
 The recommended way to install Atomap is using PIP, which is a package manager for python.
 It is recommended to first install the precompiled dependencies using the system package manager.
 
-`HyperSpy <http://hyperspy.org/>`_ is also included, due to Atomap relying heavily on the modelling  and visualization functionality in HyperSpy.
+`HyperSpy <http://hyperspy.org/>`_ is also included as Atomap relies heavily on the modelling  and visualization functionality in HyperSpy.
 
 Ubuntu 17.10
 ************
