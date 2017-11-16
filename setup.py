@@ -7,7 +7,7 @@ setup(
             'atomap.tests.datasets',
             'atomap.external',
             ],
-        version = '0.1.0',
+        version = '0.1.1.dev1',
         description = 'Library for analysing atomic resolution images',
         author = 'Magnus Nord',
         author_email = 'magnunor@gmail.com',
