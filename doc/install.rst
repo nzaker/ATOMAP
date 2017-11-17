@@ -88,7 +88,7 @@ In addition, due to a recent bug with HyperSpy and matplotlib 2.1.x, matplotlib 
 
 
 Starting Atomap
----------------
+***************
 
 To check that everything is working, open a terminal and run :code:`ipython3 --matplotlib qt4`. In the ipython terminal run:
 
