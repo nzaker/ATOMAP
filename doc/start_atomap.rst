@@ -40,7 +40,7 @@ In this terminal, run:
 
 .. code-block:: python
 
-    >>> %matplotlib qt4
+    >>> %matplotlib qt4 # doctest: +SKIP
 
 
 Tutorials
