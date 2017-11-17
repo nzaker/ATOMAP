@@ -36,6 +36,12 @@ If Anaconda was used, there should be an *Anaconda3* folder in the start menu.
 Start the interactive Python environment, it should be called either *IPython* or *Jupyter QtConsole*.
 
 This will open a command line prompt, which will referred to as the *IPython terminal*.
+In this terminal, run:
+
+.. code-block:: python
+
+    >>> %matplotlib qt4
+
 
 Tutorials
 ---------
@@ -45,6 +51,7 @@ The first tutorial :ref:`finding_atom_lattices` aims at showing how atom positio
 There is also a tutorial showing how you can make your analysis semi-automatic, :ref:`automation`.
 
 The `>>>` used in the tutorials and documentation means the comment should be typed inside some kind of Python prompt, and can be copy-pasted directly into both the *QtConsole*, and *Jupyter Notebooks*.
+
 
 Jupyter Notebook
 ----------------
