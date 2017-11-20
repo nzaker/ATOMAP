@@ -984,6 +984,7 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
         currentFeature = currentMask * img
         integratedIntensity[i] = sum(sum(currentFeature))
         intensityRecord += currentMask * integratedIntensity[i]
+    pointRecord -= 1
 
     return (integratedIntensity, intensityRecord, pointRecord)
 
