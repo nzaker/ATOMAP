@@ -2,6 +2,7 @@ import os
 import unittest
 import numpy as np
 from hyperspy.api import load
+from hyperspy.signals import Signal2D
 from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
@@ -38,6 +39,71 @@ class test_make_simple_sublattice(unittest.TestCase):
         self.assertEqual(
                 sublattice.__repr__(),
                 repr_str)
+
+
+class test_init_sublattice(unittest.TestCase):
+
+    def setUp(self):
+        self.peaks = [[10, 10], [20, 20]]
+
+    def test_image_input(self):
+        image = np.zeros((100, 50))
+        Sublattice(atom_position_list=self.peaks, image=image)
+
+    def test_wrong_image_dimension_input(self):
+        image = np.zeros((100, 50, 5))
+        with self.assertRaises(ValueError):
+            Sublattice(atom_position_list=self.peaks, image=image)
+
+    def test_wrong_image_type_input(self):
+        with self.assertRaises(ValueError):
+            Sublattice(atom_position_list=self.peaks, image="test")
+
+    def test_image_original_image_input(self):
+        image = np.zeros((100, 50))
+        original_image = np.zeros((100, 50))
+        Sublattice(
+                atom_position_list=self.peaks, image=image,
+                original_image=original_image)
+
+    def test_wrong_original_image_dimension_input(self):
+        image = np.zeros((100, 50))
+        original_image = np.zeros((100, 50, 5))
+        with self.assertRaises(ValueError):
+            Sublattice(
+                    atom_position_list=self.peaks, image=image,
+                    original_image=original_image)
+
+    def test_wrong_original_image_type_input(self):
+        image = np.zeros((100, 50))
+        with self.assertRaises(ValueError):
+            Sublattice(
+                    atom_position_list=self.peaks, image=image,
+                    original_image="test1")
+
+    def test_input_signal(self):
+        s = Signal2D(np.zeros((100, 50)))
+        Sublattice(atom_position_list=self.peaks, image=s)
+
+    def test_input_signal_wrong_dimensions(self):
+        s = Signal2D(np.zeros((100, 50, 10)))
+        with self.assertRaises(ValueError):
+            Sublattice(atom_position_list=self.peaks, image=s)
+
+    def test_input_signal_and_original_image(self):
+        s = Signal2D(np.zeros((100, 50)))
+        s_orig = Signal2D(np.zeros((100, 50)))
+        Sublattice(
+                atom_position_list=self.peaks, image=s,
+                original_image=s_orig)
+
+    def test_input_signal_and_original_image_wrong_dim(self):
+        s = Signal2D(np.zeros((100, 50)))
+        s_orig = Signal2D(np.zeros((100, 50, 9)))
+        with self.assertRaises(ValueError):
+            Sublattice(
+                    atom_position_list=self.peaks, image=s,
+                    original_image=s_orig)
 
 
 class test_sublattice_with_atom_planes(unittest.TestCase):

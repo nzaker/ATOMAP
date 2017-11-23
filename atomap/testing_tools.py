@@ -70,7 +70,7 @@ class MakeTestData(object):
         """
         self.data_extent = (image_x, image_y)
         self._image_noise = False
-        self.__sublattice = Sublattice([], None)
+        self.__sublattice = Sublattice([], np.zeros((2, 2)))
         self.__sublattice.atom_list = []
 
     @property

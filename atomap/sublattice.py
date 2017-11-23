@@ -7,12 +7,7 @@ import hyperspy.api as hs
 from hyperspy.signals import Signal2D
 from hyperspy.drawing._markers.point import Point
 
-from atomap.tools import (
-        _get_interpolated2d_from_unregular_data,
-        project_position_property_sum_planes,
-        array2signal2d, array2signal1d,
-        Fingerprinter)
-
+import atomap.tools as at
 from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
         _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
@@ -53,7 +48,8 @@ class Sublattice():
 
         Attributes
         ----------
-        image: 2D NumPy array
+        image: 2D NumPy array, or 2D array-like.
+            A HyperSpy signal with 2 dimensions can also be used directly.
         x_position : list of floats
         y_position : list of floats
         sigma_x : list of floats
@@ -90,6 +86,7 @@ class Sublattice():
         >>> sublattice.get_atom_list_on_image(markersize=50).plot()
 
         """
+        self._image_init(image=image, original_image=original_image)
         self.atom_list = []
         for atom_position in atom_position_list:
             atom = Atom_Position(atom_position[0], atom_position[1])
@@ -97,17 +94,39 @@ class Sublattice():
         self.zones_axis_average_distances = None
         self.zones_axis_average_distances_names = []
         self.atom_plane_list = []
-        self.image = image
-        if original_image is None:
-            self.original_image = image
-        else:
-            self.original_image = original_image
         self.atom_planes_by_zone_vector = {}
         self._plot_clim = None
         self.name = name
         self.pixel_size = pixel_size
         self._plot_color = color
         self._pixel_separation = 0.0
+
+    def _image_init(self, image, original_image=None):
+        if not hasattr(image, '__array__'):
+            raise ValueError(
+                    "image needs to be a NumPy compatible array" +
+                    ", not " + str(type(image)))
+        image_out = np.array(image)
+        if not len(image_out.shape) == 2:
+            raise ValueError(
+                    "image needs to be 2 dimensions, not " +
+                    str(len(image_out.shape)))
+
+        if original_image is not None:
+            if not hasattr(original_image, '__array__'):
+                raise ValueError(
+                        "original_image needs to be a NumPy compatible array" +
+                        ", not " + str(type(original_image)))
+            original_image_out = np.array(original_image)
+            if not len(original_image_out.shape) == 2:
+                raise ValueError(
+                        "original_image needs to be 2 dimensions, not " +
+                        str(len(original_image_out.shape)))
+        else:
+            original_image_out = image_out
+
+        self.image = image_out
+        self.original_image = original_image_out
 
     def __repr__(self):
         return '<%s, %s (atoms:%s,planes:%s)>' % (
@@ -375,8 +394,7 @@ class Sublattice():
                     "same shape")
         data_list = np.array([x, y, z])
         data_list = np.swapaxes(data_list, 0, 1)
-        line_profile_data = \
-            project_position_property_sum_planes(
+        line_profile_data = at.project_position_property_sum_planes(
                 data_list,
                 interface_plane,
                 rebin_data=True)
@@ -414,7 +432,7 @@ class Sublattice():
 
         interpolate_x_lim = (0, self.image.shape[1])
         interpolate_y_lim = (0, self.image.shape[0])
-        new_data = _get_interpolated2d_from_unregular_data(
+        new_data = at._get_interpolated2d_from_unregular_data(
             data_list,
             new_x_lim=interpolate_x_lim,
             new_y_lim=interpolate_y_lim,
@@ -483,7 +501,7 @@ class Sublattice():
                 add_zero_value_sublattice.y_position)
         data_map = self._get_regular_grid_from_unregular_property(
                 x_list, y_list, z_list, upscale=upscale_map)
-        signal = array2signal2d(
+        signal = at.array2signal2d(
                 data_map[2], self.pixel_size/upscale_map, rotate_flip=True)
         if atom_plane_list is not None:
             marker_list = _make_atom_planes_marker_list(
@@ -584,7 +602,7 @@ class Sublattice():
             x_new *= -1
         data_scale = x_new[1]-x_new[0]
         offset = x_new[0]
-        signal = array2signal1d(
+        signal = at.array2signal1d(
                 y_new,
                 scale=data_scale,
                 offset=offset)
@@ -1182,7 +1200,7 @@ class Sublattice():
                 add_numbers=add_numbers,
                 scale=self.pixel_size,
                 color=color)
-        signal = array2signal2d(image, self.pixel_size)
+        signal = at.array2signal2d(image, self.pixel_size)
         add_marker(signal, marker_list, permanent=True, plot_marker=False)
         return signal
 
@@ -1247,7 +1265,7 @@ class Sublattice():
                     self.atom_planes_by_zone_vector[zone_vector])
         marker_list = _make_multidim_atom_plane_marker_list(
                 atom_plane_list, scale=self.pixel_size)
-        signal = array2signal2d(image, self.pixel_size)
+        signal = at.array2signal2d(image, self.pixel_size)
         signal = hs.stack([signal]*len(zone_vector_list))
         add_marker(signal, marker_list, permanent=True, plot_marker=False)
         signal.metadata.General.title = "Atom planes by zone vector"
@@ -1329,7 +1347,7 @@ class Sublattice():
                 color=color,
                 markersize=markersize,
                 add_numbers=add_numbers)
-        signal = array2signal2d(image, self.pixel_size)
+        signal = at.array2signal2d(image, self.pixel_size)
         add_marker(signal, marker_list, permanent=True, plot_marker=False)
 
         return signal
@@ -1399,7 +1417,7 @@ class Sublattice():
                     elli_rot[0]*vector_scale,
                     elli_rot[1]*vector_scale,
                     ])
-        signal = array2signal2d(image, self.pixel_size)
+        signal = at.array2signal2d(image, self.pixel_size)
         marker_list = _make_arrow_marker_list(
                 elli_list,
                 scale=self.pixel_size,
@@ -2012,7 +2030,7 @@ class Sublattice():
         assert nn.shape == (2, n_atoms_closer_than_radius,)
 
         # Apply the fingerprinter
-        fingerprinter = Fingerprinter()
+        fingerprinter = at.Fingerprinter()
         fingerprinter.fit(nn.T)
 
         return fingerprinter
