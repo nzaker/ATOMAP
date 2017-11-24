@@ -837,6 +837,17 @@ class Sublattice():
             at a cost of less robust fitting.
         show_progressbar : default True
 
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.find_nearest_neighbors()
+        >>> sublattice.refine_atom_positions_using_2d_gaussian()
+
+        See Also
+        --------
+        refine_atom_positions_using_center_of_mass
+
         """
         if self.atom_list[0].nearest_neighbor_list is None:
             raise ValueError(
@@ -870,6 +881,17 @@ class Sublattice():
             centered on the atom position. Value should be somewhere
             between 0.01 (1%) and 1 (100%).
         show_progressbar : default True
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.find_nearest_neighbors()
+        >>> sublattice.refine_atom_positions_using_center_of_mass()
+
+        See Also
+        --------
+        refine_atom_positions_using_2d_gaussian
 
         """
         if self.atom_list[0].nearest_neighbor_list is None:
