@@ -68,11 +68,27 @@ def _line_profile_coordinates(src, dst, linewidth=1):
 # Remove atom from image using 2d gaussian model
 def remove_atoms_from_image_using_2d_gaussian(
         image, sublattice,
-        percent_to_nn=0.40):
+        percent_to_nn=0.40,
+        show_progressbar=True):
+    """
+    Parameters
+    ----------
+    image : NumPy 2D array
+    sublattice : Atomap sublattice object
+    percent_to_nn : float
+    show_progressbar : bool, default True
+
+    Returns
+    -------
+    subtracted_image : NumPy 2D array
+
+    """
     model_image = np.zeros(image.shape)
     X, Y = np.meshgrid(np.arange(
         model_image.shape[1]), np.arange(model_image.shape[0]))
-    for atom in tqdm(sublattice.atom_list, desc='Subtracting atoms'):
+    for atom in tqdm(
+            sublattice.atom_list, desc='Subtracting atoms',
+            disable=not show_progressbar):
         percent_distance = percent_to_nn
         for i in range(10):
             g_list = _fit_atom_positions_with_gaussian_model(

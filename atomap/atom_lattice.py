@@ -161,11 +161,18 @@ class Atom_Lattice():
 
 class Dumbbell_Lattice(Atom_Lattice):
 
-    def refine_position_gaussian(self, image=None):
+    def refine_position_gaussian(self, image=None, show_progressbar=True):
+        """
+        Parameters
+        ----------
+        image : NumPy 2D array, optional
+        show_progressbar : bool, default True
+        """
         if image is None:
             image = self.image0
         n_tot = len(self.sublattice_list[0].atom_list)
-        for i_atom in trange(n_tot, desc="Gaussian fitting"):
+        for i_atom in trange(
+                n_tot, desc="Gaussian fitting", disable=not show_progressbar):
             atom_list = []
             for sublattice in self.sublattice_list:
                 atom_list.append(sublattice.atom_list[i_atom])

@@ -76,7 +76,7 @@ class MakeTestData(object):
     @property
     def signal(self):
         signal = self.__sublattice.get_model_image(
-                image_shape=self.data_extent, progressbar=False)
+                image_shape=self.data_extent, show_progressbar=False)
         if self._image_noise is not False:
             signal.data += self._image_noise
         return signal

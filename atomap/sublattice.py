@@ -815,7 +815,8 @@ class Sublattice():
             self,
             image_data=None,
             percent_to_nn=0.40,
-            rotation_enabled=True):
+            rotation_enabled=True,
+            show_progressbar=True):
         """
         Use 2D-Gaussian fitting to refine the atom positions on the image
         data.
@@ -834,6 +835,8 @@ class Sublattice():
             If True, rotation will be enabled for the 2D Gaussians.
             This will most likely make the fitting better, but potentially
             at a cost of less robust fitting.
+        show_progressbar : default True
+
         """
         if self.atom_list[0].nearest_neighbor_list is None:
             raise ValueError(
@@ -842,14 +845,16 @@ class Sublattice():
                     "Has sublattice.find_nearest_neighbors() been called?")
         if image_data is None:
             image_data = self.original_image
-        for atom in tqdm(self.atom_list, desc="Gaussian fitting"):
+        for atom in tqdm(
+                self.atom_list, desc="Gaussian fitting",
+                disable=not show_progressbar):
             atom.refine_position_using_2d_gaussian(
                     image_data,
                     rotation_enabled=rotation_enabled,
                     percent_to_nn=percent_to_nn)
 
     def refine_atom_positions_using_center_of_mass(
-            self, image_data=None, percent_to_nn=0.25):
+            self, image_data=None, percent_to_nn=0.25, show_progressbar=True):
         """
         Use center of mass to refine the atom positions on the image
         data.
@@ -864,6 +869,8 @@ class Sublattice():
             this value times percent_to_nn will be the radius of the mask
             centered on the atom position. Value should be somewhere
             between 0.01 (1%) and 1 (100%).
+        show_progressbar : default True
+
         """
         if self.atom_list[0].nearest_neighbor_list is None:
             raise ValueError(
@@ -872,7 +879,9 @@ class Sublattice():
                     "Has sublattice.find_nearest_neighbors() been called?")
         if image_data is None:
             image_data = self.original_image
-        for atom in tqdm(self.atom_list, desc="Center of mass"):
+        for atom in tqdm(
+                self.atom_list, desc="Center of mass",
+                disable=not show_progressbar):
             atom.refine_position_using_center_of_mass(
                 image_data,
                 percent_to_nn=percent_to_nn)
@@ -1826,7 +1835,7 @@ class Sublattice():
         signal.metadata.General.title = title
         return signal
 
-    def get_model_image(self, image_shape=None, progressbar=True):
+    def get_model_image(self, image_shape=None, show_progressbar=True):
         """
         Generate an image of the atomic positions from the
         atom positions Gaussian parameter's.
@@ -1836,6 +1845,7 @@ class Sublattice():
         image_shape : tuple (x, y), optional
             Size of the image generated. Note that atoms might be
             outside the image if (x, y) is too small.
+        show_progressbar : default True
 
         Returns
         -------
@@ -1857,7 +1867,7 @@ class Sublattice():
             rotation=1.0,
             A=1.0)
 
-        for atom in tqdm(self.atom_list, disable=(not progressbar)):
+        for atom in tqdm(self.atom_list, disable=not show_progressbar):
             g.A.value = atom.amplitude_gaussian
             g.centre_x.value = atom.pixel_x
             g.centre_y.value = atom.pixel_y
@@ -2070,7 +2080,8 @@ class Sublattice():
             image=None,
             color='red',
             add_numbers=False,
-            markersize=20):
+            markersize=20,
+            show_progressbar=True):
         """
         Plot position history of each atom positions on the image data.
 
@@ -2086,6 +2097,7 @@ class Sublattice():
             misfitted atoms.
         markersize : number, default 20
             Size of the atom position markers
+        show_progressbar : default True
 
         Returns
         -------
@@ -2125,7 +2137,7 @@ class Sublattice():
             marker_list_y[index, 0:len(peaks)] = peaks[:, 1]
 
         marker_list = []
-        for i in trange(marker_list_x.shape[1]):
+        for i in trange(marker_list_x.shape[1], disable=not show_progressbar):
             m = hs.markers.point(
                     x=marker_list_x[:, i], y=marker_list_y[:, i], color='red')
             marker_list.append(m)
