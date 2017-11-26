@@ -863,14 +863,28 @@ class Fingerprinter:
     def __init__(self, cluster_algo=DBSCAN(eps=0.1, min_samples=10)):
         self._cluster_algo = cluster_algo
 
-    def fit(self, X):
+    def fit(self, X, max_neighbors=150000):
         """Parameters
         ----------
         X : array, shape = (n_points, n_dimensions)
             This array is typically a transpose of a subset of the returned
             value of sublattice.get_nearest_neighbor_directions_all()
+        max_neighbors : int, default 150000
+            If the length of X is larger than max_neighbors, X will be reduced
+            to max_neighbors. The selection is random. This is done to allow
+            very large datasets to be processed, since having X too large
+            causes the fitting to use too much memory.
+
+        Notes
+        -----
+        More information about memory use:
+        http://scikit-learn.org/stable/modules/clustering.html#dbscan
+
         """
         X = np.asarray(X)
+        if len(X) > max_neighbors:
+            random_indicies = np.random.randint(0, len(X), size=max_neighbors)
+            X = X[random_indicies, :]
         n_points, n_dimensions = X.shape
 
         # Normalize scale so that the clustering algorithm can use constant
