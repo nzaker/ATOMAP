@@ -2071,6 +2071,14 @@ class Sublattice():
         """
         Produce a distance and direction fingerprint of the sublattice.
 
+        Parameters
+        ----------
+        pixel_radius : int, default 100
+
+        Returns
+        -------
+        cluster_array : NumPy array
+
         Example
         -------
         >>> import atomap.api as am
@@ -2078,6 +2086,7 @@ class Sublattice():
         >>> fp = sublattice.get_fingerprint_2d()
         >>> import matplotlib.pyplot as plt
         >>> cax = plt.scatter(fp[:,0], fp[:,1], marker='o')
+
         """
         fingerprinter = self._get_fingerprint(pixel_radius=pixel_radius)
         return fingerprinter.cluster_centers_
