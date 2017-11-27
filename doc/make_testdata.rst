@@ -89,3 +89,22 @@ It is also possible to make sublattice and atom lattice objects:
 
     >>> sublattice3 = t3.sublattice
     >>> atom_lattice3 = t3.atom_lattice
+
+
+Large amount of atoms
+=====================
+
+Generating test signals with a large amount of atoms (2000+) can take a very long time.
+However, sublattice objects can be generated quickly if the image is not needed.
+This is done by using ``sublattice_generate_image=False``:
+
+.. code-block:: python
+
+    >>> testdata = tt.MakeTestData(1000, 1000, sublattice_generate_image=False)
+    >>> x, y = np.mgrid[0:1000:150j, 0:1000:150j]
+    >>> x, y = x.flatten(), y.flatten()
+    >>> testdata.add_atom_list(x, y)
+    >>> sublattice = testdata.sublattice
+
+Note that this sublattice will not be useful for testing the position refinement and fitting functionality, as the image is all zeros.
+However, it can be useful for testing fingerprinting and construction of atom planes.

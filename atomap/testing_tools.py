@@ -9,7 +9,7 @@ from atomap.atom_lattice import Atom_Lattice
 
 class MakeTestData(object):
 
-    def __init__(self, image_x, image_y):
+    def __init__(self, image_x, image_y, sublattice_generate_image=True):
         """
         Class for generating test datasets of atomic resolution
         STEM images.
@@ -18,6 +18,13 @@ class MakeTestData(object):
         ----------
         image_x, image_y : int
             Size of the image data.
+        sublattice_generate_image : bool, default True
+            When generating sublattices, a raster image is generated to
+            complement the atom position objects (found in sublattice.image).
+            For large amounts of atom positions, this can take a very long
+            time. If sublattice_generate_image is False, this image will not
+            be generated. Useful for generating sublattice objects for testing
+            quicker, when only the atom positions themselves are needed.
 
         Attributes
         ----------
@@ -67,9 +74,20 @@ class MakeTestData(object):
         >>> atom_lattice = test_data.atom_lattice
         >>> atom_lattice.plot()
 
+        Generating a sublattice with 22500 atoms quickly, by not
+        generating the image
+
+        >>> test_data = MakeTestData(200, 200, sublattice_generate_image=False)
+        >>> import numpy as np
+        >>> x, y = np.mgrid[0:1000:150j, 0:1000:150j]
+        >>> x, y = x.flatten(), y.flatten()
+        >>> test_data.add_atom_list(x, y)
+        >>> sublattice = test_data.sublattice
+
         """
         self.data_extent = (image_x, image_y)
         self._image_noise = False
+        self._sublattice_generate_image = sublattice_generate_image
         self.__sublattice = Sublattice([], np.zeros((2, 2)))
         self.__sublattice.atom_list = []
 
@@ -98,7 +116,11 @@ class MakeTestData(object):
                     rotation=atom.rotation, amplitude=atom.amplitude_gaussian)
             atom_list.append(new_atom)
 
-        sublattice = Sublattice([], self.signal.data)
+        if self._sublattice_generate_image:
+            image = self.signal.data
+        else:
+            image = np.zeros(self.data_extent[::-1])
+        sublattice = Sublattice([], image)
         sublattice.atom_list = atom_list
         return sublattice
 

@@ -159,6 +159,15 @@ class TestMakeTestData(unittest.TestCase):
             self.assertEqual(gaussian.A.value, tA)
             self.assertEqual(gaussian.rotation.value, tr)
 
+    def test_sublattice_generate_image(self):
+        testdata = tt.MakeTestData(1000, 1000, sublattice_generate_image=False)
+        x, y = np.mgrid[0:1000:150j, 0:1000:150j]
+        x, y = x.flatten(), y.flatten()
+        testdata.add_atom_list(x, y)
+        sublattice = testdata.sublattice
+        self.assertTrue((sublattice.image == 0).all())
+        self.assertEqual(len(sublattice.atom_list), 150*150)
+
 
 class TestMakeVectorTestGaussian(unittest.TestCase):
     def test_running(self):
