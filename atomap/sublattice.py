@@ -1011,15 +1011,15 @@ class Sublattice():
         #
         # Note: The terms 'direction', 'offset' and 'distance vector' are used
         # interchangeably in this method.
-        x_array = np.asarray(self.x_position)
-        y_array = np.asarray(self.y_position)
+        x_array = np.asarray(self.x_position, dtype=np.float32)
+        y_array = np.asarray(self.y_position, dtype=np.float32)
         dx = x_array - x_array[..., np.newaxis]
         dy = y_array - y_array[..., np.newaxis]
-        offset = np.array([dx, dy])
 
         # Assert statements here are just to help the reader understand what's
         # going on by keeping track of the shapes of arrays used.
-        assert offset.shape == (2, n_atoms, n_atoms)
+        assert dx.shape == (n_atoms, n_atoms)
+        assert dy.shape == (n_atoms, n_atoms)
 
         # Produce a mask that selects all elements except the diagonal
         # i.e. distance vectors from an atom to itself.
@@ -1027,7 +1027,7 @@ class Sublattice():
         assert mask.shape == (n_atoms, n_atoms)
 
         # Remove the diagonal and flatten
-        nn = np.array([offset[0][mask], offset[1][mask]])
+        nn = np.array([dx[mask], dy[mask]])
         assert nn.shape == (2, n_atoms*(n_atoms-1))
 
         return nn
