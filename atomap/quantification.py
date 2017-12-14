@@ -45,52 +45,52 @@ class InteractiveFluxAnalyser:
         self.profile = profile[0]
         self.radius = radius
         self.flux_profile = flux_profile
-        self.l = np.int(min(self.profile.get_xdata()))
-        self.r = np.int(max(self.profile.get_xdata()))
-        self.l_line = self.profile.axes.axvline(self.l, color='firebrick',
+        self.left = np.int(min(self.profile.get_xdata()))
+        self.right = np.int(max(self.profile.get_xdata()))
+        self.l_line = self.profile.axes.axvline(self.left, color='firebrick',
                                                 linestyle='--')
-        self.r_line = self.profile.axes.axvline(self.r, color='seagreen',
+        self.r_line = self.profile.axes.axvline(self.right, color='seagreen',
                                                 linestyle='--')
         self.cid = self.profile.figure.canvas.mpl_connect('button_press_event',
                                                           self.onclick)
 
     def __call__(self):
 
-        print('Final coordinates are: {}, {}!'.format(self.l, self.r))
-        self.coords = [self.l, self.r]
+        print('Final coordinates are: {}, {}!'.format(self.left, self.right))
+        self.coords = [self.left, self.right]
 
     def onclick(self, event):
-        #print('click', vars(event))
+        # print('click', vars(event))
         if event.inaxes != self.profile.axes:
             return
         if event.button == 1:  # Left mouse button
             l = np.int(event.xdata)
-            if l < self.r:
-                self.l = l
-            self.l_line.set_xdata(self.l)
+            if l < self.right:
+                self.left = l
+            self.l_line.set_xdata(self.left)
             self.profile.figure.canvas.draw_idle()
         elif event.button == 3:  # Right mouse button
-            r = np.int(event.xdata)
-            if r > self.l:
-                self.r = r
-            self.r_line.set_xdata(self.r)
+            right = np.int(event.xdata)
+            if right > self.left:
+                self.right = right
+            self.r_line.set_xdata(self.right)
             self.profile.figure.canvas.draw_idle()
         elif event.button == 2:  # Middle mouse button
             event.canvas.mpl_disconnect(self.cid)
             self()
-        print('Coordinates selected', self.l, self.r)
+        print('Coordinates selected', self.left, self.right)
 
 
 def find_flux_limits(flux_pattern, conv_angle):
-    """Using an input detector image and flux image, a detector normalisation
-    is applied with regards to.
+    """Using an input flux_pattern to create a line profile. The user is then
+    able to select the region of this profile which follows an exponential.
 
     Parameters
     ----------
 
-    flux_img: np.array
-            Flux image is required for a flux weighted detector normalisation,
-            if none is supplied the normal thresholing normalisation will be applied.
+    flux_pattern: np.array
+
+    conv_angle: float
 
     Returns
     -------
@@ -149,7 +149,11 @@ def find_exponent(coords, flux_profile, conv_angle):
     return(popt[1])
 
 
-def detector_normalisation(img, det_img, inner_angle, outer_angle, flux_expo='None'):
+def detector_normalisation(img,
+                           det_img,
+                           inner_angle,
+                           outer_angle,
+                           flux_expo='None'):
     """Using an input detector image and flux image, a detector normalisation
     is applied with regards to
 
@@ -178,16 +182,15 @@ def detector_normalisation(img, det_img, inner_angle, outer_angle, flux_expo='No
     active_layer = threhold_img * det_img
 
     centre = scipy.ndimage.measurements.center_of_mass(threshold_img)
-    detector_sensitivity = radial_profile(det_img, centre[::-1])
+    detector_sensitivity = _radial_profile(det_img, centre[::-1])
     grad = np.gradient(detector_sensitivity)
     radius = np.array(range(detector_sensitivity.shape[0])) * \
         inner_angle / np.argmax(grad)
 
     if flux_expo == 'None':
-        l = threshold_img * det_img
-        detector_intensity = l[l.nonzero()].mean()
+        detector_intensity = active_layer[active_layer.nonzero()].mean()
 
     else:
-        Print('Oops! I still need to add flux weighting method later!')
+        print('Oops! Sorry, I still need to add flux weighting method later!')
 
     return (img - vacuum_intensity)/(detector_intensity - vacuum_intensity)
