@@ -909,6 +909,7 @@ class Fingerprinter:
 
         return self
 
+
 def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     """Given an image a set of points and a maximum outer radius,
     this function integrates the voronoi cell surround each point.
@@ -948,21 +949,22 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     currentFeature = np.zeros_like(img)
     pointRecord = np.zeros_like(img)
 
-    #Setting max_radius to the width of the image, if none is set.
-
+    # Setting max_radius to the width of the image, if none is set.
     if method == 'Voronoi':
-        if maxRadius=='Auto':
+        if maxRadius == 'Auto':
             maxRadius = max(img.shape)
         points = np.array((points_y, points_x))
-        distanceLog = np.zeros_like(points[0])
+        distance_log = np.zeros_like(points[0])
 
         for i in range(img.shape[0]):
             for j in range(img.shape[1]):
-                #For every pixel the distance to all points must be calculated.
-                distance_log = ((points[0]-float(i))**2 + (points[1]-float(j))**2)**0.5
 
-                # Next for that pixel the minimum distance to and point should be
-                # checked and discarded if too large:
+                # For every pixel the distance to all points must be calculated.
+                distance_log = ((points[0]-float(i))**2 +
+                                (points[1]-float(j))**2)**0.5
+
+                # Next for that pixel the minimum distance to and point should
+                # be checked and discarded if too large:
                 distMin = np.min(distance_log)
                 minIndex = np.argmin(distance_log)
 
@@ -988,11 +990,12 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
 
     return (integratedIntensity, intensityRecord, pointRecord)
 
+
 def _Make_Mask(figure, points_x, points_y):
     points = np.array((points_y, points_x))
     for i, x in enumerate(points):
         for j, y in enumerate(x):
-            points[i][j]= int(round(y))
+            points[i][j] = int(round(y))
     points = points.T
     points.astype(int)
     image = np.zeros_like(figure)
