@@ -113,7 +113,7 @@ def find_flux_limits(flux_pattern, conv_angle):
 
     Returns
     -------
-    profiler: 
+    profiler:
 
     """
     # normalise flux image to be scaled 0-1.
@@ -129,7 +129,7 @@ def find_flux_limits(flux_pattern, conv_angle):
     x = np.array(range(flux_profile.shape[0]))
     radius = x * conv_angle / np.argmin(grad)
     fig = plt.figure()
-    ax0 = fig.add_subplot(1, 1, 1)
+    fig.add_subplot(1, 1, 1)
     plt.plot(radius, grad)
 
     # Plot the radial flux profile and allow the user to select the region for
@@ -249,7 +249,6 @@ def detector_normalisation(img,
     detector_sensitivity = _radial_profile(det_img, centre[::-1])
     grad = np.gradient(detector_sensitivity)
     ratio = inner_angle / np.argmax(grad)
-    radius = np.array(range(detector_sensitivity.shape[0])) * ratio
 
     # Create a centre matrix around where the detector centre is found to be.
     d = centeredDistanceMatrix(centre, det_img)
