@@ -3,6 +3,25 @@ import scipy
 import matplotlib.pyplot as plt
 
 
+def centeredDistanceMatrix(centre, det_img):
+    """Makes a matrix the same size as det_img centre around a particular point.
+
+    Parameters
+    ----------
+    centre: tuple
+            x and y position of where the centre of the matrix should be.
+    det_img: np.array
+            Detector map as 2D array.
+    Returns
+    -------
+    np.array
+    """
+    # makes a matrix centre around tuble 'centre' the same size as the det_img.
+    x, y = np.meshgrid(range(det_img.shape[0]),
+                       range(det_img.shape[0]))
+    return np.sqrt((x - (centre[1]) + 1)**2 + (y - (centre[0]))**2)
+
+
 def _detector_threshold(det_img):
     """Using an input detector image. The function thresholds returning a
     binary image.
@@ -64,9 +83,9 @@ class InteractiveFluxAnalyser:
         if event.inaxes != self.profile.axes:
             return
         if event.button == 1:  # Left mouse button
-            l = np.int(event.xdata)
-            if l < self.right:
-                self.left = l
+            left = np.int(event.xdata)
+            if left < self.right:
+                self.left = left
             self.l_line.set_xdata(self.left)
             self.profile.figure.canvas.draw_idle()
         elif event.button == 3:  # Right mouse button
@@ -94,7 +113,7 @@ def find_flux_limits(flux_pattern, conv_angle):
 
     Returns
     -------
-
+    profiler: 
 
     """
     # normalise flux image to be scaled 0-1.
@@ -109,19 +128,21 @@ def find_flux_limits(flux_pattern, conv_angle):
     # scale flux_profile relative to the bright field disc.
     x = np.array(range(flux_profile.shape[0]))
     radius = x * conv_angle / np.argmin(grad)
-    outer_cutoff = np.argmin(grad)
+    fig = plt.figure()
+    ax0 = fig.add_subplot(1, 1, 1)
+    plt.plot(radius, grad)
 
     # Plot the radial flux profile and allow the user to select the region for
     # power-law fitting.
     fig = plt.figure()
-    plt.suptitle('Radial Profile of Electron Flux : Please select power-law region.',
+    plt.suptitle('Radial Flux Profile: Please select power-law region.',
                  fontsize=10)
     ax1 = fig.add_subplot(2, 1, 1)
-    plt.plot(x, flux_profile)
+    plt.plot(radius, flux_profile)
     ax1.set_title('Radial Profile')
     ax2 = fig.add_subplot(2, 1, 2)
     ax2.set_title('Logarithmic Profile')
-    profile = plt.plot(x, flux_profile)
+    profile = plt.plot(radius, flux_profile)
     ax2.set_yscale('log')
     plt.subplots_adjust(hspace=0.3)
     plt.show()
@@ -131,29 +152,7 @@ def find_flux_limits(flux_pattern, conv_angle):
     return(profiler, flux_profile)
 
 
-def find_exponent(coords, flux_profile, conv_angle):
-    grad = np.gradient(flux_profile)
-    x = np.array(range(flux_profile.shape[0]))
-    radius = x * conv_angle / np.argmin(grad)
-    xdata = radius[coords[0]:coords[1]]
-    ydata = flux_profile[coords[0]:coords[1]]
-
-    popt, pcov = scipy.optimize.curve_fit(_func, xdata, ydata, p0=([1, 1, 1]))
-    fig = plt.figure()
-    ax1 = fig.add_subplot(1, 1, 1)
-    plt.plot(xdata, ydata, 'b-', label='data')
-    plt.plot(xdata, _func(xdata, *popt), 'r-', label='fit')
-    ax1.set_yscale('log')
-    plt.legend()
-    plt.suptitle('Resulting fitted profile, fontsize=10')
-    return(popt[1])
-
-
-def detector_normalisation(img,
-                           det_img,
-                           inner_angle,
-                           outer_angle,
-                           flux_expo='None'):
+def analyse_flux(coords, flux_profile, conv_angle):
     """Using an input detector image and flux image, a detector normalisation
     is applied with regards to
 
@@ -165,7 +164,8 @@ def detector_normalisation(img,
             Detector map as 2D array.
     flux_img: 'None' otherwise np.array
             Flux image is required for a flux weighted detector normalisation,
-            if none is supplied the normal thresholing normalisation will be applied.
+            if none is supplied the normal thresholing normalisation will
+            be applied.
 
     Returns
     -------
@@ -173,24 +173,116 @@ def detector_normalisation(img,
             The experimental image after detector normalisation sucha that,
             all intensities are a fraction of the incident beam.
     """
+    grad = np.gradient(flux_profile)
+    x = np.array(range(flux_profile.shape[0]))
+    radius = x * conv_angle / np.argmin(grad)
+    lower = np.sum(radius < coords[0]) - 1
+    upper = np.sum(radius < coords[1])
+    xdata = radius[lower:upper]
+    ydata = flux_profile[lower:upper]
+
+    popt, pcov = scipy.optimize.curve_fit(_func, xdata, ydata, p0=([1, 1, 1]))
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1, 1, 1)
+    plt.plot(xdata, ydata, 'b-', label='data')
+    plt.plot(xdata, _func(xdata, *popt), 'r-', label='fit')
+    ax1.set_yscale('log')
+    plt.legend()
+    plt.suptitle('Resulting fitted profile, fontsize=10')
+
+    outer_cutoff = radius[np.argmin(grad[upper:]) + upper]
+
+    return(popt[1], outer_cutoff)
+
+
+def detector_normalisation(img,
+                           det_img,
+                           inner_angle,
+                           outer_angle='None',
+                           flux_expo='None'):
+    """Using an input detector image and flux exponent (if provided) a detector
+    normalisation is carried out on the experimental image.
+
+    Parameters
+    ----------
+    img: np.array
+            Experimental image to be normalised.
+    det_img: np.array
+            Detector map as 2D array.
+    inner_angle: float
+            The experimentally measured inner collection angle of the detector.
+    outer_angle: 'None' otherwise float
+            The measured experimental detector collection angle. If left as
+            'None' the outer limit of the detector active region will be used.
+    flux_expo: 'None' otherwise float
+            flux_expo is required to carry out flux_weighted detector
+            normalisation procedure. For more details see:
+            Martinez et al. Ultramicroscopy 2015, 159, 46–58.
+
+    Returns
+    -------
+    normalised_img: np.array
+            The experimental image after detector normalisation such that,
+            all intensities are a fraction of the incident beam.
+    """
     # thresholding the image to get a rough estimate of the active area and
     # the non-active area.
     threshold_img = _detector_threshold(det_img)
     # find a value for the average background intensity.
-    l = (1 - threshold_img) * det_img
-    vacuum_intensity = l[l.nonzero()].mean()
-    active_layer = threhold_img * det_img
+    background = (1 - threshold_img) * det_img
+    vacuum_intensity = background[background.nonzero()].mean()
+    # create an image where all background is set to zero.
+    active_layer = threshold_img * det_img
 
-    centre = scipy.ndimage.measurements.center_of_mass(threshold_img)
+    # find the centre of the detector.
+    # N.B. Currently this method will not work if the detector dosen't
+    # fill at least half the the image.
+
+    m = centeredDistanceMatrix((det_img.shape[0] / 2, det_img.shape[1] / 2),
+                               det_img)
+    centre_img = np.multiply((m < 512), (1 - threshold_img))
+    centre = scipy.ndimage.measurements.center_of_mass(centre_img)
+
+    # Using the centre of the detector and sensitivity profile cane be made.
+    # The maximum gradient of this profile is the inner collection angle
+    # of the detector.
     detector_sensitivity = _radial_profile(det_img, centre[::-1])
     grad = np.gradient(detector_sensitivity)
-    radius = np.array(range(detector_sensitivity.shape[0])) * \
-        inner_angle / np.argmax(grad)
+    ratio = inner_angle / np.argmax(grad)
+    radius = np.array(range(detector_sensitivity.shape[0])) * ratio
+
+    # Create a centre matrix around where the detector centre is found to be.
+    d = centeredDistanceMatrix(centre, det_img)
+
+    if outer_angle != 'None':
+        # This limits the detector average value to only the region being,
+        # illuminated by the beam.
+        active_layer = np.multiply(active_layer, ((d * ratio) < outer_angle))
+        threshold_img = np.multiply(threshold_img, ((d * ratio) < outer_angle))
 
     if flux_expo == 'None':
+        # If no flux exponenent is provided the detector sensitivity is simply
+        # the average value of the active region.
         detector_intensity = active_layer[active_layer.nonzero()].mean()
 
     else:
-        print('Oops! Sorry, I still need to add flux weighting method later!')
+        # Begin flux weighting detector method based on:
+        # Martinez et al. Ultramicroscopy 2015, 159, 46–58.
 
-    return (img - vacuum_intensity)/(detector_intensity - vacuum_intensity)
+        if flux_expo < 0:
+            flux_expo = 0 - flux_expo
+
+        # 1. Create a 2D flux profile from the exponent value given.
+        flux = _func(d, 1, flux_expo, 0)
+        # 2. Multiply 2D flux by the threshold image so that only angles within
+        # active and illuminated area of the detector are considered.
+        flux = np.multiply(flux, threshold_img)
+        # 3. Normalise the 2D flux so that the mean intensity in the new flux
+        # region is 1.
+        flux = flux / flux[flux.nonzero()].mean()
+        # 4. Multiply this 2D flux by the active layer of the detector.
+        new_det = np.multiply(active_layer, flux)
+
+        detector_intensity = new_det[new_det.nonzero()].mean()
+
+    return (img - vacuum_intensity) / (detector_intensity - vacuum_intensity)

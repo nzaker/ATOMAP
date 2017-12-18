@@ -959,7 +959,7 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
         for i in range(img.shape[0]):
             for j in range(img.shape[1]):
 
-            # For every pixel the distance to all points must be calculated.
+                # For every pixel the distance to all points must be calculated.
                 distance_log = ((points[0]-float(i))**2 +
                                 (points[1]-float(j))**2)**0.5
 
