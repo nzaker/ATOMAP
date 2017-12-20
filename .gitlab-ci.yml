@@ -27,6 +27,7 @@ style_checks_flake8_docstrings:
 anaconda_install_tests:
     image: continuumio/anaconda3
     script:
+    - apt-get update -q
     - apt-get install -qy xvfb
     - conda install -c conda-forge hyperspy
     - conda install conda-build
