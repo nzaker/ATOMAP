@@ -3,12 +3,11 @@ Welcome to Atomap's documentation!
 
 News
 ----
-**2017-10-08: Atomap 0.1.0 released!**
+**2017-11-16: Atomap 0.1.0 released!**
 
 We are happy to announce a new Atomap release.
-It includes a **major makeover** of the tutorial, if you already have Atomap up and running you can begin with :ref:`finding_atom_lattices`.
-New features in this version are methods for finding atomic column intensity, new and simple plotting tools and a module for generating test data.
-
+It includes a **major makeover** of the tutorial, start with :ref:`finding_atom_lattices`.
+New features in this release are methods for finding atomic column intensity, new and simple plotting tools and a module for generating test data.
 
 *2017-07-03: version 0.0.8 released!*
 
@@ -62,6 +61,7 @@ Contents on this webpage
    absolute_integrator
    make_testdata
    making_nice_figures
+   various_tools
    contribute
    development_guide
    api_documentation

@@ -106,6 +106,7 @@ def find_features_by_separation(
         pca=False,
         subtract_background=False,
         normalize_intensity=False,
+        show_progressbar=True,
         ):
     """
     Do peak finding with a varying amount of peak separation
@@ -120,10 +121,12 @@ def find_features_by_separation(
         Lower and upper end of minimum pixel distance between the
         features.
     separation_step : int, optional
+    show_progressbar : bool, default True
 
     Returns
     -------
     tuple, (separation_list, peak_list)
+
     """
     separation_list = range(
             separation_range[0],
@@ -132,7 +135,7 @@ def find_features_by_separation(
 
     separation_value_list = []
     peak_list = []
-    for separation in tqdm(separation_list):
+    for separation in tqdm(separation_list, disable=not show_progressbar):
         peaks = get_atom_positions(
                 signal,
                 separation=separation,
@@ -155,6 +158,7 @@ def get_feature_separation(
         subtract_background=False,
         normalize_intensity=False,
         threshold_rel=0.02,
+        show_progressbar=True,
         ):
     """
     Plot the peak positions on in a HyperSpy signal, as a function
@@ -169,6 +173,7 @@ def get_feature_separation(
     subtract_background : bool, default False
     normalize_intensity : bool, default False
     threshold_rel : float, default 0.02
+    show_progressbar : bool, default True
 
     Example
     -------
@@ -177,7 +182,12 @@ def get_feature_separation(
     >>> from atomap.atom_finding_refining import get_feature_separation
     >>> s = hs.signals.Signal2D(np.random.random((500, 500)))
     >>> s1 = get_feature_separation(s)
+
     """
+    if signal.data.dtype is np.dtype('float16'):
+        raise ValueError(
+                "signal has dtype float16, which is not supported "
+                "use signal.change_dtype('float32') to change it")
 
     separation_list, peak_list = find_features_by_separation(
             signal=signal,
@@ -212,7 +222,7 @@ def get_feature_separation(
         marker_list_y[index, 0:len(peaks)] = (peaks[:, 1]*scale_y)+offset_y
 
     marker_list = []
-    for i in trange(marker_list_x.shape[1]):
+    for i in trange(marker_list_x.shape[1], disable=not show_progressbar):
         m = hs.markers.point(
                 x=marker_list_x[:, i], y=marker_list_y[:, i], color='red')
         marker_list.append(m)
@@ -247,7 +257,9 @@ def find_feature_density(
     return(separation_list, peakN_list)
 
 
-def construct_zone_axes_from_sublattice(sublattice, zone_axis_para_list=False):
+def construct_zone_axes_from_sublattice(
+        sublattice, atom_plane_tolerance=0.5,
+        zone_axis_para_list=False):
     """Constructs zone axes for a sublattice.
 
     The zone axes are constructed by finding the 15 nearest neighbors for
@@ -258,6 +270,11 @@ def construct_zone_axes_from_sublattice(sublattice, zone_axis_para_list=False):
     Parameters
     ----------
     sublattice : Atomap Sublattice
+    atom_plane_tolerance : scalar, default 0.5
+        When constructing the atomic planes, the method will try to locate
+        the atoms by "jumping" one zone vector, and seeing if there is an atom
+        with the pixel_separation times atom_plane_tolerance. So this value
+        should be increased the atomic planes are non-continuous and "split".
     zone_axis_para_list : parameter list or bool, default False
         A zone axes parameter list is used to name and index the zone axes.
         See atomap.process_parameters for more info. Useful for automation.
@@ -300,7 +317,8 @@ def construct_zone_axes_from_sublattice(sublattice, zone_axis_para_list=False):
         sublattice.zones_axis_average_distances = zone_axes
         sublattice.zones_axis_average_distances_names = zone_axes_names
 
-    sublattice._generate_all_atom_plane_list()
+    sublattice._generate_all_atom_plane_list(
+            atom_plane_tolerance=atom_plane_tolerance)
     sublattice._sort_atom_planes_by_zone_vector()
     sublattice._remove_bad_zone_vectors()
 
@@ -536,6 +554,7 @@ def _make_model_from_atom_list(
     ...     atom_list=atom_list, image_data=image, mask_radius=3)
     >>> m.fit()
     """
+    image_data = image_data.astype('float64')
     mask = np.zeros_like(image_data)
 
     position_list, radius_list = [], []

@@ -1,10 +1,13 @@
 import os
+import pytest
 import unittest
 import numpy as np
 from hyperspy.api import load
 from atomap.atom_position import Atom_Position
 from atomap.sublattice import Sublattice
 from atomap.testing_tools import MakeTestData
+import atomap.dummy_data as dd
+import atomap.atom_finding_refining as afr
 from atomap.atom_finding_refining import (
         _make_mask_from_positions, _crop_mask_slice_indices,
         _find_background_value, _find_median_upper_percentile,
@@ -402,3 +405,46 @@ class test_bad_fit_condition(unittest.TestCase):
         g = _fit_atom_positions_with_gaussian_model(
                 atom, sublattice.image, mask_radius=2)
         self.assertFalse(g)
+
+
+class test_get_feature_separation(unittest.TestCase):
+
+    def test_simple(self):
+        s = dd.get_simple_cubic_signal()
+        s_fs = afr.get_feature_separation(s)
+        s_fs.plot()
+
+    def test_separation_range(self):
+        sr0, sr1 = 10, 15
+        s = dd.get_simple_cubic_signal()
+        s_fs = afr.get_feature_separation(s, separation_range=(sr0, sr1))
+        assert s_fs.axes_manager.navigation_size == (sr1 - sr0)
+        assert s_fs.axes_manager.navigation_extent == (sr0, sr1 - 1)
+
+    def test_separation_step(self):
+        sr0, sr1, s_step = 10, 16, 2
+        s = dd.get_simple_cubic_signal()
+        s_fs = afr.get_feature_separation(
+                s, separation_range=(sr0, sr1), separation_step=s_step)
+        assert s_fs.axes_manager.navigation_size == ((sr1 - sr0) / s_step)
+
+    def test_pca_subtract_background_normalize_intensity(self):
+        s = dd.get_simple_cubic_signal()
+        s_fs = afr.get_feature_separation(
+                s, pca=True, subtract_background=True,
+                normalize_intensity=True)
+        assert hasattr(s_fs, 'data')
+
+    def test_dtypes(self):
+        dtype_list = [
+                'float64', 'float32', 'uint64', 'uint32', 'uint16', 'uint8',
+                'int64', 'int32', 'int16', 'int8']
+        s = dd.get_simple_cubic_signal()
+        s *= 10**9
+        for dtype in dtype_list:
+            print(dtype)
+            s.change_dtype(dtype)
+            afr.get_feature_separation(s, separation_range=(10, 15))
+        s.change_dtype('float16')
+        with pytest.raises(ValueError):
+            afr.get_feature_separation(s, separation_range=(10, 15))

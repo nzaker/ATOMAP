@@ -1,7 +1,12 @@
-import atomap.api as am
+import os
 import numpy as np
-from atomap.tools import remove_atoms_from_image_using_2d_gaussian
 import matplotlib.pyplot as plt
+import atomap.api as am
+from atomap.tools import remove_atoms_from_image_using_2d_gaussian
+
+my_path = os.path.dirname(__file__) + '/finding_atom_lattices/'
+if not os.path.exists(my_path):
+    os.makedirs(my_path)
 
 # Loading signals
 s_ADF = am.dummy_data.get_two_sublattice_signal()
@@ -9,8 +14,7 @@ s_ABF = am.dummy_data.get_perovskite110_ABF_signal(image_noise=True)
 
 # Plot ABF signal
 s_ABF.plot()
-
-s_ABF._plot.signal_plot.figure.savefig('finding_atom_lattices/s_ABF.png')
+s_ABF._plot.signal_plot.figure.savefig(my_path + 's_ABF.png')
 
 # Finding sublattice_A from ADF
 A_positions = am.get_atom_positions(s_ADF, separation=15)
@@ -53,7 +57,7 @@ sublattice_B2.refine_atom_positions_using_2d_gaussian()
 sublattice_B2.construct_zone_axes()
 
 sublattice_B2.plot_planes()
-plt.gcf().savefig('finding_atom_lattices/sublattice_B2.png')
+plt.gcf().savefig(my_path + 'sublattice_B2.png')
 
 # Finding Oxygen
 zone_axis_002 = sublattice_B2.zones_axis_average_distances[0]
@@ -71,16 +75,14 @@ s = sublattice_O.get_atom_list_on_image()
 s.plot()
 s._plot.signal_plot.ax.set_xlim(70, 130)
 s._plot.signal_plot.ax.set_ylim(50, 100)
-s._plot.signal_plot.figure.savefig(
-    'finding_atom_lattices/oxygen_positions.png',
-    overwrite=True)
+s._plot.signal_plot.figure.savefig(my_path + 'oxygen_positions.png')
 
 atom_lattice = am.Atom_Lattice(
         image=s_ABF.data, name='ABO3',
         sublattice_list=[sublattice_A, sublattice_B, sublattice_O])
 
 atom_lattice.plot()
-plt.gcf().savefig('finding_atom_lattices/ABO3.png')
+plt.gcf().savefig(my_path + 'ABO3.png')
 s = atom_lattice.get_sublattice_atom_list_on_image(image=s_ADF.data)
 s.plot()
-s._plot.signal_plot.figure.savefig('finding_atom_lattices/ABO3-ADF.png')
+s._plot.signal_plot.figure.savefig(my_path + 'ABO3-ADF.png')

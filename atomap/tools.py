@@ -69,11 +69,27 @@ def _line_profile_coordinates(src, dst, linewidth=1):
 # Remove atom from image using 2d gaussian model
 def remove_atoms_from_image_using_2d_gaussian(
         image, sublattice,
-        percent_to_nn=0.40):
+        percent_to_nn=0.40,
+        show_progressbar=True):
+    """
+    Parameters
+    ----------
+    image : NumPy 2D array
+    sublattice : Atomap sublattice object
+    percent_to_nn : float
+    show_progressbar : bool, default True
+
+    Returns
+    -------
+    subtracted_image : NumPy 2D array
+
+    """
     model_image = np.zeros(image.shape)
     X, Y = np.meshgrid(np.arange(
         model_image.shape[1]), np.arange(model_image.shape[0]))
-    for atom in tqdm(sublattice.atom_list, desc='Subtracting atoms'):
+    for atom in tqdm(
+            sublattice.atom_list, desc='Subtracting atoms',
+            disable=not show_progressbar):
         percent_distance = percent_to_nn
         for i in range(10):
             g_list = _fit_atom_positions_with_gaussian_model(
@@ -848,14 +864,28 @@ class Fingerprinter:
     def __init__(self, cluster_algo=DBSCAN(eps=0.1, min_samples=10)):
         self._cluster_algo = cluster_algo
 
-    def fit(self, X):
+    def fit(self, X, max_neighbors=150000):
         """Parameters
         ----------
         X : array, shape = (n_points, n_dimensions)
             This array is typically a transpose of a subset of the returned
             value of sublattice.get_nearest_neighbor_directions_all()
+        max_neighbors : int, default 150000
+            If the length of X is larger than max_neighbors, X will be reduced
+            to max_neighbors. The selection is random. This is done to allow
+            very large datasets to be processed, since having X too large
+            causes the fitting to use too much memory.
+
+        Notes
+        -----
+        More information about memory use:
+        http://scikit-learn.org/stable/modules/clustering.html#dbscan
+
         """
         X = np.asarray(X)
+        if len(X) > max_neighbors:
+            random_indicies = np.random.randint(0, len(X), size=max_neighbors)
+            X = X[random_indicies, :]
         n_points, n_dimensions = X.shape
 
         # Normalize scale so that the clustering algorithm can use constant
@@ -1003,3 +1033,177 @@ def _Make_Mask(figure, points_x, points_y):
     for x, i in enumerate(points.astype(int)):
         image[i[0]][i[1]] = x + 1
     return image
+
+
+def fliplr_points_and_signal(signal, x_array, y_array):
+    """Horizontally flip a set of points and a HyperSpy signal.
+
+    For making sure both the image and points are flipped correctly.
+
+    Parameters
+    ----------
+    signal : HyperSpy 2D signal
+    x_array, y_array : array-like
+
+    Returns
+    -------
+    flipped_signal : HyperSpy signal
+    flipped_x_array, flipped_y_array : NumPy arrays
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> import atomap.tools as to
+    >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+    >>> s = sublattice.get_atom_list_on_image()
+    >>> x, y = sublattice.x_position, sublattice.y_position
+    >>> s_flip, x_flip, y_flip = to.fliplr_points_and_signal(s, x, y)
+
+    Plotting the data
+
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> cax = ax.imshow(s_flip.data, origin='lower',
+    ...           extent=s_flip.axes_manager.signal_extent)
+    >>> cpoints = ax.scatter(x_flip, y_flip)
+
+    """
+
+    s_out = signal.deepcopy()
+    s_out.map(np.fliplr, show_progressbar=False)
+    x_array, y_array = fliplr_points_around_signal_centre(
+            s_out, x_array, y_array)
+    return s_out, x_array, y_array
+
+
+def fliplr_points_around_signal_centre(signal, x_array, y_array):
+    """Horizontally flip a set of points around the centre of a signal.
+
+    Parameters
+    ----------
+    signal : HyperSpy 2D signal
+    x_array, y_array : array-like
+
+    Returns
+    -------
+    flipped_x_array, flipped_y_array : NumPy arrays
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> import atomap.tools as to
+    >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+    >>> s = sublattice.get_atom_list_on_image()
+    >>> x, y = sublattice.x_position, sublattice.y_position
+    >>> x_rot, y_rot = to.fliplr_points_around_signal_centre(s, x, y)
+
+    """
+    x_array, y_array = np.array(x_array), np.array(y_array)
+    middle_x, middle_y = _get_signal_centre(signal)
+    x_array -= middle_x
+    y_array -= middle_y
+    x_array *= -1
+    x_array += middle_x
+    y_array += middle_y
+    return(x_array, y_array)
+
+
+def rotate_points_and_signal(signal, x_array, y_array, rotation):
+    """Rotate a set of points and a HyperSpy signal.
+
+    For making sure both the image and points are rotated correctly.
+
+    Parameters
+    ----------
+    signal : HyperSpy 2D signal
+    x_array, y_array : array-like
+    rotation : scalar
+
+    Returns
+    -------
+    rotated_signal : HyperSpy signal
+    rotated_x_array, rotated_y_array : NumPy arrays
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> import atomap.tools as to
+    >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+    >>> s = sublattice.get_atom_list_on_image()
+    >>> x, y = sublattice.x_position, sublattice.y_position
+    >>> s_rot, x_rot, y_rot = to.rotate_points_and_signal(s, x, y, 30)
+
+    Plotting the data
+
+    >>> fig, ax = plt.subplots()
+    >>> cax = ax.imshow(s_rot.data, origin='lower',
+    ...                 extent=s_rot.axes_manager.signal_extent)
+    >>> cpoints = ax.scatter(x_rot, y_rot)
+
+    """
+    s_out = signal.deepcopy()
+    s_out.map(ndimage.rotate, angle=rotation,
+              reshape=False, show_progressbar=False)
+    x_array, y_array = rotate_points_around_signal_centre(
+        s_out, x_array, y_array, rotation)
+    return s_out, x_array, y_array
+
+
+def rotate_points_around_signal_centre(signal, x_array, y_array, rotation):
+    """Rotate a set of points around the centre of a signal.
+
+    Parameters
+    ----------
+    signal : HyperSpy 2D signal
+    x_array, y_array : array-like
+    rotation : scalar
+
+    Returns
+    -------
+    rotated_x_array, rotated_y_array : NumPy arrays
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> import atomap.tools as to
+    >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+    >>> s = sublattice.get_atom_list_on_image()
+    >>> x, y = sublattice.x_position, sublattice.y_position
+    >>> x_rot, y_rot = to.rotate_points_around_signal_centre(s, x, y, 30)
+
+    """
+    x_array, y_array = np.array(x_array), np.array(y_array)
+    middle_x, middle_y = _get_signal_centre(signal)
+    x_array -= middle_x
+    y_array -= middle_y
+
+    rad_rot = -np.radians(rotation)
+    rotation_matrix = np.array([
+        [np.cos(rad_rot), -np.sin(rad_rot)],
+        [np.sin(rad_rot), np.cos(rad_rot)]])
+    xy_matrix = np.array((x_array, y_array))
+    xy_matrix = np.dot(xy_matrix.T, rotation_matrix.T)
+    x_array = xy_matrix[:, 0]
+    y_array = xy_matrix[:, 1]
+
+    x_array += middle_x
+    y_array += middle_y
+    return(x_array, y_array)
+
+
+def _get_signal_centre(signal):
+    """Get the middle of a signal.
+
+    Parameters
+    ----------
+    signal : HyperSpy 2D signal
+
+    Returns
+    -------
+    middle_x, middle_y : centre position of the signal
+
+    """
+    sa = signal.axes_manager.signal_axes
+    a0_middle = (sa[0].high_value + sa[0].low_value)*0.5
+    a1_middle = (sa[1].high_value + sa[1].low_value)*0.5
+    return(a0_middle, a1_middle)
