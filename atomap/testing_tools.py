@@ -9,7 +9,7 @@ from atomap.atom_lattice import Atom_Lattice
 
 class MakeTestData(object):
 
-    def __init__(self, image_x, image_y):
+    def __init__(self, image_x, image_y, sublattice_generate_image=True):
         """
         Class for generating test datasets of atomic resolution
         STEM images.
@@ -18,10 +18,19 @@ class MakeTestData(object):
         ----------
         image_x, image_y : int
             Size of the image data.
+        sublattice_generate_image : bool, default True
+            When generating sublattices, a raster image is generated to
+            complement the atom position objects (found in sublattice.image).
+            For large amounts of atom positions, this can take a very long
+            time. If sublattice_generate_image is False, this image will not
+            be generated. Useful for generating sublattice objects for testing
+            quicker, when only the atom positions themselves are needed.
 
         Attributes
         ----------
         signal : HyperSpy 2D Signal
+        sublattice : Atomap Sublattice
+        atom_lattice : Atomap Atom_Lattice
         gaussian_list : list of 2D Gaussians objects
 
         Examples
@@ -58,17 +67,34 @@ class MakeTestData(object):
         >>> x, y = np.mgrid[0:200:10j, 0:200:10j]
         >>> x, y = x.flatten(), y.flatten()
         >>> test_data.add_atom_list(x, y)
-        >>> test_data.sublattice.get_atom_list_on_image().plot()
+        >>> test_data.sublattice.plot()
+
+        Also Atom_Lattice objects
+
+        >>> atom_lattice = test_data.atom_lattice
+        >>> atom_lattice.plot()
+
+        Generating a sublattice with 22500 atoms quickly, by not
+        generating the image
+
+        >>> test_data = MakeTestData(200, 200, sublattice_generate_image=False)
+        >>> import numpy as np
+        >>> x, y = np.mgrid[0:1000:150j, 0:1000:150j]
+        >>> x, y = x.flatten(), y.flatten()
+        >>> test_data.add_atom_list(x, y)
+        >>> sublattice = test_data.sublattice
+
         """
         self.data_extent = (image_x, image_y)
         self._image_noise = False
-        self.__sublattice = Sublattice([], None)
+        self._sublattice_generate_image = sublattice_generate_image
+        self.__sublattice = Sublattice([], np.zeros((2, 2)))
         self.__sublattice.atom_list = []
 
     @property
     def signal(self):
         signal = self.__sublattice.get_model_image(
-                image_shape=self.data_extent, progressbar=False)
+                image_shape=self.data_extent, show_progressbar=False)
         if self._image_noise is not False:
             signal.data += self._image_noise
         return signal
@@ -90,7 +116,11 @@ class MakeTestData(object):
                     rotation=atom.rotation, amplitude=atom.amplitude_gaussian)
             atom_list.append(new_atom)
 
-        sublattice = Sublattice([], self.signal.data)
+        if self._sublattice_generate_image:
+            image = self.signal.data
+        else:
+            image = np.zeros(self.data_extent[::-1])
+        sublattice = Sublattice([], image)
         sublattice.atom_list = atom_list
         return sublattice
 
@@ -190,7 +220,8 @@ class MakeTestData(object):
         for tx, ty, tsigma_x, tsigma_y, tamplitude, trotation in iterator:
             self.add_atom(tx, ty, tsigma_x, tsigma_y, tamplitude, trotation)
 
-    def add_image_noise(self, mu=0, sigma=0.005, only_positive=False):
+    def add_image_noise(
+            self, mu=0, sigma=0.005, only_positive=False, random_seed=None):
         """
         Add white noise to the image signal. The noise component is Gaussian
         distributed, with a default expectation value at 0, and a sigma of
@@ -203,11 +234,14 @@ class MakeTestData(object):
         mu : int, float
             The expectation value of the Gaussian distribution, default is 0
         sigma : int, float
-            The standard deviation of the Gaussian distributon, default
+            The standard deviation of the Gaussian distribution, default
             is 0.005.
         only_positive : bool
-            Defalt is False. If True, the absolute value of the noise is added
+            Default is False. If True, the absolute value of the noise is added
             to the image signal.
+        random_seed : int, optional
+            Set the random seed of the noise, which gives the same image
+            noise each time. Useful for testing and comparing images.
 
         Example
         -------
@@ -216,10 +250,17 @@ class MakeTestData(object):
         >>> import numpy as np
         >>> x, y = np.mgrid[10:290:15j, 10:290:15j]
         >>> test_data.add_atom_list(x.flatten(), y.flatten(), sigma_x=3,
-        ... sigma_y=3)
+        ...     sigma_y=3)
         >>> test_data.add_image_noise()
         >>> test_data.signal.plot()
+
+        Using a specific random seed
+
+        >>> test_data.add_image_noise(random_seed=0)
+
         """
+        if random_seed is not None:
+            np.random.seed(random_seed)
         shape = self.signal.axes_manager.shape
         noise = normal(mu, sigma, shape)
         if only_positive:

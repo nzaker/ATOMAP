@@ -65,3 +65,4 @@ class test_atom_lattice_plot(unittest.TestCase):
     def test_plot(self):
         self.atom_lattice.plot()
         self.atom_lattice.plot(markersize=10, cmap='viridis')
+        self.atom_lattice.plot(image=np.ones_like(self.atom_lattice.image0))

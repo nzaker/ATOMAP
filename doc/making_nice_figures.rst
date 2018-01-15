@@ -1,11 +1,12 @@
 .. _making_nice_figures:
 
-========================
-Plotting for publication
-========================
+=========================
+Plotting for publications
+=========================
 
-Please consider to cite `Atomap: a new software tool for the automated analysis of atomic resolution images using two-dimensional Gaussian fitting <https://ascimaging.springeropen.com/articles/10.1186/s40679-017-0042-5>`_ when you publish work where you have used Atomap as a tool.
-Figures for publication are often customized, and here are a few tips on how to extract the data you wish to plot in a fancy plot.
+Please consider citing `Atomap: a new software tool for the automated analysis of atomic resolution images using two-dimensional Gaussian fitting <https://ascimaging.springeropen.com/articles/10.1186/s40679-017-0042-5>`_ if you publish work where you have used Atomap as a tool.
+
+Figures for publications are often customized, and here are a few tips on how to extract the data you wish to plot in a fancy plot.
 
 Saving specific data
 --------------------
@@ -29,9 +30,22 @@ Signals can be saved by using the inbuilt `save` function.
 
 .. code-block:: python
 
-    >>> s_monolayer.save("monolayer_distances.hdf5",overwrite=True) # doctest: +SKIP
+    >>> s_monolayer.save("monolayer_distances.hdf5", overwrite=True) # doctest: +SKIP
+
+Here, we will first save analysis data for the fantasite dummy data atom lattice.
+It can be a good idea to save analysis results as numpy, csv or hyperspy signals, as the runtime of the analysis can sometimes be lengthy.
+Making nice figures often require a lot of tweaking, trial and error, so it is nice to have the data readily available without having to re-run the full analysis.
+First, the analysis results are generated, and then saved.
+
+.. literalinclude:: images/make_nice_figures_generate_data.py
+
 
 Matplotlib
 ----------
 
-Matplotib pyplot is our favourite plotting tool: gridspec,
+The saved results can then be loaded into the script that is making nice figures.
+The below code block will create this figure.
+
+.. image:: images/make_nice_figures/Atom_lattice.png
+
+.. literalinclude:: images/make_nice_figures_plotting.py

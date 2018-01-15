@@ -69,11 +69,27 @@ def _line_profile_coordinates(src, dst, linewidth=1):
 # Remove atom from image using 2d gaussian model
 def remove_atoms_from_image_using_2d_gaussian(
         image, sublattice,
-        percent_to_nn=0.40):
+        percent_to_nn=0.40,
+        show_progressbar=True):
+    """
+    Parameters
+    ----------
+    image : NumPy 2D array
+    sublattice : Atomap sublattice object
+    percent_to_nn : float
+    show_progressbar : bool, default True
+
+    Returns
+    -------
+    subtracted_image : NumPy 2D array
+
+    """
     model_image = np.zeros(image.shape)
     X, Y = np.meshgrid(np.arange(
         model_image.shape[1]), np.arange(model_image.shape[0]))
-    for atom in tqdm(sublattice.atom_list, desc='Subtracting atoms'):
+    for atom in tqdm(
+            sublattice.atom_list, desc='Subtracting atoms',
+            disable=not show_progressbar):
         percent_distance = percent_to_nn
         for i in range(10):
             g_list = _fit_atom_positions_with_gaussian_model(
@@ -848,14 +864,28 @@ class Fingerprinter:
     def __init__(self, cluster_algo=DBSCAN(eps=0.1, min_samples=10)):
         self._cluster_algo = cluster_algo
 
-    def fit(self, X):
+    def fit(self, X, max_neighbors=150000):
         """Parameters
         ----------
         X : array, shape = (n_points, n_dimensions)
             This array is typically a transpose of a subset of the returned
             value of sublattice.get_nearest_neighbor_directions_all()
+        max_neighbors : int, default 150000
+            If the length of X is larger than max_neighbors, X will be reduced
+            to max_neighbors. The selection is random. This is done to allow
+            very large datasets to be processed, since having X too large
+            causes the fitting to use too much memory.
+
+        Notes
+        -----
+        More information about memory use:
+        http://scikit-learn.org/stable/modules/clustering.html#dbscan
+
         """
         X = np.asarray(X)
+        if len(X) > max_neighbors:
+            random_indicies = np.random.randint(0, len(X), size=max_neighbors)
+            X = X[random_indicies, :]
         n_points, n_dimensions = X.shape
 
         # Normalize scale so that the clustering algorithm can use constant

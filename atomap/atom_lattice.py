@@ -110,6 +110,7 @@ class Atom_Lattice():
         save_atom_lattice_to_hdf5(self, filename=filename, overwrite=overwrite)
 
     def plot(self,
+             image=None,
              add_numbers=False,
              markersize=20,
              **kwargs):
@@ -122,6 +123,7 @@ class Atom_Lattice():
 
         Parameters
         ----------
+        image : 2D NumPy array, optional
         add_numbers : bool, default False
             Plot the number of the atom beside each atomic position in the
             plot. Useful for locating misfitted atoms.
@@ -151,6 +153,7 @@ class Atom_Lattice():
             positions as markers. More customizability.
         """
         signal = self.get_sublattice_atom_list_on_image(
+            image=image,
             add_numbers=add_numbers,
             markersize=markersize)
         signal.plot(**kwargs, plot_markers=True)
@@ -158,11 +161,18 @@ class Atom_Lattice():
 
 class Dumbbell_Lattice(Atom_Lattice):
 
-    def refine_position_gaussian(self, image=None):
+    def refine_position_gaussian(self, image=None, show_progressbar=True):
+        """
+        Parameters
+        ----------
+        image : NumPy 2D array, optional
+        show_progressbar : bool, default True
+        """
         if image is None:
             image = self.image0
         n_tot = len(self.sublattice_list[0].atom_list)
-        for i_atom in trange(n_tot, desc="Gaussian fitting"):
+        for i_atom in trange(
+                n_tot, desc="Gaussian fitting", disable=not show_progressbar):
             atom_list = []
             for sublattice in self.sublattice_list:
                 atom_list.append(sublattice.atom_list[i_atom])

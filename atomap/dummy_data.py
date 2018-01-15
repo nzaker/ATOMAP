@@ -59,6 +59,68 @@ def get_simple_cubic_sublattice(image_noise=False):
     return test_data.sublattice
 
 
+def _make_distorted_cubic_testdata(image_noise=False):
+    test_data = MakeTestData(240, 240)
+    x, y = np.mgrid[30:212:40, 30:222:20]
+    x, y = x.flatten(), y.flatten()
+    test_data.add_atom_list(x, y)
+    x, y = np.mgrid[50:212:40, 30.0:111:20]
+    x, y = x.flatten(), y.flatten()
+    test_data.add_atom_list(x, y)
+    x, y = np.mgrid[50:212:40, 135:222:20]
+    x, y = x.flatten(), y.flatten()
+    test_data.add_atom_list(x, y)
+    if image_noise:
+        test_data.add_image_noise(mu=0, sigma=0.002)
+    return test_data
+
+
+def get_distorted_cubic_signal(image_noise=False):
+    """Generate a test image signal of a distorted cubic atomic structure.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    signal : HyperSpy 2D
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_distorted_cubic_signal()
+    >>> s.plot()
+
+    """
+    test_data = _make_distorted_cubic_testdata(image_noise=image_noise)
+    return test_data.signal
+
+
+def get_distorted_cubic_sublattice(image_noise=False):
+    """Generate a test sublattice of a distorted cubic atomic structure.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    sublattice : Atomap Sublattice
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+    >>> sublattice.plot()
+
+    """
+    test_data = _make_distorted_cubic_testdata(image_noise=image_noise)
+    return test_data.sublattice
+
+
 def _make_atom_lists_two_sublattices(test_data_1, test_data_2=None):
     x0, y0 = np.mgrid[10:295:20, 10:300:34]
     test_data_1.add_atom_list(
@@ -147,8 +209,7 @@ def get_dumbbell_signal():
     return test_data.signal
 
 
-def _make_fantasite_test_data():
-    test_data = MakeTestData(500, 500)
+def _add_fantasite_sublattice_A(test_data):
     xA0, yA0 = np.mgrid[10:495:15, 10:495:30]
     xA0, yA0 = xA0.flatten(), yA0.flatten()
     xA1, yA1 = xA0[0:8*17], yA0[0:8*17]
@@ -172,7 +233,11 @@ def _make_fantasite_test_data():
         test_data.add_atom_list(xA4, yA4, sigma_x=3, sigma_y=3, amplitude=10)
         test_data.add_atom_list(xA5, yA5, sigma_x=3, sigma_y=3, amplitude=10)
         down = not down
+    test_data.add_image_noise(mu=0, sigma=0.01, random_seed=10)
+    return test_data
 
+
+def _add_fantasite_sublattice_B(test_data):
     xB0, yB0 = np.mgrid[10:495:15, 25:495:30]
     xB0, yB0 = xB0.flatten(), yB0.flatten()
     test_data.add_atom_list(
@@ -191,7 +256,35 @@ def _make_fantasite_test_data():
                 x, yB2[i], sigma_x=3, sigma_y=sigma_y,
                 amplitude=20, rotation=rotation)
         down = not down
-    test_data.add_image_noise(mu=0, sigma=0.01)
+    test_data.add_image_noise(mu=0, sigma=0.01, random_seed=0)
+    return test_data
+
+
+def _get_fantasite_atom_lattice():
+    test_data1 = MakeTestData(500, 500)
+    test_data1 = _add_fantasite_sublattice_A(test_data1)
+    test_data2 = MakeTestData(500, 500)
+    test_data2 = _add_fantasite_sublattice_B(test_data2)
+    test_data3 = MakeTestData(500, 500)
+    test_data3 = _add_fantasite_sublattice_A(test_data3)
+    test_data3 = _add_fantasite_sublattice_B(test_data3)
+    test_data3.add_image_noise(mu=0, sigma=0.01, random_seed=0)
+
+    sublattice_1 = test_data1.sublattice
+    sublattice_2 = test_data2.sublattice
+    sublattice_1._plot_color = 'b'
+    image = test_data3.signal.data
+    atom_lattice = Atom_Lattice(
+            image=image, name='Fantasite Atom Lattice',
+            sublattice_list=[sublattice_1, sublattice_2])
+    return(atom_lattice)
+
+
+def _make_fantasite_test_data():
+    test_data = MakeTestData(500, 500)
+    test_data = _add_fantasite_sublattice_A(test_data)
+    test_data = _add_fantasite_sublattice_B(test_data)
+    test_data.add_image_noise(mu=0, sigma=0.01, random_seed=0)
     return test_data
 
 
@@ -208,6 +301,10 @@ def get_fantasite():
     >>> import atomap.api as am
     >>> s = am.dummy_data.get_fantasite()
     >>> s.plot()
+
+    Returns
+    -------
+    fantasite_signal : HyperSpy 2D signal
 
     See also
     --------
@@ -226,6 +323,9 @@ def get_fantasite_sublattice():
     It contains two sublattices, domains with elliptical atomic
     columns and tilt-patterns. This function returns an Atomap sublattice.
 
+    Currently this function returns the two sublattices as one sublattice.
+    To get these sublattices separately, see get_fantasite_atom_lattice
+
     Examples
     --------
     >>> import atomap.api as am
@@ -235,14 +335,35 @@ def get_fantasite_sublattice():
     See also
     --------
     get_fantasite : get a Signal2D object of the fantasite.
+    get_fantasite_atom_lattice : get the atom lattice
+        for fantasite, with both sublattices.
 
     """
     test_data = _make_fantasite_test_data()
     return test_data.sublattice
 
 
+def get_fantasite_atom_lattice():
+    """
+    Fantasite is a fantastic structure with several interesting structural
+    variations.
+
+    It contains two sublattices, domains with elliptical atomic
+    columns and tilt-patterns. This function returns an Atomap Atom_Lattice.
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> atom_lattice = am.dummy_data.get_fantasite_atom_lattice()
+    >>> atom_lattice.plot()
+
+    """
+    atom_lattice = _get_fantasite_atom_lattice()
+    return(atom_lattice)
+
+
 def get_perovskite110_ABF_signal(image_noise=False):
-    """Returns signals representing an ABF image of Perovskite100.
+    """Returns signals representing an ABF image of a perovskite <110>.
 
     Parameters
     ----------

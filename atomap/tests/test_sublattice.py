@@ -1,7 +1,9 @@
 import os
+import pytest
 import unittest
 import numpy as np
 from hyperspy.api import load
+from hyperspy.signals import Signal2D
 from atomap.atom_finding_refining import\
         subtract_average_background,\
         do_pca_on_signal,\
@@ -38,6 +40,84 @@ class test_make_simple_sublattice(unittest.TestCase):
         self.assertEqual(
                 sublattice.__repr__(),
                 repr_str)
+
+
+class test_init_sublattice(unittest.TestCase):
+
+    def setUp(self):
+        self.peaks = [[10, 10], [20, 20]]
+
+    def test_image_input(self):
+        image = np.zeros((100, 50))
+        Sublattice(atom_position_list=self.peaks, image=image)
+
+    def test_wrong_image_dimension_input(self):
+        image = np.zeros((100, 50, 5))
+        with self.assertRaises(ValueError):
+            Sublattice(atom_position_list=self.peaks, image=image)
+
+    def test_wrong_image_type_input(self):
+        with self.assertRaises(ValueError):
+            Sublattice(atom_position_list=self.peaks, image="test")
+
+    def test_image_original_image_input(self):
+        image = np.zeros((100, 50))
+        original_image = np.zeros((100, 50))
+        Sublattice(
+                atom_position_list=self.peaks, image=image,
+                original_image=original_image)
+
+    def test_wrong_original_image_dimension_input(self):
+        image = np.zeros((100, 50))
+        original_image = np.zeros((100, 50, 5))
+        with self.assertRaises(ValueError):
+            Sublattice(
+                    atom_position_list=self.peaks, image=image,
+                    original_image=original_image)
+
+    def test_wrong_original_image_type_input(self):
+        image = np.zeros((100, 50))
+        with self.assertRaises(ValueError):
+            Sublattice(
+                    atom_position_list=self.peaks, image=image,
+                    original_image="test1")
+
+    def test_input_signal(self):
+        s = Signal2D(np.zeros((100, 50)))
+        Sublattice(atom_position_list=self.peaks, image=s)
+
+    def test_input_signal_wrong_dimensions(self):
+        s = Signal2D(np.zeros((100, 50, 10)))
+        with self.assertRaises(ValueError):
+            Sublattice(atom_position_list=self.peaks, image=s)
+
+    def test_input_signal_and_original_image(self):
+        s = Signal2D(np.zeros((100, 50)))
+        s_orig = Signal2D(np.zeros((100, 50)))
+        Sublattice(
+                atom_position_list=self.peaks, image=s,
+                original_image=s_orig)
+
+    def test_input_signal_and_original_image_wrong_dim(self):
+        s = Signal2D(np.zeros((100, 50)))
+        s_orig = Signal2D(np.zeros((100, 50, 9)))
+        with self.assertRaises(ValueError):
+            Sublattice(
+                    atom_position_list=self.peaks, image=s,
+                    original_image=s_orig)
+
+    def test_different_dtypes(self):
+        dtype_list = ['float64', 'float32', 'int64', 'int32',
+                      'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8']
+        for dtype in dtype_list:
+            atom_positions = [range(10), range(10)]
+            image_data = np.random.randint(0, 127, size=(10, 10)).astype(dtype)
+            Sublattice(atom_positions, image_data)
+        with pytest.raises(ValueError):
+            atom_positions = [range(10), range(10)]
+            image_data = np.random.randint(
+                    0, 127, size=(10, 10)).astype('float16')
+            Sublattice(atom_positions, image_data)
 
 
 class test_sublattice_with_atom_planes(unittest.TestCase):
@@ -200,14 +280,6 @@ class test_sublattice_get_signal(unittest.TestCase):
 
     def test_get_nearest_neighbor_directions(self):
         self.sublattice.get_nearest_neighbor_directions()
-
-    def test_get_property_line_profile(self):
-        plane = self.sublattice.atom_plane_list[3]
-        self.sublattice._get_property_line_profile(
-                self.sublattice.x_position,
-                self.sublattice.y_position,
-                self.sublattice.ellipticity,
-                atom_plane=plane)
 
     def test_get_ellipticity_vector(self):
         sublattice = self.sublattice
@@ -422,28 +494,48 @@ class test_refine_functions(unittest.TestCase):
         self.image_data = test_data.signal.data
         self.xy = np.dstack((x, y))[0]
 
-    def test_refine_2d_gaussian_simple(self):
+    def test_2d_gaussian_simple(self):
         sublattice = Sublattice(self.xy, self.image_data)
         with self.assertRaises(ValueError):
             sublattice.refine_atom_positions_using_2d_gaussian()
         sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_2d_gaussian()
 
-    def test_refine_2d_gaussian_all_arguments(self):
+    def test_2d_gaussian_dtypes(self):
+        sublattice = Sublattice(self.xy, self.image_data)
+        sublattice.find_nearest_neighbors()
+        image_data = 127*(self.image_data/self.image_data.max())
+        dtype_list = ['float64', 'float32', 'float16', 'int64', 'int32',
+                      'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8']
+        for dtype in dtype_list:
+            sublattice.refine_atom_positions_using_2d_gaussian(
+                    image_data=image_data.astype(dtype))
+
+    def test_2d_gaussian_all_arguments(self):
         sublattice = Sublattice(self.xy, self.image_data)
         sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_2d_gaussian(
                 image_data=self.image_data, percent_to_nn=0.3,
                 rotation_enabled=False)
 
-    def test_refine_center_of_mass_simple(self):
+    def test_center_of_mass_simple(self):
         sublattice = Sublattice(self.xy, self.image_data)
         with self.assertRaises(ValueError):
             sublattice.refine_atom_positions_using_center_of_mass()
         sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_center_of_mass()
 
-    def test_refine_center_of_mass_all_arguments(self):
+    def test_center_of_mass_dtypes(self):
+        sublattice = Sublattice(self.xy, self.image_data)
+        sublattice.find_nearest_neighbors()
+        image_data = 127*(self.image_data/self.image_data.max())
+        dtype_list = ['float64', 'float32', 'float16', 'int64', 'int32',
+                      'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8']
+        for dtype in dtype_list:
+            sublattice.refine_atom_positions_using_center_of_mass(
+                    image_data=image_data.astype(dtype))
+
+    def test_center_of_mass_all_arguments(self):
         sublattice = Sublattice(self.xy, self.image_data)
         sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_center_of_mass(
@@ -574,6 +666,40 @@ class test_construct_zone_axes(unittest.TestCase):
         self.assertEqual(zone_vectors[4], (vX, 2*vY))
         self.assertEqual(zone_vectors[5], (-vX, 2*vY))
 
+    def test_atom_plane_tolerance(self):
+        # 10 times 10 atoms
+        test_data = MakeTestData(240, 240)
+        x, y = np.mgrid[30:212:40, 30:222:20]
+        x, y = x.flatten(), y.flatten()
+        test_data.add_atom_list(x, y)
+        x, y = np.mgrid[50:212:40, 30.0:111:20]
+        x, y = x.flatten(), y.flatten()
+        test_data.add_atom_list(x, y)
+        x, y = np.mgrid[50:212:40, 135:222:20]
+        x, y = x.flatten(), y.flatten()
+        test_data.add_atom_list(x, y)
+
+        # Distortion is too big, so the default construct_zone_axes will not
+        # correctly construct the atomic planes
+        sublattice = test_data.sublattice
+        sublattice.construct_zone_axes()
+        planes0 = sublattice.atom_planes_by_zone_vector[
+                sublattice.zones_axis_average_distances[0]]
+        planes1 = sublattice.atom_planes_by_zone_vector[
+                sublattice.zones_axis_average_distances[1]]
+        assert len(planes0) != 10
+        assert len(planes1) != 10
+
+        # Increase atom_plane_tolerance
+        sublattice = test_data.sublattice
+        sublattice.construct_zone_axes(atom_plane_tolerance=0.8)
+        planes0 = sublattice.atom_planes_by_zone_vector[
+                sublattice.zones_axis_average_distances[0]]
+        planes1 = sublattice.atom_planes_by_zone_vector[
+                sublattice.zones_axis_average_distances[1]]
+        assert len(planes0) == 10
+        assert len(planes1) == 10
+
 
 class test_sublattice_mask(unittest.TestCase):
 
@@ -650,7 +776,7 @@ class test_mask_indices(unittest.TestCase):
             self.assertTrue(A or B)
 
 
-class test_project_property_line_profile(unittest.TestCase):
+class test_get_property_line_profile(unittest.TestCase):
 
     def setUp(self):
         x, y = np.mgrid[5:50:5, 5:50:5]
@@ -725,6 +851,39 @@ class test_project_property_line_profile(unittest.TestCase):
                         plane)
         self.assertTrue((s.data == (5./9)).all())
         self.assertTrue(len(s.metadata['Markers'].keys()) == 9)
+
+    def test_metadata_line_profile_data(self):
+        sublattice = self.sublatticeH
+        zv = sublattice.zones_axis_average_distances[0]
+        ap = sublattice.atom_planes_by_zone_vector[zv][4]
+        data = sublattice.get_monolayer_distance_list_from_zone_vector(zv)
+        s_l = sublattice._get_property_line_profile(
+                data[0], data[1], data[2],
+                atom_plane=ap)
+        y_list = s_l.metadata.line_profile_data.y_list
+        self.assertEqual(len(y_list), 8)
+        np.testing.assert_allclose(y_list, np.ones_like(y_list)*5, atol=0.01)
+
+    def test_wrong_input(self):
+        sublattice = self.sublatticeH
+        zv = sublattice.zones_axis_average_distances[0]
+        ap = sublattice.atom_planes_by_zone_vector[zv][4]
+        data = sublattice.get_monolayer_distance_list_from_zone_vector(zv)
+        with self.assertRaises(ValueError):
+            sublattice._get_property_line_profile(
+                    data[0][:-2], data[1], data[2], atom_plane=ap)
+        with self.assertRaises(ValueError):
+            sublattice._get_property_line_profile(
+                    data[0], data[1][:-3], data[2], atom_plane=ap)
+        with self.assertRaises(ValueError):
+            sublattice._get_property_line_profile(
+                    data[0], data[1], data[2][:-1], atom_plane=ap)
+        with self.assertRaises(ValueError):
+            sublattice._get_property_line_profile(
+                    data[0][:-3], data[1], data[2][:-3], atom_plane=ap)
+        s_l = sublattice._get_property_line_profile(
+                data[0][:-2], data[1][:-2], data[2][:-2], atom_plane=ap)
+        s_l.plot()
 
 
 class test_project_property_line_crossing(unittest.TestCase):
