@@ -10,7 +10,7 @@ After finding and refining the atom lattices as shown in :ref:`finding_atom_latt
 1. :ref:`Ellipticity of the atomic columns <getting_ellipticity>`
 2. :ref:`Monolayer separation <getting_monolayer_distance>`
 3. :ref:`Angle between monolayers <getting_angle_atoms>`
-4. Intensity (coming soon)
+4. :ref:`Integration of Atomic Columns` <_integrate>`
 5. :ref:`Making line profiles <making_line_profiles>`
 
 In this tutorial we will use a dummy image containing two sublattices.
@@ -289,6 +289,38 @@ between two zone axes at each atom.
 The atomic columns start to "zigzag" in the rightmost part of the image.
 This is also clear with the naked eye (atomic columns marked with blue dots).
 :py:meth:`atomap.sublattice.Sublattice.get_property_map` is a very general function, and can plot a map of any property.
+
+.. _integrate:
+
+Integration of Atomic Columns
+=============
+
+When analysing the intensity of different atomic columns it is important to be
+able to accurately. Two methods of image segmentation have been implemented
+into Atomap, these are Voronoi cell integration and watershedding. These methods
+have both been written such that they could also be applied to 3D data-sets
+e.g. EDX and EELS.
+
+The integrate function returns a list containing
+
+.. image:: images/voronoi_cells1.png
+    :scale: 50 %
+
+.. code-block:: python
+
+    >>> atom_positions = am.get_atom_positions(s, 3, threshold_rel=0.2)
+    >>> sublattice = am.Sublattice(atom_positions, s.data)
+    >>> sublattice.refine_atom_positions_using_center_of_mass(sublattice.image)
+    >>> integrated_s = am.Integrate(s.data,
+                                    sublattice.x_position,
+                                    sublattice.y_position,
+                                    method='Watershed')
+
+.. image:: images/watershed_cells1.png
+    :scale: 50 %
+
+The Voronoi cell integration has a MaxRadius optional input which helps to
+prevent cells from becoming too large e.g. at the surface of the a nanoparticle.
 
 .. _making_line_profiles:
 

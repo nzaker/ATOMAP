@@ -59,6 +59,7 @@ Contents on this webpage
    analysing_atom_lattices
    automation
    nanoparticle_example
+   absolute_integrator
    make_testdata
    making_nice_figures
    contribute
@@ -70,4 +71,3 @@ Contents on this webpage
 
 Old news
 --------
-
