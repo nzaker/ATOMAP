@@ -106,6 +106,7 @@ def find_features_by_separation(
         pca=False,
         subtract_background=False,
         normalize_intensity=False,
+        show_progressbar=True,
         ):
     """
     Do peak finding with a varying amount of peak separation
@@ -120,10 +121,12 @@ def find_features_by_separation(
         Lower and upper end of minimum pixel distance between the
         features.
     separation_step : int, optional
+    show_progressbar : bool, default True
 
     Returns
     -------
     tuple, (separation_list, peak_list)
+
     """
     separation_list = range(
             separation_range[0],
@@ -132,7 +135,7 @@ def find_features_by_separation(
 
     separation_value_list = []
     peak_list = []
-    for separation in tqdm(separation_list):
+    for separation in tqdm(separation_list, disable=not show_progressbar):
         peaks = get_atom_positions(
                 signal,
                 separation=separation,
@@ -155,6 +158,7 @@ def get_feature_separation(
         subtract_background=False,
         normalize_intensity=False,
         threshold_rel=0.02,
+        show_progressbar=True,
         ):
     """
     Plot the peak positions on in a HyperSpy signal, as a function
@@ -169,6 +173,7 @@ def get_feature_separation(
     subtract_background : bool, default False
     normalize_intensity : bool, default False
     threshold_rel : float, default 0.02
+    show_progressbar : bool, default True
 
     Example
     -------
@@ -177,6 +182,7 @@ def get_feature_separation(
     >>> from atomap.atom_finding_refining import get_feature_separation
     >>> s = hs.signals.Signal2D(np.random.random((500, 500)))
     >>> s1 = get_feature_separation(s)
+
     """
 
     separation_list, peak_list = find_features_by_separation(
@@ -212,7 +218,7 @@ def get_feature_separation(
         marker_list_y[index, 0:len(peaks)] = (peaks[:, 1]*scale_y)+offset_y
 
     marker_list = []
-    for i in trange(marker_list_x.shape[1]):
+    for i in trange(marker_list_x.shape[1], disable=not show_progressbar):
         m = hs.markers.point(
                 x=marker_list_x[:, i], y=marker_list_y[:, i], color='red')
         marker_list.append(m)

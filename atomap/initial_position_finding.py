@@ -49,7 +49,8 @@ def find_dumbbell_vector(s, separation):
     return(vec0)
 
 
-def _get_dumbbell_arrays(s, position_list, dumbbell_vector):
+def _get_dumbbell_arrays(
+        s, position_list, dumbbell_vector, show_progressbar=True):
     """
     Parameters
     ----------
@@ -57,6 +58,7 @@ def _get_dumbbell_arrays(s, position_list, dumbbell_vector):
     position_list : list of atomic positions
         In the form [[x0, y0], [x1, y1], [x2, y2], ...]
     dumbbell_vector : tuple
+    show_progressbar : bool, default True
 
     Returns
     -------
@@ -89,7 +91,8 @@ def _get_dumbbell_arrays(s, position_list, dumbbell_vector):
     total_num = len(next_pos_list0)
     dumbbell_list0, dumbbell_list1 = [], []
     for x, y, next_pos0, next_pos1 in tqdm(
-            iterator, total=total_num, desc="Finding dumbbells"):
+            iterator, total=total_num, desc="Finding dumbbells",
+            disable=not show_progressbar):
         mask1 = _make_circular_mask(
                 next_pos0[1], next_pos0[0],
                 s.data.shape[0], s.data.shape[1],
@@ -111,7 +114,8 @@ def _get_dumbbell_arrays(s, position_list, dumbbell_vector):
     return(dumbbell_list0, dumbbell_list1)
 
 
-def make_atom_lattice_dumbbell_structure(s, position_list, dumbbell_vector):
+def make_atom_lattice_dumbbell_structure(
+        s, position_list, dumbbell_vector, show_progressbar=True):
     """
     Make Atom_Lattice object from image of dumbbell structure.
 
@@ -121,6 +125,7 @@ def make_atom_lattice_dumbbell_structure(s, position_list, dumbbell_vector):
     position_list : list of atomic positions
         In the form [[x0, y0], [x1, y1], [x2, y2], ...]
     dumbbell_vector : tuple
+    show_progressbar : bool, default True
 
     Returns
     -------
@@ -138,7 +143,8 @@ def make_atom_lattice_dumbbell_structure(s, position_list, dumbbell_vector):
     ...     s, position_list, dumbbell_vector)
     """
     dumbbell_list0, dumbbell_list1 = _get_dumbbell_arrays(
-            s, position_list, dumbbell_vector)
+            s, position_list, dumbbell_vector,
+            show_progressbar=show_progressbar)
     s_modified = do_pca_on_signal(s)
     sublattice0 = Sublattice(
             atom_position_list=dumbbell_list0,

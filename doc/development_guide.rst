@@ -10,7 +10,7 @@ Development guide
 Testing
 -------
 
-Atomap has a large number of unit tests, which is tested using ``pytest``:
+Atomap has a large number of unit tests, which are tested using ``pytest``:
 
 .. code-block:: bash
 
@@ -25,7 +25,7 @@ The documentation is tested by doing:
     $ python3 -m pytest --doctest-glob="*.rst" doc/
 
 
-Both the unit tests and the doc tests can be sped up by running the tests parallel.
+Both the unit tests and the doc tests can be accelerated by running the tests in parallel.
 Use the `xdist <https://docs.pytest.org/en/3.0.0/xdist.html>`_ pytest package for this.
 To run the tests using 5 parallel processes:
 
@@ -38,6 +38,9 @@ To run the tests using 5 parallel processes:
 Style checks
 ------------
 
+In Atomap the PEP8 style guide is followed.
+To check style compliance use flake8:
+
 .. code-block:: bash
 
     $ python3 -m flake8 --exclude atomap/api.py atomap/
@@ -45,6 +48,8 @@ Style checks
 
 Generating the sphinx page
 --------------------------
+These documentation pages are written by using sphinx.
+You generate the html site by:
 
 .. code-block:: bash
 
@@ -57,3 +62,9 @@ Continuous integration
 
 The Continuous integration (CI) settings is contained in ``.gitlab-ci.yml``.
 This runs all the above-mentioned tests, style checks and sphinx page generation on each branch.
+
+
+Documentation from development branch
+-------------------------------------
+
+The most recent documentation generated from the development branch can be accessed `here <https://gitlab.com/atomap/atomap/builds/artifacts/master/file/pages_development/index.html?job=pages_development_branch>`_.
