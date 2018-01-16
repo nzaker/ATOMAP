@@ -6,6 +6,7 @@ from hyperspy.signals import Signal2D
 from atomap.tools import array2signal1d, array2signal2d, Fingerprinter
 from atomap.tools import remove_atoms_from_image_using_2d_gaussian
 import atomap.dummy_data as dd
+from atomap.tools import integrate
 import atomap.testing_tools as tt
 
 
@@ -192,3 +193,34 @@ class TestFliplrPointsAndSignal:
         np.testing.assert_allclose(self.s.data, s_flip.data)
         np.testing.assert_allclose(self.x, x_flip)
         np.testing.assert_allclose(self.y, y_flip)
+
+        
+class test_adf_quantification(unittest.TestCase):
+
+    def setUp(self):
+        test_data = tt.MakeTestData(100, 100)
+        x_positions = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                       5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                       5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                       5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                       5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                       5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                       5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                       5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                       5, 15, 25, 35, 45, 55, 65, 75, 85, 95]
+        y_positions = [5, 5, 5, 5, 5, 5, 5, 5, 5,
+                       15, 15, 15, 15, 15, 15, 15, 15, 15,
+                       25, 25, 25, 25, 25, 25, 25, 25, 25,
+                       35, 35, 35, 35, 35, 35, 35, 35, 35,
+                       45, 45, 45, 45, 45, 45, 45, 45, 45,
+                       55, 55, 55, 55, 55, 55, 55, 55, 55,
+                       65, 65, 65, 65, 65, 65, 65, 65, 65,
+                       75, 75, 75, 75, 75, 75, 75, 75, 75,
+                       85, 85, 85, 85, 85, 85, 85, 85, 85,
+                       95, 95, 95, 95, 95, 95, 95, 95, 95]
+
+    def test_running(self):
+        result = Integrate(test_data, x_positions, y_positions)
+        np.testing.assert_allclose(np.sum(result[0]),
+                                   np.sum(test_data),
+                                   atol=1e-3)

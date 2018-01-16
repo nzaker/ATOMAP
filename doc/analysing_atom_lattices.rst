@@ -300,11 +300,18 @@ Integration of Atomic Columns
 
 When analysing the intensity of different atomic columns it is important to be
 able to accurately. Two methods of image segmentation have been implemented
-into Atomap, these are Voronoi cell integration and watershedding. These methods
-have both been written such that they could also be applied to 3D data-sets
-e.g. EDX and EELS.
+into Atomap, these are 'Voronoi cell' integration and 'watershedding'. These
+methods have both been written such that they could also be applied to 3D
+data-sets e.g. EDX and EELS.
 
-The integrate function returns a list containing
+The integrate function returns a list containing:
+ -[0] Integrated intensity list - the same length as atom coordinates list with
+      resulting integrated intensities.
+ -[1] Intensity record - Image the same size as input image, each pixel in
+      a particular segment or region has the value of the integration of the
+      region.
+ -[2] Point record - An image where defining the locations of each integration
+      region.
 
 .. image:: images/voronoi_cells1.png
     :scale: 50 %
@@ -313,7 +320,6 @@ The integrate function returns a list containing
 
     >>> atom_positions = am.get_atom_positions(s, 3, threshold_rel=0.2)
     >>> sublattice = am.Sublattice(atom_positions, s.data)
-    >>> sublattice.refine_atom_positions_using_center_of_mass(sublattice.image)
     >>> integrated_s = am.Integrate(s.data,
                                     sublattice.x_position,
                                     sublattice.y_position,

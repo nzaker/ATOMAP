@@ -128,9 +128,6 @@ def find_flux_limits(flux_pattern, conv_angle):
     # scale flux_profile relative to the bright field disc.
     x = np.array(range(flux_profile.shape[0]))
     radius = x * conv_angle / np.argmin(grad)
-    fig = plt.figure()
-    fig.add_subplot(1, 1, 1)
-    plt.plot(radius, grad)
 
     # Plot the radial flux profile and allow the user to select the region for
     # power-law fitting.
