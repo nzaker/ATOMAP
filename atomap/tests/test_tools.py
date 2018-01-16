@@ -198,8 +198,8 @@ class TestFliplrPointsAndSignal:
 class test_adf_quantification(unittest.TestCase):
 
     def setUp(self):
-        test_data = tt.MakeTestData(100, 100)
-        x_positions = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+        self.test_data = np.rand(100, 100)
+        self.x_positions = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
@@ -208,7 +208,7 @@ class test_adf_quantification(unittest.TestCase):
                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95]
-        y_positions = [5, 5, 5, 5, 5, 5, 5, 5, 5,
+        self.y_positions = [5, 5, 5, 5, 5, 5, 5, 5, 5,
                        15, 15, 15, 15, 15, 15, 15, 15, 15,
                        25, 25, 25, 25, 25, 25, 25, 25, 25,
                        35, 35, 35, 35, 35, 35, 35, 35, 35,
