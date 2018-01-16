@@ -220,7 +220,7 @@ class test_adf_quantification(unittest.TestCase):
                        95, 95, 95, 95, 95, 95, 95, 95, 95]
 
     def test_running(self):
-        result = Integrate(test_data, x_positions, y_positions)
+        result = Integrate(self.test_data, x_positions, y_positions)
         np.testing.assert_allclose(np.sum(result[0]),
-                                   np.sum(test_data),
+                                   np.sum(self.test_data),
                                    atol=1e-3)
