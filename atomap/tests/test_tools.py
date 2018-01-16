@@ -77,7 +77,8 @@ class test_remove_atoms_from_image_using_2d_gaussian(unittest.TestCase):
 class test_adf_quantification(unittest.TestCase):
 
     def setUp(self):
-        self.test_data = np.random(100, 100)
+        test_data = np.random(100, 100)
+        self.test_data = test_data
         self.x_positions = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
