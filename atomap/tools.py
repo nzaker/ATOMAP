@@ -964,7 +964,7 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
         List the same length of points giving the integrated intensities.
     intensityRecord: np.array, same size as img
         Each pixel in a particular segment or region has the value of the
-        inegration.
+        integration.
     pointRecord: np.array, same size as img
         Image showing where each integration region is, pixels in region 1
         all have a value of 1, pixels in regio 2 all have a value of 2 etc.
