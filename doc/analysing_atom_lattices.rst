@@ -320,10 +320,7 @@ The integrate function returns a list containing:
 
     >>> atom_positions = am.get_atom_positions(s, 3, threshold_rel=0.2)
     >>> sublattice = am.Sublattice(atom_positions, s.data)
-    >>> integrated_s = am.Integrate(s.data,
-                                    sublattice.x_position,
-                                    sublattice.y_position,
-                                    method='Watershed')
+    >>> integrated_s = am.Integrate(s.data, sublattice.x_position, sublattice.y_position, method='Watershed')
 
 .. image:: images/watershed_cells1.png
     :scale: 50 %
