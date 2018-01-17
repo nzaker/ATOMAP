@@ -104,4 +104,4 @@ class test_adf_quantification(unittest.TestCase):
         result = Integrate(self.test_data, self.x_positions, self.y_positions)
         np.testing.assert_allclose(np.sum(result[0]),
                                    np.sum(self.test_data),
-                                   rtol=0.001)
+                                   rtol=0.011)
