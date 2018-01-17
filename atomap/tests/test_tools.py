@@ -35,7 +35,7 @@ class TestFingerprinter(unittest.TestCase):
         point_list = tt.make_nn_test_dataset(xN=xN, yN=yN, n=n)
         fp = Fingerprinter()
         fp.fit(point_list)
-        clusters = (xN*2+1)*(yN*2+1)-1
+        clusters = (xN * 2 + 1) * (yN * 2 + 1) - 1
         self.assertEqual(fp.cluster_centers_.shape[0], clusters)
 
     def test_running_advanced(self):
@@ -51,12 +51,12 @@ class TestFingerprinter(unittest.TestCase):
                     pass
                 else:
                     for point in point_list:
-                        x, y = ix*xS, iy*yS
-                        xD, yD = abs(x-point[0]), abs(y-point[1])
+                        x, y = ix * xS, iy * yS
+                        xD, yD = abs(x - point[0]), abs(y - point[1])
                         if (xD < tolerance) and (yD < tolerance):
                             bool_list.append(True)
                             break
-        clusters = (xN*2+1)*(yN*2+1)-1
+        clusters = (xN * 2 + 1) * (yN * 2 + 1) - 1
         self.assertEqual(len(bool_list), clusters)
 
 
@@ -74,9 +74,9 @@ class test_remove_atoms_from_image_using_2d_gaussian(unittest.TestCase):
     def test_running(self):
         sublattice = self.sublattice
         remove_atoms_from_image_using_2d_gaussian(
-                sublattice.image,
-                sublattice,
-                percent_to_nn=0.40)
+            sublattice.image,
+            sublattice,
+            percent_to_nn=0.40)
 
 
 @pytest.mark.parametrize(
@@ -198,27 +198,27 @@ class TestFliplrPointsAndSignal:
 class test_adf_quantification(unittest.TestCase):
 
     def setUp(self):
-        test_data = np.random(100, 100)
+        test_data = np.random.rand(100, 100)
         self.test_data = test_data
         self.x_positions = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                        5, 15, 25, 35, 45, 55, 65, 75, 85, 95]
+                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
+                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95]
         self.y_positions = [5, 5, 5, 5, 5, 5, 5, 5, 5,
-                        15, 15, 15, 15, 15, 15, 15, 15, 15,
-                        25, 25, 25, 25, 25, 25, 25, 25, 25,
-                        35, 35, 35, 35, 35, 35, 35, 35, 35,
-                        45, 45, 45, 45, 45, 45, 45, 45, 45,
-                        55, 55, 55, 55, 55, 55, 55, 55, 55,
-                        65, 65, 65, 65, 65, 65, 65, 65, 65,
-                        75, 75, 75, 75, 75, 75, 75, 75, 75,
-                        85, 85, 85, 85, 85, 85, 85, 85, 85,
-                        95, 95, 95, 95, 95, 95, 95, 95, 95]
+                            15, 15, 15, 15, 15, 15, 15, 15, 15,
+                            25, 25, 25, 25, 25, 25, 25, 25, 25,
+                            35, 35, 35, 35, 35, 35, 35, 35, 35,
+                            45, 45, 45, 45, 45, 45, 45, 45, 45,
+                            55, 55, 55, 55, 55, 55, 55, 55, 55,
+                            65, 65, 65, 65, 65, 65, 65, 65, 65,
+                            75, 75, 75, 75, 75, 75, 75, 75, 75,
+                            85, 85, 85, 85, 85, 85, 85, 85, 85,
+                            95, 95, 95, 95, 95, 95, 95, 95, 95]
 
     def test_running(self):
         result = Integrate(self.test_data, self.x_positions, self.y_positions)
