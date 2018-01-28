@@ -74,3 +74,18 @@ class dummy_data_fantasite(unittest.TestCase):
     def test_atom_lattice(self):
         atom_lattice = dd.get_fantasite_atom_lattice()
         self.assertEqual(len(atom_lattice.sublattice_list), 2)
+
+
+class dummy_data_distorted_cubic(unittest.TestCase):
+
+    def test_signal(self):
+        s0 = dd.get_distorted_cubic_signal(image_noise=False)
+        s1 = dd.get_distorted_cubic_signal(image_noise=True)
+        s0.plot()
+        s1.plot()
+        self.assertFalse((s0.data == s1.data).all())
+
+    def test_sublattice(self):
+        sublattice = dd.get_distorted_cubic_sublattice()
+        self.assertEqual(
+                len(sublattice.x_position), len(sublattice.y_position))

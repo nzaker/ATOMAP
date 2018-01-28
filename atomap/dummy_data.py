@@ -59,6 +59,65 @@ def get_simple_cubic_sublattice(image_noise=False):
     return test_data.sublattice
 
 
+def _make_distorted_cubic_testdata(image_noise=False):
+    test_data = MakeTestData(240, 240)
+    x, y = np.mgrid[30:212:40, 30:222:20]
+    x, y = x.flatten(), y.flatten()
+    test_data.add_atom_list(x, y)
+    x, y = np.mgrid[50:212:40, 32.5:222:20]
+    x, y = x.flatten(), y.flatten()
+    test_data.add_atom_list(x, y)
+    if image_noise:
+        test_data.add_image_noise(mu=0, sigma=0.002)
+    return test_data
+
+
+def get_distorted_cubic_signal(image_noise=False):
+    """Generate a test image signal of a distorted cubic atomic structure.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    signal : HyperSpy 2D
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_distorted_cubic_signal()
+    >>> s.plot()
+
+    """
+    test_data = _make_distorted_cubic_testdata(image_noise=image_noise)
+    return test_data.signal
+
+
+def get_distorted_cubic_sublattice(image_noise=False):
+    """Generate a test sublattice of a distorted cubic atomic structure.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    sublattice : Atomap Sublattice
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+    >>> sublattice.plot()
+
+    """
+    test_data = _make_distorted_cubic_testdata(image_noise=image_noise)
+    return test_data.sublattice
+
+
 def _make_atom_lists_two_sublattices(test_data_1, test_data_2=None):
     x0, y0 = np.mgrid[10:295:20, 10:300:34]
     test_data_1.add_atom_list(
