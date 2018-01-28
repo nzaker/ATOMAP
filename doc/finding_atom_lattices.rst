@@ -214,8 +214,8 @@ which contains all the atoms in one plane, and the relation between these atoms.
 
 Navigate though the different zone vectors to see the corresponding planes (left-right arrow keys).
 
-If you're using your own dataset and some of the planes are non-continuous,
-try increasing the ``atom_plane_tolerance`` from the default 0.5:
+If you're using your own dataset and some of the planes are non-continuous
+or missing, try increasing the ``atom_plane_tolerance`` from the default 0.5:
 ``sublattice.construct_zone_axes(atom_plane_tolerance=0.7)``.
 
 
