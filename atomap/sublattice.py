@@ -789,27 +789,30 @@ class Sublattice():
         zone_vector_delete_list = []
         for zone_vector in self.atom_planes_by_zone_vector:
             atom_planes = self.atom_planes_by_zone_vector[zone_vector]
-            counter_atoms = 0
-            for atom_plane in atom_planes:
-                number_of_atoms = len(atom_plane.atom_list)
-                if number_of_atoms == 2:
-                    counter_atoms += 1
-            ratio = counter_atoms/len(atom_planes)
-            if ratio > 0.6:
-                atom_planes_delete_list = []
-                for atom_plane in atom_planes:
-                    for atom in atom_plane.atom_list:
-                        atom.in_atomic_plane.remove(atom_plane)
-                    atom_planes_delete_list.append(atom_plane)
-                for i, v in enumerate(self.zones_axis_average_distances):
-                    if v == zone_vector:
-                        self.zones_axis_average_distances_names.pop(i)
+            if len(atom_planes) == 0:
                 zone_vector_delete_list.append(zone_vector)
-                self.zones_axis_average_distances.remove(zone_vector)
-                for atom_plane in atom_planes_delete_list:
-                    self.atom_plane_list.remove(atom_plane)
+            else:
+                counter_atoms = 0
+                for atom_plane in atom_planes:
+                    number_of_atoms = len(atom_plane.atom_list)
+                    if number_of_atoms == 2:
+                        counter_atoms += 1
+                ratio = counter_atoms/len(atom_planes)
+                if ratio > 0.6:
+                    atom_planes_delete_list = []
+                    for atom_plane in atom_planes:
+                        for atom in atom_plane.atom_list:
+                            atom.in_atomic_plane.remove(atom_plane)
+                        atom_planes_delete_list.append(atom_plane)
+                    zone_vector_delete_list.append(zone_vector)
+                    for atom_plane in atom_planes_delete_list:
+                        self.atom_plane_list.remove(atom_plane)
         for zone_vector in zone_vector_delete_list:
             del self.atom_planes_by_zone_vector[zone_vector]
+            for i, v in enumerate(self.zones_axis_average_distances):
+                if v == zone_vector:
+                    self.zones_axis_average_distances_names.pop(i)
+            self.zones_axis_average_distances.remove(zone_vector)
 
     def refine_atom_positions_using_2d_gaussian(
             self,
@@ -1092,15 +1095,18 @@ class Sublattice():
                 temp_atom_plane_list.append(atom_plane)
         return(temp_atom_plane_list)
 
-    def _generate_all_atom_plane_list(self):
+    def _generate_all_atom_plane_list(self, atom_plane_tolerance=0.5):
         for zone_vector in self.zones_axis_average_distances:
-            self._find_all_atomic_planes_from_direction(zone_vector)
+            self._find_all_atomic_planes_from_direction(
+                    zone_vector, atom_plane_tolerance=atom_plane_tolerance)
 
-    def _find_all_atomic_planes_from_direction(self, zone_vector):
+    def _find_all_atomic_planes_from_direction(
+            self, zone_vector, atom_plane_tolerance=0.5):
         for atom in self.atom_list:
             if not atom.is_in_atomic_plane(zone_vector):
                 atom_plane = self._find_atomic_columns_from_atom(
-                        atom, zone_vector)
+                        atom, zone_vector,
+                        atom_plane_tolerance=atom_plane_tolerance)
                 if not (len(atom_plane) == 1):
                     atom_plane_instance = Atom_Plane(
                             atom_plane, zone_vector, self)
@@ -1109,8 +1115,8 @@ class Sublattice():
                     self.atom_plane_list.append(atom_plane_instance)
 
     def _find_atomic_columns_from_atom(
-            self, start_atom, zone_vector, atom_range_factor=0.5):
-        atom_range = atom_range_factor*self._pixel_separation
+            self, start_atom, zone_vector, atom_plane_tolerance=0.5):
+        atom_range = atom_plane_tolerance*self._pixel_separation
         end_of_atom_plane = False
         zone_axis_list1 = [start_atom]
         while not end_of_atom_plane:
@@ -1289,7 +1295,13 @@ class Sublattice():
         if image is None:
             image = self.original_image
         if zone_vector_list is None:
-            zone_vector_list = self.zones_axis_average_distances
+            if self.zones_axis_average_distances is None:
+                raise Exception(
+                        "zones_axis_average_distances is empty. "
+                        "Has construct_zone_axes been run?")
+            else:
+                zone_vector_list = self.zones_axis_average_distances
+
         atom_plane_list = []
         for zone_vector in zone_vector_list:
             atom_plane_list.append(
@@ -1995,7 +2007,8 @@ class Sublattice():
         mean_angle = np.array(angle_list).mean()
         return(mean_angle)
 
-    def construct_zone_axes(self, zone_axis_para_list=False):
+    def construct_zone_axes(
+            self, atom_plane_tolerance=0.5, zone_axis_para_list=False):
         """Constructs the zone axes for an atomic resolution image.
 
         The zone axes are found by finding the 15 nearest neighbors for each
@@ -2007,6 +2020,12 @@ class Sublattice():
 
         Parameters
         ----------
+        atom_plane_tolerance : scalar, default 0.5
+            When constructing the atomic planes, the method will try to locate
+            the atoms by "jumping" one zone vector, and seeing if there is an
+            atom with the pixel_separation times atom_plane_tolerance. So this
+            value should be increased the atomic planes are non-continuous and
+            "split".
         zone_axis_para_list : parameter list or bool, default False
             A zone axes parameter list is used to name and index the zone
             axes. See atomap.process_parameters for more info. Useful for
@@ -2028,7 +2047,8 @@ class Sublattice():
 
         """
         construct_zone_axes_from_sublattice(
-                self, zone_axis_para_list=zone_axis_para_list)
+                self, atom_plane_tolerance=atom_plane_tolerance,
+                zone_axis_para_list=zone_axis_para_list)
 
     def _get_fingerprint(self, pixel_radius=100):
         """

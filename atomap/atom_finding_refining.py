@@ -253,7 +253,9 @@ def find_feature_density(
     return(separation_list, peakN_list)
 
 
-def construct_zone_axes_from_sublattice(sublattice, zone_axis_para_list=False):
+def construct_zone_axes_from_sublattice(
+        sublattice, atom_plane_tolerance=0.5,
+        zone_axis_para_list=False):
     """Constructs zone axes for a sublattice.
 
     The zone axes are constructed by finding the 15 nearest neighbors for
@@ -264,6 +266,11 @@ def construct_zone_axes_from_sublattice(sublattice, zone_axis_para_list=False):
     Parameters
     ----------
     sublattice : Atomap Sublattice
+    atom_plane_tolerance : scalar, default 0.5
+        When constructing the atomic planes, the method will try to locate
+        the atoms by "jumping" one zone vector, and seeing if there is an atom
+        with the pixel_separation times atom_plane_tolerance. So this value
+        should be increased the atomic planes are non-continuous and "split".
     zone_axis_para_list : parameter list or bool, default False
         A zone axes parameter list is used to name and index the zone axes.
         See atomap.process_parameters for more info. Useful for automation.
@@ -306,7 +313,8 @@ def construct_zone_axes_from_sublattice(sublattice, zone_axis_para_list=False):
         sublattice.zones_axis_average_distances = zone_axes
         sublattice.zones_axis_average_distances_names = zone_axes_names
 
-    sublattice._generate_all_atom_plane_list()
+    sublattice._generate_all_atom_plane_list(
+            atom_plane_tolerance=atom_plane_tolerance)
     sublattice._sort_atom_planes_by_zone_vector()
     sublattice._remove_bad_zone_vectors()
 

@@ -196,6 +196,7 @@ If not all atoms in the interior of the image are found (as in the peak finding 
     >>> sublattice
     <Sublattice,  (atoms:400,planes:4)>
 
+
 The zone axes are needed for the types of analysis explained in :ref:`analysing_atom_lattices`.
 Atom planes for the zone axes in the sublattice can easily be plotted.
 The atom planes are represented as :py:class:`~atomap.atom_plane.Atom_Plane` class objects,
@@ -212,6 +213,11 @@ which contains all the atoms in one plane, and the relation between these atoms.
     :width: 300 px
 
 Navigate though the different zone vectors to see the corresponding planes (left-right arrow keys).
+
+If you're using your own dataset and some of the planes are non-continuous
+or missing, try increasing the ``atom_plane_tolerance`` from the default 0.5:
+``sublattice.construct_zone_axes(atom_plane_tolerance=0.7)``.
+
 
 Images with more than one sublattice
 ====================================

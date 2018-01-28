@@ -632,6 +632,40 @@ class test_construct_zone_axes(unittest.TestCase):
         self.assertEqual(zone_vectors[4], (vX, 2*vY))
         self.assertEqual(zone_vectors[5], (-vX, 2*vY))
 
+    def test_atom_plane_tolerance(self):
+        # 10 times 10 atoms
+        test_data = MakeTestData(240, 240)
+        x, y = np.mgrid[30:212:40, 30:222:20]
+        x, y = x.flatten(), y.flatten()
+        test_data.add_atom_list(x, y)
+        x, y = np.mgrid[50:212:40, 30.0:111:20]
+        x, y = x.flatten(), y.flatten()
+        test_data.add_atom_list(x, y)
+        x, y = np.mgrid[50:212:40, 135:222:20]
+        x, y = x.flatten(), y.flatten()
+        test_data.add_atom_list(x, y)
+
+        # Distortion is too big, so the default construct_zone_axes will not
+        # correctly construct the atomic planes
+        sublattice = test_data.sublattice
+        sublattice.construct_zone_axes()
+        planes0 = sublattice.atom_planes_by_zone_vector[
+                sublattice.zones_axis_average_distances[0]]
+        planes1 = sublattice.atom_planes_by_zone_vector[
+                sublattice.zones_axis_average_distances[1]]
+        assert len(planes0) != 10
+        assert len(planes1) != 10
+
+        # Increase atom_plane_tolerance
+        sublattice = test_data.sublattice
+        sublattice.construct_zone_axes(atom_plane_tolerance=0.8)
+        planes0 = sublattice.atom_planes_by_zone_vector[
+                sublattice.zones_axis_average_distances[0]]
+        planes1 = sublattice.atom_planes_by_zone_vector[
+                sublattice.zones_axis_average_distances[1]]
+        assert len(planes0) == 10
+        assert len(planes1) == 10
+
 
 class test_sublattice_mask(unittest.TestCase):
 
