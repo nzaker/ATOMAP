@@ -1295,7 +1295,13 @@ class Sublattice():
         if image is None:
             image = self.original_image
         if zone_vector_list is None:
-            zone_vector_list = self.zones_axis_average_distances
+            if self.zones_axis_average_distances is None:
+                raise Exception(
+                        "zones_axis_average_distances is empty. "\
+                        "Has construct_zone_axes been run?")
+            else:
+                zone_vector_list = self.zones_axis_average_distances
+
         atom_plane_list = []
         for zone_vector in zone_vector_list:
             atom_plane_list.append(
