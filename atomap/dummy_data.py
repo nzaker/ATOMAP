@@ -64,7 +64,10 @@ def _make_distorted_cubic_testdata(image_noise=False):
     x, y = np.mgrid[30:212:40, 30:222:20]
     x, y = x.flatten(), y.flatten()
     test_data.add_atom_list(x, y)
-    x, y = np.mgrid[50:212:40, 32.5:222:20]
+    x, y = np.mgrid[50:212:40, 30.0:111:20]
+    x, y = x.flatten(), y.flatten()
+    test_data.add_atom_list(x, y)
+    x, y = np.mgrid[50:212:40, 135:222:20]
     x, y = x.flatten(), y.flatten()
     test_data.add_atom_list(x, y)
     if image_noise:
