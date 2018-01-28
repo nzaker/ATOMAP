@@ -1297,7 +1297,7 @@ class Sublattice():
         if zone_vector_list is None:
             if self.zones_axis_average_distances is None:
                 raise Exception(
-                        "zones_axis_average_distances is empty. "\
+                        "zones_axis_average_distances is empty. "
                         "Has construct_zone_axes been run?")
             else:
                 zone_vector_list = self.zones_axis_average_distances
