@@ -107,6 +107,11 @@ class Sublattice():
                     "image needs to be a NumPy compatible array" +
                     ", not " + str(type(image)))
         image_out = np.array(image)
+        if image_out.dtype == 'float16':
+            raise ValueError(
+                    "image has the dtype float16, which is not supported. "
+                    "Convert it to something else, for example using "
+                    "image.astype('float64')")
         if not len(image_out.shape) == 2:
             raise ValueError(
                     "image needs to be 2 dimensions, not " +

@@ -1,4 +1,5 @@
 import os
+import pytest
 import unittest
 import numpy as np
 from hyperspy.api import load
@@ -104,6 +105,19 @@ class test_init_sublattice(unittest.TestCase):
             Sublattice(
                     atom_position_list=self.peaks, image=s,
                     original_image=s_orig)
+
+    def test_different_dtypes(self):
+        dtype_list = ['float64', 'float32', 'int64', 'int32',
+                      'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8']
+        for dtype in dtype_list:
+            atom_positions = [range(10), range(10)]
+            image_data = np.random.randint(0, 127, size=(10, 10)).astype(dtype)
+            Sublattice(atom_positions, image_data)
+        with pytest.raises(ValueError):
+            atom_positions = [range(10), range(10)]
+            image_data = np.random.randint(
+                    0, 127, size=(10, 10)).astype('float16')
+            Sublattice(atom_positions, image_data)
 
 
 class test_sublattice_with_atom_planes(unittest.TestCase):
@@ -518,7 +532,6 @@ class test_refine_functions(unittest.TestCase):
         dtype_list = ['float64', 'float32', 'float16', 'int64', 'int32',
                       'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8']
         for dtype in dtype_list:
-            print(dtype)
             sublattice.refine_atom_positions_using_center_of_mass(
                     image_data=image_data.astype(dtype))
 
