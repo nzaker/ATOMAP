@@ -184,6 +184,10 @@ def get_feature_separation(
     >>> s1 = get_feature_separation(s)
 
     """
+    if signal.data.dtype is np.dtype('float16'):
+        raise ValueError(
+                "signal has dtype float16, which is not supported "
+                "use signal.change_dtype('float32') to change it")
 
     separation_list, peak_list = find_features_by_separation(
             signal=signal,
@@ -550,6 +554,7 @@ def _make_model_from_atom_list(
     ...     atom_list=atom_list, image_data=image, mask_radius=3)
     >>> m.fit()
     """
+    image_data = image_data.astype('float64')
     mask = np.zeros_like(image_data)
 
     position_list, radius_list = [], []

@@ -54,7 +54,7 @@ You generate the html site by:
 .. code-block:: bash
 
     $ cd doc
-    $ python3 -m sphinx -b html ./ _build/html/
+    $ python3 -m sphinx -b html ./ _build/html/
 
 
 Continuous integration

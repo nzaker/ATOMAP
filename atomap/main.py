@@ -71,7 +71,11 @@ def make_atom_lattice_from_image(
         pixel_separation=None,
         s_image1=None,
         debug_plot=False):
-
+    if s_image0.data.dtype == 'float16':
+        raise ValueError(
+                "s_image0 has the dtype float16, which is not supported. "
+                "Convert it to something else, for example using "
+                "s_image0.change_dtype('float64')")
     image0_filename = _get_signal_name(s_image0)
 
     name = image0_filename
@@ -96,6 +100,11 @@ def make_atom_lattice_from_image(
             separation=pixel_separation)
 
     if s_image1 is not None:
+        if s_image1.data.dtype == 'float16':
+            raise ValueError(
+                    "s_image1 has the dtype float16, which is not supported. "
+                    "Convert it to something else, for example using "
+                    "s_image1.change_dtype('float64')")
         s_image1 = s_image1.deepcopy()
         s_image1.data = 1./s_image1.data
         image1_data = s_image1.data
