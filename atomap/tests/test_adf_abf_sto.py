@@ -75,6 +75,7 @@ class test_adf_abf_sto_manualprocess(unittest.TestCase):
         s_adf_filename = os.path.join(
                 my_path, "datasets", "test_ADF_cropped.hdf5")
         s = load(s_adf_filename)
+        s.change_dtype('float32')
         atom_positions = get_atom_positions(
                 signal=s,
                 separation=17,
