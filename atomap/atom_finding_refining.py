@@ -184,6 +184,10 @@ def get_feature_separation(
     >>> s1 = get_feature_separation(s)
 
     """
+    if signal.data.dtype is np.dtype('float16'):
+        raise ValueError(
+                "signal has dtype float16, which is not supported "
+                "use signal.change_dtype('float32') to change it")
 
     separation_list, peak_list = find_features_by_separation(
             signal=signal,
