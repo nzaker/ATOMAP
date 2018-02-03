@@ -859,6 +859,7 @@ class Sublattice():
                     "Has sublattice.find_nearest_neighbors() been called?")
         if image_data is None:
             image_data = self.original_image
+        image_data = image_data.astype('float64')
         for atom in tqdm(
                 self.atom_list, desc="Gaussian fitting",
                 disable=not show_progressbar):
@@ -904,6 +905,7 @@ class Sublattice():
                     "Has sublattice.find_nearest_neighbors() been called?")
         if image_data is None:
             image_data = self.original_image
+        image_data = image_data.astype('float64')
         for atom in tqdm(
                 self.atom_list, desc="Center of mass",
                 disable=not show_progressbar):

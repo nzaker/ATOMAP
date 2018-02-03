@@ -554,6 +554,7 @@ def _make_model_from_atom_list(
     ...     atom_list=atom_list, image_data=image, mask_radius=3)
     >>> m.fit()
     """
+    image_data = image_data.astype('float64')
     mask = np.zeros_like(image_data)
 
     position_list, radius_list = [], []
