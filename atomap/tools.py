@@ -937,3 +937,65 @@ class Fingerprinter:
         self.cluster_algo_ = cl
 
         return self
+
+
+def rotate_points_around_signal_centre(signal, x_array, y_array, rotation):
+    """Rotate a set of points around the centre of a signal.
+
+    Parameters
+    ----------
+    signal : HyperSpy 2D signal
+    x_array, y_array : array-like
+    rotation : scalar
+
+    Returns
+    -------
+    rotated_x_array, rotated_y_array : NumPy arrays
+
+    Examples
+    --------
+    >>> from scipy.ndimage import rotate
+    >>> import atomap.api as am
+    >>> import atomap.tools as to
+    >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+    >>> s = sublattice.get_atom_list_on_image()
+    >>> s.map(rotate, angle=30, reshape=False)
+    >>> x, y = sublattice.x_position, sublattice.y_position
+    >>> x_rot, y_rot = to.rotate_points_around_signal_centre(s, x, y, 30)
+
+    """
+    x_array, y_array = np.array(x_array), np.array(y_array)
+    middle_x, middle_y = _get_signal_centre(signal)
+    x_array -= middle_x
+    y_array -= middle_y
+
+    rad_rot = -np.radians(rotation)
+    rotation_matrix = np.array([
+        [np.cos(rad_rot), -np.sin(rad_rot)],
+        [np.sin(rad_rot), np.cos(rad_rot)]])
+    xy_matrix = np.array((x_array, y_array))
+    xy_matrix = np.dot(xy_matrix.T, rotation_matrix.T)
+    x_array = xy_matrix[:, 0]
+    y_array = xy_matrix[:, 1]
+
+    x_array += middle_x
+    y_array += middle_y
+    return(x_array, y_array)
+
+
+def _get_signal_centre(signal):
+    """Get the middle of a signal.
+
+    Parameters
+    ----------
+    signal : HyperSpy 2D signal
+
+    Returns
+    -------
+    middle_x, middle_y : centre position of the signal
+
+    """
+    sa = signal.axes_manager.signal_axes
+    a0_middle = (sa[0].high_value + sa[0].low_value)*0.5
+    a1_middle = (sa[1].high_value + sa[1].low_value)*0.5
+    return(a0_middle, a1_middle)

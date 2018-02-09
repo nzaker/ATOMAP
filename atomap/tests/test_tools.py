@@ -1,8 +1,12 @@
+import pytest
 import unittest
+import numpy as np
+import atomap.tools as to
+from hyperspy.signals import Signal2D
 from atomap.tools import array2signal1d, array2signal2d, Fingerprinter
 from atomap.tools import remove_atoms_from_image_using_2d_gaussian
+import atomap.dummy_data as dd
 import atomap.testing_tools as tt
-import numpy as np
 
 
 class TestArray2Signal(unittest.TestCase):
@@ -72,3 +76,40 @@ class test_remove_atoms_from_image_using_2d_gaussian(unittest.TestCase):
                 sublattice.image,
                 sublattice,
                 percent_to_nn=0.40)
+
+
+@pytest.mark.parametrize(
+        "x,y,sx,sy,ox,oy", [
+            (20, 20, 1, 1, 0, 0), (50, 20, 1, 1, 0, 0),
+            (20, 20, 0.5, 2, 0, 0), (20, 20, 0.5, 2, 10, 5),
+            (50, 20, 0.5, 4, -10, 20), (15, 50, 0.7, 2.3, -10, -5)])
+def test_get_signal_centre(x, y, sx, sy, ox, oy):
+    s = Signal2D(np.zeros((y, x)))
+    print(s)
+    am = s.axes_manager
+    am[0].scale, am[0].offset, am[1].scale, am[1].offset = sx, ox, sy, oy
+    xC, yC = to._get_signal_centre(s)
+    print(xC, yC)
+    assert xC == ((0.5*(x-1)*sx) + ox)
+    assert yC == ((0.5*(y-1)*sy) + oy)
+
+
+class TestRotatePointsAroundSignalCentre:
+
+    @pytest.mark.parametrize("rot", [10, 30, 60, 90, 180, 250])
+    def test_simple_rotation(self, rot):
+        sublattice = dd.get_simple_cubic_sublattice()
+        x, y = sublattice.x_position, sublattice.y_position
+        s = sublattice.get_atom_list_on_image()
+        x_rot, y_rot = to.rotate_points_around_signal_centre(s, x, y, rot)
+        assert len(x) == len(x_rot)
+        assert len(y) == len(y_rot)
+
+    @pytest.mark.parametrize("rot", [0, 360])
+    def test_zero_rotation(self, rot):
+        sublattice = dd.get_simple_cubic_sublattice()
+        x, y = sublattice.x_position, sublattice.y_position
+        s = sublattice.get_atom_list_on_image()
+        x_rot, y_rot = to.rotate_points_around_signal_centre(s, x, y, rot)
+        np.testing.assert_allclose(x, x_rot)
+        np.testing.assert_allclose(y, y_rot)
