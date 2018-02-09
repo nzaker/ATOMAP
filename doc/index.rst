@@ -60,6 +60,7 @@ Contents on this webpage
    nanoparticle_example
    make_testdata
    making_nice_figures
+   various_tools
    contribute
    development_guide
    api_documentation
