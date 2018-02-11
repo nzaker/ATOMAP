@@ -8,13 +8,15 @@ def centeredDistanceMatrix(centre, det_img):
 
     Parameters
     ----------
-    centre: tuple
+    centre : tuple
             x and y position of where the centre of the matrix should be.
-    det_img: np.array
+    det_img : NumPy array
             Detector map as 2D array.
+
     Returns
     -------
-    np.array
+    NumPy Array
+
     """
     # makes a matrix centre around tuble 'centre' the same size as the det_img.
     x, y = np.meshgrid(range(det_img.shape[0]),
@@ -28,12 +30,14 @@ def _detector_threshold(det_img):
 
     Parameters
     ----------
-    det_img: np.array
+    det_img : NumPy array
             Detector map as 2D array.
+
     Returns
     -------
-    threshold_img: np.array
+    threshold_img : NumPy array
             Boolean image demonstrating the active region of the detector.
+
     """
 
     threshold_img = np.zeros_like(det_img)
@@ -107,9 +111,9 @@ def find_flux_limits(flux_pattern, conv_angle):
     Parameters
     ----------
 
-    flux_pattern: np.array
+    flux_pattern : NumPy array
 
-    conv_angle: float
+    conv_angle : float
 
     Returns
     -------
@@ -155,19 +159,19 @@ def analyse_flux(coords, flux_profile, conv_angle):
 
     Parameters
     ----------
-    img: np.array
+    img : NumPy array
             Experimental image to be normalised.
-    det_img: np.array
+    det_img : NumPy array
             Detector map as 2D array.
-    flux_img: 'None' otherwise np.array
+    flux_img : 'None' otherwise NumPy array
             Flux image is required for a flux weighted detector normalisation,
-            if none is supplied the normal thresholing normalisation will
+            if none is supplied the normal thresholding normalisation will
             be applied.
 
     Returns
     -------
-    normalised_img: np.array
-            The experimental image after detector normalisation sucha that,
+    normalised_img : NumPy array
+            The experimental image after detector normalisation such that,
             all intensities are a fraction of the incident beam.
     """
     grad = np.gradient(flux_profile)
@@ -202,9 +206,9 @@ def detector_normalisation(img,
 
     Parameters
     ----------
-    img: np.array
+    img : NumPy array
             Experimental image to be normalised.
-    det_img: np.array
+    det_img : NumPy array
             Detector map as 2D array.
     inner_angle: float
             The experimentally measured inner collection angle of the detector.
@@ -218,7 +222,7 @@ def detector_normalisation(img,
 
     Returns
     -------
-    normalised_img: np.array
+    normalised_img : NumPy array
             The experimental image after detector normalisation such that,
             all intensities are a fraction of the incident beam.
     """
@@ -232,15 +236,15 @@ def detector_normalisation(img,
     active_layer = threshold_img * det_img
 
     # find the centre of the detector.
-    # N.B. Currently this method will not work if the detector dosen't
-    # fill at least half the the image.
+    # N.B. Currently this method will not work if the detector doesn't
+    # fill at least half the image.
 
     m = centeredDistanceMatrix((det_img.shape[0] / 2, det_img.shape[1] / 2),
                                det_img)
     centre_img = np.multiply((m < 512), (1 - threshold_img))
     centre = scipy.ndimage.measurements.center_of_mass(centre_img)
 
-    # Using the centre of the detector and sensitivity profile cane be made.
+    # Using the centre of the detector and sensitivity profile can be made.
     # The maximum gradient of this profile is the inner collection angle
     # of the detector.
     detector_sensitivity = _radial_profile(det_img, centre[::-1])
@@ -257,7 +261,7 @@ def detector_normalisation(img,
         threshold_img = np.multiply(threshold_img, ((d * ratio) < outer_angle))
 
     if flux_expo == 'None':
-        # If no flux exponenent is provided the detector sensitivity is simply
+        # If no flux exponent is provided the detector sensitivity is simply
         # the average value of the active region.
         detector_intensity = active_layer[active_layer.nonzero()].mean()
 

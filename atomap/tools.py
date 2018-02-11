@@ -942,16 +942,16 @@ class Fingerprinter:
 
 def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     """Given an image a set of points and a maximum outer radius,
-    this function integrates the voronoi cell surround each point.
+    this function integrates the Voronoi cell surround each point.
 
     Parameters
     ----------
-    img: np.array
+    img : NumPy array
         assumed to be 2D in the first instance.
     points : list
         Detailed list of the x and y coordinates of each point of
         interest within the image.
-    max_radius: {'Auto'} int
+    max_radius : {'Auto'} int
         A maximum outer radius for each Voronoi Cell.
         If a pixel exceeds this radius it will not be included in the cell.
         This allows analysis of a surface and particles.
@@ -960,14 +960,14 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
 
     Returns
     -------
-    integratedIntensity: list
+    integratedIntensity : list
         List the same length of points giving the integrated intensities.
-    intensityRecord: np.array, same size as img
+    intensityRecord : NumPy array, same size as img
         Each pixel in a particular segment or region has the value of the
         integration.
-    pointRecord: np.array, same size as img
+    pointRecord : NumPy array, same size as img
         Image showing where each integration region is, pixels in region 1
-        all have a value of 1, pixels in regio 2 all have a value of 2 etc.
+        all have a value of 1, pixels in region 2 all have a value of 2 etc.
 
     **Note: Should try and make sure this also works with 3D or 4D np.array
     such that spectrum images could be integrated in the same way.
@@ -1009,7 +1009,7 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
         pointRecord = watershed(-img, points)
 
     else:
-        raise ValueError('Oops! You have asked for an unimplimented method.')
+        raise ValueError('Oops! You have asked for an unimplemented method.')
 
     for i in range(points[0].shape[0]):
         mask = i + 1
