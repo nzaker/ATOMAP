@@ -969,6 +969,20 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
         Image showing where each integration region is, pixels in region 1
         all have a value of 1, pixels in region 2 all have a value of 2 etc.
 
+    Examples
+    --------
+
+    >>> import atomap.api as am
+    >>> from atomap.tools import Integrate
+    >>> import hyperspy.api as hs
+    >>> sublattice = am.dummy_data.get_simple_cubic_sublattice(image_noise=True)
+    >>> i_points, i_record, p_record = Integrate(
+    ...        img=sublattice.image,
+    ...        points_x=sublattice.x_position,
+    ...        points_y=sublattice.y_position)
+    >>> s = hs.signals.Signal2D(i_record)
+    >>> s.plot()
+
     **Note: Should try and make sure this also works with 3D or 4D np.array
     such that spectrum images could be integrated in the same way.
 
