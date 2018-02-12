@@ -939,6 +939,120 @@ class Fingerprinter:
         return self
 
 
+def fliplr_points_and_signal(signal, x_array, y_array):
+    """Horizontally flip a set of points and a HyperSpy signal.
+
+    For making sure both the image and points are flipped correctly.
+
+    Parameters
+    ----------
+    signal : HyperSpy 2D signal
+    x_array, y_array : array-like
+
+    Returns
+    -------
+    flipped_signal : HyperSpy signal
+    flipped_x_array, flipped_y_array : NumPy arrays
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> import atomap.tools as to
+    >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+    >>> s = sublattice.get_atom_list_on_image()
+    >>> x, y = sublattice.x_position, sublattice.y_position
+    >>> s_flip, x_flip, y_flip = to.fliplr_points_and_signal(s, x, y)
+
+    Plotting the data
+
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> cax = ax.imshow(s_flip.data, origin='lower',
+    ...           extent=s_flip.axes_manager.signal_extent)
+    >>> cpoints = ax.scatter(x_flip, y_flip)
+
+    """
+
+    s_out = signal.deepcopy()
+    s_out.map(np.fliplr, show_progressbar=False)
+    x_array, y_array = fliplr_points_around_signal_centre(
+            s_out, x_array, y_array)
+    return s_out, x_array, y_array
+
+
+def fliplr_points_around_signal_centre(signal, x_array, y_array):
+    """Horizontally flip a set of points around the centre of a signal.
+
+    Parameters
+    ----------
+    signal : HyperSpy 2D signal
+    x_array, y_array : array-like
+
+    Returns
+    -------
+    flipped_x_array, flipped_y_array : NumPy arrays
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> import atomap.tools as to
+    >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+    >>> s = sublattice.get_atom_list_on_image()
+    >>> x, y = sublattice.x_position, sublattice.y_position
+    >>> x_rot, y_rot = to.fliplr_points_around_signal_centre(s, x, y)
+
+    """
+    x_array, y_array = np.array(x_array), np.array(y_array)
+    middle_x, middle_y = _get_signal_centre(signal)
+    x_array -= middle_x
+    y_array -= middle_y
+    x_array *= -1
+    x_array += middle_x
+    y_array += middle_y
+    return(x_array, y_array)
+
+
+def rotate_points_and_signal(signal, x_array, y_array, rotation):
+    """Rotate a set of points and a HyperSpy signal.
+
+    For making sure both the image and points are rotated correctly.
+
+    Parameters
+    ----------
+    signal : HyperSpy 2D signal
+    x_array, y_array : array-like
+    rotation : scalar
+
+    Returns
+    -------
+    rotated_signal : HyperSpy signal
+    rotated_x_array, rotated_y_array : NumPy arrays
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> import atomap.tools as to
+    >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+    >>> s = sublattice.get_atom_list_on_image()
+    >>> x, y = sublattice.x_position, sublattice.y_position
+    >>> s_rot, x_rot, y_rot = to.rotate_points_and_signal(s, x, y, 30)
+
+    Plotting the data
+
+    >>> fig, ax = plt.subplots()
+    >>> cax = ax.imshow(s_rot.data, origin='lower',
+    ...                 extent=s_rot.axes_manager.signal_extent)
+    >>> cpoints = ax.scatter(x_rot, y_rot)
+
+    """
+    s_out = signal.deepcopy()
+    s_out.map(ndimage.rotate, angle=rotation,
+              reshape=False, show_progressbar=False)
+    x_array, y_array = rotate_points_around_signal_centre(
+        s_out, x_array, y_array, rotation)
+    return s_out, x_array, y_array
+
+
 def rotate_points_around_signal_centre(signal, x_array, y_array, rotation):
     """Rotate a set of points around the centre of a signal.
 
@@ -954,12 +1068,10 @@ def rotate_points_around_signal_centre(signal, x_array, y_array, rotation):
 
     Examples
     --------
-    >>> from scipy.ndimage import rotate
     >>> import atomap.api as am
     >>> import atomap.tools as to
     >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
     >>> s = sublattice.get_atom_list_on_image()
-    >>> s.map(rotate, angle=30, reshape=False)
     >>> x, y = sublattice.x_position, sublattice.y_position
     >>> x_rot, y_rot = to.rotate_points_around_signal_centre(s, x, y, 30)
 
