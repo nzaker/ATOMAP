@@ -298,11 +298,9 @@ This is also clear with the naked eye (atomic columns marked with blue dots).
 Integration of Atomic Columns
 =============================
 
-When analysing the intensity of different atomic columns it is important to be
-able to accurately. Two methods of image segmentation have been implemented
-into Atomap, these are 'Voronoi cell' integration and 'watershedding'. These
-methods have both been written such that they could also be applied to 3D
-data-sets e.g. EDX and EELS.
+When analysing the intensity of different atomic columns it is important to be able to accurately integrated over all columns in the field of view in an automated way.
+Two methods of image segmentation have been implemented into Atomap, these are 'Voronoi cell' integration and 'watershedding'.
+These methods have both been written such that they could also be applied to 3D data-sets e.g. EDX and EELS.
 
 The :py:func:`~atomap.tools.Integrate` function returns a list containing:
 

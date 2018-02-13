@@ -940,13 +940,14 @@ class Fingerprinter:
         return self
 
 
-def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
+def integrate(image, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     """Given an image a set of points and a maximum outer radius,
-    this function integrates the Voronoi cell surround each point.
+    this function integrates around each point in an image, using either
+    Voronoi cell or watershed segmentation methods.
 
     Parameters
     ----------
-    img : NumPy array
+    image : NumPy array
         assumed to be 2D in the first instance.
     points : list
         Detailed list of the x and y coordinates of each point of
@@ -962,10 +963,10 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     -------
     integratedIntensity : list
         List the same length of points giving the integrated intensities.
-    intensityRecord : NumPy array, same size as img
+    intensityRecord : NumPy array, same size as image
         Each pixel in a particular segment or region has the value of the
         integration.
-    pointRecord : NumPy array, same size as img
+    pointRecord : NumPy array, same size as image
         Image showing where each integration region is, pixels in region 1
         all have a value of 1, pixels in region 2 all have a value of 2 etc.
 
@@ -977,8 +978,8 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     >>> import hyperspy.api as hs
     >>> sublattice = am.dummy_data.get_simple_cubic_sublattice(
     ...        image_noise=True)
-    >>> i_points, i_record, p_record = Integrate(
-    ...        img=sublattice.image,
+    >>> i_points, i_record, p_record = integrate(
+    ...        image=sublattice.image,
     ...        points_x=sublattice.x_position,
     ...        points_y=sublattice.y_position)
     >>> s = hs.signals.Signal2D(i_record)
@@ -990,19 +991,19 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     """
 
     integratedIntensity = np.zeros_like(points_x)
-    intensityRecord = np.zeros_like(img)
-    currentFeature = np.zeros_like(img)
-    pointRecord = np.zeros_like(img)
+    intensityRecord = np.zeros_like(image)
+    currentFeature = np.zeros_like(image)
+    pointRecord = np.zeros_like(image)
 
     # Setting max_radius to the width of the image, if none is set.
     if method == 'Voronoi':
         if maxRadius == 'Auto':
-            maxRadius = max(img.shape)
+            maxRadius = max(image.shape)
         points = np.array((points_y, points_x))
         distance_log = np.zeros_like(points[0])
 
-        for i in range(img.shape[0]):
-            for j in range(img.shape[1]):
+        for i in range(image.shape[0]):
+            for j in range(image.shape[1]):
 
                 # For every pixel the distance to all points must be
                 # calculated.
@@ -1020,8 +1021,8 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
                     pointRecord[i][j] = minIndex + 1
 
     elif method == 'Watershed':
-        points = _Make_Mask(img, points_x, points_y)
-        pointRecord = watershed(-img, points)
+        points = _make_mask(image, points_x, points_y)
+        pointRecord = watershed(-image, points)
 
     else:
         raise ValueError('Oops! You have asked for an unimplemented method.')
@@ -1029,7 +1030,7 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     for i in range(points[0].shape[0]):
         mask = i + 1
         currentMask = (pointRecord == mask)
-        currentFeature = currentMask * img
+        currentFeature = currentMask * image
         integratedIntensity[i] = sum(sum(currentFeature))
         intensityRecord += currentMask * integratedIntensity[i]
     pointRecord -= 1
@@ -1037,7 +1038,7 @@ def Integrate(img, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     return (integratedIntensity, intensityRecord, pointRecord)
 
 
-def _Make_Mask(figure, points_x, points_y):
+def _make_mask(figure, points_x, points_y):
     points = np.array((points_y, points_x))
     for i, x in enumerate(points):
         for j, y in enumerate(x):
