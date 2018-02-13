@@ -1,7 +1,7 @@
 import unittest
 from atomap.tools import array2signal1d, array2signal2d, Fingerprinter
 from atomap.tools import remove_atoms_from_image_using_2d_gaussian
-from atomap.tools import Integrate
+from atomap.tools import integrate
 import atomap.testing_tools as tt
 import numpy as np
 
