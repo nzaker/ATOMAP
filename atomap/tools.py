@@ -974,7 +974,7 @@ def integrate(image, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     --------
 
     >>> import atomap.api as am
-    >>> from atomap.tools import Integrate
+    >>> from atomap.tools import integrate
     >>> import hyperspy.api as hs
     >>> sublattice = am.dummy_data.get_simple_cubic_sublattice(
     ...        image_noise=True)
