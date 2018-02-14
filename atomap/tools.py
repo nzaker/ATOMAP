@@ -994,12 +994,12 @@ def integrate(image, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     intensityRecord = np.zeros_like(image)
     currentFeature = np.zeros_like(image)
     pointRecord = np.zeros_like(image)
+    points = np.array((points_y, points_x))
 
     # Setting max_radius to the width of the image, if none is set.
     if method == 'Voronoi':
         if maxRadius == 'Auto':
             maxRadius = max(image.shape)
-        points = np.array((points_y, points_x))
         distance_log = np.zeros_like(points[0])
 
         for i in range(image.shape[0]):
@@ -1021,19 +1021,18 @@ def integrate(image, points_x, points_y, method='Voronoi', maxRadius='Auto'):
                     pointRecord[i][j] = minIndex + 1
 
     elif method == 'Watershed':
-        points = _make_mask(image, points_x, points_y)
-        pointRecord = watershed(-image, points)
+        points_map = _make_mask(image, points_x, points_y)
+        pointRecord = watershed(-image, points_map)
 
     else:
         raise ValueError('Oops! You have asked for an unimplemented method.')
-
+    pointRecord -= 1
     for i in range(points[0].shape[0]):
-        mask = i + 1
+        mask = i
         currentMask = (pointRecord == mask)
         currentFeature = currentMask * image
         integratedIntensity[i] = sum(sum(currentFeature))
         intensityRecord += currentMask * integratedIntensity[i]
-    pointRecord -= 1
 
     return (integratedIntensity, intensityRecord, pointRecord)
 

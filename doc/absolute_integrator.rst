@@ -5,7 +5,7 @@ Absolute Integrator
 ===================
 
 The following section describes methods incorporated from the AbsoluteIntegrator code for normalisation and quantification of ADF STEM images.
-For a full example please see the notebook in the Atomap-demos respository: https://gitlab.com/atomap/atomap_demos
+For a full example please see the notebook in the Atomap-demos respository: https://gitlab.com/atomap/atomap_demos/adf_quantification
 
 Detector Normalisation
 ======================
@@ -18,7 +18,7 @@ To carry out normal detector normalisation only the detector image and experimen
 >>> image_normalised = am.quant.detector_normalisation(image,
                                                   det_image,
                                                   60)
-                                                  
+
 Flux Weighting Analysis
 =======================
 

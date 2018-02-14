@@ -312,7 +312,7 @@ The :py:func:`~atomap.tools.Integrate` function returns a list containing:
 #. Point record - An image where defining the locations of each integration
    region.
 
-.. image:: images/voronoi_cells1.png
+.. image:: images/integrate/Voronoi1.png
     :scale: 50 %
 
 .. code-block:: python
@@ -321,7 +321,7 @@ The :py:func:`~atomap.tools.Integrate` function returns a list containing:
     >>> sublattice = am.Sublattice(atom_positions, s.data)
     >>> integrated_s = am.integrate(s.data, sublattice.x_position, sublattice.y_position, method='Watershed')
 
-.. image:: images/watershed_cells1.png
+.. image:: images/integrate/Watershed1.png
     :scale: 50 %
 
 The Voronoi cell integration has a MaxRadius optional input which helps to
