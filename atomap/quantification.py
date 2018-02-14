@@ -52,6 +52,9 @@ def _func(x, a, b, c):
 
 
 def _radial_profile(data, centre):
+    '''Creates a 1D profile from an image by integrating azimuthally around a
+    central point'''
+
     y, x = np.indices((data.shape))
     r = np.sqrt((x - centre[0])**2 + (y - centre[1])**2)
     r = r.astype(np.int)
@@ -111,13 +114,17 @@ def find_flux_limits(flux_pattern, conv_angle):
     Parameters
     ----------
 
-    flux_pattern : NumPy array
+    flux_pattern : np.array
 
     conv_angle : float
 
     Returns
     -------
-    profiler:
+    profiler : object
+        From the InteractiveFluxAnalyser class containing coordinates selected
+        by the user.
+    flux_profile : np.array
+        1D array containing the values for the created flux_profile.
 
     """
     # normalise flux image to be scaled 0-1.
@@ -170,9 +177,13 @@ def analyse_flux(coords, flux_profile, conv_angle):
 
     Returns
     -------
-    normalised_image : NumPy array
-            The experimental image after detector normalisation such that,
-            all intensities are a fraction of the incident beam.
+    exponent : float
+        The value of the exponent from the fitted exponential curve.
+    outer_cutoff : float
+        The outer limit of the flux profile beyond which no more electrons are
+        seen. This is particularly important for experimental flux profiles
+        and large detectors where not all of the detector is illuminated during
+        a given experiment.
     """
     grad = np.gradient(flux_profile)
     x = np.array(range(flux_profile.shape[0]))
@@ -228,6 +239,7 @@ def detector_normalisation(image,
     """
     # thresholding the image to get a rough estimate of the active area and
     # the non-active area.
+    det_image = det_image.data
     threshold_image = _detector_threshold(det_image)
     # find a value for the average background intensity.
     background = (1 - threshold_image) * det_image
@@ -285,4 +297,6 @@ def detector_normalisation(image,
 
         detector_intensity = new_det[new_det.nonzero()].mean()
 
-    return (image - vacuum_intensity) / (detector_intensity - vacuum_intensity)
+    normalised_image = (image.data - vacuum_intensity) / (detector_intensity - vacuum_intensity)
+
+    return image._deepcopy_with_new_data(normalised_image, copy_variance=True)
