@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 
 
 def centeredDistanceMatrix(centre, det_image):
-    """Makes a matrix the same size as det_image centre around a particular point.
+    """Makes a matrix the same size as det_image centre around a particular
+    point.
 
     Parameters
     ----------
@@ -251,8 +252,9 @@ def detector_normalisation(image,
     # N.B. Currently this method will not work if the detector doesn't
     # fill at least half the image.
 
-    m = centeredDistanceMatrix((det_image.shape[0] / 2, det_image.shape[1] / 2),
-                               det_image)
+    m = centeredDistanceMatrix((det_image.shape[0] / 2,
+                                det_image.shape[1] / 2),
+                                det_image)
     centre_image = np.multiply((m < 512), (1 - threshold_image))
     centre = scipy.ndimage.measurements.center_of_mass(centre_image)
 
@@ -270,7 +272,8 @@ def detector_normalisation(image,
         # This limits the detector average value to only the region being,
         # illuminated by the beam.
         active_layer = np.multiply(active_layer, ((d * ratio) < outer_angle))
-        threshold_image = np.multiply(threshold_image, ((d * ratio) < outer_angle))
+        threshold_image = np.multiply(
+            threshold_image, ((d * ratio) < outer_angle))
 
     if flux_expo == 'None':
         # If no flux exponent is provided the detector sensitivity is simply
@@ -297,6 +300,7 @@ def detector_normalisation(image,
 
         detector_intensity = new_det[new_det.nonzero()].mean()
 
-    normalised_image = (image.data - vacuum_intensity) / (detector_intensity - vacuum_intensity)
+    normalised_image = (image.data - vacuum_intensity) / \
+        (detector_intensity - vacuum_intensity)
 
     return image._deepcopy_with_new_data(normalised_image, copy_variance=True)
