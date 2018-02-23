@@ -1,45 +1,34 @@
-import os
 import pytest
-import unittest
 import numpy as np
-from hyperspy.api import load
+from numpy.testing import assert_allclose
 from atomap.atom_position import Atom_Position
 from atomap.sublattice import Sublattice
 from atomap.testing_tools import MakeTestData
 import atomap.dummy_data as dd
 import atomap.atom_finding_refining as afr
-from atomap.atom_finding_refining import (
-        _make_mask_from_positions, _crop_mask_slice_indices,
-        _find_background_value, _find_median_upper_percentile,
-        _make_model_from_atom_list, _fit_atom_positions_with_gaussian_model,
-        _atom_to_gaussian_component, _make_circular_mask,
-        fit_atom_positions_gaussian, subtract_average_background,
-        do_pca_on_signal, get_atom_positions)
-
-my_path = os.path.dirname(__file__)
 
 
-class test_make_mask_from_positions(unittest.TestCase):
+class TestMakeMaskFromPositions:
 
     def test_radius_1(self):
         x, y, r = 10, 20, 1
         pos = [[x, y]]
         rad = [r]
-        mask = _make_mask_from_positions(pos, rad, (40, 40))
-        self.assertEqual(mask.sum(), 5.)
+        mask = afr._make_mask_from_positions(pos, rad, (40, 40))
+        assert mask.sum() == 5.
         mask[x, y] = False
         mask[x+r, y] = False
         mask[x-r, y] = False
         mask[x, y+1] = False
         mask[x, y-1] = False
-        self.assertFalse(mask.any())
+        assert not mask.any()
 
     def test_2_positions_radius_1(self):
         x0, y0, x1, y1, r = 10, 20, 20, 30, 1
         pos = [[x0, y0], [x1, y1]]
         rad = [r, r]
-        mask = _make_mask_from_positions(pos, rad, (40, 40))
-        self.assertEqual(mask.sum(), 10.)
+        mask = afr._make_mask_from_positions(pos, rad, (40, 40))
+        assert mask.sum() == 10.
         mask[x0, y0] = False
         mask[x0+r, y0] = False
         mask[x0-r, y0] = False
@@ -50,95 +39,92 @@ class test_make_mask_from_positions(unittest.TestCase):
         mask[x1-r, y1] = False
         mask[x1, y1+1] = False
         mask[x1, y1-1] = False
-        self.assertFalse(mask.any())
+        assert not mask.any()
 
     def test_radius_2(self):
         x, y, r = 10, 5, 2
         pos = [[x, y]]
         rad = [r]
-        mask = _make_mask_from_positions(pos, rad, (40, 40))
-        self.assertEqual(mask.sum(), 13.)
+        mask = afr._make_mask_from_positions(pos, rad, (40, 40))
+        assert mask.sum() == 13.
 
     def test_2_positions_radius_2(self):
         x0, y0, x1, y1, r = 5, 7, 17, 25, 2
         pos = [[x0, y0], [x1, y1]]
         rad = [r, r]
-        mask = _make_mask_from_positions(pos, rad, (40, 40))
-        self.assertEqual(mask.sum(), 26.)
+        mask = afr._make_mask_from_positions(pos, rad, (40, 40))
+        assert mask.sum() == 26.
 
     def test_wrong_input(self):
         x, y, r = 10, 5, 2
         pos = [[x, y]]
         rad = [r, r]
-        self.assertRaises(
-                ValueError,
-                _make_mask_from_positions,
-                position_list=pos,
-                radius_list=rad,
-                data_shape=(40, 40))
+        with pytest.raises(ValueError):
+            afr._make_mask_from_positions(
+                    position_list=pos, radius_list=rad, data_shape=(40, 40))
 
 
-class test_crop_mask(unittest.TestCase):
+class TestCropMask:
 
     def test_radius_1(self):
         x, y, r = 10, 20, 1
         pos = [[x, y]]
         rad = [r]
-        mask = _make_mask_from_positions(pos, rad, (40, 40))
-        x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
-        self.assertEqual(x0, x-r)
-        self.assertEqual(x1, x+r+1)
-        self.assertEqual(y0, y-r)
-        self.assertEqual(y1, y+r+1)
+        mask = afr._make_mask_from_positions(pos, rad, (40, 40))
+        x0, x1, y0, y1 = afr._crop_mask_slice_indices(mask)
+        assert x0 == x-r
+        assert x1 == x+r+1
+        assert y0 == y-r
+        assert y1 == y+r+1
         mask_crop = mask[x0:x1, y0:y1]
-        self.assertEqual(mask_crop.shape, (2*r+1, 2*r+1))
+        assert mask_crop.shape == (2*r+1, 2*r+1)
 
     def test_radius_2(self):
         x, y, r = 15, 10, 2
         pos = [[x, y]]
         rad = [r]
-        mask = _make_mask_from_positions(pos, rad, (40, 40))
-        x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
+        mask = afr._make_mask_from_positions(pos, rad, (40, 40))
+        x0, x1, y0, y1 = afr._crop_mask_slice_indices(mask)
         mask_crop = mask[x0:x1, y0:y1]
-        self.assertEqual(mask_crop.shape, (2*r+1, 2*r+1))
+        assert mask_crop.shape == (2*r+1, 2*r+1)
 
     def test_radius_5(self):
         x, y, r = 15, 10, 5
         pos = [[x, y]]
         rad = [r]
-        mask = _make_mask_from_positions(pos, rad, (40, 40))
-        x0, x1, y0, y1 = _crop_mask_slice_indices(mask)
+        mask = afr._make_mask_from_positions(pos, rad, (40, 40))
+        x0, x1, y0, y1 = afr._crop_mask_slice_indices(mask)
         mask_crop = mask[x0:x1, y0:y1]
-        self.assertEqual(mask_crop.shape, (2*r+1, 2*r+1))
+        assert mask_crop.shape == (2*r+1, 2*r+1)
 
 
-class test_find_background_value(unittest.TestCase):
-
-    def test_percentile(self):
-        data = np.arange(100)
-        value = _find_background_value(data, lowest_percentile=0.01)
-        self.assertEqual(value, 0.)
-        value = _find_background_value(data, lowest_percentile=0.1)
-        self.assertEqual(value, 4.5)
-        value = _find_background_value(data, lowest_percentile=0.5)
-        self.assertEqual(value, 24.5)
-
-
-class test_find_median_upper_percentile(unittest.TestCase):
+class TestFindBackgroundValue:
 
     def test_percentile(self):
         data = np.arange(100)
-        value = _find_median_upper_percentile(data, upper_percentile=0.01)
-        self.assertEqual(value, 99.)
-        value = _find_median_upper_percentile(data, upper_percentile=0.1)
-        self.assertEqual(value, 94.5)
-        value = _find_median_upper_percentile(data, upper_percentile=0.5)
-        self.assertEqual(value, 74.5)
+        value = afr._find_background_value(data, lowest_percentile=0.01)
+        assert value == 0.
+        value = afr._find_background_value(data, lowest_percentile=0.1)
+        assert value == 4.5
+        value = afr._find_background_value(data, lowest_percentile=0.5)
+        assert value == 24.5
 
 
-class test_make_model_from_atom_list(unittest.TestCase):
+class TestFindMedianUpperPercentile:
 
-    def setUp(self):
+    def test_percentile(self):
+        data = np.arange(100)
+        value = afr._find_median_upper_percentile(data, upper_percentile=0.01)
+        assert value == 99.
+        value = afr._find_median_upper_percentile(data, upper_percentile=0.1)
+        assert value == 94.5
+        value = afr._find_median_upper_percentile(data, upper_percentile=0.5)
+        assert value == 74.5
+
+
+class TestMakeModelFromAtomList:
+
+    def setup_method(self):
         image_data = np.random.random(size=(100, 100))
         position_list = []
         for x in range(10, 100, 5):
@@ -150,38 +136,38 @@ class test_make_model_from_atom_list(unittest.TestCase):
 
     def test_1_atom(self):
         sublattice = self.sublattice
-        model, mask = _make_model_from_atom_list(
+        model, mask = afr._make_model_from_atom_list(
                 [sublattice.atom_list[10]],
                 sublattice.image)
-        self.assertEqual(len(model), 1)
+        assert len(model) == 1
 
     def test_2_atom(self):
         sublattice = self.sublattice
-        model, mask = _make_model_from_atom_list(
+        model, mask = afr._make_model_from_atom_list(
                 sublattice.atom_list[10:12],
                 sublattice.image)
-        self.assertEqual(len(model), 2)
+        assert len(model) == 2
 
     def test_5_atom(self):
         sublattice = self.sublattice
-        model, mask = _make_model_from_atom_list(
+        model, mask = afr._make_model_from_atom_list(
                 sublattice.atom_list[10:15],
                 sublattice.image)
-        self.assertEqual(len(model), 5)
+        assert len(model) == 5
 
     def test_set_mask_radius_atom(self):
         atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
         image = np.random.random((20, 20))
-        model, mask = _make_model_from_atom_list(
+        model, mask = afr._make_model_from_atom_list(
                 atom_list=atom_list,
                 image_data=image,
                 mask_radius=3)
-        self.assertEqual(len(model), 2)
+        assert len(model) == 2
 
 
-class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
+class TestFitAtomPositionsWithGaussianModel:
 
-    def setUp(self):
+    def setup_method(self):
         test_data = MakeTestData(100, 100)
         x, y = np.mgrid[10:90:10j, 10:90:10j]
         x, y = x.flatten(), y.flatten()
@@ -193,38 +179,38 @@ class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
 
     def test_1_atom(self):
         sublattice = self.sublattice
-        g_list = _fit_atom_positions_with_gaussian_model(
+        g_list = afr._fit_atom_positions_with_gaussian_model(
                 [sublattice.atom_list[5]],
                 sublattice.image)
-        self.assertEqual(len(g_list), 1)
+        assert len(g_list) == 1
 
     def test_2_atom(self):
         sublattice = self.sublattice
-        g_list = _fit_atom_positions_with_gaussian_model(
+        g_list = afr._fit_atom_positions_with_gaussian_model(
                 sublattice.atom_list[5:7],
                 sublattice.image)
-        self.assertEqual(len(g_list), 2)
+        assert len(g_list) == 2
 
     def test_5_atom(self):
         sublattice = self.sublattice
-        g_list = _fit_atom_positions_with_gaussian_model(
+        g_list = afr._fit_atom_positions_with_gaussian_model(
                 sublattice.atom_list[5:10],
                 sublattice.image)
-        self.assertEqual(len(g_list), 5)
+        assert len(g_list) == 5
 
-    @unittest.expectedFailure
     def test_wrong_input_0(self):
         sublattice = self.sublattice
-        _fit_atom_positions_with_gaussian_model(
-                sublattice.atom_list[5],
-                sublattice.image)
+        with pytest.raises(TypeError):
+            afr._fit_atom_positions_with_gaussian_model(
+                    sublattice.atom_list[5],
+                    sublattice.image)
 
-    @unittest.expectedFailure
     def test_wrong_input_1(self):
         sublattice = self.sublattice
-        _fit_atom_positions_with_gaussian_model(
-                [sublattice.atom_list[5:7]],
-                sublattice.image)
+        with pytest.raises(TypeError):
+            afr._fit_atom_positions_with_gaussian_model(
+                    [sublattice.atom_list[5:7]],
+                    sublattice.image)
 
 
 class TestAtomToGaussianComponent:
@@ -235,7 +221,7 @@ class TestAtomToGaussianComponent:
                 x=x, y=y,
                 sigma_x=sX, sigma_y=sY,
                 rotation=r)
-        gaussian = _atom_to_gaussian_component(atom_position)
+        gaussian = afr._atom_to_gaussian_component(atom_position)
         assert x == gaussian.centre_x.value
         assert y == gaussian.centre_y.value
         assert sX == gaussian.sigma_x.value
@@ -247,7 +233,7 @@ class TestMakeCircularMask:
 
     def test_small_radius_1(self):
         imX, imY = 3, 3
-        mask = _make_circular_mask(1, 1, imX, imY, 1)
+        mask = afr._make_circular_mask(1, 1, imX, imY, 1)
         assert mask.size == imX*imY
         assert mask.sum() == 5
         true_index = [[1, 0], [0, 1], [1, 1],  [2, 1], [1, 2]]
@@ -255,23 +241,23 @@ class TestMakeCircularMask:
         for index in true_index:
             assert mask[index[0], index[1]]
         for index in false_index:
-            assert mask[index[0], index[1]] == False
+            assert not mask[index[0], index[1]]
 
     def test_all_true_mask(self):
         imX, imY = 5, 5
-        mask = _make_circular_mask(1, 1, imX, imY, 5)
+        mask = afr._make_circular_mask(1, 1, imX, imY, 5)
         assert mask.all()
         assert mask.size == imX*imY
         assert mask.sum() == imX*imY
 
     def test_all_false_mask(self):
-        mask = _make_circular_mask(10, 10, 5, 5, 3)
-        assert mask.any() == False
+        mask = afr._make_circular_mask(10, 10, 5, 5, 3)
+        assert not mask.any()
 
 
-class test_fit_atom_positions_gaussian(unittest.TestCase):
+class TestFitAtomPositionsGaussian:
 
-    def setUp(self):
+    def setup_method(self):
         test_data = MakeTestData(100, 100)
         x, y = np.mgrid[5:95:10j, 5:95:10j]
         x, y = x.flatten(), y.flatten()
@@ -286,13 +272,13 @@ class test_fit_atom_positions_gaussian(unittest.TestCase):
         atom_index = 55
         atom_list = [sublattice.atom_list[atom_index]]
         image_data = sublattice.image
-        fit_atom_positions_gaussian(atom_list, image_data)
-        self.assertAlmostEqual(
+        afr.fit_atom_positions_gaussian(atom_list, image_data)
+        assert_allclose(
                 sublattice.atom_list[atom_index].pixel_x,
-                self.x[atom_index], places=4)
-        self.assertAlmostEqual(
+                self.x[atom_index], rtol=1e-7)
+        assert_allclose(
                 sublattice.atom_list[atom_index].pixel_y,
-                self.y[atom_index], places=4)
+                self.y[atom_index], rtol=1e-7)
 
     def test_two_atoms(self):
         sublattice = self.sublattice
@@ -301,14 +287,14 @@ class test_fit_atom_positions_gaussian(unittest.TestCase):
         for index in atom_indices:
             atom_list.append(sublattice.atom_list[index])
         image_data = sublattice.image
-        fit_atom_positions_gaussian(atom_list, image_data)
+        afr.fit_atom_positions_gaussian(atom_list, image_data)
         for atom_index in atom_indices:
-            self.assertAlmostEqual(
+            assert_allclose(
                     sublattice.atom_list[atom_index].pixel_x,
-                    self.x[atom_index], places=4)
-            self.assertAlmostEqual(
+                    self.x[atom_index], rtol=1e-7)
+            assert_allclose(
                     sublattice.atom_list[atom_index].pixel_y,
-                    self.y[atom_index], places=4)
+                    self.y[atom_index], rtol=1e-7)
 
     def test_four_atoms(self):
         sublattice = self.sublattice
@@ -317,14 +303,14 @@ class test_fit_atom_positions_gaussian(unittest.TestCase):
         for index in atom_indices:
             atom_list.append(sublattice.atom_list[index])
         image_data = sublattice.image
-        fit_atom_positions_gaussian(atom_list, image_data)
+        afr.fit_atom_positions_gaussian(atom_list, image_data)
         for atom_index in atom_indices:
-            self.assertAlmostEqual(
+            assert_allclose(
                     sublattice.atom_list[atom_index].pixel_x,
-                    self.x[atom_index], places=4)
-            self.assertAlmostEqual(
+                    self.x[atom_index], rtol=1e-7)
+            assert_allclose(
                     sublattice.atom_list[atom_index].pixel_y,
-                    self.y[atom_index], places=4)
+                    self.y[atom_index], rtol=1e-7)
 
     def test_nine_atoms(self):
         sublattice = self.sublattice
@@ -333,33 +319,25 @@ class test_fit_atom_positions_gaussian(unittest.TestCase):
         for index in atom_indices:
             atom_list.append(sublattice.atom_list[index])
         image_data = sublattice.image
-        fit_atom_positions_gaussian(atom_list, image_data)
+        afr.fit_atom_positions_gaussian(atom_list, image_data)
         for atom_index in atom_indices:
-            self.assertAlmostEqual(
+            assert_allclose(
                     sublattice.atom_list[atom_index].pixel_x,
-                    self.x[atom_index], places=4)
-            self.assertAlmostEqual(
+                    self.x[atom_index], rtol=1e-7)
+            assert_allclose(
                     sublattice.atom_list[atom_index].pixel_y,
-                    self.y[atom_index], places=4)
+                    self.y[atom_index], rtol=1e-7)
 
 
 class TestGetAtomPositions:
 
-    def setup_method(self):
-        s_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
-        peak_separation = 0.15
-
-        s_adf = load(s_filename)
-        s_adf.change_dtype('float64')
-        s_adf_modified = subtract_average_background(s_adf)
-        self.s_adf_modified = do_pca_on_signal(s_adf_modified)
-        self.pixel_separation = peak_separation/s_adf.axes_manager[0].scale
-
     def test_find_number_of_columns(self):
-        peaks = get_atom_positions(
-                self.s_adf_modified,
-                self.pixel_separation)
-        assert len(peaks) == 238
+        test_data = MakeTestData(50, 50)
+        x, y = np.mgrid[5:48:5, 5:48:5]
+        x, y = x.flatten(), y.flatten()
+        test_data.add_atom_list(x, y)
+        peaks = afr.get_atom_positions(test_data.signal, separation=3)
+        assert len(peaks) == len(x)
 
     @pytest.mark.parametrize("separation", [-1000, -1, 0, 0.0, 0.2, 0.9999])
     def test_too_low_separation(self, separation):
@@ -368,9 +346,9 @@ class TestGetAtomPositions:
             afr.get_atom_positions(s, separation)
 
 
-class test_bad_fit_condition(unittest.TestCase):
+class TestBadFitCondition:
 
-    def setUp(self):
+    def setup_method(self):
         t = MakeTestData(40, 40)
         x, y = np.mgrid[5:40:10, 5:40:10]
         x, y = x.flatten(), y.flatten()
@@ -383,34 +361,34 @@ class test_bad_fit_condition(unittest.TestCase):
         atom = [sublattice.atom_list[6]]
         x0 = atom[0].pixel_x
         atom[0].pixel_x += 2
-        g = _fit_atom_positions_with_gaussian_model(
+        g = afr._fit_atom_positions_with_gaussian_model(
                 atom, sublattice.image, mask_radius=4)
-        self.assertAlmostEqual(g[0].centre_x.value, x0, places=1)
+        assert_allclose(g[0].centre_x.value, x0, rtol=1e-2)
 
     def test_initial_position_outside_mask_x(self):
         sublattice = self.sublattice
         atom = [sublattice.atom_list[6]]
         atom[0].pixel_x += 3
-        g = _fit_atom_positions_with_gaussian_model(
+        g = afr._fit_atom_positions_with_gaussian_model(
                 atom, sublattice.image, mask_radius=2)
-        self.assertFalse(g)
+        assert not g
 
     def test_initial_position_outside_mask_y(self):
         sublattice = self.sublattice
         atom = [sublattice.atom_list[6]]
         atom[0].pixel_y -= 4
-        g = _fit_atom_positions_with_gaussian_model(
+        g = afr._fit_atom_positions_with_gaussian_model(
                 atom, sublattice.image, mask_radius=2)
-        self.assertFalse(g)
+        assert not g
 
     def test_initial_position_outside_mask_xy(self):
         sublattice = self.sublattice
         atom = [sublattice.atom_list[6]]
         atom[0].pixel_y += 3
         atom[0].pixel_x += 3
-        g = _fit_atom_positions_with_gaussian_model(
+        g = afr._fit_atom_positions_with_gaussian_model(
                 atom, sublattice.image, mask_radius=2)
-        self.assertFalse(g)
+        assert not g
 
 
 class TestGetFeatureSeparation:
