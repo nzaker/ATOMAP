@@ -413,7 +413,7 @@ class test_bad_fit_condition(unittest.TestCase):
         self.assertFalse(g)
 
 
-class test_get_feature_separation(unittest.TestCase):
+class TestGetFeatureSeparation:
 
     def test_simple(self):
         s = dd.get_simple_cubic_signal()
@@ -454,3 +454,16 @@ class test_get_feature_separation(unittest.TestCase):
         s.change_dtype('float16')
         with pytest.raises(ValueError):
             afr.get_feature_separation(s, separation_range=(10, 15))
+
+    @pytest.mark.parametrize("separation_low", [-1000, -1, 0, 0.0, 0.2, 0.999])
+    def test_too_low_separation_low(self, separation_low):
+        separation_range = (separation_low, 3)
+        s = dd.get_simple_cubic_signal()
+        with pytest.raises(ValueError):
+            afr.get_feature_separation(s, separation_range)
+
+    @pytest.mark.parametrize("separation_range", [(10, 2), (1000, 2), (2, 1)])
+    def test_separation_range_bad(self, separation_range):
+        s = dd.get_simple_cubic_signal()
+        with pytest.raises(ValueError):
+            afr.get_feature_separation(s, separation_range)
