@@ -188,8 +188,8 @@ def get_feature_separation(
     """
     if separation_range[0] > separation_range[1]:
         raise ValueError(
-                "The lower range of the separation_range ({0}) can not be smaller "
-                "than the upper range ({1})".format(
+                "The lower range of the separation_range ({0}) can not be "
+                "smaller than the upper range ({1})".format(
                     separation_range[0], separation_range[0]))
     if separation_range[0] < 1:
         raise ValueError(

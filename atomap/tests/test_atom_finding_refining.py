@@ -227,7 +227,7 @@ class test_fit_atom_positions_with_gaussian_model(unittest.TestCase):
                 sublattice.image)
 
 
-class test_atom_to_gaussian_component(unittest.TestCase):
+class TestAtomToGaussianComponent:
 
     def test_simple(self):
         x, y, sX, sY, r = 7.1, 2.8, 2.1, 3.3, 1.9
@@ -236,37 +236,37 @@ class test_atom_to_gaussian_component(unittest.TestCase):
                 sigma_x=sX, sigma_y=sY,
                 rotation=r)
         gaussian = _atom_to_gaussian_component(atom_position)
-        self.assertEqual(x, gaussian.centre_x.value)
-        self.assertEqual(y, gaussian.centre_y.value)
-        self.assertEqual(sX, gaussian.sigma_x.value)
-        self.assertEqual(sY, gaussian.sigma_y.value)
-        self.assertEqual(r, gaussian.rotation.value)
+        assert x == gaussian.centre_x.value
+        assert y == gaussian.centre_y.value
+        assert sX == gaussian.sigma_x.value
+        assert sY == gaussian.sigma_y.value
+        assert r == gaussian.rotation.value
 
 
-class test_make_circular_mask(unittest.TestCase):
+class TestMakeCircularMask:
 
     def test_small_radius_1(self):
         imX, imY = 3, 3
         mask = _make_circular_mask(1, 1, imX, imY, 1)
-        self.assertEqual(mask.size, imX*imY)
-        self.assertEqual(mask.sum(), 5)
+        assert mask.size == imX*imY
+        assert mask.sum() == 5
         true_index = [[1, 0], [0, 1], [1, 1],  [2, 1], [1, 2]]
         false_index = [[0, 0], [0, 2], [2, 0],  [2, 2]]
         for index in true_index:
-            self.assertTrue(mask[index[0], index[1]])
+            assert mask[index[0], index[1]]
         for index in false_index:
-            self.assertFalse(mask[index[0], index[1]])
+            assert mask[index[0], index[1]] == False
 
     def test_all_true_mask(self):
         imX, imY = 5, 5
         mask = _make_circular_mask(1, 1, imX, imY, 5)
-        self.assertTrue(mask.all())
-        self.assertEqual(mask.size, imX*imY)
-        self.assertEqual(mask.sum(), imX*imY)
+        assert mask.all()
+        assert mask.size == imX*imY
+        assert mask.sum() == imX*imY
 
     def test_all_false_mask(self):
         mask = _make_circular_mask(10, 10, 5, 5, 3)
-        self.assertFalse(mask.any())
+        assert mask.any() == False
 
 
 class test_fit_atom_positions_gaussian(unittest.TestCase):
@@ -343,7 +343,7 @@ class test_fit_atom_positions_gaussian(unittest.TestCase):
                     self.y[atom_index], places=4)
 
 
-class test_get_atom_positions:
+class TestGetAtomPositions:
 
     def setup_method(self):
         s_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
@@ -365,7 +365,7 @@ class test_get_atom_positions:
     def test_too_low_separation(self, separation):
         s = dd.get_simple_cubic_signal()
         with pytest.raises(ValueError):
-            peaks = afr.get_atom_positions(s, separation)
+            afr.get_atom_positions(s, separation)
 
 
 class test_bad_fit_condition(unittest.TestCase):
