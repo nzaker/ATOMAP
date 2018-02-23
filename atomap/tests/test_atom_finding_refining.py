@@ -343,9 +343,9 @@ class test_fit_atom_positions_gaussian(unittest.TestCase):
                     self.y[atom_index], places=4)
 
 
-class test_get_atom_positions(unittest.TestCase):
+class test_get_atom_positions:
 
-    def setUp(self):
+    def setup_method(self):
         s_filename = os.path.join(my_path, "datasets", "test_ADF_cropped.hdf5")
         peak_separation = 0.15
 
@@ -359,7 +359,13 @@ class test_get_atom_positions(unittest.TestCase):
         peaks = get_atom_positions(
                 self.s_adf_modified,
                 self.pixel_separation)
-        self.assertEqual(len(peaks), 238)
+        assert len(peaks) == 238
+
+    @pytest.mark.parametrize("separation", [-1000, -1, 0, 0.0, 0.2, 0.9999])
+    def test_too_low_separation(self, separation):
+        s = dd.get_simple_cubic_signal()
+        with pytest.raises(ValueError):
+            peaks = afr.get_atom_positions(s, separation)
 
 
 class test_bad_fit_condition(unittest.TestCase):

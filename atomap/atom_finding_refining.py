@@ -51,6 +51,8 @@ def get_atom_positions(
     >>> peak_x = atom_positions[:,0]
     >>> peak_y = atom_positions[:,1]
     """
+    if separation < 1:
+        raise ValueError("Separation can not be smaller than 1")
     if pca:
         signal = do_pca_on_signal(signal)
     if subtract_background:
