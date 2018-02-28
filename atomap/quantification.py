@@ -19,7 +19,7 @@ def centeredDistanceMatrix(centre, det_image):
     NumPy Array
 
     """
-    # makes a matrix centre around tuble 'centre' the same size as the det_image.
+    # makes a matrix centred around 'centre' the same size as the det_image.
     x, y = np.meshgrid(range(det_image.shape[0]),
                        range(det_image.shape[0]))
     return np.sqrt((x - (centre[1]) + 1)**2 + (y - (centre[0]))**2)
