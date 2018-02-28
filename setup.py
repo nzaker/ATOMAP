@@ -41,8 +41,8 @@ setup(
             'atomap.tests.datasets': [
                 'test_ADF_cropped.hdf5',
                 'test_ABF_cropped.hdf5',
-                'test_atom_lattice.hdf5']
+                'test_atom_lattice.hdf5'],
             'atomap.example_data': [
-                'example_detector_image.hspy']
+                'example_detector_image.hspy'],
             }
 )
