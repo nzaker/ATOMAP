@@ -990,10 +990,10 @@ def integrate(image, points_x, points_y, method='Voronoi', maxRadius='Auto'):
 
     """
 
-    integratedIntensity = np.zeros_like(points_x)
-    intensityRecord = np.zeros_like(image)
-    currentFeature = np.zeros_like(image)
-    pointRecord = np.zeros_like(image)
+    integratedIntensity = np.zeros_like(points_x, dtype=float)
+    intensityRecord = np.zeros_like(image, dtype=float)
+    currentFeature = np.zeros_like(image, dtype=float)
+    pointRecord = np.zeros_like(image, dtype=int)
     points = np.array((points_y, points_x))
 
     # Setting max_radius to the width of the image, if none is set.
@@ -1031,7 +1031,7 @@ def integrate(image, points_x, points_y, method='Voronoi', maxRadius='Auto'):
         mask = i
         currentMask = (pointRecord == mask)
         currentFeature = currentMask * image
-        integratedIntensity[i] = sum(sum(currentFeature))
+        integratedIntensity[i] = currentFeature.sum()
         intensityRecord += currentMask * integratedIntensity[i]
 
     return (integratedIntensity, intensityRecord, pointRecord)
