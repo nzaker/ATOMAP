@@ -12,6 +12,7 @@ Detector Normalisation
 
 To carry out normal detector normalisation only the detector image and experimental image are needed.
 
+>>> import hyperspy.api as hs
 >>> import atomap.api as am
 >>> det_image = hs.load(images/Example_Det.hspy)
 >>> image = hs.load()
