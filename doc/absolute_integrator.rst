@@ -15,7 +15,7 @@ To carry out normal detector normalisation only the detector image and experimen
 >>> import hyperspy.api as hs
 >>> import atomap.api as am
 >>> det_image = hs.load("images/Example_Det.hspy")
->>> image = hs.load()
+>>> image = am.dummy_data.get_simple_cubic_signal(image_noise=True)
 >>> image_normalised = am.quant.detector_normalisation(image,
                                                   det_image,
                                                   60)
@@ -30,7 +30,7 @@ The detector flux weighting method is based on the following paper:
 
 ..code-block:: python
 
-  >>> image_normalised = am.quant.detector_normalisation (image,
+>>> image_normalised = am.quant.detector_normalisation (image,
                                                       det_image,
                                                       inner_angle=60,
                                                       outer_angle = 'None',
