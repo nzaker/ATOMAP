@@ -16,9 +16,7 @@ To carry out normal detector normalisation only the detector image and experimen
 >>> import atomap.api as am
 >>> det_image = am.example_data.get_detector_image_signal()
 >>> image = am.dummy_data.get_simple_cubic_signal(image_noise=True)
->>> image_normalised = am.quant.detector_normalisation(image,
-                                                  det_image,
-                                                  60)
+>>> image_normalised = am.quant.detector_normalisation(image, det_image, 60)
 
 Flux Weighting Analysis
 =======================
