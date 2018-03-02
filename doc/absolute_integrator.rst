@@ -28,7 +28,7 @@ The detector flux weighting method is based on the following paper:
 
 ..code-block:: python
 
->>> image_normalised = am.quant.detector_normalisation (image,
+>>> image_normalised = am.quant.detector_normalisation(image,
                                                       det_image,
                                                       inner_angle=60,
                                                       outer_angle = 'None',
