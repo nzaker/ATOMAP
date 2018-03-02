@@ -104,6 +104,23 @@ class TestInitSublattice:
             Sublattice(atom_positions, image_data)
 
 
+class TestSublatticeSingleAtom:
+
+    def setup_method(self):
+        x, y = 10, 12
+        test_data = tt.MakeTestData(20, 20)
+        test_data.add_atom(x, y)
+        self.signal = test_data.signal
+        self.atom_position_list = [[x, y], ]
+
+    def test_init(self):
+        sublattice = Sublattice(
+                self.atom_position_list, self.signal)
+        assert len(sublattice.atom_list) == 1
+        assert sublattice.x_position[0] == self.atom_position_list[0][0]
+        assert sublattice.y_position[0] == self.atom_position_list[0][1]
+
+
 class TestSublatticeWithAtomPlanes:
 
     def setup_method(self):
