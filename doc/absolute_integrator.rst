@@ -15,7 +15,7 @@ To carry out normal detector normalisation only the detector image and experimen
 >>> import hyperspy.api as hs
 >>> import atomap.api as am
 >>> det_image = am.example_data.get_detector_image_signal()
->>> image = hs.load()
+>>> image = am.dummy_data.get_simple_cubic_signal(image_noise=True)
 >>> image_normalised = am.quant.detector_normalisation(image,
                                                   det_image,
                                                   60)
