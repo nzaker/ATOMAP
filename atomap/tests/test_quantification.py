@@ -4,6 +4,7 @@ import math
 import atomap.quantification as quant
 from atomap.example import get_detector_image_signal
 
+
 class TestDetectorNormalisation(unittest.TestCase):
 
     def test_centered_distance_matrix(self):
@@ -24,7 +25,7 @@ class TestDetectorNormalisation(unittest.TestCase):
         self.assertEqual(np.shape(profile)[0], math.ceil(math.sqrt(2) * 256))
 
     def test_detector_normalisation(self):
-        det_image = .get_detector_image_signal()
+        det_image = get_detector_image_signal()
         img = am.dummy_data.get_simple_cubic_signal(image_noise=True)
         img = (img) * 300000 + 4000
         image_normalised = quant.detector_normalisation(img, det_image, 60)
