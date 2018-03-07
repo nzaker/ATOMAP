@@ -26,10 +26,6 @@ class TestDetectorNormalisation(unittest.TestCase):
         self.assertEqual(len(np.shape(profile)), 1)
         self.assertEqual(np.shape(profile)[0], math.ceil(math.sqrt(2) * 256))
 
-    def test_analyse_flux(self):
-        #need example flux profile for this test.
-
-
     def test_detector_normalisation(self):
         det_image = am.example_data.get_detector_image_signal()
         img = am.dummy_data.get_simple_cubic_signal(image_noise=True)
@@ -37,3 +33,6 @@ class TestDetectorNormalisation(unittest.TestCase):
         image_normalised = am.quant.detector_normalisation(img, det_image, 60)
         self.assertTrue(image_normalised.data.max() < 1)
         self.assertEqual(image_normalised.data.shape, img.data.shape)
+
+    #def test_analyse_flux(self):
+        #need example flux profile for this test
