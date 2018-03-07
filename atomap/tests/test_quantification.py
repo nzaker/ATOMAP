@@ -7,12 +7,13 @@ import atomap.quantification as quant
 #import atomap.dummy_data as dd
 #import atomap.testing_tools as tt
 
+
 class TestDetectorNormalisation(unittest.TestCase):
 
     def test_centered_distance_matrix(self):
-        s = quant.centeredDistanceMatrix((32,32), np.zeros((64,64)))
-        self.assertEqual(s[32,32], 1)
-        self.assertEqual(s[63,63], 44.553388, atol=1E-3)
+        s = quant.centeredDistanceMatrix((32, 32), np.zeros((64, 64)))
+        self.assertEqual(s[32, 32], 1)
+        self.assertEqual(s[63, 63], 44.553388, atol=1E-3)
 
     def test_detector_threshold(self):
         det_image = am.example_data.get_detector_image_signal()
@@ -29,10 +30,10 @@ class TestDetectorNormalisation(unittest.TestCase):
     def test_detector_normalisation(self):
         det_image = am.example_data.get_detector_image_signal()
         img = am.dummy_data.get_simple_cubic_signal(image_noise=True)
-        img = (img)*300000+4000
+        img = (img) * 300000 + 4000
         image_normalised = am.quant.detector_normalisation(img, det_image, 60)
         self.assertTrue(image_normalised.data.max() < 1)
         self.assertEqual(image_normalised.data.shape, img.data.shape)
 
-    #def test_analyse_flux(self):
-        #need example flux profile for this test
+    # def test_analyse_flux(self):
+        # need example flux profile for this test
