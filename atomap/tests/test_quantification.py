@@ -1,13 +1,8 @@
-import pytest
 import unittest
 import numpy as np
 import math
 import atomap.quantification as quant
 from atomap.example import get_detector_image_signal
-#from hyperspy.signals import Signal2D
-#import atomap.dummy_data as dd
-#import atomap.testing_tools as tt
-
 
 class TestDetectorNormalisation(unittest.TestCase):
 
@@ -19,7 +14,7 @@ class TestDetectorNormalisation(unittest.TestCase):
     def test_detector_threshold(self):
         det_image = get_detector_image_signal()
         threshold_image = quant._detector_threshold(det_image.date)
-        self.assertFalse(np.sum(threhold_image), 0)
+        self.assertFalse(np.sum(threshold_image), 0)
         self.assertEqual(det_image.data.shape, threshold_image.shape)
 
     def test_radial_profile(self):
