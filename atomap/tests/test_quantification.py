@@ -3,6 +3,7 @@ import numpy as np
 import math
 import atomap.quantification as quant
 from atomap.example_data import get_detector_image_signal
+from atomap.dummy_data import get_simple_cubic_signal
 
 
 class TestDetectorNormalisation(unittest.TestCase):
@@ -26,7 +27,7 @@ class TestDetectorNormalisation(unittest.TestCase):
 
     def test_detector_normalisation(self):
         det_image = get_detector_image_signal()
-        img = atomap.dummy_data.get_simple_cubic_signal(image_noise=True)
+        img = get_simple_cubic_signal(image_noise=True)
         img = (img) * 300000 + 4000
         image_normalised = quant.detector_normalisation(img, det_image, 60)
         self.assertTrue(image_normalised.data.max() < 1)
