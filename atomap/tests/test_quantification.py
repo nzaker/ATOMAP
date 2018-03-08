@@ -11,7 +11,7 @@ class TestDetectorNormalisation(unittest.TestCase):
     def test_centered_distance_matrix(self):
         s = quant.centeredDistanceMatrix((32, 32), np.zeros((64, 64)))
         self.assertEqual(s[32, 32], 1)
-        self.assertEqual(s[63, 63], 44.5533388, 0.001)
+        self.assertEqual(s[63, 63], np.sqrt((63-31)**2 + (63-32)**2))
 
     def test_detector_threshold(self):
         det_image = get_detector_image_signal()
