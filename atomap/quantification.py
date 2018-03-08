@@ -246,7 +246,6 @@ def detector_normalisation(image,
     # find a value for the average background intensity.
     background = (1 - threshold_image) * det_image
     vacuum_intensity = background[background.nonzero()].mean()
-    print(vacuum_intensity)
     # create an image where all background is set to zero.
     active_layer = threshold_image * det_image
 
@@ -301,7 +300,6 @@ def detector_normalisation(image,
         new_det = np.multiply(active_layer, flux)
 
         detector_intensity = new_det[new_det.nonzero()].mean()
-    print(detector_intensity)
     normalised_image = (image.data - vacuum_intensity) / \
         (detector_intensity - vacuum_intensity)
 
