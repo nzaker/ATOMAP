@@ -1,8 +1,7 @@
-import unittest
 import atomap.dummy_data as dd
 
 
-class test_dummy_data(unittest.TestCase):
+class TestDummyData:
 
     def test_make_simple_cubic_testdata(self):
         dd._make_simple_cubic_testdata()
@@ -58,34 +57,32 @@ class test_dummy_data(unittest.TestCase):
         s2.plot()
 
 
-class dummy_data_fantasite(unittest.TestCase):
+class TestDummyDataFantasite:
 
     def test_signal(self):
         s = dd.get_fantasite()
         s.plot()
         s1 = dd.get_fantasite()
-        self.assertTrue((s.data == s1.data).all())
+        assert (s.data == s1.data).all()
 
     def test_sublattice(self):
         sublattice = dd.get_fantasite_sublattice()
-        self.assertEqual(
-                len(sublattice.x_position), len(sublattice.y_position))
+        assert len(sublattice.x_position) == len(sublattice.y_position)
 
     def test_atom_lattice(self):
         atom_lattice = dd.get_fantasite_atom_lattice()
-        self.assertEqual(len(atom_lattice.sublattice_list), 2)
+        assert len(atom_lattice.sublattice_list) == 2
 
 
-class dummy_data_distorted_cubic(unittest.TestCase):
+class TestDummyDataDistortedCubic:
 
     def test_signal(self):
         s0 = dd.get_distorted_cubic_signal(image_noise=False)
         s1 = dd.get_distorted_cubic_signal(image_noise=True)
         s0.plot()
         s1.plot()
-        self.assertFalse((s0.data == s1.data).all())
+        assert not (s0.data == s1.data).all()
 
     def test_sublattice(self):
         sublattice = dd.get_distorted_cubic_sublattice()
-        self.assertEqual(
-                len(sublattice.x_position), len(sublattice.y_position))
+        assert len(sublattice.x_position) == len(sublattice.y_position)

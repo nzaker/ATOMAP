@@ -1,5 +1,4 @@
 import pytest
-import unittest
 import numpy as np
 import atomap.tools as to
 from hyperspy.signals import Signal2D
@@ -9,25 +8,25 @@ import atomap.dummy_data as dd
 import atomap.testing_tools as tt
 
 
-class TestArray2Signal(unittest.TestCase):
+class TestArray2Signal:
 
     def test_array2signal2d(self):
         array = np.arange(100).reshape(10, 10)
         scale = 0.2
         s = array2signal2d(array, scale=scale)
-        self.assertEqual(s.axes_manager[0].scale, scale)
-        self.assertEqual(s.axes_manager[1].scale, scale)
-        self.assertEqual(s.axes_manager.shape, array.shape)
+        assert s.axes_manager[0].scale == scale
+        assert s.axes_manager[1].scale == scale
+        assert s.axes_manager.shape == array.shape
 
     def test_array2signal1d(self):
         array = np.arange(100)
         scale = 0.2
         s = array2signal1d(array, scale=scale)
-        self.assertEqual(s.axes_manager[0].scale, scale)
-        self.assertEqual(s.axes_manager.shape, array.shape)
+        assert s.axes_manager[0].scale == scale
+        assert s.axes_manager.shape == array.shape
 
 
-class TestFingerprinter(unittest.TestCase):
+class TestFingerprinter:
 
     def test_running_simple(self):
         xN, yN, n = 3, 3, 60
@@ -35,7 +34,7 @@ class TestFingerprinter(unittest.TestCase):
         fp = Fingerprinter()
         fp.fit(point_list)
         clusters = (xN*2+1)*(yN*2+1)-1
-        self.assertEqual(fp.cluster_centers_.shape[0], clusters)
+        assert fp.cluster_centers_.shape[0] == clusters
 
     def test_running_advanced(self):
         xN, yN, xS, yS, n = 2, 2, 9, 12, 70
@@ -56,12 +55,12 @@ class TestFingerprinter(unittest.TestCase):
                             bool_list.append(True)
                             break
         clusters = (xN*2+1)*(yN*2+1)-1
-        self.assertEqual(len(bool_list), clusters)
+        assert len(bool_list) == clusters
 
 
-class test_remove_atoms_from_image_using_2d_gaussian(unittest.TestCase):
+class TestRemoveAtomsFromImageUsing2dGaussian:
 
-    def setUp(self):
+    def setup_method(self):
         test_data = tt.MakeTestData(520, 520)
         x, y = np.mgrid[10:510:8j, 10:510:8j]
         x, y = x.flatten(), y.flatten()
