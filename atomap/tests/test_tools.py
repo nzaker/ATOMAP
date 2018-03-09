@@ -81,10 +81,10 @@ class test_remove_atoms_from_image_using_2d_gaussian(unittest.TestCase):
 
 
 @pytest.mark.parametrize(
-        "x,y,sx,sy,ox,oy", [
-            (20, 20, 1, 1, 0, 0), (50, 20, 1, 1, 0, 0),
-            (20, 20, 0.5, 2, 0, 0), (20, 20, 0.5, 2, 10, 5),
-            (50, 20, 0.5, 4, -10, 20), (15, 50, 0.7, 2.3, -10, -5)])
+    "x,y,sx,sy,ox,oy", [
+        (20, 20, 1, 1, 0, 0), (50, 20, 1, 1, 0, 0),
+        (20, 20, 0.5, 2, 0, 0), (20, 20, 0.5, 2, 10, 5),
+        (50, 20, 0.5, 4, -10, 20), (15, 50, 0.7, 2.3, -10, -5)])
 def test_get_signal_centre(x, y, sx, sy, ox, oy):
     s = Signal2D(np.zeros((y, x)))
     print(s)
@@ -92,8 +92,8 @@ def test_get_signal_centre(x, y, sx, sy, ox, oy):
     am[0].scale, am[0].offset, am[1].scale, am[1].offset = sx, ox, sy, oy
     xC, yC = to._get_signal_centre(s)
     print(xC, yC)
-    assert xC == ((0.5*(x-1)*sx) + ox)
-    assert yC == ((0.5*(y-1)*sy) + oy)
+    assert xC == ((0.5 * (x - 1) * sx) + ox)
+    assert yC == ((0.5 * (y - 1) * sy) + oy)
 
 
 class TestRotatePointsAroundSignalCentre:
@@ -106,30 +106,30 @@ class TestRotatePointsAroundSignalCentre:
     @pytest.mark.parametrize("rot", [10, 30, 60, 90, 180, 250])
     def test_simple_rotation(self, rot):
         x_rot, y_rot = to.rotate_points_around_signal_centre(
-                self.s, self.x, self.y, rot)
+            self.s, self.x, self.y, rot)
         assert len(self.x) == len(x_rot)
         assert len(self.y) == len(y_rot)
 
     @pytest.mark.parametrize("rot", [0, 360])
     def test_zero_rotation(self, rot):
         x_rot, y_rot = to.rotate_points_around_signal_centre(
-                self.s, self.x, self.y, rot)
+            self.s, self.x, self.y, rot)
         np.testing.assert_allclose(self.x, x_rot)
         np.testing.assert_allclose(self.y, y_rot)
 
     def test_180_double_rotation(self):
         x_rot, y_rot = to.rotate_points_around_signal_centre(
-                self.s, self.x, self.y, 180)
+            self.s, self.x, self.y, 180)
         x_rot, y_rot = to.rotate_points_around_signal_centre(
-                self.s, x_rot, y_rot, 180)
+            self.s, x_rot, y_rot, 180)
         np.testing.assert_allclose(self.x, x_rot)
         np.testing.assert_allclose(self.y, y_rot)
 
     def test_90_double_rotation(self):
         x_rot, y_rot = to.rotate_points_around_signal_centre(
-                self.s, self.x, self.y, 90)
+            self.s, self.x, self.y, 90)
         x_rot, y_rot = to.rotate_points_around_signal_centre(
-                self.s, x_rot, y_rot, -90)
+            self.s, x_rot, y_rot, -90)
         np.testing.assert_allclose(self.x, x_rot)
         np.testing.assert_allclose(self.y, y_rot)
 
@@ -143,16 +143,16 @@ class TestRotatePointsAndSignal:
 
     def test_simple_rotation(self):
         s_rot, x_rot, y_rot = to.rotate_points_and_signal(
-                self.s, self.x, self.y, 180)
+            self.s, self.x, self.y, 180)
         assert self.s.axes_manager.shape == s_rot.axes_manager.shape
         assert len(self.x) == len(x_rot)
         assert len(self.y) == len(y_rot)
 
     def test_double_180_rotation(self):
         s_rot, x_rot, y_rot = to.rotate_points_and_signal(
-                self.s, self.x, self.y, 180)
+            self.s, self.x, self.y, 180)
         s_rot, x_rot, y_rot = to.rotate_points_and_signal(
-                s_rot, x_rot, y_rot, 180)
+            s_rot, x_rot, y_rot, 180)
         np.testing.assert_allclose(self.x, x_rot)
         np.testing.assert_allclose(self.y, y_rot)
 
@@ -166,15 +166,15 @@ class TestFliplrPointsAroundSignalCentre:
 
     def test_simple_flip(self):
         x_flip, y_flip = to.fliplr_points_around_signal_centre(
-                self.s, self.x, self.y)
+            self.s, self.x, self.y)
         assert len(self.x) == len(x_flip)
         assert len(self.y) == len(y_flip)
 
     def test_flip_double(self):
         x_flip, y_flip = to.fliplr_points_around_signal_centre(
-                self.s, self.x, self.y)
+            self.s, self.x, self.y)
         x_flip, y_flip = to.fliplr_points_around_signal_centre(
-                self.s, x_flip, y_flip)
+            self.s, x_flip, y_flip)
         np.testing.assert_allclose(self.x, x_flip)
         np.testing.assert_allclose(self.y, y_flip)
 
@@ -188,9 +188,9 @@ class TestFliplrPointsAndSignal:
 
     def test_simple_flip(self):
         s_flip, x_flip, y_flip = to.fliplr_points_and_signal(
-                self.s, self.x, self.y)
+            self.s, self.x, self.y)
         s_flip, x_flip, y_flip = to.fliplr_points_and_signal(
-                s_flip, x_flip, y_flip)
+            s_flip, x_flip, y_flip)
         np.testing.assert_allclose(self.s.data, s_flip.data)
         np.testing.assert_allclose(self.x, x_flip)
         np.testing.assert_allclose(self.y, y_flip)
@@ -223,21 +223,22 @@ class test_integrate(unittest.TestCase):
                             95, 95, 95, 95, 95, 95, 95, 95, 95]
 
     def test_running_2D(self):
-        result = integrate(self.test_data_2D, self.x_positions, self.y_positions)
+        result = integrate(self.test_data_2D,
+                           self.x_positions, self.y_positions)
         np.testing.assert_allclose(np.sum(result[0]),
                                    np.sum(self.test_data_2D),
                                    rtol=0.011)
         self.assertTrue(self.test_data_2D.data.shape, result[1].data.shape)
         self.assertTrue(result[0].shape, (90,))
-        self.TestCase.assertTrue(result[2].shape, (100,110))
+        self.TestCase.assertTrue(result[2].shape, (100, 110))
 
     def test_running_3d(self):
         result = integrate(self.test_data_3D,
-                        self.x_positions,
-                        self.y_positions)
+                           self.x_positions,
+                           self.y_positions)
         np.testing.assert_allclose(np.sum(result[0]),
                                    np.sum(self.test_data_3D),
                                    rtol=0.011)
         self.assertTrue(self.test_data_3D.data.shape, result[1].data.shape)
-        self.TestCase.assertTrue(result[0].shape, (90,20))
-        self.TestCase.assertTrue(result[2].shape, (100,110))
+        self.TestCase.assertTrue(result[0].shape, (90, 20))
+        self.TestCase.assertTrue(result[2].shape, (100, 110))
