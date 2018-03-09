@@ -195,11 +195,12 @@ class TestFliplrPointsAndSignal:
         np.testing.assert_allclose(self.y, y_flip)
 
 
-class test_adf_quantification(unittest.TestCase):
+class test_integrate(unittest.TestCase):
 
     def setUp(self):
-        test_data = np.random.rand(100, 100)
-        self.test_data = test_data
+        test_data_2D = hs.signals.Signal2D(np.random.rand(100, 110))
+        self.test_data_2D = test_data_2D
+        test_data_3D = hs.signals.Signal2D(np.random.rand(100, 110, 20))
         self.x_positions = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
                             5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
                             5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
@@ -220,8 +221,22 @@ class test_adf_quantification(unittest.TestCase):
                             85, 85, 85, 85, 85, 85, 85, 85, 85,
                             95, 95, 95, 95, 95, 95, 95, 95, 95]
 
-    def test_running(self):
-        result = integrate(self.test_data, self.x_positions, self.y_positions)
+    def test_running_2D(self):
+        result = integrate(self.test_data_2D, self.x_positions, self.y_positions)
         np.testing.assert_allclose(np.sum(result[0]),
-                                   np.sum(self.test_data),
+                                   np.sum(self.test_data_2D),
                                    rtol=0.011)
+        self.assertTrue(self.test_data_2D.data.shape, result[1].data.shape)
+        self.assertTrue(result[0].shape, (90,))
+        self.TestCase.assertTrue(result[2].shape, (100,110))
+
+    def test_running_3d(self):
+        result = integrate(self.test_data_3D,
+                        self.x_positions,
+                        self.y_positions)
+        np.testing.assert_allclose(np.sum(result[0]),
+                                   np.sum(self.test_data_3D),
+                                   rtol=0.011)
+        self.assertTrue(self.test_data_3D.data.shape, result[1].data.shape)
+        self.TestCase.assertTrue(result[0].shape, (90,20))
+        self.TestCase.assertTrue(result[2].shape, (100,110))

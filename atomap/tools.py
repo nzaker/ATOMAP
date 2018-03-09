@@ -940,15 +940,16 @@ class Fingerprinter:
         return self
 
 
-def integrate(image, points_x, points_y, method='Voronoi', maxRadius='Auto'):
-    """Given an image a set of points and a maximum outer radius,
+def integrate(s, points_x, points_y, method='Voronoi', maxRadius='Auto'):
+    """Given a spectrum image a set of points and a maximum outer radius,
     this function integrates around each point in an image, using either
     Voronoi cell or watershed segmentation methods.
 
     Parameters
     ----------
-    image : NumPy array
-        assumed to be 2D in the first instance.
+    s : hyperspy spectrum
+        Assuming 2D, 3D or 4D dataset where the spatial dimensions are 2D and
+        any remaining dimensions are spectral.
     points : list
         Detailed list of the x and y coordinates of each point of
         interest within the image.
@@ -961,14 +962,16 @@ def integrate(image, points_x, points_y, method='Voronoi', maxRadius='Auto'):
 
     Returns
     -------
-    integratedIntensity : list
-        List the same length of points giving the integrated intensities.
-    intensityRecord : NumPy array, same size as image
-        Each pixel in a particular segment or region has the value of the
-        integration.
+    integratedIntensity : np.array
+        An array where dimension 0 is the same length as points, and subsequent
+        subsequent dimension are energy dimensions.
+    intensityRecord : hyperspy spectrum, same size as s
+        Each pixel/voxel in a particular segment or region has the value of the
+        integration, value.
     pointRecord : NumPy array, same size as image
-        Image showing where each integration region is, pixels in region 1
-        all have a value of 1, pixels in region 2 all have a value of 2 etc.
+        Image showing where each integration region is, pixels equating to point
+        0 (integratedIntensity[0]) all have value 0, all pixels equating to
+        integratedIntnsity[1] all have value 1 etc.
 
     Examples
     --------
@@ -978,24 +981,26 @@ def integrate(image, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     >>> import hyperspy.api as hs
     >>> sublattice = am.dummy_data.get_simple_cubic_sublattice(
     ...        image_noise=True)
+    >>> image = hs.signals.Signal2D(sublattice.image)
     >>> i_points, i_record, p_record = integrate(
-    ...        image=sublattice.image,
+    ...        image,
     ...        points_x=sublattice.x_position,
     ...        points_y=sublattice.y_position)
-    >>> s = hs.signals.Signal2D(i_record)
-    >>> s.plot()
+    >>> i_record.plot()
 
-    **Note: Should try and make sure this also works with 3D or 4D np.array
-    such that spectrum images could be integrated in the same way.
+    NB: Works in princple with 3D and 4D data sets but will quickly hit a
+    memory error with large sizes.
 
     """
 
-    integratedIntensity = np.zeros_like(points_x, dtype=float)
-    intensityRecord = np.zeros_like(image, dtype=float)
-    currentFeature = np.zeros_like(image, dtype=float)
-    pointRecord = np.zeros_like(image, dtype=int)
+    intensityRecord = np.zeros_like(s.data, dtype=float)
+    currentFeature = np.zeros_like(s.data.T, dtype=float)
+    pointRecord = np.zeros(s.axes_manager.shape[0:2], dtype=int)
+    integratedIntensity = np.zeros_like(sum(sum(currentFeature.T)))
+    integratedIntensity = np.dstack(integratedIntensity for i in range(len(points_x)))
+    integratedIntensity = np.squeeze(integratedIntensity.T)
     points = np.array((points_y, points_x))
-
+    image = s.data
     # Setting max_radius to the width of the image, if none is set.
     if method == 'Voronoi':
         if maxRadius == 'Auto':
@@ -1016,9 +1021,9 @@ def integrate(image, points_x, points_y, method='Voronoi', maxRadius='Auto'):
                 minIndex = np.argmin(distance_log)
 
                 if distMin >= maxRadius:
-                    pointRecord[i][j] = 0
+                    pointRecord[j][i] = 0
                 else:
-                    pointRecord[i][j] = minIndex + 1
+                    pointRecord[j][i] = minIndex + 1
 
     elif method == 'Watershed':
         points_map = _make_mask(image, points_x, points_y)
@@ -1030,24 +1035,13 @@ def integrate(image, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     for i in range(points[0].shape[0]):
         mask = i
         currentMask = (pointRecord == mask)
-        currentFeature = currentMask * image
-        integratedIntensity[i] = currentFeature.sum()
-        intensityRecord += currentMask * integratedIntensity[i]
+        currentFeature = currentMask * image.T
+        integratedIntensity[i] = sum(sum(currentFeature.T)).T
+        currentFeature = currentMask * currentFeature
+        intensityRecord += currentFeature.T
 
-    return (integratedIntensity, intensityRecord, pointRecord)
-
-
-def _make_mask(figure, points_x, points_y):
-    points = np.array((points_y, points_x))
-    for i, x in enumerate(points):
-        for j, y in enumerate(x):
-            points[i][j] = int(round(y))
-    points = points.T
-    points.astype(int)
-    image = np.zeros_like(figure)
-    for x, i in enumerate(points.astype(int)):
-        image[i[0]][i[1]] = x + 1
-    return image
+    intensityRecord = s._deepcopy_with_new_data(intensityRecord, copy_variance=True)
+    return (integratedIntensity, intensityRecord, pointRecord.T)
 
 
 def fliplr_points_and_signal(signal, x_array, y_array):
