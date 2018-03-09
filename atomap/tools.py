@@ -1032,13 +1032,11 @@ def integrate(s, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     else:
         raise ValueError('Oops! You have asked for an unimplemented method.')
     pointRecord -= 1
-    for i in range(points[0].shape[0]):
-        mask = i
-        currentMask = (pointRecord == mask)
+    for point in range(points[0].shape[0]):
+        currentMask = (pointRecord == point)
         currentFeature = currentMask * image.T
-        integratedIntensity[i] = sum(sum(currentFeature.T)).T
-        currentFeature = currentMask * currentFeature
-        intensityRecord += currentFeature.T
+        integratedIntensity[point] = sum(sum(currentFeature.T)).T
+        intensityRecord += (currentFeature > 0).T *  sum(sum(currentFeature.T))
 
     intensityRecord = s._deepcopy_with_new_data(intensityRecord, copy_variance=True)
     return (integratedIntensity, intensityRecord, pointRecord.T)

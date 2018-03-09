@@ -8,6 +8,7 @@ from atomap.tools import remove_atoms_from_image_using_2d_gaussian
 import atomap.dummy_data as dd
 from atomap.tools import integrate
 import atomap.testing_tools as tt
+import hyperspy as hs
 
 
 class TestArray2Signal(unittest.TestCase):
