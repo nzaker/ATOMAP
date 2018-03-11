@@ -1,10 +1,9 @@
-import unittest
 from atomap.atom_plane import Atom_Plane
 from atomap.atom_position import Atom_Position
 from atomap.atom_lattice import Atom_Lattice
 
 
-class test_create_atom_plane_object(unittest.TestCase):
+class TestCreateAtomPlaneObject:
 
     def test_create_atom_plane_object(self):
         atom_list = [
@@ -18,9 +17,9 @@ class test_create_atom_plane_object(unittest.TestCase):
         Atom_Plane(atom_list, zone_vector, atom_lattice)
 
 
-class test_atom_plane_properties(unittest.TestCase):
+class TestAtomPlaneProperties:
 
-    def setUp(self):
+    def setup_method(self):
         x, y = [1, 2], [2, 4]
         sX, sY, r = [3.1, 1.2], [2.2, 1.1], [0.5, 0.4]
         A_g = [10.2, 5.2]
@@ -42,27 +41,27 @@ class test_atom_plane_properties(unittest.TestCase):
         self.A_g = A_g
 
     def test_x_position(self):
-        self.assertEqual(self.atom_plane.x_position, self.x)
+        assert self.atom_plane.x_position == self.x
 
     def test_y_position(self):
-        self.assertEqual(self.atom_plane.y_position, self.y)
+        assert self.atom_plane.y_position == self.y
 
     def test_sx_position(self):
-        self.assertEqual(self.atom_plane.sigma_x, self.sX)
+        assert self.atom_plane.sigma_x == self.sX
 
     def test_sy_position(self):
-        self.assertEqual(self.atom_plane.sigma_y, self.sY)
+        assert self.atom_plane.sigma_y == self.sY
 
     def test_sigma_average(self):
         sigma_ave = [0.5*(self.sX[0]+self.sY[0]), 0.5*(self.sX[1]+self.sY[1])]
-        self.assertEqual(self.atom_plane.sigma_average, sigma_ave)
+        assert self.atom_plane.sigma_average == sigma_ave
 
     def test_r_position(self):
-        self.assertEqual(self.atom_plane.rotation, self.r)
+        assert self.atom_plane.rotation == self.r
 
     def test_ellipticity_position(self):
         elli = [self.sX[0]/self.sY[0], self.sX[1]/self.sY[1]]
-        self.assertEqual(self.atom_plane.ellipticity, elli)
+        assert self.atom_plane.ellipticity == elli
 
     def test_amplitude_gaussian(self):
-        self.assertEqual(self.atom_plane.amplitude_gaussian, self.A_g)
+        assert self.atom_plane.amplitude_gaussian == self.A_g
