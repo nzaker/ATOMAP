@@ -1008,6 +1008,8 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
     if method == 'Voronoi':
         if max_radius == 'Auto':
             max_radius = max(image.shape)
+        elif max_radius <= 0:
+            raise ValueError("max_radius must be higher than 0.")
         distance_log = np.zeros_like(points[0])
 
         for i in range(image.shape[0]):
