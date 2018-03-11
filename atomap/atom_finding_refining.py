@@ -51,6 +51,8 @@ def get_atom_positions(
     >>> peak_x = atom_positions[:,0]
     >>> peak_y = atom_positions[:,1]
     """
+    if separation < 1:
+        raise ValueError("Separation can not be smaller than 1")
     if pca:
         signal = do_pca_on_signal(signal)
     if subtract_background:
@@ -184,6 +186,16 @@ def get_feature_separation(
     >>> s1 = get_feature_separation(s)
 
     """
+    if separation_range[0] > separation_range[1]:
+        raise ValueError(
+                "The lower range of the separation_range ({0}) can not be "
+                "smaller than the upper range ({1})".format(
+                    separation_range[0], separation_range[0]))
+    if separation_range[0] < 1:
+        raise ValueError(
+                "The lower range of the separation_range can not be below 1. "
+                "Current value: {0}".format(separation_range[0]))
+
     if signal.data.dtype is np.dtype('float16'):
         raise ValueError(
                 "signal has dtype float16, which is not supported "

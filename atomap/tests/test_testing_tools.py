@@ -1,9 +1,11 @@
 import unittest
+import pytest
+from pytest import approx
 import numpy as np
 import atomap.testing_tools as tt
 
 
-class TestMakeTestData(unittest.TestCase):
+class TestMakeTestData:
 
     def test_simple_init(self):
         tt.MakeTestData(100, 100)
@@ -11,47 +13,47 @@ class TestMakeTestData(unittest.TestCase):
     def test_get_signal(self):
         imX0, imY0 = 100, 100
         test_data0 = tt.MakeTestData(imX0, imY0)
-        self.assertEqual((imX0, imY0), test_data0.data_extent)
-        self.assertEqual(test_data0.signal.axes_manager.shape, (imX0, imY0))
-        self.assertFalse(test_data0.signal.data.any())
+        assert (imX0, imY0) == test_data0.data_extent
+        assert test_data0.signal.axes_manager.shape == (imX0, imY0)
+        assert not test_data0.signal.data.any()
 
         imX1, imY1 = 100, 39
         test_data1 = tt.MakeTestData(imX1, imY1)
-        self.assertEqual((imX1, imY1), test_data1.data_extent)
-        self.assertEqual(test_data1.signal.axes_manager.shape, (imX1, imY1))
+        assert (imX1, imY1) == test_data1.data_extent
+        assert test_data1.signal.axes_manager.shape == (imX1, imY1)
 
         imX2, imY2 = 34, 65
         test_data2 = tt.MakeTestData(imX2, imY2)
-        self.assertEqual((imX2, imY2), test_data2.data_extent)
-        self.assertEqual(test_data2.signal.axes_manager.shape, (imX2, imY2))
+        assert (imX2, imY2) == test_data2.data_extent
+        assert test_data2.signal.axes_manager.shape == (imX2, imY2)
 
     def test_add_image_noise(self):
         test_data0 = tt.MakeTestData(1000, 1000)
         mu0, sigma0 = 0, 0.005
         test_data0.add_image_noise(mu=mu0, sigma=sigma0, only_positive=False)
         s0 = test_data0.signal
-        self.assertAlmostEqual(s0.data.mean(), mu0, places=2)
-        self.assertAlmostEqual(s0.data.std(), sigma0, places=2)
+        assert approx(s0.data.mean(), abs=1e-5) == mu0
+        assert approx(s0.data.std(), abs=1e-3) == sigma0
 
         test_data1 = tt.MakeTestData(1000, 1000)
         mu1, sigma1 = 10, 0.5
         test_data1.add_image_noise(mu=mu1, sigma=sigma1, only_positive=False)
         s1 = test_data1.signal
-        self.assertAlmostEqual(s1.data.mean(), mu1, places=2)
-        self.assertAlmostEqual(s1.data.std(), sigma1, places=2)
+        assert approx(s1.data.mean(), rel=1e-4) == mu1
+        assert approx(s1.data.std(), abs=1e-3) == sigma1
 
         test_data2 = tt.MakeTestData(1000, 1000)
         mu2, sigma2 = 154.2, 1.98
         test_data2.add_image_noise(mu=mu2, sigma=sigma2, only_positive=False)
         s2 = test_data2.signal
-        self.assertAlmostEqual(s2.data.mean(), mu2, places=1)
-        self.assertAlmostEqual(s2.data.std(), sigma2, places=1)
+        assert approx(s2.data.mean(), rel=1e-4) == mu2
+        assert approx(s2.data.std(), rel=1e-3) == sigma2
 
     def test_add_image_noise_only_positive(self):
         test_data0 = tt.MakeTestData(1000, 1000)
         test_data0.add_image_noise(mu=0, sigma=0.005, only_positive=True)
         s0 = test_data0.signal
-        self.assertTrue((s0.data > 0).all())
+        assert (s0.data > 0).all()
 
     def test_add_image_noise_random_seed(self):
         test_data0 = tt.MakeTestData(100, 100)
@@ -60,20 +62,20 @@ class TestMakeTestData(unittest.TestCase):
         test_data1 = tt.MakeTestData(100, 100)
         test_data1.add_image_noise(random_seed=0)
         s1 = test_data1.signal
-        self.assertTrue((s0.data == s1.data).all())
+        assert (s0.data == s1.data).all()
 
     def test_add_atom(self):
         x, y, sx, sy, A, r = 10, 5, 5, 9, 10, 2
         td = tt.MakeTestData(50, 50)
         td.add_atom(x, y, sigma_x=sx, sigma_y=sy, amplitude=A, rotation=r)
-        self.assertEqual(len(td.sublattice.atom_list), 1)
+        assert len(td.sublattice.atom_list) == 1
         atom = td.sublattice.atom_list[0]
-        self.assertEqual(atom.pixel_x, x)
-        self.assertEqual(atom.pixel_y, y)
-        self.assertEqual(atom.sigma_x, sx)
-        self.assertEqual(atom.sigma_y, sy)
-        self.assertEqual(atom.amplitude_gaussian, A)
-        self.assertEqual(atom.rotation, r)
+        assert atom.pixel_x == x
+        assert atom.pixel_y == y
+        assert atom.sigma_x == sx
+        assert atom.sigma_y == sy
+        assert atom.amplitude_gaussian == A
+        assert atom.rotation == r
 
     def test_add_atom_list_simple(self):
         x, y = np.mgrid[10:90:10, 10:90:10]
@@ -83,14 +85,14 @@ class TestMakeTestData(unittest.TestCase):
         td.add_atom_list(
                 x=x, y=y, sigma_x=sx, sigma_y=sy, amplitude=A, rotation=r)
         atom_list = td.sublattice.atom_list
-        self.assertEqual(len(atom_list), len(x))
+        assert len(atom_list) == len(x)
         for tx, ty, atom in zip(x, y, atom_list):
-            self.assertEqual(atom.pixel_x, tx)
-            self.assertEqual(atom.pixel_y, ty)
-            self.assertEqual(atom.sigma_x, sx)
-            self.assertEqual(atom.sigma_y, sy)
-            self.assertEqual(atom.amplitude_gaussian, A)
-            self.assertEqual(atom.rotation, r)
+            assert atom.pixel_x == tx
+            assert atom.pixel_y == ty
+            assert atom.sigma_x == sx
+            assert atom.sigma_y == sy
+            assert atom.amplitude_gaussian == A
+            assert atom.rotation == r
 
     def test_add_atom_list_all_lists(self):
         x, y = np.mgrid[10:90:10, 10:90:10]
@@ -103,38 +105,38 @@ class TestMakeTestData(unittest.TestCase):
         td.add_atom_list(
                 x=x, y=y, sigma_x=sx, sigma_y=sy, amplitude=A, rotation=r)
         atom_list = td.sublattice.atom_list
-        self.assertEqual(len(atom_list), len(x))
+        assert len(atom_list) == len(x)
 
         iterator = zip(x, y, sx, sy, A, r, atom_list)
         for tx, ty, tsx, tsy, tA, tr, atom in iterator:
-            self.assertEqual(atom.pixel_x, tx)
-            self.assertEqual(atom.pixel_y, ty)
-            self.assertEqual(atom.sigma_x, tsx)
-            self.assertEqual(atom.sigma_y, tsy)
-            self.assertEqual(atom.amplitude_gaussian, tA)
-            self.assertEqual(atom.rotation, tr)
+            assert atom.pixel_x == tx
+            assert atom.pixel_y == ty
+            assert atom.sigma_x == tsx
+            assert atom.sigma_y == tsy
+            assert atom.amplitude_gaussian == tA
+            assert atom.rotation == tr
 
     def test_add_atom_list_wrong_input(self):
         x, y = np.mgrid[10:90:10, 10:90:10]
         x, y = x.flatten(), y.flatten()
         td = tt.MakeTestData(100, 100)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             td.add_atom_list(x, y[10:])
 
         sx = np.arange(10)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             td.add_atom_list(x, y, sigma_x=sx)
 
         sy = np.arange(20)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             td.add_atom_list(x, y, sigma_y=sy)
 
         A = np.arange(30)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             td.add_atom_list(x, y, amplitude=A)
 
         r = np.arange(5)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             td.add_atom_list(x, y, rotation=r)
 
     def test_gaussian_list(self):
@@ -148,16 +150,16 @@ class TestMakeTestData(unittest.TestCase):
         td.add_atom_list(
                 x=x, y=y, sigma_x=sx, sigma_y=sy, amplitude=A, rotation=r)
         gaussian_list = td.gaussian_list
-        self.assertEqual(len(gaussian_list), len(x))
+        assert len(gaussian_list) == len(x)
 
         iterator = zip(x, y, sx, sy, A, r, gaussian_list)
         for tx, ty, tsx, tsy, tA, tr, gaussian in iterator:
-            self.assertEqual(gaussian.centre_x.value, tx)
-            self.assertEqual(gaussian.centre_y.value, ty)
-            self.assertEqual(gaussian.sigma_x.value, tsx)
-            self.assertEqual(gaussian.sigma_y.value, tsy)
-            self.assertEqual(gaussian.A.value, tA)
-            self.assertEqual(gaussian.rotation.value, tr)
+            assert gaussian.centre_x.value == tx
+            assert gaussian.centre_y.value == ty
+            assert gaussian.sigma_x.value == tsx
+            assert gaussian.sigma_y.value == tsy
+            assert gaussian.A.value == tA
+            assert gaussian.rotation.value == tr
 
     def test_sublattice_generate_image(self):
         testdata = tt.MakeTestData(1000, 1000, sublattice_generate_image=False)
@@ -165,8 +167,8 @@ class TestMakeTestData(unittest.TestCase):
         x, y = x.flatten(), y.flatten()
         testdata.add_atom_list(x, y)
         sublattice = testdata.sublattice
-        self.assertTrue((sublattice.image == 0).all())
-        self.assertEqual(len(sublattice.atom_list), 150*150)
+        assert (sublattice.image == 0).all()
+        assert len(sublattice.atom_list) == 150*150
 
 
 class TestMakeVectorTestGaussian(unittest.TestCase):
@@ -179,11 +181,11 @@ class TestMakeVectorTestGaussian(unittest.TestCase):
         point_list_stdX = point_list[:, 0].std()
         point_list_stdY = point_list[:, 1].std()
 
-        self.assertAlmostEqual(point_list_meanX, x, places=1)
-        self.assertAlmostEqual(point_list_meanY, y, places=1)
-        self.assertAlmostEqual(point_list_stdX, std, places=1)
-        self.assertAlmostEqual(point_list_stdY, std, places=1)
-        self.assertEqual(n, point_list.shape[0])
+        assert approx(point_list_meanX, rel=1e-2) == x
+        assert approx(point_list_meanY, rel=1e-2) == y
+        assert approx(point_list_stdX, rel=1e-2) == std
+        assert approx(point_list_stdY, rel=1e-2) == std
+        assert n == point_list.shape[0]
 
 
 class TestMakeNnTestDataset(unittest.TestCase):
@@ -192,4 +194,4 @@ class TestMakeNnTestDataset(unittest.TestCase):
         point_list = tt.make_nn_test_dataset(xN=xN, yN=yN, n=n)
 
         total_point = n*(((2*xN)+1)*((2*yN)+1)-1)
-        self.assertEqual(point_list.shape[0], total_point)
+        assert point_list.shape[0] == total_point

@@ -1,25 +1,16 @@
-import os
 import pytest
-import unittest
 import numpy as np
-from hyperspy.api import load
+from numpy.testing import assert_allclose
 from hyperspy.signals import Signal2D
-from atomap.atom_finding_refining import\
-        subtract_average_background,\
-        do_pca_on_signal,\
-        construct_zone_axes_from_sublattice,\
-        get_atom_positions
+import atomap.atom_finding_refining as afr
 from atomap.sublattice import Sublattice
-from atomap.atom_finding_refining import refine_sublattice
 import atomap.testing_tools as tt
 import atomap.dummy_data as dd
-from atomap.testing_tools import MakeTestData
-
-my_path = os.path.dirname(__file__)
 
 
-class test_make_simple_sublattice(unittest.TestCase):
-    def setUp(self):
+class TestMakeSimpleSublattice:
+
+    def setup_method(self):
         self.atoms_N = 10
         self.image_data = np.arange(10000).reshape(100, 100)
         self.peaks = np.arange(self.atoms_N*2).reshape(self.atoms_N, 2)
@@ -28,7 +19,7 @@ class test_make_simple_sublattice(unittest.TestCase):
         sublattice = Sublattice(
                 self.peaks,
                 self.image_data)
-        self.assertEqual(len(sublattice.atom_list), self.atoms_N)
+        assert len(sublattice.atom_list) == self.atoms_N
 
     def test_repr_no_planes(self):
         sublattice = Sublattice(
@@ -37,14 +28,12 @@ class test_make_simple_sublattice(unittest.TestCase):
         sublattice.name = 'test'
         repr_str = '<Sublattice, test (atoms:%s,planes:0)>' % (
                 self.atoms_N)
-        self.assertEqual(
-                sublattice.__repr__(),
-                repr_str)
+        assert sublattice.__repr__() == repr_str
 
 
-class test_init_sublattice(unittest.TestCase):
+class TestInitSublattice:
 
-    def setUp(self):
+    def setup_method(self):
         self.peaks = [[10, 10], [20, 20]]
 
     def test_image_input(self):
@@ -53,34 +42,31 @@ class test_init_sublattice(unittest.TestCase):
 
     def test_wrong_image_dimension_input(self):
         image = np.zeros((100, 50, 5))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Sublattice(atom_position_list=self.peaks, image=image)
 
     def test_wrong_image_type_input(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Sublattice(atom_position_list=self.peaks, image="test")
 
     def test_image_original_image_input(self):
         image = np.zeros((100, 50))
         original_image = np.zeros((100, 50))
-        Sublattice(
-                atom_position_list=self.peaks, image=image,
-                original_image=original_image)
+        Sublattice(atom_position_list=self.peaks, image=image,
+                   original_image=original_image)
 
     def test_wrong_original_image_dimension_input(self):
         image = np.zeros((100, 50))
         original_image = np.zeros((100, 50, 5))
-        with self.assertRaises(ValueError):
-            Sublattice(
-                    atom_position_list=self.peaks, image=image,
-                    original_image=original_image)
+        with pytest.raises(ValueError):
+            Sublattice(atom_position_list=self.peaks, image=image,
+                       original_image=original_image)
 
     def test_wrong_original_image_type_input(self):
         image = np.zeros((100, 50))
-        with self.assertRaises(ValueError):
-            Sublattice(
-                    atom_position_list=self.peaks, image=image,
-                    original_image="test1")
+        with pytest.raises(ValueError):
+            Sublattice(atom_position_list=self.peaks, image=image,
+                       original_image="test1")
 
     def test_input_signal(self):
         s = Signal2D(np.zeros((100, 50)))
@@ -88,23 +74,21 @@ class test_init_sublattice(unittest.TestCase):
 
     def test_input_signal_wrong_dimensions(self):
         s = Signal2D(np.zeros((100, 50, 10)))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Sublattice(atom_position_list=self.peaks, image=s)
 
     def test_input_signal_and_original_image(self):
         s = Signal2D(np.zeros((100, 50)))
         s_orig = Signal2D(np.zeros((100, 50)))
-        Sublattice(
-                atom_position_list=self.peaks, image=s,
-                original_image=s_orig)
+        Sublattice(atom_position_list=self.peaks, image=s,
+                   original_image=s_orig)
 
     def test_input_signal_and_original_image_wrong_dim(self):
         s = Signal2D(np.zeros((100, 50)))
         s_orig = Signal2D(np.zeros((100, 50, 9)))
-        with self.assertRaises(ValueError):
-            Sublattice(
-                    atom_position_list=self.peaks, image=s,
-                    original_image=s_orig)
+        with pytest.raises(ValueError):
+            Sublattice(atom_position_list=self.peaks, image=s,
+                       original_image=s_orig)
 
     def test_different_dtypes(self):
         dtype_list = ['float64', 'float32', 'int64', 'int32',
@@ -120,106 +104,83 @@ class test_init_sublattice(unittest.TestCase):
             Sublattice(atom_positions, image_data)
 
 
-class test_sublattice_with_atom_planes(unittest.TestCase):
+class TestSublatticeSingleAtom:
 
-    def setUp(self):
-        s_adf_filename = os.path.join(
-                my_path, "datasets", "test_ADF_cropped.hdf5")
-        peak_separation = 0.15
+    def setup_method(self):
+        x, y = 10, 12
+        test_data = tt.MakeTestData(20, 20)
+        test_data.add_atom(x, y)
+        self.signal = test_data.signal
+        self.atom_position_list = [[x, y], ]
 
-        s_adf = load(s_adf_filename)
-        s_adf.change_dtype('float64')
-        s_adf_modified = subtract_average_background(s_adf)
-        self.s_adf_modified = do_pca_on_signal(s_adf_modified)
-        self.pixel_size = s_adf.axes_manager[0].scale
-        self.pixel_separation = peak_separation/self.pixel_size
+    def test_init(self):
+        sublattice = Sublattice(
+                self.atom_position_list, self.signal)
+        assert len(sublattice.atom_list) == 1
+        assert sublattice.x_position[0] == self.atom_position_list[0][0]
+        assert sublattice.y_position[0] == self.atom_position_list[0][1]
 
-        self.peaks = get_atom_positions(
-                self.s_adf_modified,
-                self.pixel_separation)
 
-    def test_make_sublattice(self):
-        Sublattice(self.peaks, np.rot90(np.fliplr(self.s_adf_modified.data)))
+class TestSublatticeWithAtomPlanes:
+
+    def setup_method(self):
+        test_data = tt.MakeTestData(100, 100)
+        x, y = np.mgrid[5:95:10j, 5:95:10j]
+        x, y = x.flatten(), y.flatten()
+        test_data.add_atom_list(x, y)
+        self.s = test_data.signal
+        self.peaks = np.array((x, y)).swapaxes(0, 1)
 
     def test_make_construct_zone_axes(self):
-        sublattice = Sublattice(
-                self.peaks,
-                np.rot90(np.fliplr(self.s_adf_modified.data)))
-        sublattice.pixel_size = self.pixel_size
-        construct_zone_axes_from_sublattice(sublattice)
+        sublattice = Sublattice(self.peaks, self.s)
+        sublattice.construct_zone_axes()
 
-        number_zone_vector_110 = len(
-                sublattice.atom_planes_by_zone_vector[
-                    sublattice.zones_axis_average_distances[0]])
-        number_zone_vector_100 = len(
-                sublattice.atom_planes_by_zone_vector[
-                    sublattice.zones_axis_average_distances[1]])
+        zv0 = sublattice.zones_axis_average_distances[0]
+        zv1 = sublattice.zones_axis_average_distances[1]
+        len_zv0 = len(sublattice.atom_planes_by_zone_vector[zv0])
+        len_zv1 = len(sublattice.atom_planes_by_zone_vector[zv1])
 
-        self.assertEqual(number_zone_vector_110, 14)
-        self.assertEqual(number_zone_vector_100, 17)
+        assert len_zv0 == 10
+        assert len_zv1 == 10
 
     def test_repr(self):
-        sublattice = Sublattice(
-                self.peaks,
-                np.rot90(np.fliplr(self.s_adf_modified.data)))
-        sublattice.pixel_size = self.pixel_size
+        sublattice = Sublattice(self.peaks, self.s)
         sublattice.name = 'test planes'
-        construct_zone_axes_from_sublattice(sublattice)
+        sublattice.construct_zone_axes()
 
         repr_str = '<Sublattice, test planes (atoms:%s,planes:%s)>' % (
                 len(sublattice.atom_list),
                 len(sublattice.atom_planes_by_zone_vector))
-        self.assertEqual(
-                sublattice.__repr__(),
-                repr_str)
+        assert sublattice.__repr__() == repr_str
 
     def test_get_zone_vector_index(self):
-        sublattice = Sublattice(
-                self.peaks,
-                np.rot90(np.fliplr(self.s_adf_modified.data)))
-        sublattice.pixel_size = self.pixel_size
-        construct_zone_axes_from_sublattice(sublattice)
+        sublattice = Sublattice(self.peaks, self.s)
+        sublattice.construct_zone_axes()
         zone_axis_index = sublattice.get_zone_vector_index(
                 sublattice.zones_axis_average_distances_names[0])
-        self.assertEqual(zone_axis_index, 0)
-        with self.assertRaises(ValueError):
+        assert zone_axis_index == 0
+        with pytest.raises(ValueError):
             sublattice.get_zone_vector_index('(99, 99)')
 
     def test_center_of_mass_refine(self):
-        sublattice = Sublattice(
-                self.peaks,
-                np.rot90(np.fliplr(self.s_adf_modified.data)))
-        sublattice.pixel_size = self.pixel_size
-        refine_sublattice(
+        sublattice = Sublattice(self.peaks, self.s)
+        sublattice.construct_zone_axes()
+        afr.refine_sublattice(
                 sublattice,
                 [
                     (sublattice.image, 1, 'center_of_mass')],
                 0.25)
 
 
-class test_sublattice_get_signal(unittest.TestCase):
+class TestSublatticeGetSignal:
 
-    def setUp(self):
-        s_adf_filename = os.path.join(my_path, "datasets",
-                                      "test_ADF_cropped.hdf5")
-        peak_separation = 0.15
-
-        s_adf = load(s_adf_filename)
-        s_adf.change_dtype('float64')
-        s_adf_modified = subtract_average_background(s_adf)
-        s_adf_modified = do_pca_on_signal(s_adf_modified)
-        pixel_size = s_adf.axes_manager[0].scale
-        pixel_separation = peak_separation/pixel_size
-
-        peaks = get_atom_positions(
-                s_adf_modified,
-                pixel_separation)
-        self.sublattice = Sublattice(
-                peaks,
-                np.rot90(np.fliplr(s_adf_modified.data)))
-        self.sublattice.original_image = np.rot90(np.fliplr(s_adf.data))
-        self.sublattice.pixel_size = pixel_size
-        construct_zone_axes_from_sublattice(self.sublattice)
+    def setup_method(self):
+        test_data = tt.MakeTestData(100, 100)
+        x, y = np.mgrid[5:95:10j, 5:95:10j]
+        x, y = x.flatten(), y.flatten()
+        test_data.add_atom_list(x, y)
+        self.sublattice = test_data.sublattice
+        self.sublattice.construct_zone_axes()
 
     def test_ellipticity_map(self):
         self.sublattice.get_ellipticity_map()
@@ -235,9 +196,7 @@ class test_sublattice_get_signal(unittest.TestCase):
     def test_atomplanes_from_zone_vector(self):
         sublattice = self.sublattice
         s_list = sublattice.get_all_atom_planes_by_zone_vector()
-        self.assertEqual(
-                len(s_list),
-                len(sublattice.zones_axis_average_distances))
+        assert len(s_list) == len(sublattice.zones_axis_average_distances)
 
     def test_atomap_plane_on_image(self):
         sublattice = self.sublattice
@@ -247,7 +206,7 @@ class test_sublattice_get_signal(unittest.TestCase):
             number_of_atom_planes += len(atom_plane.atom_list) - 1
         s = sublattice.get_atom_planes_on_image(
                 atom_planes, add_numbers=False)
-        self.assertEqual(number_of_atom_planes, len(s.metadata.Markers))
+        assert number_of_atom_planes == len(s.metadata.Markers)
 
     def test_get_atom_list(self):
         self.sublattice.get_atom_list_on_image()
@@ -286,7 +245,7 @@ class test_sublattice_get_signal(unittest.TestCase):
         s0 = sublattice.get_ellipticity_vector(
                 color='blue',
                 vector_scale=20)
-        self.assertEqual(len(sublattice.atom_list), len(s0.metadata.Markers))
+        assert len(sublattice.atom_list) == len(s0.metadata.Markers)
         plane = sublattice.atom_plane_list[3]
         sublattice.get_ellipticity_vector(
                 sublattice.image,
@@ -295,9 +254,9 @@ class test_sublattice_get_signal(unittest.TestCase):
                 vector_scale=10)
 
 
-class test_sublattice_interpolation(unittest.TestCase):
+class TestSublatticeInterpolation:
 
-    def setUp(self):
+    def setup_method(self):
         x, y = np.mgrid[0:100, 0:100]
         position_list = np.vstack((x.flatten(), y.flatten())).T
         image_data = np.arange(100).reshape(10, 10)
@@ -311,19 +270,19 @@ class test_sublattice_interpolation(unittest.TestCase):
         output = sublattice._get_regular_grid_from_unregular_property(
                 x_list, y_list, z_list)
         z_interpolate = output[2]
-        self.assertTrue(not z_interpolate.any())
+        assert not z_interpolate.any()
 
 
-class test_sublattice_fingerprinter(unittest.TestCase):
+class TestSublatticeFingerprinter:
 
-    def setUp(self):
-        test_data = MakeTestData(520, 520)
+    def setup_method(self):
+        test_data = tt.MakeTestData(520, 520)
         x, y = np.mgrid[10:510:20j, 10:510:20j]
         x, y = x.flatten(), y.flatten()
         test_data.add_atom_list(x, y)
         s = test_data.signal
 
-        atom_positions = get_atom_positions(
+        atom_positions = afr.get_atom_positions(
                 signal=s,
                 separation=10,
                 threshold_rel=0.02,
@@ -347,9 +306,9 @@ class test_sublattice_fingerprinter(unittest.TestCase):
         sublattice._get_fingerprint()
 
 
-class test_sublattice_get_model_image(unittest.TestCase):
+class TestSublatticeGetModelImage:
 
-    def setUp(self):
+    def setup_method(self):
         image_data = np.random.random(size=(100, 100))
         position_list = []
         for x in range(5, 100, 5):
@@ -365,32 +324,32 @@ class test_sublattice_get_model_image(unittest.TestCase):
     def test_image_shape_default(self):
         sublattice = self.sublattice
         s = sublattice.get_model_image()
-        self.assertEqual(s.axes_manager.shape, sublattice.image.shape)
+        assert s.axes_manager.shape == sublattice.image.shape
 
     def test_image_shape_small(self):
         sublattice = self.sublattice
         s = sublattice.get_model_image(image_shape=(10, 10))
-        self.assertEqual(s.axes_manager.shape, (10, 10))
+        assert s.axes_manager.shape == (10, 10)
 
     def test_image_shape_large(self):
         sublattice = self.sublattice
         s = sublattice.get_model_image(image_shape=(1000, 1000))
-        self.assertEqual(s.axes_manager.shape, (1000, 1000))
+        assert s.axes_manager.shape == (1000, 1000)
 
     def test_image_shape_rectangle_1(self):
         sublattice = self.sublattice
         s = sublattice.get_model_image(image_shape=(100, 200))
-        self.assertEqual(s.axes_manager.shape, (100, 200))
+        assert s.axes_manager.shape == (100, 200)
 
     def test_image_shape_rectangle_2(self):
         sublattice = self.sublattice
         s = sublattice.get_model_image(image_shape=(200, 100))
-        self.assertEqual(s.axes_manager.shape, (200, 100))
+        assert s.axes_manager.shape == (200, 100)
 
 
-class test_get_position_history(unittest.TestCase):
+class TestGetPositionHistory:
 
-    def setUp(self):
+    def setup_method(self):
         pos = [[x, y] for x in range(9) for y in range(9)]
         self.sublattice = Sublattice(pos, np.random.random((9, 9)))
 
@@ -406,10 +365,10 @@ class test_get_position_history(unittest.TestCase):
         sublattice.get_position_history()
 
 
-class test_get_atom_angles_from_zone_vector(unittest.TestCase):
+class TestGetAtomAnglesFromZoneVector:
 
-    def setUp(self):
-        test_data = MakeTestData(700, 700)
+    def setup_method(self):
+        test_data = tt.MakeTestData(700, 700)
         x, y = np.mgrid[100:600:10j, 100:600:10j]
         x, y = x.flatten(), y.flatten()
         test_data.add_atom_list(x, y, sigma_x=10, sigma_y=10, amplitude=50)
@@ -421,8 +380,7 @@ class test_get_atom_angles_from_zone_vector(unittest.TestCase):
         x, y, z = sublattice.get_atom_angles_from_zone_vector(
                 sublattice.zones_axis_average_distances,
                 sublattice.zones_axis_average_distances)
-        self.assertTrue(
-                np.allclose(np.zeros_like(z)+np.pi/2, z))
+        assert np.allclose(np.zeros_like(z)+np.pi/2, z)
 
     def test_cubic_degrees(self):
         sublattice = self.sublattice
@@ -430,14 +388,13 @@ class test_get_atom_angles_from_zone_vector(unittest.TestCase):
                 sublattice.zones_axis_average_distances,
                 sublattice.zones_axis_average_distances,
                 degrees=True)
-        self.assertTrue(
-                np.allclose(np.zeros_like(z)+90, z))
+        assert np.allclose(np.zeros_like(z)+90, z)
 
 
-class test_get_atom_plane_slice_between_two_planes(unittest.TestCase):
+class TestGetAtomPlaneSliceBetweenTwoPlanes:
 
-    def setUp(self):
-        test_data = MakeTestData(700, 700)
+    def setup_method(self):
+        test_data = tt.MakeTestData(700, 700)
         x, y = np.mgrid[100:600:10j, 100:600:10j]
         x, y = x.flatten(), y.flatten()
         test_data.add_atom_list(x, y, sigma_x=10, sigma_y=10, amplitude=50)
@@ -452,10 +409,11 @@ class test_get_atom_plane_slice_between_two_planes(unittest.TestCase):
         ap1 = sublattice.atom_planes_by_zone_vector[zv][ap_index1]
         ap_list = sublattice.get_atom_plane_slice_between_two_planes(
                 ap0, ap1)
-        self.assertEqual(ap_index1-ap_index0+1, len(ap_list))
+        assert (ap_index1-ap_index0+1) == len(ap_list)
         ap_list_check = sublattice.atom_planes_by_zone_vector[
                 zv][ap_index0:ap_index1+1]
-        self.assertTrue(ap_list, ap_list_check)
+        assert ap_list
+        assert ap_list_check
 
     def test_subset1(self):
         sublattice = self.sublattice
@@ -465,10 +423,11 @@ class test_get_atom_plane_slice_between_two_planes(unittest.TestCase):
         ap1 = sublattice.atom_planes_by_zone_vector[zv][ap_index1]
         ap_list = sublattice.get_atom_plane_slice_between_two_planes(
                 ap0, ap1)
-        self.assertEqual(ap_index1-ap_index0+1, len(ap_list))
+        assert (ap_index1-ap_index0+1) == len(ap_list)
         ap_list_check = sublattice.atom_planes_by_zone_vector[
                 zv][ap_index0:ap_index1+1]
-        self.assertTrue(ap_list, ap_list_check)
+        assert ap_list
+        assert ap_list_check
 
     def test_get_all(self):
         sublattice = self.sublattice
@@ -478,16 +437,17 @@ class test_get_atom_plane_slice_between_two_planes(unittest.TestCase):
         ap1 = sublattice.atom_planes_by_zone_vector[zv][ap_index1]
         ap_list = sublattice.get_atom_plane_slice_between_two_planes(
                 ap0, ap1)
-        self.assertEqual(10, len(ap_list))
+        assert 10 == len(ap_list)
         ap_list_check = sublattice.atom_planes_by_zone_vector[
                 zv]
-        self.assertTrue(ap_list, ap_list_check)
+        assert ap_list
+        assert ap_list_check
 
 
-class test_refine_functions(unittest.TestCase):
+class TestRefineFunctions:
 
-    def setUp(self):
-        test_data = MakeTestData(540, 540)
+    def setup_method(self):
+        test_data = tt.MakeTestData(540, 540)
         x, y = np.mgrid[20:520:8j, 20:520:8j]
         x, y = x.flatten(), y.flatten()
         test_data.add_atom_list(x, y, sigma_x=10, sigma_y=10, amplitude=50)
@@ -496,7 +456,7 @@ class test_refine_functions(unittest.TestCase):
 
     def test_2d_gaussian_simple(self):
         sublattice = Sublattice(self.xy, self.image_data)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             sublattice.refine_atom_positions_using_2d_gaussian()
         sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_2d_gaussian()
@@ -520,7 +480,7 @@ class test_refine_functions(unittest.TestCase):
 
     def test_center_of_mass_simple(self):
         sublattice = Sublattice(self.xy, self.image_data)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             sublattice.refine_atom_positions_using_center_of_mass()
         sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_center_of_mass()
@@ -542,10 +502,10 @@ class test_refine_functions(unittest.TestCase):
                 image_data=self.image_data, percent_to_nn=0.3)
 
 
-class test_get_atom_list_between_four_atom_planes(unittest.TestCase):
+class TestGetAtomListBetweenFourAtomPlanes:
 
-    def setUp(self):
-        test_data = MakeTestData(700, 700)
+    def setup_method(self):
+        test_data = tt.MakeTestData(700, 700)
         x, y = np.mgrid[100:600:10j, 100:600:10j]
         x, y = x.flatten(), y.flatten()
         test_data.add_atom_list(x, y, sigma_x=10, sigma_y=10, amplitude=50)
@@ -566,7 +526,7 @@ class test_get_atom_list_between_four_atom_planes(unittest.TestCase):
                 ap00, ap01, ap10, ap11)
 
         num_atoms = (ap_index01-ap_index00+1)*(ap_index11-ap_index10+1)
-        self.assertEqual(num_atoms, len(apos_list))
+        assert num_atoms == len(apos_list)
 
     def test_subset1(self):
         sublattice = self.sublattice
@@ -582,7 +542,7 @@ class test_get_atom_list_between_four_atom_planes(unittest.TestCase):
                 ap00, ap01, ap10, ap11)
 
         num_atoms = (ap_index01-ap_index00+1)*(ap_index11-ap_index10+1)
-        self.assertEqual(num_atoms, len(apos_list))
+        assert num_atoms == len(apos_list)
 
     def test_get_all(self):
         sublattice = self.sublattice
@@ -598,77 +558,77 @@ class test_get_atom_list_between_four_atom_planes(unittest.TestCase):
                 ap00, ap01, ap10, ap11)
 
         num_atoms = 100
-        self.assertEqual(num_atoms, len(apos_list))
+        assert num_atoms == len(apos_list)
 
 
-class test_make_translation_symmetry(unittest.TestCase):
+class TestMakeTranslationSymmetry:
 
     def test_cubic_simple(self):
         vX, vY = 10, 10
         x, y = np.mgrid[5:95:vX, 5:95:vY]
-        test_data = MakeTestData(100, 100)
+        test_data = tt.MakeTestData(100, 100)
         test_data.add_atom_list(x.flatten(), y.flatten(), sigma_x=2, sigma_y=2)
         sublattice = test_data.sublattice
         sublattice._pixel_separation = sublattice._get_pixel_separation()
         sublattice._make_translation_symmetry()
         zone_vectors = sublattice.zones_axis_average_distances
-        self.assertEqual(zone_vectors[0], (0, vY))
-        self.assertEqual(zone_vectors[1], (vX, 0))
-        self.assertEqual(zone_vectors[2], (vX, vY))
-        self.assertEqual(zone_vectors[3], (vX, -vY))
-        self.assertEqual(zone_vectors[4], (vX, 2*vY))
-        self.assertEqual(zone_vectors[5], (2*vX, vY))
+        assert zone_vectors[0] == (0, vY)
+        assert zone_vectors[1] == (vX, 0)
+        assert zone_vectors[2] == (vX, vY)
+        assert zone_vectors[3] == (vX, -vY)
+        assert zone_vectors[4] == (vX, 2*vY)
+        assert zone_vectors[5] == (2*vX, vY)
 
     def test_rectangle_simple(self):
         vX, vY = 10, 15
         x, y = np.mgrid[5:95:vX, 5:95:vY]
-        test_data = MakeTestData(100, 100)
+        test_data = tt.MakeTestData(100, 100)
         test_data.add_atom_list(x.flatten(), y.flatten(), sigma_x=2, sigma_y=2)
         sublattice = test_data.sublattice
         sublattice._pixel_separation = sublattice._get_pixel_separation()
         sublattice._make_translation_symmetry()
         zone_vectors = sublattice.zones_axis_average_distances
-        self.assertEqual(zone_vectors[0], (vX, 0))
-        self.assertEqual(zone_vectors[1], (0, vY))
-        self.assertEqual(zone_vectors[2], (vX, vY))
-        self.assertEqual(zone_vectors[3], (-vX, vY))
-        self.assertEqual(zone_vectors[4], (2*vX, vY))
-        self.assertEqual(zone_vectors[5], (2*vX, -vY))
+        assert zone_vectors[0] == (vX, 0)
+        assert zone_vectors[1] == (0, vY)
+        assert zone_vectors[2] == (vX, vY)
+        assert zone_vectors[3] == (-vX, vY)
+        assert zone_vectors[4] == (2*vX, vY)
+        assert zone_vectors[5] == (2*vX, -vY)
 
 
-class test_construct_zone_axes(unittest.TestCase):
+class TestConstructZoneAxes:
 
     def test_cubic_simple(self):
         vX, vY = 10, 10
         x, y = np.mgrid[5:95:vX, 5:95:vY]
-        test_data = MakeTestData(100, 100)
+        test_data = tt.MakeTestData(100, 100)
         test_data.add_atom_list(x.flatten(), y.flatten(), sigma_x=2, sigma_y=2)
         sublattice = test_data.sublattice
         sublattice.construct_zone_axes()
         zone_vectors = sublattice.zones_axis_average_distances
-        self.assertEqual(zone_vectors[0], (0, vY))
-        self.assertEqual(zone_vectors[1], (vX, 0))
-        self.assertEqual(zone_vectors[2], (vX, vY))
-        self.assertEqual(zone_vectors[3], (vX, -vY))
+        assert zone_vectors[0] == (0, vY)
+        assert zone_vectors[1] == (vX, 0)
+        assert zone_vectors[2] == (vX, vY)
+        assert zone_vectors[3] == (vX, -vY)
 
     def test_rectangle(self):
         vX, vY = 15, 10
         x, y = np.mgrid[5:95:vX, 5:95:vY]
-        test_data = MakeTestData(100, 100)
+        test_data = tt.MakeTestData(100, 100)
         test_data.add_atom_list(x.flatten(), y.flatten(), sigma_x=2, sigma_y=2)
         sublattice = test_data.sublattice
         sublattice.construct_zone_axes()
         zone_vectors = sublattice.zones_axis_average_distances
-        self.assertEqual(zone_vectors[0], (0, vY))
-        self.assertEqual(zone_vectors[1], (vX, 0))
-        self.assertEqual(zone_vectors[2], (vX, vY))
-        self.assertEqual(zone_vectors[3], (vX, -vY))
-        self.assertEqual(zone_vectors[4], (vX, 2*vY))
-        self.assertEqual(zone_vectors[5], (-vX, 2*vY))
+        assert zone_vectors[0] == (0, vY)
+        assert zone_vectors[1] == (vX, 0)
+        assert zone_vectors[2] == (vX, vY)
+        assert zone_vectors[3] == (vX, -vY)
+        assert zone_vectors[4] == (vX, 2*vY)
+        assert zone_vectors[5] == (-vX, 2*vY)
 
     def test_atom_plane_tolerance(self):
         # 10 times 10 atoms
-        test_data = MakeTestData(240, 240)
+        test_data = tt.MakeTestData(240, 240)
         x, y = np.mgrid[30:212:40, 30:222:20]
         x, y = x.flatten(), y.flatten()
         test_data.add_atom_list(x, y)
@@ -701,9 +661,9 @@ class test_construct_zone_axes(unittest.TestCase):
         assert len(planes1) == 10
 
 
-class test_sublattice_mask(unittest.TestCase):
+class TestSublatticeMask:
 
-    def setUp(self):
+    def setup_method(self):
         image_data = np.random.random(size=(100, 100))
         position_list = []
         for x in range(10, 100, 10):
@@ -716,12 +676,12 @@ class test_sublattice_mask(unittest.TestCase):
         sublattice = self.sublattice
         s = sublattice.mask_image_around_sublattice(
             image_data=sublattice.image, radius=0)
-        self.assertEqual(np.count_nonzero(s.data), len(sublattice.atom_list))
+        assert np.count_nonzero(s.data) == len(sublattice.atom_list)
 
 
-class test_plot_functions(unittest.TestCase):
+class TestPlotFunctions:
 
-    def setUp(self):
+    def setup_method(self):
         self.sublattice = dd.get_simple_cubic_sublattice()
 
     def test_plot(self):
@@ -742,9 +702,9 @@ class test_plot_functions(unittest.TestCase):
         self.sublattice.plot_ellipticity_map(cmap='viridis')
 
 
-class test_mask_indices(unittest.TestCase):
+class TestMaskIndices:
 
-    def setUp(self):
+    def setup_method(self):
         t1 = tt.MakeTestData(20, 10)
         t1.add_atom_list([5, 15], [5, 5])
         sublattice = t1.sublattice
@@ -754,13 +714,13 @@ class test_mask_indices(unittest.TestCase):
 
     def test_mask_atom_list_len(self):
         mask_list = self.mask_list
-        self.assertTrue(len(mask_list) == 2)
+        assert len(mask_list) == 2
 
     def test_mask_image_len(self):
         s_i_size = self.s_i[0].size
         b_size = self.mask_list[1][0].size
         a_size = self.mask_list[0][0].size
-        self.assertTrue(s_i_size == (b_size + a_size))
+        assert s_i_size == (b_size + a_size)
 
     def test_indices_equal(self):
         mask_list = self.mask_list
@@ -773,12 +733,12 @@ class test_mask_indices(unittest.TestCase):
             j += 1
             A = ((np.array([x, y]) == a).all(1).any())
             B = ((np.array([x, y]) == b).all(1).any())
-            self.assertTrue(A or B)
+            assert A or B
 
 
-class test_get_property_line_profile(unittest.TestCase):
+class TestGetPropertyLineProfile:
 
-    def setUp(self):
+    def setup_method(self):
         x, y = np.mgrid[5:50:5, 5:50:5]
         x, y = x.flatten(), y.flatten()
 
@@ -808,9 +768,9 @@ class test_get_property_line_profile(unittest.TestCase):
                         sublattice.y_position,
                         property_list,
                         plane)
-        self.assertAlmostEqual(s.isig[:-5.].data.all(), 0, places=2)
-        self.assertAlmostEqual(s.isig[0.:].data.all(), 1, places=2)
-        self.assertTrue(len(s.metadata['Markers'].keys()) == 9)
+        assert_allclose(s.isig[:-5.].data.all(), 0, rtol=1e-07)
+        assert_allclose(s.isig[0.:].data.all(), 1, rtol=1e-07)
+        assert len(s.metadata['Markers'].keys()) == 9
 
     def test_vertical_interface_vertical_projection_plane(self):
         sublattice = self.sublatticeV
@@ -822,8 +782,8 @@ class test_get_property_line_profile(unittest.TestCase):
                         sublattice.y_position,
                         property_list,
                         plane)
-        self.assertTrue((s.data == (5./9)).all())
-        self.assertTrue(len(s.metadata['Markers'].keys()) == 9)
+        assert (s.data == (5./9)).all()
+        assert len(s.metadata['Markers'].keys()) == 9
 
     def test_horizontal_interface_vertical_projection_plane(self):
         sublattice = self.sublatticeH
@@ -835,9 +795,9 @@ class test_get_property_line_profile(unittest.TestCase):
                         sublattice.y_position,
                         property_list,
                         plane)
-        self.assertAlmostEqual(s.isig[:0.].data.all(), 1, places=2)
-        self.assertAlmostEqual(s.isig[5.:].data.all(), 0, places=2)
-        self.assertTrue(len(s.metadata['Markers'].keys()) == 9)
+        assert_allclose(s.isig[:0.].data.all(), 1, rtol=1e-07)
+        assert_allclose(s.isig[5.:].data.all(), 0, rtol=1e-07)
+        assert len(s.metadata['Markers'].keys()) == 9
 
     def test_horizontal_interface_horizontal_projection_plane(self):
         sublattice = self.sublatticeH
@@ -849,8 +809,8 @@ class test_get_property_line_profile(unittest.TestCase):
                         sublattice.y_position,
                         property_list,
                         plane)
-        self.assertTrue((s.data == (5./9)).all())
-        self.assertTrue(len(s.metadata['Markers'].keys()) == 9)
+        assert (s.data == (5./9)).all()
+        assert len(s.metadata['Markers'].keys()) == 9
 
     def test_metadata_line_profile_data(self):
         sublattice = self.sublatticeH
@@ -861,24 +821,24 @@ class test_get_property_line_profile(unittest.TestCase):
                 data[0], data[1], data[2],
                 atom_plane=ap)
         y_list = s_l.metadata.line_profile_data.y_list
-        self.assertEqual(len(y_list), 8)
-        np.testing.assert_allclose(y_list, np.ones_like(y_list)*5, atol=0.01)
+        assert len(y_list) == 8
+        assert_allclose(y_list, np.ones_like(y_list)*5, atol=0.01)
 
     def test_wrong_input(self):
         sublattice = self.sublatticeH
         zv = sublattice.zones_axis_average_distances[0]
         ap = sublattice.atom_planes_by_zone_vector[zv][4]
         data = sublattice.get_monolayer_distance_list_from_zone_vector(zv)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             sublattice._get_property_line_profile(
                     data[0][:-2], data[1], data[2], atom_plane=ap)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             sublattice._get_property_line_profile(
                     data[0], data[1][:-3], data[2], atom_plane=ap)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             sublattice._get_property_line_profile(
                     data[0], data[1], data[2][:-1], atom_plane=ap)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             sublattice._get_property_line_profile(
                     data[0][:-3], data[1], data[2][:-3], atom_plane=ap)
         s_l = sublattice._get_property_line_profile(
@@ -886,9 +846,9 @@ class test_get_property_line_profile(unittest.TestCase):
         s_l.plot()
 
 
-class test_project_property_line_crossing(unittest.TestCase):
+class TestProjectPropertyLineCrossing:
 
-    def setUp(self):
+    def setup_method(self):
         t = tt.MakeTestData(50, 50)
         x, y = np.mgrid[5:50:5, 5:50:5]
         x, y = x.flatten(), y.flatten()
@@ -920,13 +880,13 @@ class test_project_property_line_crossing(unittest.TestCase):
                         sublattice.y_position,
                         property_list,
                         plane)
-        self.assertAlmostEqual(s.isig[:0.].data.all(), 1, places=2)
-        self.assertAlmostEqual(s.isig[5.:].data.all(), 0, places=2)
+        assert_allclose(s.isig[:0.].data.all(), 1, rtol=1e-07)
+        assert_allclose(s.isig[5.:].data.all(), 0, rtol=1e-07)
 
 
-class test_get_property_map(unittest.TestCase):
+class TestGetPropertyMap:
 
-    def setUp(self):
+    def setup_method(self):
         t = tt.MakeTestData(30, 30)
         x, y = np.mgrid[5:30:5, 5:30:5]
         x, y = x.flatten(), y.flatten()
@@ -941,9 +901,9 @@ class test_get_property_map(unittest.TestCase):
                     sublattice.x_position,
                     sublattice.y_position,
                     z_list)
-        self.assertTrue(s.axes_manager[0].scale == 0.5)
-        self.assertTrue(s.axes_manager[1].scale == 0.5)
-        self.assertTrue(s.data[10:50, 10:50].mean() == 1)
+        assert s.axes_manager[0].scale == 0.5
+        assert s.axes_manager[1].scale == 0.5
+        assert s.data[10:50, 10:50].mean() == 1
 
     def test_all_parameters(self):
         sublattice = self.sublattice
@@ -958,9 +918,9 @@ class test_get_property_map(unittest.TestCase):
                     add_zero_value_sublattice=sub0,
                     upscale_map=4
                     )
-        self.assertTrue(s.axes_manager[0].scale == 0.25)
-        self.assertTrue(s.axes_manager[1].scale == 0.25)
-        self.assertTrue(s.data[20:100, 20:100].mean() <= 1)
-        self.assertTrue(s.axes_manager[0].size == 120)
-        self.assertTrue(s.axes_manager[1].size == 120)
-        self.assertTrue(len(s.metadata['Markers'].keys()) == 4)
+        assert s.axes_manager[0].scale == 0.25
+        assert s.axes_manager[1].scale == 0.25
+        assert s.data[20:100, 20:100].mean() <= 1
+        assert s.axes_manager[0].size == 120
+        assert s.axes_manager[1].size == 120
+        assert len(s.metadata['Markers'].keys()) == 4
