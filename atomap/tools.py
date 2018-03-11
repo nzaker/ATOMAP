@@ -940,17 +940,17 @@ class Fingerprinter:
         return self
 
 
-def integrate(s, points_x, points_y, method='Voronoi', maxRadius='Auto'):
+def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
     """Given a spectrum image a set of points and a maximum outer radius,
     this function integrates around each point in an image, using either
     Voronoi cell or watershed segmentation methods.
 
     Parameters
     ----------
-    s : hyperspy spectrum
+    s : HyperSpy signal
         Assuming 2D, 3D or 4D dataset where the spatial dimensions are 2D and
         any remaining dimensions are spectral.
-    points : list
+    point_x, point_y : list
         Detailed list of the x and y coordinates of each point of
         interest within the image.
     max_radius : {'Auto'} int
@@ -965,7 +965,7 @@ def integrate(s, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     integratedIntensity : np.array
         An array where dimension 0 is the same length as points, and subsequent
         subsequent dimension are energy dimensions.
-    intensityRecord : hyperspy spectrum, same size as s
+    intensityRecord : HyperSpy signal, same size as s
         Each pixel/voxel in a particular segment or region has the value of the
         integration, value.
     pointRecord : NumPy array, same size as image
@@ -988,7 +988,9 @@ def integrate(s, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     ...        points_y=sublattice.y_position)
     >>> i_record.plot()
 
-    NB: Works in princple with 3D and 4D data sets but will quickly hit a
+    Note
+    ----
+    Works in principle with 3D and 4D data sets but will quickly hit a
     memory error with large sizes.
 
     """
@@ -1004,8 +1006,8 @@ def integrate(s, points_x, points_y, method='Voronoi', maxRadius='Auto'):
     image = s.data
     # Setting max_radius to the width of the image, if none is set.
     if method == 'Voronoi':
-        if maxRadius == 'Auto':
-            maxRadius = max(image.shape)
+        if max_radius == 'Auto':
+            max_radius = max(image.shape)
         distance_log = np.zeros_like(points[0])
 
         for i in range(image.shape[0]):
@@ -1021,7 +1023,7 @@ def integrate(s, points_x, points_y, method='Voronoi', maxRadius='Auto'):
                 distMin = np.min(distance_log)
                 minIndex = np.argmin(distance_log)
 
-                if distMin >= maxRadius:
+                if distMin >= max_radius:
                     pointRecord[j][i] = 0
                 else:
                     pointRecord[j][i] = minIndex + 1
