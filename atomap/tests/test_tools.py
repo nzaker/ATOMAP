@@ -1,4 +1,5 @@
 import pytest
+from pytest import approx
 import numpy as np
 import atomap.tools as to
 from hyperspy.signals import Signal2D
@@ -195,49 +196,69 @@ class TestFliplrPointsAndSignal:
         np.testing.assert_allclose(self.y, y_flip)
 
 
-class test_integrate(unittest.TestCase):
+class TestIntegrate:
 
-    def setUp(self):
-        test_data_2D = hs.signals.Signal2D(np.random.rand(100, 110))
-        self.test_data_2D = test_data_2D
-        test_data_3D = hs.signals.Signal2D(np.random.rand(100, 110, 20))
-        self.x_positions = [5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95,
-                            5, 15, 25, 35, 45, 55, 65, 75, 85, 95]
-        self.y_positions = [5, 5, 5, 5, 5, 5, 5, 5, 5,
-                            15, 15, 15, 15, 15, 15, 15, 15, 15,
-                            25, 25, 25, 25, 25, 25, 25, 25, 25,
-                            35, 35, 35, 35, 35, 35, 35, 35, 35,
-                            45, 45, 45, 45, 45, 45, 45, 45, 45,
-                            55, 55, 55, 55, 55, 55, 55, 55, 55,
-                            65, 65, 65, 65, 65, 65, 65, 65, 65,
-                            75, 75, 75, 75, 75, 75, 75, 75, 75,
-                            85, 85, 85, 85, 85, 85, 85, 85, 85,
-                            95, 95, 95, 95, 95, 95, 95, 95, 95]
+    def test_two_atoms(self):
+        test_data = tt.MakeTestData(50, 100)
+        x, y, A = [25, 25], [25, 75], [5, 10]
+        test_data.add_atom_list(x=x, y=y, amplitude=A)
+        s = test_data.signal
+        i_points, i_record, p_record = integrate(s, x, y, max_radius=500)
 
-    def test_running_2D(self):
-        result = integrate(self.test_data_2D,
-                           self.x_positions, self.y_positions)
-        np.testing.assert_allclose(np.sum(result[0]),
-                                   np.sum(self.test_data_2D),
-                                   rtol=0.011)
-        self.assertTrue(self.test_data_2D.data.shape, result[1].data.shape)
-        self.assertTrue(result[0].shape, (90,))
-        self.TestCase.assertTrue(result[2].shape, (100, 110))
+        assert approx(i_points) == A
+        assert i_record.axes_manager.signal_shape == (50, 100)
+        assert (i_record.isig[:, :51].data == i_points[0]).all()
+        assert (i_record.isig[:, 51:].data == i_points[1]).all()
+        assert (p_record[:51] == 0).all()
+        assert (p_record[51:] == 1).all()
 
-    def test_running_3d(self):
-        result = integrate(self.test_data_3D,
-                           self.x_positions,
-                           self.y_positions)
-        np.testing.assert_allclose(np.sum(result[0]),
-                                   np.sum(self.test_data_3D),
-                                   rtol=0.011)
-        self.assertTrue(self.test_data_3D.data.shape, result[1].data.shape)
-        self.TestCase.assertTrue(result[0].shape, (90, 20))
-        self.TestCase.assertTrue(result[2].shape, (100, 110))
+    def test_four_atoms(self):
+        test_data = tt.MakeTestData(60, 100)
+        x, y, A = [20, 20, 40, 40], [25, 75, 25, 75], [5, 10, 15, 20]
+        test_data.add_atom_list(x=x, y=y, amplitude=A)
+        s = test_data.signal
+        i_points, i_record, p_record = integrate(s, x, y, max_radius=500)
+
+        assert approx(i_points) == A
+        assert (i_record.isig[:31, :51].data == i_points[0]).all()
+        assert (i_record.isig[:31, 51:].data == i_points[1]).all()
+        assert (i_record.isig[31:, :51].data == i_points[2]).all()
+        assert (i_record.isig[31:, 51:].data == i_points[3]).all()
+        assert (p_record[:51, :31] == 0).all()
+        assert (p_record[51:, :31] == 1).all()
+        assert (p_record[:51, 31:] == 2).all()
+        assert (p_record[51:, 31:] == 3).all()
+
+    def test_max_radius_bad_value(self):
+        s = hs.signals.Signal2D(np.zeros((10, 10)))
+        with pytest.raises(ValueError):
+            integrate(s, [5, ], [5, ], max_radius=-1)
+
+    def test_max_radius_1(self):
+        test_data = tt.MakeTestData(60, 100)
+        x, y, A = [30, 30], [25, 75], [5, 10]
+        test_data.add_atom_list(
+                x=x, y=y, amplitude=A, sigma_x=0.1, sigma_y=0.1)
+        s = test_data.signal
+        i_points, i_record, p_record = integrate(s, x, y, max_radius=1)
+
+        assert (i_points[1] / i_points[0]) == 2.
+        assert i_record.data[y[0], x[0]] == i_points[0]
+        assert i_record.data[y[1], x[1]] == i_points[1]
+        i_record.data[y[0], x[0]] = 0
+        i_record.data[y[1], x[1]] = 0
+        assert not i_record.data.any()
+
+    def test_sum_2d_random_data(self):
+        s = hs.signals.Signal2D(np.random.rand(100, 110))
+        y, x = np.mgrid[5:96:10, 5:96:10]
+        x, y = x.flatten(), y.flatten()
+        result = integrate(s, x, y)
+        assert approx(np.sum(result[0])) == np.sum(s.data)
+
+    def test_watershed_method_running(self):
+        test_data = tt.MakeTestData(60, 100)
+        x, y, A = [20, 20, 40, 40], [25, 75, 25, 75], [5, 10, 15, 20]
+        test_data.add_atom_list(x=x, y=y, amplitude=A)
+        s = test_data.signal
+        i_points, i_record, p_record = integrate(s, x, y, method='Watershed')
