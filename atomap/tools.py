@@ -969,9 +969,9 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
         Each pixel/voxel in a particular segment or region has the value of the
         integration, value.
     pointRecord : NumPy array, same size as image
-        Image showing where each integration region is, pixels equating to point
-        0 (integratedIntensity[0]) all have value 0, all pixels equating to
-        integratedIntnsity[1] all have value 1 etc.
+        Image showing where each integration region is, pixels equating to
+        point 0 (integratedIntensity[0]) all have value 0, all pixels
+        equating to integratedIntnsity[1] all have value 1 etc.
 
     Examples
     --------
