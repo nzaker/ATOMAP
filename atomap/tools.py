@@ -1007,7 +1007,7 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
     # Setting max_radius to the width of the image, if none is set.
     if method == 'Voronoi':
         if max_radius == 'Auto':
-            max_radius = max(image.shape)
+            max_radius = max(pointRecord.shape)
         elif max_radius <= 0:
             raise ValueError("max_radius must be higher than 0.")
         distance_log = np.zeros_like(points[0])
@@ -1031,8 +1031,12 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
                     pointRecord[j][i] = minIndex + 1
 
     elif method == 'Watershed':
-        points_map = _make_mask(image, points_x, points_y)
-        pointRecord = watershed(-image, points_map)
+        if len(image.shape) > 2:
+            raise ValueError(
+                "Currently Watershed method is only implemented for 2D data.")
+        points_map = _make_mask(pointRecord, points[0], points[1])
+        pointRecord = watershed(-image, points_map.T)
+        pointRecord = pointRecord.T
 
     else:
         raise ValueError('Oops! You have asked for an unimplemented method.')
@@ -1041,11 +1045,21 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
         currentMask = (pointRecord == point)
         currentFeature = currentMask * image.T
         integratedIntensity[point] = sum(sum(currentFeature.T)).T
-        intensityRecord += (currentFeature > 0).T * integratedIntensity[point]
+        for i in range(image.shape[0]):
+            for j in range(image.shape[1]):
+                if currentMask.T[i][j] == True:
+                    intensityRecord[i][j] = integratedIntensity[point]
 
     intensityRecord = s._deepcopy_with_new_data(
         intensityRecord, copy_variance=True)
     return (integratedIntensity, intensityRecord, pointRecord.T)
+
+
+def _make_mask(image, points_x, points_y):
+    mask = np.zeros_like(image)
+    for i in range(len(points_x)):
+        mask[int(points_y[i])][int(points_x[i])] = 1
+    return mask
 
 
 def fliplr_points_and_signal(signal, x_array, y_array):
