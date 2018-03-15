@@ -183,8 +183,8 @@ class TestMakeVectorTestGaussian(unittest.TestCase):
 
         assert approx(point_list_meanX, rel=1e-2) == x
         assert approx(point_list_meanY, rel=1e-2) == y
-        assert approx(point_list_stdX, rel=1e-2) == std
-        assert approx(point_list_stdY, rel=1e-2) == std
+        assert approx(point_list_stdX, rel=1e-1) == std
+        assert approx(point_list_stdY, rel=1e-1) == std
         assert n == point_list.shape[0]
 
 
