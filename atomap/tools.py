@@ -1047,7 +1047,7 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
         integratedIntensity[point] = sum(sum(currentFeature.T)).T
         for i in range(image.shape[0]):
             for j in range(image.shape[1]):
-                if currentMask.T[i][j]:
+                if currentMask.T[i][j] :
                     intensityRecord[i][j] = integratedIntensity[point]
 
     intensityRecord = s._deepcopy_with_new_data(
@@ -1056,16 +1056,10 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
 
 
 def _make_mask(image, points_x, points_y):
-    points = np.array((points_y, points_x))
-    for i, x in enumerate(points):
-        for j, y in enumerate(x):
-            points[i][j] = int(round(y))
-    points = points.T
-    points.astype(int)
-    image = np.zeros_like(figure)
-    for x, i in enumerate(points.astype(int)):
-        image[i[0]][i[1]] = x + 1
-    return image
+    mask = np.zeros_like(image)
+    for i in range(len(points_x)):
+        mask[int(points_y[i])][int(points_x[i])] = 1
+    return mask
 
 
 def fliplr_points_and_signal(signal, x_array, y_array):
