@@ -1047,7 +1047,7 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
         integratedIntensity[point] = sum(sum(currentFeature.T)).T
         for i in range(image.shape[0]):
             for j in range(image.shape[1]):
-                if currentMask.T[i][j] :
+                if currentMask.T[i][j]:
                     intensityRecord[i][j] = integratedIntensity[point]
 
     intensityRecord = s._deepcopy_with_new_data(
