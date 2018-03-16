@@ -3,7 +3,7 @@ import scipy
 import matplotlib.pyplot as plt
 
 
-def centeredDistanceMatrix(centre, det_image):
+def centered_disistance_matrix(centre, det_image):
     """Makes a matrix the same size as det_image centre around a particular
     point.
 
@@ -253,7 +253,7 @@ def detector_normalisation(image,
     # N.B. Currently this method will not work if the detector doesn't
     # fill at least half the image.
 
-    m = centeredDistanceMatrix((det_image.shape[0] / 2,
+    m = centered_distance_matrix((det_image.shape[0] / 2,
                                 det_image.shape[1] / 2),
                                det_image)
     centre_image = np.multiply((m < 512), (1 - threshold_image))
@@ -267,7 +267,7 @@ def detector_normalisation(image,
     ratio = inner_angle / np.argmax(grad)
 
     # Create a centre matrix around where the detector centre is found to be.
-    d = centeredDistanceMatrix(centre, det_image)
+    d = centered_distance_matrix(centre, det_image)
 
     if outer_angle != 'None':
         # This limits the detector average value to only the region being,

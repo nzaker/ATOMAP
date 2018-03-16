@@ -9,7 +9,7 @@ from atomap.dummy_data import get_simple_cubic_signal
 class TestDetectorNormalisation(unittest.TestCase):
 
     def test_centered_distance_matrix(self):
-        s = quant.centeredDistanceMatrix((32, 32), np.zeros((64, 64)))
+        s = quant.centered_distance_matrix((32, 32), np.zeros((64, 64)))
         self.assertEqual(s[32, 32], 1)
         self.assertEqual(s[63, 63], np.sqrt((63-31)**2 + (63-32)**2))
 
@@ -42,5 +42,12 @@ class TestDetectorNormalisation(unittest.TestCase):
         self.assertTrue(result, 6)
 
 
-    # def test_analyse_flux(self):
-        # need example flux profile for this test
+    def test_find_flux_limits_running(self):
+        flux1 = quant.centered_distance_matrix((63,63), np.zeros(128, 128)
+        quant.find_flux_limits(flux_pattern, 25)
+
+
+    def test_analyse_flux_running(self):
+        flux1 = quant.centered_distance_matrix((63,63), np.zeros(128, 128)
+        (profiler, flux_profile) = quant.find_flux_limits(flux_pattern, 25)
+        quant.analyse_flux((5, 50), flux_profile, 25)
