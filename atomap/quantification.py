@@ -194,7 +194,8 @@ def analyse_flux(coords, flux_profile, conv_angle):
     upper = np.sum(radius < coords[1])
     xdata = radius[lower:upper]
     ydata = flux_profile[lower:upper]
-
+    print(len(xdata))
+    print(len(ydata))
     popt, pcov = scipy.optimize.curve_fit(_func, xdata, ydata, p0=([1, 1, 1]))
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 1, 1)
@@ -251,11 +252,11 @@ def detector_normalisation(image,
 
     # find the centre of the detector.
     # N.B. Currently this method will not work if the detector doesn't
-    # fill at least half the image.
+    # fill at least half the image.t
 
     m = centered_distance_matrix((det_image.shape[0] / 2,
-                                det_image.shape[1] / 2),
-                                det_image)
+                                  det_image.shape[1] / 2),
+                                  det_image)
     centre_image = np.multiply((m < 512), (1 - threshold_image))
     centre = scipy.ndimage.measurements.center_of_mass(centre_image)
 
