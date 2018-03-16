@@ -254,7 +254,7 @@ def detector_normalisation(image,
 
     m = centered_distance_matrix((det_image.shape[0] / 2,
                                   det_image.shape[1] / 2),
-                                  det_image)
+                                 det_image)
     centre_image = np.multiply((m < 512), (1 - threshold_image))
     centre = scipy.ndimage.measurements.center_of_mass(centre_image)
 
