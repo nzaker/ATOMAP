@@ -13,20 +13,17 @@ class TestDetectorNormalisation(unittest.TestCase):
         self.assertEqual(s[32, 32], 1)
         self.assertEqual(s[63, 63], np.sqrt((63-31)**2 + (63-32)**2))
 
-
     def test_detector_threshold(self):
         det_image = get_detector_image_signal()
         threshold_image = quant._detector_threshold(det_image.data)
         self.assertNotEqual(np.sum(threshold_image), 0)
         self.assertEqual(det_image.data.shape, threshold_image.shape)
 
-
     def test_radial_profile(self):
         det_image = get_detector_image_signal()
         profile = quant._radial_profile(det_image.data, (256, 256))
         self.assertEqual(len(np.shape(profile)), 1)
         self.assertEqual(np.shape(profile)[0], math.ceil(math.sqrt(2) * 256))
-
 
     def test_detector_normalisation(self):
         det_image = get_detector_image_signal()
@@ -36,16 +33,13 @@ class TestDetectorNormalisation(unittest.TestCase):
         self.assertTrue(image_normalised.data.max() < 1)
         self.assertEqual(image_normalised.data.shape, img.data.shape)
 
-
     def test_func(self):
-        result = quant._func(2, 4, 0.5, 5):
+        result = quant._func(2, 4, 0.5, 5)
         self.assertTrue(result, 6)
-
 
     def test_find_flux_limits_running(self):
         flux1 = quant.centered_distance_matrix((63,63), np.zeros(128, 128)
         quant.find_flux_limits(flux_pattern, 25)
-
 
     def test_analyse_flux_running(self):
         flux1 = quant.centered_distance_matrix((63,63), np.zeros(128, 128)

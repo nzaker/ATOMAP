@@ -3,7 +3,7 @@ import scipy
 import matplotlib.pyplot as plt
 
 
-def centered_disistance_matrix(centre, det_image):
+def centered_distance_matrix(centre, det_image):
     """Makes a matrix the same size as det_image centre around a particular
     point.
 
