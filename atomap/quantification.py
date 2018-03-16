@@ -194,8 +194,6 @@ def analyse_flux(coords, flux_profile, conv_angle):
     upper = np.sum(radius < coords[1])
     xdata = radius[lower:upper]
     ydata = flux_profile[lower:upper]
-    print(len(xdata))
-    print(len(ydata))
     popt, pcov = scipy.optimize.curve_fit(_func, xdata, ydata, p0=([1, 1, 1]))
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 1, 1)
