@@ -1,5 +1,7 @@
 import numpy as np
 import hyperspy.api as hs
+from hyperspy import components1d
+from hyperspy.signals import EELSSpectrum
 from atomap.testing_tools import MakeTestData
 from atomap.atom_lattice import Atom_Lattice
 
@@ -397,3 +399,129 @@ def get_perovskite110_ABF_signal(image_noise=False):
     ABF = 1-test_data.signal.data
     s_ABF = hs.signals.Signal2D(ABF)
     return(s_ABF)
+
+
+def _make_eels_map_spatial_image_la(x_size=100, y_size=100):
+    test_data_la = MakeTestData(x_size, y_size)
+    la_x, la_y = np.mgrid[5:100:20, 5:100:10]
+    la_x, la_y = la_x.flatten(), la_y.flatten()
+    test_data_la.add_atom_list(
+            la_x, la_y, amplitude=20, sigma_x=2.5, sigma_y=2.5)
+    la_spatial = test_data_la.signal
+    return la_spatial
+
+
+def _make_eels_map_spatial_image_mn(x_size=100, y_size=100):
+    test_data_mn = MakeTestData(x_size, y_size)
+    mn_x, mn_y = np.mgrid[15:100:20, 5:100:10]
+    mn_x, mn_y = mn_x.flatten(), mn_y.flatten()
+    test_data_mn.add_atom_list(mn_x, mn_y, amplitude=5, sigma_x=2, sigma_y=2)
+    mn_spatial = test_data_mn.signal
+    return mn_spatial
+
+
+def get_eels_spectrum_survey_image():
+    """Get an artificial survey image of atomic resolution EELS map of LaMnO3
+
+    Returns
+    -------
+    survey_image : HyperSpy Signal2D
+
+    Example
+    -------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_eels_spectrum_survey_image()
+    >>> s.plot()
+
+    See also
+    --------
+    get_eels_spectrum_map : corresponding EELS map
+
+    """
+    s = _make_eels_map_spatial_image_la() + _make_eels_map_spatial_image_mn()
+    s = s.swap_axes(0, 1)
+    return s
+
+
+def get_eels_spectrum_map():
+    """Get an artificial atomic resolution EELS map of LaMnO3
+
+    Containing the Mn-L23 and La-M54 edges.
+
+    Returns
+    -------
+    eels_map : HyperSpy EELSSpectrum
+
+    Example
+    -------
+    >>> import atomap.api as am
+    >>> s_eels_map = am.dummy_data.get_eels_spectrum_map()
+    >>> s_eels_map.plot()
+
+    See also
+    --------
+    get_eels_spectrum_survey_image : signal with same spatial dimensions
+
+    """
+    x_size, y_size = 100, 100
+    e0, e1 = 590, 900
+
+    la_spatial = _make_eels_map_spatial_image_la(x_size=x_size, y_size=y_size)
+    mn_spatial = _make_eels_map_spatial_image_mn(x_size=x_size, y_size=y_size)
+
+    # Generate EELS spectra
+    energy = np.arange(e0, e1, 1)
+
+    # Lanthanum M54-edge
+    la_arctan = components1d.Arctan(A=1, k=0.2, x0=845)
+    la_arctan.minimum_at_zero = True
+    la_l3_g = components1d.Gaussian(A=110, centre=833, sigma=1.5)
+    la_l2_g = components1d.Gaussian(A=100, centre=850, sigma=1.5)
+
+    la_data = la_arctan.function(energy)
+    la_data += la_l3_g.function(energy)
+    la_data += la_l2_g.function(energy)
+
+    # Manganese L23-edge
+    mn_arctan = components1d.Arctan(A=2, k=0.2, x0=634)
+    mn_arctan.minimum_at_zero = True
+    mn_l3_g = components1d.Gaussian(A=100, centre=642, sigma=1.8)
+    mn_l2_g = components1d.Gaussian(A=40, centre=652, sigma=1.8)
+
+    mn_data = mn_arctan.function(energy)
+    mn_data += mn_l3_g.function(energy)
+    mn_data += mn_l2_g.function(energy)
+
+    # Generate 3D-data
+    # La
+    data_3d_la = np.zeros(shape=(x_size, y_size, (e1 - e0)))
+    data_3d_la[:, :] = la_data
+    temp_3d_la = np.zeros(shape=(x_size, y_size, (e1 - e0)))
+    temp_3d_la = temp_3d_la.swapaxes(0, 2)
+    temp_3d_la[:] += la_spatial.data
+    temp_3d_la = temp_3d_la.swapaxes(0, 2)
+    data_3d_la *= temp_3d_la
+
+    # Mn
+    data_3d_mn = np.zeros(shape=(x_size, y_size, (e1 - e0)))
+    data_3d_mn[:, :] = mn_data
+    temp_3d_mn = np.zeros(shape=(x_size, y_size, (e1 - e0)))
+    temp_3d_mn = temp_3d_mn.swapaxes(0, 2)
+    temp_3d_mn[:] += mn_spatial.data
+    temp_3d_mn = temp_3d_mn.swapaxes(0, 2)
+    data_3d_mn *= temp_3d_mn
+
+    data_3d = data_3d_mn + data_3d_la
+
+    # Adding background and add noise
+    background = components1d.PowerLaw(A=1e10, r=3, origin=0)
+    background_data = background.function(energy)
+    temp_background_data = np.zeros(shape=(x_size, y_size, (e1 - e0)))
+    temp_background_data[:, :] += background_data
+    data_3d += background_data
+
+    data_noise = np.random.random((x_size, y_size, (e1 - e0)))*0.7
+    data_3d += data_noise
+
+    s_3d = EELSSpectrum(data_3d)
+    return s_3d
