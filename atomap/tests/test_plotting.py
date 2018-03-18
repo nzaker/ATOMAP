@@ -1,4 +1,3 @@
-import unittest
 from atomap.plotting import _make_atom_position_marker_list
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
@@ -8,7 +7,7 @@ from atomap.plotting import (
         _make_atom_planes_marker_list)
 
 
-class test_MakeAtomPositionMarkerList(unittest.TestCase):
+class TestMakeAtomPositionMarkerList:
 
     def test_make_atom_position_marker_list(self):
         atom_position_list = []
@@ -21,12 +20,12 @@ class test_MakeAtomPositionMarkerList(unittest.TestCase):
                 markersize=30,
                 color='black',
                 add_numbers=True)
-        self.assertEqual(len(marker_list), 40)
+        assert len(marker_list) == 40
 
 
-class test_atom_plane_marker_plotting(unittest.TestCase):
+class TestAtomPlaneMarkerPlotting:
 
-    def setUp(self):
+    def setup_method(self):
         atom_lattice = Atom_Lattice()
         atom_plane_list = []
         for i in range(2):
@@ -45,16 +44,16 @@ class test_atom_plane_marker_plotting(unittest.TestCase):
     def test_single_atom_plane_marker(self):
         atom_plane = self.atom_plane_list[0]
         marker_list = _make_single_atom_plane_marker_list(atom_plane)
-        self.assertEqual(len(marker_list), 1)
+        assert len(marker_list) == 1
 
     def test_make_atom_planes_marker_list_no_number(self):
         atom_plane_list = self.atom_plane_list
         marker_list = _make_atom_planes_marker_list(
                 atom_plane_list, add_numbers=False)
-        self.assertEqual(len(marker_list), 2)
+        assert len(marker_list) == 2
 
     def test_make_atom_planes_marker_list(self):
         atom_plane_list = self.atom_plane_list
         marker_list = _make_atom_planes_marker_list(
                 atom_plane_list, add_numbers=True)
-        self.assertEqual(len(marker_list), 4)
+        assert len(marker_list) == 4
