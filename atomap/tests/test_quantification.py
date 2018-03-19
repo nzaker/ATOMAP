@@ -25,13 +25,13 @@ class TestDetectorNormalisation(unittest.TestCase):
         self.assertEqual(len(np.shape(profile)), 1)
         self.assertEqual(np.shape(profile)[0], math.ceil(math.sqrt(2) * 256))
 
-    def test_detector_normalisation(self):
-        det_image = get_detector_image_signal()
-        img = get_simple_cubic_signal(image_noise=True)
-        img = (img) * 300000 + 4000
-        image_normalised = quant.detector_normalisation(img, det_image, 60)
-        self.assertTrue(image_normalised.data.max() < 1)
-        self.assertEqual(image_normalised.data.shape, img.data.shape)
+#    def test_detector_normalisation(self):
+#        det_image = get_detector_image_signal()
+#        img = get_simple_cubic_signal(image_noise=True)
+#        img = (img) * 300000 + 4000
+#        image_normalised = quant.detector_normalisation(img, det_image, 60)
+#        self.assertTrue(image_normalised.data.max() < 1)
+#        self.assertEqual(image_normalised.data.shape, img.data.shape)
 
     def test_func(self):
         result = quant._func(2, 4, 0.5, 5)
