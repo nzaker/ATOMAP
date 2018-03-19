@@ -25,13 +25,13 @@ class TestDetectorNormalisation(unittest.TestCase):
         self.assertEqual(len(np.shape(profile)), 1)
         self.assertEqual(np.shape(profile)[0], math.ceil(math.sqrt(2) * 256))
 
-#    def test_detector_normalisation(self):
-#        det_image = get_detector_image_signal()
-#        img = get_simple_cubic_signal(image_noise=True)
-#        img = (img) * 300000 + 4000
-#        image_normalised = quant.detector_normalisation(img, det_image, 60)
-#        self.assertTrue(image_normalised.data.max() < 1)
-#        self.assertEqual(image_normalised.data.shape, img.data.shape)
+    def test_detector_normalisation(self):
+        det_image = get_detector_image_signal()
+        img = get_simple_cubic_signal(image_noise=True)
+        img = (img) * 300000 + 4000
+        image_normalised = quant.detector_normalisation(img, det_image, 60)
+        self.assertTrue(image_normalised.data.max() < 1)
+        self.assertEqual(image_normalised.data.shape, img.data.shape)
 
     def test_func(self):
         result = quant._func(2, 4, 0.5, 5)
@@ -39,5 +39,5 @@ class TestDetectorNormalisation(unittest.TestCase):
 
     def test_find_flux_limits_running(self):
         flux1 = quant.centered_distance_matrix((63, 63), np.zeros((128, 128)))
-        (profiler, flux_profile) = quant.find_flux_limits(flux1, 25)
+        (profiler, flux_profile) = quant.find_flux_limits(100-flux1, 25)
         self.assertTrue(len(flux_profile), math.ceil((64**2+64**2)**0.5))
