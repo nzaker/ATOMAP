@@ -36,3 +36,8 @@ class TestDetectorNormalisation(unittest.TestCase):
     def test_func(self):
         result = quant._func(2, 4, 0.5, 5)
         self.assertTrue(result, 6)
+
+    def test_find_flux_limits_running(self):
+        flux1 = quant.centered_distance_matrix((63, 63), np.zeros((128, 128)))
+        (profiler, flux_profile) = quant.find_flux_limits(flux1, 25)
+        self.assertTrue(len(flux_profile), math.ceil((64**2+64**2)**0.5))
