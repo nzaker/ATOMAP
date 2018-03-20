@@ -139,17 +139,16 @@ def find_flux_limits(flux_pattern, conv_angle):
     # Plot the radial flux profile and allow the user to select the region for
     # power-law fitting.
     fig = plt.figure()
-    plt.suptitle('Radial Flux Profile: Please select power-law region.',
-                 fontsize=10)
+    fig.suptitle('Radial Flux Profile: select power-law region.', fontsize=10)
     ax1 = fig.add_subplot(2, 1, 1)
-    plt.plot(radius, flux_profile)
+    ax1.plot(radius, flux_profile)
     ax1.set_title('Radial Profile')
     ax2 = fig.add_subplot(2, 1, 2)
     ax2.set_title('Logarithmic Profile')
-    profile = plt.plot(radius, flux_profile)
+    profile = ax2.plot(radius, flux_profile)
     ax2.set_yscale('log')
-    plt.subplots_adjust(hspace=0.3)
-    plt.show()
+    fig.subplots_adjust(hspace=0.3)
+    fig.show()
 
     profiler = InteractiveFluxAnalyser(profile, radius, flux_profile)
 
