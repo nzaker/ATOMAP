@@ -988,6 +988,14 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
     ...        points_y=sublattice.y_position)
     >>> i_record.plot()
 
+    For a 3 dimensional dataset, with artificial EELS data
+
+    >>> s = am.dummy_data.get_eels_spectrum_survey_image()
+    >>> s_eels = am.dummy_data.get_eels_spectrum_map()
+    >>> peaks = am.get_atom_positions(s, separation=4)
+    >>> i_points, i_record, p_record = integrate(
+    ...         s_eels, peaks[:, 0], peaks[:, 1], max_radius=3)
+
     Note
     ----
     Works in principle with 3D and 4D data sets but will quickly hit a
