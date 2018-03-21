@@ -953,6 +953,8 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
     point_x, point_y : list
         Detailed list of the x and y coordinates of each point of
         interest within the image.
+    method : string
+        'Voronoi' or 'Watershed'
     max_radius : {'Auto'} int
         A maximum outer radius for each Voronoi Cell.
         If a pixel exceeds this radius it will not be included in the cell.
@@ -985,7 +987,7 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
     >>> i_points, i_record, p_record = integrate(
     ...        image,
     ...        points_x=sublattice.x_position,
-    ...        points_y=sublattice.y_position)
+    ...        points_y=sublattice.y_position, method='Voronoi')
     >>> i_record.plot()
 
     For a 3 dimensional dataset, with artificial EELS data
@@ -1047,7 +1049,8 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
         point_record = point_record.T
 
     else:
-        raise ValueError("Oops! You have asked for an unimplemented method.")
+        raise NotImplementedError(
+                "Oops! You have asked for an unimplemented method.")
     point_record -= 1
     for point in range(points[0].shape[0]):
         currentMask = (point_record == point)
