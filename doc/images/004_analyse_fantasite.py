@@ -62,7 +62,27 @@ def plot_dd_plane():
     s._plot.signal_plot.figure.savefig(
              my_path + 'Angle_map_z2.png',
              overwrite=True)
-      
+
+def plot_voronoi_integration(atom_lattice):
+    s_integrated = am.integrate(
+            atom_lattice.image,
+            atom_lattice.x_position, atom_lattice.y_position,
+            method='Voronoi')
+    s1 = s_integrated[1]
+    s1.plot(cmap='viridis')
+    s1._plot.signal_plot.figure.savefig(
+            my_path + 'intensity_record_voronoi.png', overwrite=True)
+
+def plot_watershed_integration(atom_lattice):
+    s_integrated = am.integrate(
+            atom_lattice.image,
+            atom_lattice.x_position, atom_lattice.y_position,
+            method='Watershed')
+    s1 = s_integrated[1]
+    s1.plot(cmap='viridis')
+    s1._plot.signal_plot.figure.savefig(
+            my_path + 'intensity_record_watershed.png', overwrite=True)
+
 def plot_angle_figs():
     z1 =  sublattice_B.zones_axis_average_distances[0]
     z2 =  sublattice_B.zones_axis_average_distances[1]
@@ -127,6 +147,8 @@ plot_monolayer_map()
 plot_atom_plane_monolayer_map()
 plot_atom_dd()
 plot_dd_plane()
+plot_voronoi_integration(atom_lattice)
+plot_watershed_integration(atom_lattice)
 plot_angle_figs()
 plot_al_zoom()
 elli_line()

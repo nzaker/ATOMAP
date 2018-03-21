@@ -299,8 +299,8 @@ Integration of atomic columns
 =============================
 
 When analysing the intensity of different atomic columns it is important to be able to accurately integrated over all columns in the field of view in an automated way.
-Two methods of image segmentation have been implemented into Atomap, these are 'Voronoi cell' integration and 'watershedding'.
-These methods have both been written such that they could also be applied to 3D data-sets e.g. EDX and EELS.
+Two methods of image segmentation have been implemented into Atomap, these are ``Voronoi`` cell integration and ``Watershed``.
+The ``Voronoi`` method can be applied to 3D data-sets e.g. EDX and EELS.
 
 The :py:func:`~atomap.tools.integrate` function returns a list containing:
 
@@ -312,16 +312,26 @@ The :py:func:`~atomap.tools.integrate` function returns a list containing:
 #. Point record - An image where defining the locations of each integration
    region.
 
-.. image:: images/integrate/Voronoi1.png
+.. code-block:: python
+
+    >>> i_points, i_record, p_record = am.integrate(
+    ...         atom_lattice.image, atom_lattice.x_position,
+    ...         atom_lattice.y_position, method='Voronoi')
+    >>> i_record.plot()
+
+.. image:: images/integrate/intensity_record_voronoi.png
     :scale: 50 %
+
+To use the ``Watershed`` method:
 
 .. code-block:: python
 
-    >>> atom_positions = am.get_atom_positions(s, 3, threshold_rel=0.2)
-    >>> sublattice = am.Sublattice(atom_positions, s.data)
-    >>> integrated_s = am.integrate(s, sublattice.x_position, sublattice.y_position, method='Watershed')
+    >>> i_points, i_record, p_record = am.integrate(
+    ...         atom_lattice.image, atom_lattice.x_position,
+    ...         atom_lattice.y_position, method='Watershed')
+    >>> i_record.plot()
 
-.. image:: images/integrate/Watershed1.png
+.. image:: images/integrate/intensity_record_watershed.png
     :scale: 50 %
 
 The Voronoi cell integration has a ``max_radius`` optional input which helps to
