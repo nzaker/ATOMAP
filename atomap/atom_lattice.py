@@ -37,6 +37,7 @@ class Atom_Lattice():
             self.image0 = None
         else:
             self.image0 = image
+            self.image = image
         self.name = name
         self._pixel_separation = 10
         self._original_filename = ''

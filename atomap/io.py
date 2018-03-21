@@ -101,6 +101,7 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
 
         if group_name == 'image_data0':
             atom_lattice.image0 = h5f[group_name][:]
+            atom_lattice.image = atom_lattice.image0
         if group_name == 'image_data1':
             atom_lattice.image1 = h5f[group_name][:]
 
