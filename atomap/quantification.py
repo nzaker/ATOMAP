@@ -234,7 +234,7 @@ def analyse_flux(coords, flux_profile, conv_angle):
 
 
 def detector_normalisation(
-        image, det_image, inner_angle, outer_angle='None', flux_expo='None'):
+        image, det_image, inner_angle, outer_angle=None, flux_expo=None):
     """Using an input detector image and flux exponent (if provided) a detector
     normalisation is carried out on the experimental image.
 
@@ -246,10 +246,10 @@ def detector_normalisation(
         Detector map as 2D array.
     inner_angle: float
         The experimentally measured inner collection angle of the detector.
-    outer_angle: 'None' otherwise float
+    outer_angle: None, otherwise float
         The measured experimental detector collection angle. If left as
-        'None' the outer limit of the detector active region will be used.
-    flux_expo: 'None' otherwise float
+        None the outer limit of the detector active region will be used.
+    flux_expo: None, otherwise float
         flux_expo is required to carry out flux_weighted detector
         normalisation procedure. For more details see:
         Martinez et al. Ultramicroscopy 2015, 159, 46–58.
@@ -290,14 +290,14 @@ def detector_normalisation(
     # Create a centre matrix around where the detector centre is found to be.
     d = centered_distance_matrix(centre, det_image)
 
-    if outer_angle != 'None':
+    if outer_angle is not None:
         # This limits the detector average value to only the region being,
         # illuminated by the beam.
         active_layer = np.multiply(active_layer, ((d * ratio) < outer_angle))
         threshold_image = np.multiply(
             threshold_image, ((d * ratio) < outer_angle))
 
-    if flux_expo == 'None':
+    if flux_expo is None:
         # If no flux exponent is provided the detector sensitivity is simply
         # the average value of the active region.
         detector_intensity = active_layer[active_layer.nonzero()].mean()
