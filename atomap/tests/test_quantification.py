@@ -33,7 +33,7 @@ class TestDetectorNormalisation:
         assert image_normalised.data.shape == img.data.shape
 
     def test_func(self):
-        result = quant._func(2, 4, 0.5, 5)
+        result = quant._func(4, 2, 0.5, 5)
         assert result == 6
 
     def test_find_flux_limits_running(self):
