@@ -962,16 +962,16 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
 
     Returns
     -------
-    integratedIntensity : np.array
+    integrated_intensity : NumPy array
         An array where dimension 0 is the same length as points, and subsequent
         subsequent dimension are energy dimensions.
-    intensityRecord : HyperSpy signal, same size as s
+    intensity_record : HyperSpy signal, same size as s
         Each pixel/voxel in a particular segment or region has the value of the
         integration, value.
-    pointRecord : NumPy array, same size as image
+    point_record : NumPy array, same size as image
         Image showing where each integration region is, pixels equating to
-        point 0 (integratedIntensity[0]) all have value 0, all pixels
-        equating to integratedIntnsity[1] all have value 1 etc.
+        point 0 (integrated_intensity[0]) all have value 0, all pixels
+        equating to integrated_intensity[1] all have value 1 etc.
 
     Examples
     --------
@@ -1003,19 +1003,19 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
 
     """
 
-    intensityRecord = np.zeros_like(s.data, dtype=float)
+    intensity_record = np.zeros_like(s.data, dtype=float)
     currentFeature = np.zeros_like(s.data.T, dtype=float)
-    pointRecord = np.zeros(s.axes_manager.shape[0:2], dtype=int)
-    integratedIntensity = np.zeros_like(sum(sum(currentFeature.T)))
-    integratedIntensity = np.dstack(
-        integratedIntensity for i in range(len(points_x)))
-    integratedIntensity = np.squeeze(integratedIntensity.T)
+    point_record = np.zeros(s.axes_manager.shape[0:2], dtype=int)
+    integrated_intensity = np.zeros_like(sum(sum(currentFeature.T)))
+    integrated_intensity = np.dstack(
+        integrated_intensity for i in range(len(points_x)))
+    integrated_intensity = np.squeeze(integrated_intensity.T)
     points = np.array((points_y, points_x))
     image = s.data
     # Setting max_radius to the width of the image, if none is set.
     if method == 'Voronoi':
         if max_radius == 'Auto':
-            max_radius = max(pointRecord.shape)
+            max_radius = max(point_record.shape)
         elif max_radius <= 0:
             raise ValueError("max_radius must be higher than 0.")
         distance_log = np.zeros_like(points[0])
@@ -1034,33 +1034,33 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
                 minIndex = np.argmin(distance_log)
 
                 if distMin >= max_radius:
-                    pointRecord[j][i] = 0
+                    point_record[j][i] = 0
                 else:
-                    pointRecord[j][i] = minIndex + 1
+                    point_record[j][i] = minIndex + 1
 
     elif method == 'Watershed':
         if len(image.shape) > 2:
             raise ValueError(
                 "Currently Watershed method is only implemented for 2D data.")
-        points_map = _make_mask(pointRecord, points[0], points[1])
-        pointRecord = watershed(-image, points_map.T)
-        pointRecord = pointRecord.T
+        points_map = _make_mask(point_record, points[0], points[1])
+        point_record = watershed(-image, points_map.T)
+        point_record = point_record.T
 
     else:
-        raise ValueError('Oops! You have asked for an unimplemented method.')
-    pointRecord -= 1
+        raise ValueError("Oops! You have asked for an unimplemented method.")
+    point_record -= 1
     for point in range(points[0].shape[0]):
-        currentMask = (pointRecord == point)
+        currentMask = (point_record == point)
         currentFeature = currentMask * image.T
-        integratedIntensity[point] = sum(sum(currentFeature.T)).T
+        integrated_intensity[point] = sum(sum(currentFeature.T)).T
         for i in range(image.shape[0]):
             for j in range(image.shape[1]):
                 if currentMask.T[i][j]:
-                    intensityRecord[i][j] = integratedIntensity[point]
+                    intensity_record[i][j] = integrated_intensity[point]
 
-    intensityRecord = s._deepcopy_with_new_data(
-        intensityRecord, copy_variance=True)
-    return (integratedIntensity, intensityRecord, pointRecord.T)
+    intensity_record = s._deepcopy_with_new_data(
+        intensity_record, copy_variance=True)
+    return (integrated_intensity, intensity_record, point_record.T)
 
 
 def _make_mask(image, points_x, points_y):
