@@ -1,4 +1,3 @@
-import unittest
 from pytest import approx
 import numpy as np
 import atomap.fitting_tools as ft
