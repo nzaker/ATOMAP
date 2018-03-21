@@ -947,7 +947,7 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
 
     Parameters
     ----------
-    s : HyperSpy signal
+    s : HyperSpy signal or array-like object
         Assuming 2D, 3D or 4D dataset where the spatial dimensions are 2D and
         any remaining dimensions are spectral.
     point_x, point_y : list
@@ -1004,16 +1004,17 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
     memory error with large sizes.
 
     """
-
-    intensity_record = np.zeros_like(s.data, dtype=float)
-    currentFeature = np.zeros_like(s.data.T, dtype=float)
-    point_record = np.zeros(s.axes_manager.shape[0:2], dtype=int)
+    image = s.__array__()
+    if len(image.shape) < 2:
+        raise ValueError("s must have at least 2 dimensions")
+    intensity_record = np.zeros_like(image, dtype=float)
+    currentFeature = np.zeros_like(image.T, dtype=float)
+    point_record = np.zeros(image.shape[0:2][::-1], dtype=int)
     integrated_intensity = np.zeros_like(sum(sum(currentFeature.T)))
     integrated_intensity = np.dstack(
         integrated_intensity for i in range(len(points_x)))
     integrated_intensity = np.squeeze(integrated_intensity.T)
     points = np.array((points_y, points_x))
-    image = s.data
     # Setting max_radius to the width of the image, if none is set.
     if method == 'Voronoi':
         if max_radius == 'Auto':
@@ -1061,9 +1062,12 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
                 if currentMask.T[i][j]:
                     intensity_record[i][j] = integrated_intensity[point]
 
-    intensity_record = s._deepcopy_with_new_data(
-        intensity_record, copy_variance=True)
-    return (integrated_intensity, intensity_record, point_record.T)
+    if hasattr(s, '_deepcopy_with_new_data'):
+        s_intensity_record = s._deepcopy_with_new_data(
+            intensity_record, copy_variance=True)
+    else:
+        s_intensity_record = Signal2D(intensity_record)
+    return (integrated_intensity, s_intensity_record, point_record.T)
 
 
 def _make_mask(image, points_x, points_y):
