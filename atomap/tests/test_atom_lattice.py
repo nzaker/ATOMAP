@@ -31,6 +31,25 @@ class TestCreateAtomLatticeObject:
         atom_lattice.get_sublattice_atom_list_on_image()
 
 
+class TestXYPosition:
+
+    def setup_method(self):
+        pos0 = np.array([[5, 10], [10, 15]])
+        pos1 = np.array([[20, 25], [30, 35]])
+        sublattice0 = Sublattice(pos0, np.zeros((40, 40)))
+        sublattice1 = Sublattice(pos1, np.zeros((40, 40)))
+        self.atom_lattice = Atom_Lattice(
+                np.zeros((40, 40)), sublattice_list=[sublattice0, sublattice1])
+        self.x_pos = np.concatenate((pos0[:, 0], pos1[:, 0]))
+        self.y_pos = np.concatenate((pos0[:, 1], pos1[:, 1]))
+
+    def test_x_position(self):
+        assert (self.atom_lattice.x_position == self.x_pos).all()
+
+    def test_y_position(self):
+        assert (self.atom_lattice.y_position == self.y_pos).all()
+
+
 class TestDumbbellLattice:
 
     def setup_method(self):

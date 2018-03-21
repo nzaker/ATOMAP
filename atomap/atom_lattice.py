@@ -19,6 +19,15 @@ class Atom_Lattice():
         ----------
         image : 2D NumPy array, optional
         sublattice_list : list of sublattice object, optional
+
+        Attributes
+        ----------
+        image: 2D NumPy array
+        x_position : list of floats
+            x positions for all sublattices.
+        y_position : list of floats
+            y positions for all sublattices.
+
         """
         if sublattice_list is None:
             self.sublattice_list = []
