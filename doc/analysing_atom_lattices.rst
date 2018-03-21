@@ -319,7 +319,7 @@ The :py:func:`~atomap.tools.integrate` function returns a list containing:
     ...         atom_lattice.y_position, method='Voronoi')
     >>> i_record.plot()
 
-.. image:: images/integrate/intensity_record_voronoi.png
+.. image:: images/plotting_tutorial/intensity_record_voronoi.png
     :scale: 50 %
 
 To use the ``Watershed`` method:
@@ -331,7 +331,7 @@ To use the ``Watershed`` method:
     ...         atom_lattice.y_position, method='Watershed')
     >>> i_record.plot()
 
-.. image:: images/integrate/intensity_record_watershed.png
+.. image:: images/plotting_tutorial/intensity_record_watershed.png
     :scale: 50 %
 
 The Voronoi cell integration has a ``max_radius`` optional input which helps to
