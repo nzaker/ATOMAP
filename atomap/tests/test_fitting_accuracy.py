@@ -1,4 +1,4 @@
-import unittest
+from pytest import approx
 import numpy as np
 from atomap.testing_tools import MakeTestData
 from atomap.testing_tools import find_atom_position_match
@@ -6,9 +6,9 @@ from atomap.testing_tools import get_fit_miss_array
 import atomap.api as am
 
 
-class test_fitting_accuracy(unittest.TestCase):
+class TestFittingAccuracy:
 
-    def setUp(self):
+    def setup_method(self):
         test_data = MakeTestData(700, 700)
         x, y = np.mgrid[100:600:5j, 100:600:5j]
         sigma_value = 10
@@ -36,7 +36,7 @@ class test_fitting_accuracy(unittest.TestCase):
                 g_list, atom_list, scale=sublattice.pixel_size, delta=3)
         fit_miss = get_fit_miss_array(match_list)
         mean_diff = fit_miss[:, 2].mean()
-        self.assertAlmostEqual(mean_diff, 0., places=4)
+        assert approx(mean_diff, abs=1e-4) == 0.
 
     def test_gaussian_2d(self):
         g_list = self.g_list
@@ -51,7 +51,7 @@ class test_fitting_accuracy(unittest.TestCase):
                 g_list, atom_list, scale=sublattice.pixel_size, delta=3)
         fit_miss = get_fit_miss_array(match_list)
         mean_diff = fit_miss[:, 2].mean()
-        self.assertAlmostEqual(mean_diff, 0., places=7)
+        assert approx(mean_diff, abs=1e-7) == 0.
         sigma_x_list = []
         sigma_y_list = []
         for atom in atom_list:
@@ -59,5 +59,5 @@ class test_fitting_accuracy(unittest.TestCase):
             sigma_y_list.append(atom.sigma_y)
         mean_sigma_x = np.array(sigma_x_list).mean()
         mean_sigma_y = np.array(sigma_y_list).mean()
-        self.assertAlmostEqual(mean_sigma_x, self.sigma_value, places=2)
-        self.assertAlmostEqual(mean_sigma_y, self.sigma_value, places=2)
+        assert approx(mean_sigma_x, rel=1e-3) == self.sigma_value
+        assert approx(mean_sigma_y, rel=1e-3) == self.sigma_value
