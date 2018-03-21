@@ -250,18 +250,29 @@ class TestIntegrate:
         i_record.data[y[1], x[1]] = 0
         assert not i_record.data.any()
 
+    def test_too_few_dimensions(self):
+        s = hs.signals.Signal1D(np.random.rand(110))
+        y, x = np.mgrid[5:96:10, 5:96:10]
+        x, y = x.flatten(), y.flatten()
+        with pytest.raises(ValueError):
+            integrate(s, x, y)
+
     def test_sum_2d_random_data(self):
         s = hs.signals.Signal2D(np.random.rand(100, 110))
         y, x = np.mgrid[5:96:10, 5:96:10]
         x, y = x.flatten(), y.flatten()
         result = integrate(s, x, y)
         assert approx(np.sum(result[0])) == np.sum(s.data)
+        assert result[2].shape == s.data.shape
 
     def test_3d_data_running(self):
         s = dd.get_eels_spectrum_survey_image()
         s_eels = dd.get_eels_spectrum_map()
         peaks = am.get_atom_positions(s, separation=4)
-        integrate(s_eels, peaks[:, 0], peaks[:, 1], max_radius=3)
+        i_points, i_record, p_record = integrate(
+                s_eels, peaks[:, 0], peaks[:, 1], max_radius=3)
+        assert p_record.shape == (100, 100)
+        assert s_eels.data.shape == i_record.data.shape
 
     def test_watershed_method_running(self):
         test_data = tt.MakeTestData(60, 100)
@@ -274,3 +285,14 @@ class TestIntegrate:
         s = hs.signals.Signal2D(np.zeros((10, 10)))
         with pytest.raises(NotImplementedError):
             integrate(s, [5, ], [5, ], method='bad_method')
+
+    def test_array_input(self):
+        sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        x, y = sublattice.x_position, sublattice.y_position
+        i_points0, i_record0, p_record0 = integrate(sublattice.image, x, y)
+
+        signal = am.dummy_data.get_simple_cubic_signal()
+        i_points1, i_record1, p_record1 = integrate(sublattice.image, x, y)
+        assert (i_points0 == i_points1).all()
+        assert (i_record0.data == i_record1.data).all()
+        assert (p_record0 == p_record1).all()
