@@ -1,4 +1,5 @@
 from tqdm import trange
+import numpy as np
 from atomap.atom_finding_refining import\
         construct_zone_axes_from_sublattice, fit_atom_positions_gaussian
 from atomap.plotting import _make_atom_position_marker_list
@@ -37,6 +38,22 @@ class Atom_Lattice():
             self.name,
             len(self.sublattice_list),
             )
+
+    @property
+    def x_position(self):
+        x_list = []
+        for subl in self.sublattice_list:
+            x_list.append(subl.x_position)
+        x_pos = np.concatenate(x_list)
+        return(x_pos)
+
+    @property
+    def y_position(self):
+        y_list = []
+        for subl in self.sublattice_list:
+            y_list.append(subl.y_position)
+        y_pos = np.concatenate(y_list)
+        return(y_pos)
 
     def get_sublattice(self, sublattice_id):
         """
