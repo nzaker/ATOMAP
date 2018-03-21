@@ -292,7 +292,7 @@ class TestIntegrate:
         i_points0, i_record0, p_record0 = integrate(sublattice.image, x, y)
 
         signal = am.dummy_data.get_simple_cubic_signal()
-        i_points1, i_record1, p_record1 = integrate(sublattice.image, x, y)
+        i_points1, i_record1, p_record1 = integrate(signal, x, y)
         assert (i_points0 == i_points1).all()
         assert (i_record0.data == i_record1.data).all()
         assert (p_record0 == p_record1).all()
