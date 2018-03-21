@@ -1,6 +1,7 @@
 import pytest
 from pytest import approx
 import numpy as np
+import atomap.api as am
 import atomap.tools as to
 from hyperspy.signals import Signal2D
 from atomap.tools import array2signal1d, array2signal2d, Fingerprinter
@@ -256,9 +257,20 @@ class TestIntegrate:
         result = integrate(s, x, y)
         assert approx(np.sum(result[0])) == np.sum(s.data)
 
+    def test_3d_data_running(self):
+        s = dd.get_eels_spectrum_survey_image()
+        s_eels = dd.get_eels_spectrum_map()
+        peaks = am.get_atom_positions(s, separation=4)
+        integrate(s_eels, peaks[:, 0], peaks[:, 1], max_radius=3)
+
     def test_watershed_method_running(self):
         test_data = tt.MakeTestData(60, 100)
         x, y, A = [20, 20, 40, 40], [25, 75, 25, 75], [5, 10, 15, 20]
         test_data.add_atom_list(x=x, y=y, amplitude=A)
         s = test_data.signal
         i_points, i_record, p_record = integrate(s, x, y, method='Watershed')
+
+    def test_wrong_method(self):
+        s = hs.signals.Signal2D(np.zeros((10, 10)))
+        with pytest.raises(NotImplementedError):
+            integrate(s, [5, ], [5, ], method='bad_method')
