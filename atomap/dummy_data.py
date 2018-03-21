@@ -420,6 +420,36 @@ def _make_eels_map_spatial_image_mn(x_size=100, y_size=100):
     return mn_spatial
 
 
+def _make_mn_eels_spectrum(energy_range=None):
+    if energy_range is None:
+        energy_range = (590, 900)
+    energy = np.arange(energy_range[0], energy_range[1], 1)
+    mn_arctan = components1d.Arctan(A=2, k=0.2, x0=634)
+    mn_arctan.minimum_at_zero = True
+    mn_l3_g = components1d.Gaussian(A=100, centre=642, sigma=1.8)
+    mn_l2_g = components1d.Gaussian(A=40, centre=652, sigma=1.8)
+
+    mn_data = mn_arctan.function(energy)
+    mn_data += mn_l3_g.function(energy)
+    mn_data += mn_l2_g.function(energy)
+    return mn_data
+
+
+def _make_la_eels_spectrum(energy_range=None):
+    if energy_range is None:
+        energy_range = (590, 900)
+    energy = np.arange(energy_range[0], energy_range[1], 1)
+    la_arctan = components1d.Arctan(A=1, k=0.2, x0=845)
+    la_arctan.minimum_at_zero = True
+    la_l3_g = components1d.Gaussian(A=110, centre=833, sigma=1.5)
+    la_l2_g = components1d.Gaussian(A=100, centre=850, sigma=1.5)
+
+    la_data = la_arctan.function(energy)
+    la_data += la_l3_g.function(energy)
+    la_data += la_l2_g.function(energy)
+    return la_data
+
+
 def get_eels_spectrum_survey_image():
     """Get an artificial survey image of atomic resolution EELS map of LaMnO3
 
@@ -443,10 +473,16 @@ def get_eels_spectrum_survey_image():
     return s
 
 
-def get_eels_spectrum_map():
+def get_eels_spectrum_map(add_noise=True):
     """Get an artificial atomic resolution EELS map of LaMnO3
 
     Containing the Mn-L23 and La-M54 edges.
+
+    Parameters
+    ----------
+    add_noise : bool
+        If True, will add Gaussian noise to the spectra.
+        Default True.
 
     Returns
     -------
@@ -457,6 +493,10 @@ def get_eels_spectrum_map():
     >>> import atomap.api as am
     >>> s_eels_map = am.dummy_data.get_eels_spectrum_map()
     >>> s_eels_map.plot()
+
+    Not adding noise
+
+    >>> s_eels_map = am.dummy_data.get_eels_spectrum_map(add_noise=False)
 
     See also
     --------
@@ -470,27 +510,8 @@ def get_eels_spectrum_map():
     mn_spatial = _make_eels_map_spatial_image_mn(x_size=x_size, y_size=y_size)
 
     # Generate EELS spectra
-    energy = np.arange(e0, e1, 1)
-
-    # Lanthanum M54-edge
-    la_arctan = components1d.Arctan(A=1, k=0.2, x0=845)
-    la_arctan.minimum_at_zero = True
-    la_l3_g = components1d.Gaussian(A=110, centre=833, sigma=1.5)
-    la_l2_g = components1d.Gaussian(A=100, centre=850, sigma=1.5)
-
-    la_data = la_arctan.function(energy)
-    la_data += la_l3_g.function(energy)
-    la_data += la_l2_g.function(energy)
-
-    # Manganese L23-edge
-    mn_arctan = components1d.Arctan(A=2, k=0.2, x0=634)
-    mn_arctan.minimum_at_zero = True
-    mn_l3_g = components1d.Gaussian(A=100, centre=642, sigma=1.8)
-    mn_l2_g = components1d.Gaussian(A=40, centre=652, sigma=1.8)
-
-    mn_data = mn_arctan.function(energy)
-    mn_data += mn_l3_g.function(energy)
-    mn_data += mn_l2_g.function(energy)
+    mn_data = _make_mn_eels_spectrum(energy_range=(e0, e1))
+    la_data = _make_la_eels_spectrum(energy_range=(e0, e1))
 
     # Generate 3D-data
     # La
@@ -515,13 +536,14 @@ def get_eels_spectrum_map():
 
     # Adding background and add noise
     background = components1d.PowerLaw(A=1e10, r=3, origin=0)
-    background_data = background.function(energy)
+    background_data = background.function(np.arange(e0, e1, 1))
     temp_background_data = np.zeros(shape=(x_size, y_size, (e1 - e0)))
     temp_background_data[:, :] += background_data
     data_3d += background_data
 
-    data_noise = np.random.random((x_size, y_size, (e1 - e0)))*0.7
-    data_3d += data_noise
+    if add_noise:
+        data_noise = np.random.random((x_size, y_size, (e1 - e0)))*0.7
+        data_3d += data_noise
 
     s_3d = EELSSpectrum(data_3d)
     return s_3d
