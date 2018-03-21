@@ -314,9 +314,7 @@ The :py:func:`~atomap.tools.integrate` function returns a list containing:
 
 .. code-block:: python
 
-    >>> i_points, i_record, p_record = am.integrate(
-    ...         atom_lattice.image, atom_lattice.x_position,
-    ...         atom_lattice.y_position, method='Voronoi')
+    >>> i_points, i_record, p_record = atom_lattice.integrate_column_intensity()
     >>> i_record.plot()
 
 .. image:: images/plotting_tutorial/intensity_record_voronoi.png
@@ -326,9 +324,8 @@ To use the ``Watershed`` method:
 
 .. code-block:: python
 
-    >>> i_points, i_record, p_record = am.integrate(
-    ...         atom_lattice.image, atom_lattice.x_position,
-    ...         atom_lattice.y_position, method='Watershed')
+    >>> i_points, i_record, p_record = atom_lattice.integrate_column_intensity(
+    ...         method='Watershed')
     >>> i_record.plot()
 
 .. image:: images/plotting_tutorial/intensity_record_watershed.png

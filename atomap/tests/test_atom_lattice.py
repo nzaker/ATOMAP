@@ -5,6 +5,7 @@ from atomap.testing_tools import MakeTestData
 import atomap.initial_position_finding as ipf
 from atomap.atom_finding_refining import get_atom_positions
 import atomap.testing_tools as tt
+import atomap.dummy_data as dd
 
 
 class TestCreateAtomLatticeObject:
@@ -48,6 +49,16 @@ class TestXYPosition:
 
     def test_y_position(self):
         assert (self.atom_lattice.y_position == self.y_pos).all()
+
+
+class TestAtomLatticeIntegrate:
+
+    def test_simple(self):
+        atom_lattice = dd.get_simple_atom_lattice_two_sublattices()
+        results = atom_lattice.integrate_column_intensity()
+        assert len(results[0]) == len(atom_lattice.x_position)
+        assert atom_lattice.image.shape == results[1].data.shape
+        assert atom_lattice.image.shape == results[2].shape
 
 
 class TestDumbbellLattice:

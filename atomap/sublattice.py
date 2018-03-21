@@ -1478,6 +1478,48 @@ class Sublattice():
         add_marker(signal, marker_list, permanent=True, plot_marker=False)
         return signal
 
+    def integrate_column_intensity(
+            self, method='Voronoi', max_radius='Auto', data_to_integrate=None):
+        """Integrate signal around the atoms in the sublattice
+
+        If the sublattice is a part of an Atom_Lattice object, this function
+        will only take into account the atoms contained in this sublattice.
+        To get the integrated intensity for all the sublattices, use the
+        integrate_column_intensity in the Atom_Lattice object.
+
+        See atomap.tools.integrate for more information about the parameters.
+
+        Parameters
+        ----------
+        method : string
+            Voronoi or Watershed
+        max_radius : int, optional
+        data_to_integrate : NumPy array, HyperSpy signal or array-like
+            Works with 2D, 3D and 4D arrays, so for example an EEL spectrum
+            image can be used.
+
+        Returns
+        -------
+        i_points, i_record, p_record
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> sl = am.dummy_data.get_simple_cubic_sublattice(image_noise=True)
+        >>> i_points, i_record, p_record = sl.integrate_column_intensity()
+
+        See also
+        --------
+        tools.integrate
+
+        """
+        if data_to_integrate is None:
+            data_to_integrate = self.image
+        i_points, i_record, p_record = at.integrate(
+                data_to_integrate, self.x_position, self.y_position,
+                method=method, max_radius=max_radius)
+        return(i_points, i_record, p_record)
+
     def get_atom_column_amplitude_max_intensity(
             self,
             image=None,

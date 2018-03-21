@@ -64,21 +64,17 @@ def plot_dd_plane():
              overwrite=True)
 
 def plot_voronoi_integration(atom_lattice):
-    s_integrated = am.integrate(
-            atom_lattice.image,
-            atom_lattice.x_position, atom_lattice.y_position,
+    integrated = atom_lattice.integrate_column_intensity(
             method='Voronoi')
-    s1 = s_integrated[1]
+    s1 = integrated[1]
     s1.plot(cmap='viridis')
     s1._plot.signal_plot.figure.savefig(
             my_path + 'intensity_record_voronoi.png', overwrite=True)
 
 def plot_watershed_integration(atom_lattice):
-    s_integrated = am.integrate(
-            atom_lattice.image,
-            atom_lattice.x_position, atom_lattice.y_position,
+    integrated = atom_lattice.integrate_column_intensity(
             method='Watershed')
-    s1 = s_integrated[1]
+    s1 = integrated[1]
     s1.plot(cmap='viridis')
     s1._plot.signal_plot.figure.savefig(
             my_path + 'intensity_record_watershed.png', overwrite=True)
