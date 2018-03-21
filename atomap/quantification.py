@@ -18,6 +18,13 @@ def centered_distance_matrix(centre, det_image):
     -------
     NumPy Array
 
+    Example
+    -------
+    >>> import hyperspy.api as hs
+    >>> import atomap.api as am
+    >>> s = am.example_data.get_detector_image_signal()
+    >>> centered_matrix = am.quant.centered_distance_matrix((256, 256), s.data)
+
     """
     # makes a matrix centred around 'centre' the same size as the det_image.
     x, y = np.meshgrid(range(det_image.shape[0]), range(det_image.shape[0]))
@@ -38,6 +45,12 @@ def _detector_threshold(det_image):
     threshold_image : NumPy array
         Boolean image demonstrating the active region of the detector.
 
+    Example
+    -------
+    >>> import atomap.api as am
+    >>> s_det_image = am.example_data.get_detector_image_signal()
+    >>> threshold_image = am.quant._detector_threshold(s_det_image.data)
+
     """
     det_min, det_max = np.min(det_image), np.max(det_image)
     threshold_image = (det_image - det_min) / (det_max - det_min)
@@ -51,7 +64,24 @@ def _func(x, a, b, c):
 
 def _radial_profile(data, centre):
     """Creates a 1D profile from an image by integrating azimuthally around a
-    central point"""
+    central point.
+
+    Parameters
+    ----------
+    data : NumPy array
+    centre : tuple
+
+    Return
+    ------
+    radial_profile : NumPy array
+
+    Example
+    -------
+    >>> import atomap.api as am
+    >>> s_det_image = am.example_data.get_detector_image_signal()
+    >>> radial_profile = am.quant._radial_profile(s_det_image.data, (256, 256))
+
+    """
 
     y, x = np.indices((data.shape))
     r = np.sqrt((x - centre[0])**2 + (y - centre[1])**2)
