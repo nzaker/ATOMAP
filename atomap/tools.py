@@ -1073,7 +1073,7 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
 def _make_mask(image, points_x, points_y):
     mask = np.zeros_like(image)
     for i in range(len(points_x)):
-        mask[int(points_y[i])][int(points_x[i])] = 1
+        mask[int(points_y[i])][int(points_x[i])] = i + 1
     return mask
 
 
