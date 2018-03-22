@@ -1,8 +1,9 @@
 from tqdm import trange
+import numpy as np
 from atomap.atom_finding_refining import\
         construct_zone_axes_from_sublattice, fit_atom_positions_gaussian
 from atomap.plotting import _make_atom_position_marker_list
-from atomap.tools import array2signal2d
+import atomap.tools as at
 
 
 class Atom_Lattice():
@@ -18,6 +19,15 @@ class Atom_Lattice():
         ----------
         image : 2D NumPy array, optional
         sublattice_list : list of sublattice object, optional
+
+        Attributes
+        ----------
+        image: 2D NumPy array
+        x_position : list of floats
+            x positions for all sublattices.
+        y_position : list of floats
+            y positions for all sublattices.
+
         """
         if sublattice_list is None:
             self.sublattice_list = []
@@ -27,6 +37,7 @@ class Atom_Lattice():
             self.image0 = None
         else:
             self.image0 = image
+            self.image = image
         self.name = name
         self._pixel_separation = 10
         self._original_filename = ''
@@ -37,6 +48,22 @@ class Atom_Lattice():
             self.name,
             len(self.sublattice_list),
             )
+
+    @property
+    def x_position(self):
+        x_list = []
+        for subl in self.sublattice_list:
+            x_list.append(subl.x_position)
+        x_pos = np.concatenate(x_list)
+        return(x_pos)
+
+    @property
+    def y_position(self):
+        y_list = []
+        for subl in self.sublattice_list:
+            y_list.append(subl.y_position)
+        y_pos = np.concatenate(y_list)
+        return(y_pos)
 
     def get_sublattice(self, sublattice_id):
         """
@@ -57,6 +84,43 @@ class Atom_Lattice():
         for sublattice in sublattice_list:
             construct_zone_axes_from_sublattice(sublattice)
 
+    def integrate_column_intensity(
+            self, method='Voronoi', max_radius='Auto', data_to_integrate=None):
+        """Integrate signal around the atoms in the atom lattice.
+
+        See atomap.tools.integrate for more information about the parameters.
+
+        Parameters
+        ----------
+        method : string
+            Voronoi or Watershed
+        max_radius : int, optional
+        data_to_integrate : NumPy array, HyperSpy signal or array-like
+            Works with 2D, 3D and 4D arrays, so for example an EEL spectrum
+            image can be used.
+
+        Returns
+        -------
+        i_points, i_record, p_record
+
+        Examples
+        --------
+        >>> import atomap.api as am
+        >>> al = am.dummy_data.get_simple_atom_lattice_two_sublattices()
+        >>> i_points, i_record, p_record = al.integrate_column_intensity()
+
+        See also
+        --------
+        tools.integrate
+
+        """
+        if data_to_integrate is None:
+            data_to_integrate = self.image
+        i_points, i_record, p_record = at.integrate(
+                data_to_integrate, self.x_position, self.y_position,
+                method=method, max_radius=max_radius)
+        return(i_points, i_record, p_record)
+
     def get_sublattice_atom_list_on_image(
             self,
             image=None,
@@ -73,7 +137,7 @@ class Atom_Lattice():
                     color=sublattice._plot_color,
                     markersize=markersize,
                     add_numbers=add_numbers))
-        signal = array2signal2d(image, scale)
+        signal = at.array2signal2d(image, scale)
         signal.add_marker(marker_list, permanent=True, plot_marker=False)
 
         return signal

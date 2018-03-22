@@ -25,18 +25,6 @@ style_checks_flake8_docstrings:
     - python3 -m flake8 --exclude atomap/tests/ atomap/
     allow_failure: true
 
-anaconda_install_tests:
-    image: continuumio/anaconda3
-    script:
-    - apt-get update -q
-    - apt-get install -qy xvfb
-    - conda install -c conda-forge hyperspy
-    - conda install conda-build
-    - mkdir build
-    - conda build -c conda-forge --output-folder build .
-    - conda install -c conda-forge build/linux-64/atomap-*.tar.bz2
-    - xvfb-run python3 -m pytest --doctest-modules atomap/
-
 pages_development_branch:
     image: debian:stable
     stage: deploy

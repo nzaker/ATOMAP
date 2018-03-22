@@ -846,6 +846,16 @@ class TestGetPropertyLineProfile:
         s_l.plot()
 
 
+class TestSubLatticeIntegrate:
+
+    def test_simple(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        results = sublattice.integrate_column_intensity()
+        assert len(results[0]) == len(sublattice.x_position)
+        assert sublattice.image.shape == results[1].data.shape
+        assert sublattice.image.shape == results[2].shape
+
+
 class TestProjectPropertyLineCrossing:
 
     def setup_method(self):

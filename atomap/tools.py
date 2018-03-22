@@ -8,9 +8,10 @@ from scipy.spatial import cKDTree
 import matplotlib.pyplot as plt
 import hyperspy.api as hs
 from hyperspy.signals import Signal1D, Signal2D
+from skimage.morphology import watershed
 
 from atomap.atom_finding_refining import (
-        _fit_atom_positions_with_gaussian_model)
+    _fit_atom_positions_with_gaussian_model)
 from sklearn.cluster import DBSCAN
 import logging
 
@@ -92,10 +93,10 @@ def remove_atoms_from_image_using_2d_gaussian(
         percent_distance = percent_to_nn
         for i in range(10):
             g_list = _fit_atom_positions_with_gaussian_model(
-                    [atom],
-                    image,
-                    rotation_enabled=True,
-                    percent_to_nn=percent_distance)
+                [atom],
+                image,
+                rotation_enabled=True,
+                percent_to_nn=percent_distance)
             if g_list is False:
                 if i == 9:
                     break
@@ -119,20 +120,20 @@ def get_atom_planes_square(
     atom_plane1, atom_plane2 : Atomap atom_plane object
     """
     ort_atom_plane1, ort_atom_plane2 = atom_plane1.get_connecting_atom_planes(
-            atom_plane2, zone_vector)
+        atom_plane2, zone_vector)
 
     if debug_plot:
         sublattice.plot_atom_plane_on_stem_data(
-                [atom_plane1, atom_plane2, ort_atom_plane1, ort_atom_plane2],
-                figname="atom_plane_square_debug.jpg")
+            [atom_plane1, atom_plane2, ort_atom_plane1, ort_atom_plane2],
+            figname="atom_plane_square_debug.jpg")
 
     atom_list = sublattice.get_atom_list_between_four_atom_planes(
-            atom_plane1, atom_plane2, ort_atom_plane1, ort_atom_plane2)
+        atom_plane1, atom_plane2, ort_atom_plane1, ort_atom_plane2)
 
     if debug_plot:
         sublattice.plot_atom_list_on_stem_data(
-                atom_list,
-                figname="atom_plane_square_atom_list_debug.jpg")
+            atom_list,
+            figname="atom_plane_square_atom_list_debug.jpg")
 
     x_pos_list = []
     y_pos_list = []
@@ -143,25 +144,25 @@ def get_atom_planes_square(
         z_pos_list.append(0)
 
     data_list = np.array(
-            [x_pos_list, y_pos_list, z_pos_list]).swapaxes(0, 1)
+        [x_pos_list, y_pos_list, z_pos_list]).swapaxes(0, 1)
     atom_layer_list = project_position_property_sum_planes(
-            data_list, interface_atom_plane, rebin_data=True)
+        data_list, interface_atom_plane, rebin_data=True)
 
     atom_layer_list = np.array(atom_layer_list)[:, 0]
     x_pos_list = []
     z_pos_list = []
     for index, atom_layer_pos in enumerate(atom_layer_list):
         if not (index == 0):
-            previous_atom_layer = atom_layer_list[index-1]
-            x_pos_list.append(0.5*(
-                        atom_layer_pos +
-                        previous_atom_layer))
+            previous_atom_layer = atom_layer_list[index - 1]
+            x_pos_list.append(0.5 * (
+                atom_layer_pos +
+                previous_atom_layer))
             z_pos_list.append(
-                        atom_layer_pos -
-                        previous_atom_layer)
+                atom_layer_pos -
+                previous_atom_layer)
 
     output_data_list = np.array(
-            [x_pos_list, z_pos_list]).swapaxes(0, 1)
+        [x_pos_list, z_pos_list]).swapaxes(0, 1)
     return(output_data_list)
 
 
@@ -196,15 +197,15 @@ def find_average_distance_between_atoms(
     """
     data_list = input_data_list[:, 0]
     data_list.sort()
-    atom_distance_list = data_list[1:]-data_list[:-1]
-    norm_atom_distance_list = atom_distance_list/atom_distance_list.max()
+    atom_distance_list = data_list[1:] - data_list[:-1]
+    norm_atom_distance_list = atom_distance_list / atom_distance_list.max()
     is_monolayers = norm_atom_distance_list[crop_start:-crop_end] > threshold
     atoms_wo_outliers = atom_distance_list[crop_start:-crop_end]
     monolayer_sep = atoms_wo_outliers[np.argwhere(is_monolayers)]
     mean_separation = monolayer_sep.mean()
     first_peak_index = np.argmax(is_monolayers) + crop_start
     first_peak = atom_distance_list[first_peak_index]
-    if abs(mean_separation - first_peak) > 0.10*first_peak:
+    if abs(mean_separation - first_peak) > 0.10 * first_peak:
         str1 = '\nThe mean monolayer separation and distance to the first \
                 \nmonolayer deviate with more than 10 %. Consider if there \
                 \nare too many outliers'
@@ -253,7 +254,7 @@ def combine_clustered_positions_into_layers(
             if not (len(one_layer_list) == 1):
                 if combine_layers is True:
                     one_layer_list = np.array(
-                            one_layer_list).mean(0).tolist()
+                        one_layer_list).mean(0).tolist()
                 layer_list.append(one_layer_list)
             i += 1
             one_layer_list = [atom_pos.tolist()]
@@ -266,14 +267,14 @@ def combine_clustered_positions_into_layers(
 
 def combine_clusters_using_average_distance(data_list, margin=0.5):
     first_peak, monolayer_sep, mean_separation = \
-            find_average_distance_between_atoms(data_list)
+        find_average_distance_between_atoms(data_list)
     layer_list = combine_clustered_positions_into_layers(
-            data_list, first_peak*margin)
+        data_list, first_peak * margin)
     return(layer_list)
 
 
 def dotproduct(v1, v2):
-    return sum((a*b) for a, b in zip(v1, v2))
+    return sum((a * b) for a, b in zip(v1, v2))
 
 
 def length(v):
@@ -305,17 +306,17 @@ def _get_interpolated2d_from_unregular_data(
         new_x_lim = (x.min(), x.max())
     if new_y_lim is None:
         new_y_lim = (y.min(), y.max())
-    x_points = (new_x_lim[1]-new_x_lim[0])*upscale
-    y_points = (new_y_lim[1]-new_y_lim[0])*upscale
+    x_points = (new_x_lim[1] - new_x_lim[0]) * upscale
+    y_points = (new_y_lim[1] - new_y_lim[0]) * upscale
     new_x, new_y = np.mgrid[
-            new_x_lim[0]:new_x_lim[1]:x_points*1j,
-            new_y_lim[0]:new_y_lim[1]:y_points*1j].astype('float32')
+        new_x_lim[0]:new_x_lim[1]:x_points * 1j,
+        new_y_lim[0]:new_y_lim[1]:y_points * 1j].astype('float32')
     new_z = interpolate.griddata(
-            data[:, 0:2],
-            z,
-            (new_x, new_y),
-            method='cubic',
-            fill_value=np.NaN).astype('float32')
+        data[:, 0:2],
+        z,
+        (new_x, new_y),
+        method='cubic',
+        fill_value=np.NaN).astype('float32')
     return(new_x, new_y, new_z)
 
 
@@ -328,18 +329,18 @@ def get_slice_between_two_atoms(image, atom0, atom1, width):
 
 def get_slice_between_four_atoms(image, start_atoms, end_atoms, width):
     start_difference_vector = start_atoms[0].get_pixel_difference(
-            start_atoms[1])
-    start_point_x = start_atoms[0].pixel_x - start_difference_vector[0]/2
-    start_point_y = start_atoms[0].pixel_y - start_difference_vector[1]/2
+        start_atoms[1])
+    start_point_x = start_atoms[0].pixel_x - start_difference_vector[0] / 2
+    start_point_y = start_atoms[0].pixel_y - start_difference_vector[1] / 2
     start_point = (start_point_x, start_point_y)
 
     end_difference_vector = end_atoms[0].get_pixel_difference(
-            end_atoms[1])
-    end_point_x = end_atoms[0].pixel_x - end_difference_vector[0]/2
-    end_point_y = end_atoms[0].pixel_y - end_difference_vector[1]/2
+        end_atoms[1])
+    end_point_x = end_atoms[0].pixel_x - end_difference_vector[0] / 2
+    end_point_y = end_atoms[0].pixel_y - end_difference_vector[1] / 2
     end_point = (end_point_x, end_point_y)
     output_slice = get_arbitrary_slice(
-            image, start_point, end_point, width)
+        image, start_point, end_point, width)
     return(output_slice)
 
 
@@ -350,10 +351,10 @@ def get_arbitrary_slice(
         width,
         debug_figname=None):
     slice_bounds = _line_profile_coordinates(
-            start_point[::-1], end_point[::-1], linewidth=width)
+        start_point[::-1], end_point[::-1], linewidth=width)
 
     output_slice = ndimage.map_coordinates(
-            np.transpose(image), slice_bounds)
+        np.transpose(image), slice_bounds)
 
     if debug_figname:
         fig, axarr = plt.subplots(1, 2)
@@ -367,8 +368,8 @@ def get_arbitrary_slice(
 
         ax0.imshow(image)
         ax0.plot(
-                [start_point[0], end_point[0]],
-                [start_point[1], end_point[1]])
+            [start_point[0], end_point[0]],
+            [start_point[1], end_point[1]])
         ax0.plot(line1_x, line1_y)
         ax0.plot(line2_x, line2_y)
         ax1.imshow(np.rot90(np.fliplr(output_slice)))
@@ -391,11 +392,11 @@ def get_point_between_four_atoms(atom_list):
     atom3 = atom_list[3]
 
     x_pos = (
-            atom0.pixel_x + atom1.pixel_x +
-            atom2.pixel_x + atom3.pixel_x)*0.25
+        atom0.pixel_x + atom1.pixel_x +
+        atom2.pixel_x + atom3.pixel_x) * 0.25
     y_pos = (
-            atom0.pixel_y + atom1.pixel_y +
-            atom2.pixel_y + atom3.pixel_y)*0.25
+        atom0.pixel_y + atom1.pixel_y +
+        atom2.pixel_y + atom3.pixel_y) * 0.25
     return((x_pos, y_pos))
 
 
@@ -403,8 +404,8 @@ def get_point_between_two_atoms(atom_list):
     atom0 = atom_list[0]
     atom1 = atom_list[1]
 
-    x_pos = (atom0.pixel_x + atom1.pixel_x)*0.5
-    y_pos = (atom0.pixel_y + atom1.pixel_y)*0.5
+    x_pos = (atom0.pixel_x + atom1.pixel_x) * 0.5
+    y_pos = (atom0.pixel_y + atom1.pixel_y) * 0.5
     return((x_pos, y_pos))
 
 
@@ -419,9 +420,9 @@ def find_atom_position_between_atom_planes(
     start_atom0 = atom_plane0.start_atom
     while not start_atoms_found:
         orthogonal_atom0 = start_atom0.get_next_atom_in_zone_vector(
-                orthogonal_zone_vector)
+            orthogonal_zone_vector)
         orthogonal_atom1 = start_atom0.get_previous_atom_in_zone_vector(
-                orthogonal_zone_vector)
+            orthogonal_zone_vector)
         if orthogonal_atom0 in atom_plane1.atom_list:
             start_atoms_found = True
             start_atom1 = orthogonal_atom0
@@ -430,13 +431,13 @@ def find_atom_position_between_atom_planes(
             start_atom1 = orthogonal_atom1
         else:
             start_atom0 = start_atom0.get_next_atom_in_atom_plane(
-                    atom_plane0)
+                atom_plane0)
 
     slice_list = []
 
     atom_distance = start_atom0.get_pixel_distance_from_another_atom(
-            start_atom1)
-    integration_width = atom_distance*integration_width_percent
+        start_atom1)
+    integration_width = atom_distance * integration_width_percent
 
     end_atom0 = start_atom0.get_next_atom_in_atom_plane(atom_plane0)
     end_atom1 = start_atom1.get_next_atom_in_atom_plane(atom_plane1)
@@ -448,21 +449,21 @@ def find_atom_position_between_atom_planes(
 
     while (end_atom0 and end_atom1):
         output_slice = get_slice_between_four_atoms(
-                image,
-                (start_atom0, start_atom1),
-                (end_atom0, end_atom1),
-                integration_width)
+            image,
+            (start_atom0, start_atom1),
+            (end_atom0, end_atom1),
+            integration_width)
 
         middle_point = get_point_between_four_atoms(
-                [start_atom0, start_atom1, end_atom0, end_atom1])
+            [start_atom0, start_atom1, end_atom0, end_atom1])
         position_x_list.append(middle_point[0])
         position_y_list.append(middle_point[1])
 
         line_segment = (
-                get_point_between_two_atoms(
-                    [start_atom0, start_atom1]),
-                get_point_between_two_atoms(
-                    [end_atom0, end_atom1]))
+            get_point_between_two_atoms(
+                [start_atom0, start_atom1]),
+            get_point_between_two_atoms(
+                [end_atom0, end_atom1]))
         line_segment_list.append(line_segment)
 
         slice_list.append(output_slice)
@@ -475,13 +476,13 @@ def find_atom_position_between_atom_planes(
     for slice_data in slice_list:
         summed_slices.append(slice_data.mean(1))
 
-    max_oxygen_sigma = max_oxygen_sigma_percent*atom_distance
+    max_oxygen_sigma = max_oxygen_sigma_percent * atom_distance
     centre_value_list = []
     for slice_index, summed_slice in enumerate(summed_slices):
         centre_value = _get_centre_value_from_gaussian_model(
-                summed_slice, max_sigma=max_oxygen_sigma,
-                index=slice_index)
-        centre_value_list.append(float(centre_value)/len(summed_slice))
+            summed_slice, max_sigma=max_oxygen_sigma,
+            index=slice_index)
+        centre_value_list.append(float(centre_value) / len(summed_slice))
 
     atom_list = []
     for line_segment, centre_value in zip(
@@ -490,14 +491,14 @@ def find_atom_position_between_atom_planes(
         start_point = line_segment[0]
 
         line_segment_vector = (
-                end_point[0]-start_point[0],
-                end_point[1]-start_point[1])
+            end_point[0] - start_point[0],
+            end_point[1] - start_point[1])
         atom_vector = (
-                line_segment_vector[0]*centre_value,
-                line_segment_vector[1]*centre_value)
+            line_segment_vector[0] * centre_value,
+            line_segment_vector[1] * centre_value)
         atom_position = (
-                start_point[0] + atom_vector[0],
-                start_point[1] + atom_vector[1])
+            start_point[0] + atom_vector[0],
+            start_point[1] + atom_vector[1])
 
         from atom_position_class import Atom_Position
 
@@ -510,10 +511,10 @@ def find_atom_position_between_atom_planes(
 
 def _get_centre_value_from_gaussian_model(data, max_sigma=None, index=None):
     data = data - data.min()
-    data = data/data.max()
+    data = data / data.max()
     gaussian = hs.model.components.Gaussian(
-            A=0.5,
-            centre=len(data)/2)
+        A=0.5,
+        centre=len(data) / 2)
     if max_sigma:
         gaussian.sigma.bmax = max_sigma
     signal = hs.signals.Spectrum(data)
@@ -532,17 +533,17 @@ def _calculate_distance_between_atoms(atom_list):
     new_x_pos_list, new_y_pos_list, z_pos_list = [], [], []
     for index, atom in enumerate(atom_list):
         if not (index == 0):
-            previous_atom = atom_list[index-1]
+            previous_atom = atom_list[index - 1]
             previous_x_pos = previous_atom.pixel_x
             previous_y_pos = previous_atom.pixel_y
 
             x_pos = atom.pixel_x
             y_pos = atom.pixel_y
 
-            new_x_pos = (x_pos + previous_x_pos)*0.5
-            new_y_pos = (y_pos + previous_y_pos)*0.5
+            new_x_pos = (x_pos + previous_x_pos) * 0.5
+            new_y_pos = (y_pos + previous_y_pos) * 0.5
             z_pos = atom.get_pixel_distance_from_another_atom(
-                    previous_atom)
+                previous_atom)
 
             new_x_pos_list.append(new_x_pos)
             new_y_pos_list.append(new_y_pos)
@@ -559,12 +560,12 @@ def _calculate_net_distance_change_between_atoms(atom_list):
     for index, (x_pos, y_pos, z_pos) in enumerate(
             zip(x_pos_list, y_pos_list, z_pos_list)):
         if not (index == 0):
-            previous_x_pos = x_pos_list[index-1]
-            previous_y_pos = y_pos_list[index-1]
-            previous_z_pos = z_pos_list[index-1]
+            previous_x_pos = x_pos_list[index - 1]
+            previous_y_pos = y_pos_list[index - 1]
+            previous_z_pos = z_pos_list[index - 1]
 
-            new_x_pos = (x_pos + previous_x_pos)*0.5
-            new_y_pos = (y_pos + previous_y_pos)*0.5
+            new_x_pos = (x_pos + previous_x_pos) * 0.5
+            new_y_pos = (y_pos + previous_y_pos) * 0.5
             new_z_pos = (z_pos - previous_z_pos)
 
             new_x_pos_list.append(new_x_pos)
@@ -581,12 +582,12 @@ def _calculate_net_distance_change_between_3d_positions(data_list):
     for index, (x_pos, y_pos, z_pos) in enumerate(
             zip(x_pos_list, y_pos_list, z_pos_list)):
         if not (index == 0):
-            previous_x_pos = x_pos_list[index-1]
-            previous_y_pos = y_pos_list[index-1]
-            previous_z_pos = z_pos_list[index-1]
+            previous_x_pos = x_pos_list[index - 1]
+            previous_y_pos = y_pos_list[index - 1]
+            previous_z_pos = z_pos_list[index - 1]
 
-            new_x_pos = (x_pos + previous_x_pos)*0.5
-            new_y_pos = (y_pos + previous_y_pos)*0.5
+            new_x_pos = (x_pos + previous_x_pos) * 0.5
+            new_y_pos = (y_pos + previous_y_pos) * 0.5
             new_z_pos = z_pos - previous_z_pos
 
             new_x_pos_list.append(new_x_pos)
@@ -606,7 +607,7 @@ def find_atom_positions_for_an_atom_plane(
         atom_plane1,
         orthogonal_zone_vector)
     position_data = _calculate_net_distance_change_between_atoms(
-            atom_list)
+        atom_list)
     return(position_data)
 
 
@@ -616,11 +617,11 @@ def find_atom_positions_for_all_atom_planes(
         parallel_zone_vector,
         orthogonal_zone_vector):
     atom_plane_list = sublattice.atom_planes_by_zone_vector[
-            parallel_zone_vector]
+        parallel_zone_vector]
     x_pos_list, y_pos_list, z_pos_list = [], [], []
     for atom_plane_index, atom_plane in enumerate(atom_plane_list):
         if not (atom_plane_index == 0):
-            atom_plane0 = atom_plane_list[atom_plane_index-1]
+            atom_plane0 = atom_plane_list[atom_plane_index - 1]
             atom_plane1 = atom_plane
             position_data = find_atom_positions_for_an_atom_plane(
                 image,
@@ -639,16 +640,16 @@ def _get_clim_from_data(
         ignore_zeros=False,
         ignore_edges=False):
     if ignore_edges:
-        x_lim = int(data.shape[0]*0.05)
-        y_lim = int(data.shape[1]*0.05)
+        x_lim = int(data.shape[0] * 0.05)
+        y_lim = int(data.shape[1] * 0.05)
         data_array = copy.deepcopy(data[x_lim:-x_lim, y_lim:-y_lim])
     else:
         data_array = copy.deepcopy(data)
     if ignore_zeros:
         data_array = np.ma.masked_values(data_array, 0.0)
     mean = data_array.mean()
-    data_variance = data_array.std()*sigma
-    clim = (mean-data_variance, mean+data_variance)
+    data_variance = data_array.std() * sigma
+    clim = (mean - data_variance, mean + data_variance)
     if abs(data_array.min()) < abs(clim[0]):
         clim = list(clim)
         clim[0] = data_array.min()
@@ -722,7 +723,7 @@ def project_position_property_sum_planes(
     z_pos_list = input_data_list[:, 2]
 
     dist = interface_plane.get_closest_distance_and_angle_to_point(
-                    x_pos_list, y_pos_list)
+        x_pos_list, y_pos_list)
 
     data_list = np.stack((dist, z_pos_list)).T
     data_list = data_list[data_list[:, 0].argsort()]
@@ -735,21 +736,21 @@ def project_position_property_sum_planes(
 
 def _rebin_data_using_histogram_and_peakfinding(x_pos, z_pos):
     peak_position_list = _find_peak_position_using_histogram(
-            x_pos, peakgroup=3, amp_thresh=1)
+        x_pos, peakgroup=3, amp_thresh=1)
     average_distance = _get_average_distance_between_points(
-            peak_position_list)
+        peak_position_list)
 
     x_pos_mask_array = np.ma.array(x_pos)
     z_pos_mask_array = np.ma.array(z_pos)
     new_data_list = []
     for peak_position in peak_position_list:
         mask_data = np.ma.masked_values(
-                x_pos, peak_position, atol=average_distance/2)
+            x_pos, peak_position, atol=average_distance / 2)
         x_pos_mask_array.mask = mask_data.mask
         z_pos_mask_array.mask = mask_data.mask
         temp_x_list, temp_z_list = [], []
         for temp_x, temp_z in zip(
-                mask_data.mask*x_pos, mask_data.mask*z_pos):
+                mask_data.mask * x_pos, mask_data.mask * z_pos):
             if not (temp_x == 0):
                 temp_x_list.append(temp_x)
             if not (temp_z == 0):
@@ -770,7 +771,7 @@ def _find_peak_position_using_histogram(
     s = hs.signals.Signal(hist[0])
     s.axes_manager[-1].scale = hist[1][1] - hist[1][0]
     peak_data = s.find_peaks1D_ohaver(
-            peakgroup=peakgroup, amp_thresh=amp_thresh)
+        peakgroup=peakgroup, amp_thresh=amp_thresh)
     peak_positions = peak_data[0]['position'] + hist[1][0]
     peak_positions.sort()
     if debug_plot:
@@ -787,7 +788,7 @@ def _get_average_distance_between_points(peak_position_list):
     for peak_index, peak_position in enumerate(peak_position_list):
         if not (peak_index == 0):
             temp_distance = peak_position - peak_position_list[
-                    peak_index-1]
+                peak_index - 1]
             distance_between_peak_list.append(temp_distance)
     average_distance = np.array(distance_between_peak_list).mean()
     return(average_distance)
@@ -823,13 +824,13 @@ def _get_n_nearest_neighbors(position_list, nearest_neighbors, leafsize=100):
     nearest_neighbors += 1
 
     nearest_neighbor_data = cKDTree(
-            position_list,
-            leafsize=leafsize)
+        position_list,
+        leafsize=leafsize)
     position_neighbor_list = []
     for position in position_list:
         nn_data_list = nearest_neighbor_data.query(
-                position,
-                nearest_neighbors)
+            position,
+            nearest_neighbors)
         # Skipping the first element,
         # since it points to the atom itself
         for position_index in nn_data_list[1][1:]:
@@ -894,7 +895,7 @@ class Fingerprinter:
         # normalized scale. It specifies the proximity (in the same space
         # as X) required to connect adjacent points into a cluster.
         X_std = X.std()
-        X = X/X_std
+        X = X / X_std
         cl = self._cluster_algo
         cl.fit(X)
 
@@ -932,11 +933,148 @@ class Fingerprinter:
 
         # Store estimated attributes using the scikit-learn convention.
         # See the docstring of this class.
-        self.cluster_centers_ = means*X_std
+        self.cluster_centers_ = means * X_std
         self.fingerprint_ = dist
         self.cluster_algo_ = cl
 
         return self
+
+
+def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
+    """Given a spectrum image a set of points and a maximum outer radius,
+    this function integrates around each point in an image, using either
+    Voronoi cell or watershed segmentation methods.
+
+    Parameters
+    ----------
+    s : HyperSpy signal or array-like object
+        Assuming 2D, 3D or 4D dataset where the spatial dimensions are 2D and
+        any remaining dimensions are spectral.
+    point_x, point_y : list
+        Detailed list of the x and y coordinates of each point of
+        interest within the image.
+    method : string
+        'Voronoi' or 'Watershed'
+    max_radius : {'Auto'} int
+        A maximum outer radius for each Voronoi Cell.
+        If a pixel exceeds this radius it will not be included in the cell.
+        This allows analysis of a surface and particles.
+        If 'max_radius' is left as 'Auto' then it will be set to the largest
+        dimension in the image.
+
+    Returns
+    -------
+    integrated_intensity : NumPy array
+        An array where dimension 0 is the same length as points, and subsequent
+        subsequent dimension are energy dimensions.
+    intensity_record : HyperSpy signal, same size as s
+        Each pixel/voxel in a particular segment or region has the value of the
+        integration, value.
+    point_record : NumPy array, same size as image
+        Image showing where each integration region is, pixels equating to
+        point 0 (integrated_intensity[0]) all have value 0, all pixels
+        equating to integrated_intensity[1] all have value 1 etc.
+
+    Examples
+    --------
+
+    >>> import atomap.api as am
+    >>> from atomap.tools import integrate
+    >>> import hyperspy.api as hs
+    >>> sublattice = am.dummy_data.get_simple_cubic_sublattice(
+    ...        image_noise=True)
+    >>> image = hs.signals.Signal2D(sublattice.image)
+    >>> i_points, i_record, p_record = integrate(
+    ...        image,
+    ...        points_x=sublattice.x_position,
+    ...        points_y=sublattice.y_position, method='Voronoi')
+    >>> i_record.plot()
+
+    For a 3 dimensional dataset, with artificial EELS data
+
+    >>> s = am.dummy_data.get_eels_spectrum_survey_image()
+    >>> s_eels = am.dummy_data.get_eels_spectrum_map()
+    >>> peaks = am.get_atom_positions(s, separation=4)
+    >>> i_points, i_record, p_record = integrate(
+    ...         s_eels, peaks[:, 0], peaks[:, 1], max_radius=3)
+
+    Note
+    ----
+    Works in principle with 3D and 4D data sets but will quickly hit a
+    memory error with large sizes.
+
+    """
+    image = s.__array__()
+    if len(image.shape) < 2:
+        raise ValueError("s must have at least 2 dimensions")
+    intensity_record = np.zeros_like(image, dtype=float)
+    currentFeature = np.zeros_like(image.T, dtype=float)
+    point_record = np.zeros(image.shape[0:2][::-1], dtype=int)
+    integrated_intensity = np.zeros_like(sum(sum(currentFeature.T)))
+    integrated_intensity = np.dstack(
+        integrated_intensity for i in range(len(points_x)))
+    integrated_intensity = np.squeeze(integrated_intensity.T)
+    points = np.array((points_y, points_x))
+    # Setting max_radius to the width of the image, if none is set.
+    if method == 'Voronoi':
+        if max_radius == 'Auto':
+            max_radius = max(point_record.shape)
+        elif max_radius <= 0:
+            raise ValueError("max_radius must be higher than 0.")
+        distance_log = np.zeros_like(points[0])
+
+        for i in range(image.shape[0]):
+            for j in range(image.shape[1]):
+
+                # For every pixel the distance to all points must be
+                # calculated.
+                distance_log = ((points[0] - float(i))**2 +
+                                (points[1] - float(j))**2)**0.5
+
+                # Next for that pixel the minimum distance to and point should
+                # be checked and discarded if too large:
+                distMin = np.min(distance_log)
+                minIndex = np.argmin(distance_log)
+
+                if distMin >= max_radius:
+                    point_record[j][i] = 0
+                else:
+                    point_record[j][i] = minIndex + 1
+
+    elif method == 'Watershed':
+        if len(image.shape) > 2:
+            raise ValueError(
+                "Currently Watershed method is only implemented for 2D data.")
+        points_map = _make_mask(point_record, points[0], points[1])
+        point_record = watershed(-image, points_map.T)
+        point_record = point_record.T
+
+    else:
+        raise NotImplementedError(
+                "Oops! You have asked for an unimplemented method.")
+    point_record -= 1
+    for point in range(points[0].shape[0]):
+        currentMask = (point_record == point)
+        currentFeature = currentMask * image.T
+        integrated_intensity[point] = sum(sum(currentFeature.T)).T
+        for i in range(image.shape[0]):
+            for j in range(image.shape[1]):
+                if currentMask.T[i][j]:
+                    intensity_record[i][j] = integrated_intensity[point]
+
+    if hasattr(s, '_deepcopy_with_new_data'):
+        s_intensity_record = s._deepcopy_with_new_data(
+            intensity_record, copy_variance=True)
+    else:
+        s_intensity_record = Signal2D(intensity_record)
+    return (integrated_intensity, s_intensity_record, point_record.T)
+
+
+def _make_mask(image, points_x, points_y):
+    mask = np.zeros_like(image)
+    for i in range(len(points_x)):
+        mask[int(points_y[i])][int(points_x[i])] = i + 1
+    return mask
 
 
 def fliplr_points_and_signal(signal, x_array, y_array):
@@ -976,7 +1114,7 @@ def fliplr_points_and_signal(signal, x_array, y_array):
     s_out = signal.deepcopy()
     s_out.map(np.fliplr, show_progressbar=False)
     x_array, y_array = fliplr_points_around_signal_centre(
-            s_out, x_array, y_array)
+        s_out, x_array, y_array)
     return s_out, x_array, y_array
 
 
@@ -1108,6 +1246,6 @@ def _get_signal_centre(signal):
 
     """
     sa = signal.axes_manager.signal_axes
-    a0_middle = (sa[0].high_value + sa[0].low_value)*0.5
-    a1_middle = (sa[1].high_value + sa[1].low_value)*0.5
+    a0_middle = (sa[0].high_value + sa[0].low_value) * 0.5
+    a1_middle = (sa[1].high_value + sa[1].low_value) * 0.5
     return(a0_middle, a1_middle)
