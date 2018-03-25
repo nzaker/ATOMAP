@@ -181,10 +181,8 @@ class Atom_Position:
         >>> atom0 = Atom_Position(0, 0)
         >>> atom1 = Atom_Position(1, 1)
         >>> atom2 = Atom_Position(-1, 1)
-        >>> atom0.get_angle_between_atoms(atom1, atom2)
-        1.5707963267948966
-        >>> atom0.get_angle_between_atoms(atom1)
-        0.78539816339744828
+        >>> angle0 = atom0.get_angle_between_atoms(atom1, atom2)
+        >>> angle1 = atom0.get_angle_between_atoms(atom1)
 
         """
         vector0 = np.array([

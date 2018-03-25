@@ -101,13 +101,15 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
 
         if group_name == 'image_data0':
             atom_lattice.image0 = h5f[group_name][:]
+            atom_lattice.image = atom_lattice.image0
         if group_name == 'image_data1':
             atom_lattice.image1 = h5f[group_name][:]
 
     sorted_sublattice_list = []
+    if not sublattice_index_list:  # Support for older hdf5 files
+        sublattice_index_list = range(len(sublattice_list))
     for sublattice_index in sublattice_index_list:
         sorted_sublattice_list.append(sublattice_list[sublattice_index])
-
     atom_lattice.sublattice_list.extend(sorted_sublattice_list)
     if 'name' in h5f.attrs.keys():
         atom_lattice.name = h5f.attrs['name']

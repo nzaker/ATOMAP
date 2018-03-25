@@ -1,8 +1,7 @@
-import unittest
 import atomap.dummy_data as dd
 
 
-class test_dummy_data(unittest.TestCase):
+class TestDummyData:
 
     def test_make_simple_cubic_testdata(self):
         dd._make_simple_cubic_testdata()
@@ -58,19 +57,69 @@ class test_dummy_data(unittest.TestCase):
         s2.plot()
 
 
-class dummy_data_fantasite(unittest.TestCase):
+class TestDummyDataFantasite:
 
     def test_signal(self):
         s = dd.get_fantasite()
         s.plot()
         s1 = dd.get_fantasite()
-        self.assertTrue((s.data == s1.data).all())
+        assert (s.data == s1.data).all()
 
     def test_sublattice(self):
         sublattice = dd.get_fantasite_sublattice()
-        self.assertEqual(
-                len(sublattice.x_position), len(sublattice.y_position))
+        assert len(sublattice.x_position) == len(sublattice.y_position)
 
     def test_atom_lattice(self):
         atom_lattice = dd.get_fantasite_atom_lattice()
-        self.assertEqual(len(atom_lattice.sublattice_list), 2)
+        assert len(atom_lattice.sublattice_list) == 2
+
+
+class TestDummyDataDistortedCubic:
+
+    def test_signal(self):
+        s0 = dd.get_distorted_cubic_signal(image_noise=False)
+        s1 = dd.get_distorted_cubic_signal(image_noise=True)
+        s0.plot()
+        s1.plot()
+        assert not (s0.data == s1.data).all()
+
+    def test_sublattice(self):
+        sublattice = dd.get_distorted_cubic_sublattice()
+        assert len(sublattice.x_position) == len(sublattice.y_position)
+
+
+class TestDummyDataEELSMap:
+
+    def test_make_eels_map_spatial_image_la(self):
+        x, y = 100, 100
+        s = dd._make_eels_map_spatial_image_la(x_size=x, y_size=y)
+        assert s.axes_manager.signal_shape == (100, 100)
+        assert hasattr(s, 'plot')
+
+    def test_make_eels_map_spatial_image_mn(self):
+        x, y = 100, 100
+        s = dd._make_eels_map_spatial_image_mn(x_size=x, y_size=y)
+        assert s.axes_manager.signal_shape == (100, 100)
+        assert hasattr(s, 'plot')
+
+    def test_make_mn_eels_spectrum(self):
+        data = dd._make_mn_eels_spectrum(energy_range=(400, 700))
+        assert len(data) == 300
+
+    def test_make_la_eels_spectrum(self):
+        data = dd._make_la_eels_spectrum(energy_range=(400, 700))
+        assert len(data) == 300
+
+    def test_get_eels_spectrum_survey_image(self):
+        s = dd.get_eels_spectrum_survey_image()
+        assert hasattr(s, 'plot')
+
+    def test_get_eels_spectrum_map(self):
+        s = dd.get_eels_spectrum_map()
+        assert len(s.axes_manager.shape) == 3
+        assert hasattr(s, 'plot')
+
+        s_no_noise = dd.get_eels_spectrum_map(add_noise=False)
+        assert len(s.axes_manager.shape) == 3
+        assert hasattr(s, 'plot')
+        assert not (s_no_noise.data == s.data).all()

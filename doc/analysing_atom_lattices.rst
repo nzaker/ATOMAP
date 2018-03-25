@@ -10,7 +10,8 @@ After finding and refining the atom lattices as shown in :ref:`finding_atom_latt
 1. :ref:`Ellipticity of the atomic columns <getting_ellipticity>`
 2. :ref:`Monolayer separation <getting_monolayer_distance>`
 3. :ref:`Angle between monolayers <getting_angle_atoms>`
-4. :ref:`Making line profiles <making_line_profiles>`
+4. :ref:`Integration of atomic columns <integrate>`
+5. :ref:`Making line profiles <making_line_profiles>`
 
 In this tutorial we will use a dummy image containing two sublattices.
 Different structural distortions have been introduced in the image, and this tutorial will study these distortions.
@@ -290,6 +291,48 @@ between two zone axes at each atom.
 The atomic columns start to "zigzag" in the rightmost part of the image.
 This is also clear with the naked eye (atomic columns marked with blue dots).
 :py:meth:`~atomap.sublattice.Sublattice.get_property_map` is a very general function, and can plot a map of any property.
+
+
+.. _integrate:
+
+Integration of atomic columns
+=============================
+
+When analysing the intensity of different atomic columns it is important to be able to accurately integrated over all columns in the field of view in an automated way.
+Two methods of image segmentation have been implemented into Atomap, these are ``Voronoi`` cell integration and ``Watershed``.
+The ``Voronoi`` method can be applied to 3D data-sets e.g. EDX and EELS.
+
+The :py:func:`~atomap.tools.integrate` function returns a list containing:
+
+#. Integrated intensity list - the same length as atom coordinates list with
+   resulting integrated intensities.
+#. Intensity record - Image the same size as input image, each pixel in
+   a particular segment or region has the value of the integration of the
+   region.
+#. Point record - An image where defining the locations of each integration
+   region.
+
+.. code-block:: python
+
+    >>> i_points, i_record, p_record = atom_lattice.integrate_column_intensity()
+    >>> i_record.plot()
+
+.. image:: images/plotting_tutorial/intensity_record_voronoi.png
+    :scale: 50 %
+
+To use the ``Watershed`` method:
+
+.. code-block:: python
+
+    >>> i_points, i_record, p_record = atom_lattice.integrate_column_intensity(
+    ...         method='Watershed')
+    >>> i_record.plot()
+
+.. image:: images/plotting_tutorial/intensity_record_watershed.png
+    :scale: 50 %
+
+The Voronoi cell integration has a ``max_radius`` optional input which helps to
+prevent cells from becoming too large e.g. at the surface of a nanoparticle.
 
 
 .. _making_line_profiles:

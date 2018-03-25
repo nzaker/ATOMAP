@@ -1,5 +1,7 @@
 import numpy as np
 import hyperspy.api as hs
+from hyperspy import components1d
+from hyperspy.signals import EELSSpectrum
 from atomap.testing_tools import MakeTestData
 from atomap.atom_lattice import Atom_Lattice
 
@@ -56,6 +58,68 @@ def get_simple_cubic_sublattice(image_noise=False):
 
     """
     test_data = _make_simple_cubic_testdata(image_noise=image_noise)
+    return test_data.sublattice
+
+
+def _make_distorted_cubic_testdata(image_noise=False):
+    test_data = MakeTestData(240, 240)
+    x, y = np.mgrid[30:212:40, 30:222:20]
+    x, y = x.flatten(), y.flatten()
+    test_data.add_atom_list(x, y)
+    x, y = np.mgrid[50:212:40, 30.0:111:20]
+    x, y = x.flatten(), y.flatten()
+    test_data.add_atom_list(x, y)
+    x, y = np.mgrid[50:212:40, 135:222:20]
+    x, y = x.flatten(), y.flatten()
+    test_data.add_atom_list(x, y)
+    if image_noise:
+        test_data.add_image_noise(mu=0, sigma=0.002)
+    return test_data
+
+
+def get_distorted_cubic_signal(image_noise=False):
+    """Generate a test image signal of a distorted cubic atomic structure.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    signal : HyperSpy 2D
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_distorted_cubic_signal()
+    >>> s.plot()
+
+    """
+    test_data = _make_distorted_cubic_testdata(image_noise=image_noise)
+    return test_data.signal
+
+
+def get_distorted_cubic_sublattice(image_noise=False):
+    """Generate a test sublattice of a distorted cubic atomic structure.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    sublattice : Atomap Sublattice
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+    >>> sublattice.plot()
+
+    """
+    test_data = _make_distorted_cubic_testdata(image_noise=image_noise)
     return test_data.sublattice
 
 
@@ -335,3 +399,151 @@ def get_perovskite110_ABF_signal(image_noise=False):
     ABF = 1-test_data.signal.data
     s_ABF = hs.signals.Signal2D(ABF)
     return(s_ABF)
+
+
+def _make_eels_map_spatial_image_la(x_size=100, y_size=100):
+    test_data_la = MakeTestData(x_size, y_size)
+    la_x, la_y = np.mgrid[5:100:20, 5:100:10]
+    la_x, la_y = la_x.flatten(), la_y.flatten()
+    test_data_la.add_atom_list(
+            la_x, la_y, amplitude=20, sigma_x=2.5, sigma_y=2.5)
+    la_spatial = test_data_la.signal
+    return la_spatial
+
+
+def _make_eels_map_spatial_image_mn(x_size=100, y_size=100):
+    test_data_mn = MakeTestData(x_size, y_size)
+    mn_x, mn_y = np.mgrid[15:100:20, 5:100:10]
+    mn_x, mn_y = mn_x.flatten(), mn_y.flatten()
+    test_data_mn.add_atom_list(mn_x, mn_y, amplitude=5, sigma_x=2, sigma_y=2)
+    mn_spatial = test_data_mn.signal
+    return mn_spatial
+
+
+def _make_mn_eels_spectrum(energy_range=None):
+    if energy_range is None:
+        energy_range = (590, 900)
+    energy = np.arange(energy_range[0], energy_range[1], 1)
+    mn_arctan = components1d.Arctan(A=2, k=0.2, x0=634)
+    mn_arctan.minimum_at_zero = True
+    mn_l3_g = components1d.Gaussian(A=100, centre=642, sigma=1.8)
+    mn_l2_g = components1d.Gaussian(A=40, centre=652, sigma=1.8)
+
+    mn_data = mn_arctan.function(energy)
+    mn_data += mn_l3_g.function(energy)
+    mn_data += mn_l2_g.function(energy)
+    return mn_data
+
+
+def _make_la_eels_spectrum(energy_range=None):
+    if energy_range is None:
+        energy_range = (590, 900)
+    energy = np.arange(energy_range[0], energy_range[1], 1)
+    la_arctan = components1d.Arctan(A=1, k=0.2, x0=845)
+    la_arctan.minimum_at_zero = True
+    la_l3_g = components1d.Gaussian(A=110, centre=833, sigma=1.5)
+    la_l2_g = components1d.Gaussian(A=100, centre=850, sigma=1.5)
+
+    la_data = la_arctan.function(energy)
+    la_data += la_l3_g.function(energy)
+    la_data += la_l2_g.function(energy)
+    return la_data
+
+
+def get_eels_spectrum_survey_image():
+    """Get an artificial survey image of atomic resolution EELS map of LaMnO3
+
+    Returns
+    -------
+    survey_image : HyperSpy Signal2D
+
+    Example
+    -------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_eels_spectrum_survey_image()
+    >>> s.plot()
+
+    See also
+    --------
+    get_eels_spectrum_map : corresponding EELS map
+
+    """
+    s = _make_eels_map_spatial_image_la() + _make_eels_map_spatial_image_mn()
+    s = s.swap_axes(0, 1)
+    return s
+
+
+def get_eels_spectrum_map(add_noise=True):
+    """Get an artificial atomic resolution EELS map of LaMnO3
+
+    Containing the Mn-L23 and La-M54 edges.
+
+    Parameters
+    ----------
+    add_noise : bool
+        If True, will add Gaussian noise to the spectra.
+        Default True.
+
+    Returns
+    -------
+    eels_map : HyperSpy EELSSpectrum
+
+    Example
+    -------
+    >>> import atomap.api as am
+    >>> s_eels_map = am.dummy_data.get_eels_spectrum_map()
+    >>> s_eels_map.plot()
+
+    Not adding noise
+
+    >>> s_eels_map = am.dummy_data.get_eels_spectrum_map(add_noise=False)
+
+    See also
+    --------
+    get_eels_spectrum_survey_image : signal with same spatial dimensions
+
+    """
+    x_size, y_size = 100, 100
+    e0, e1 = 590, 900
+
+    la_spatial = _make_eels_map_spatial_image_la(x_size=x_size, y_size=y_size)
+    mn_spatial = _make_eels_map_spatial_image_mn(x_size=x_size, y_size=y_size)
+
+    # Generate EELS spectra
+    mn_data = _make_mn_eels_spectrum(energy_range=(e0, e1))
+    la_data = _make_la_eels_spectrum(energy_range=(e0, e1))
+
+    # Generate 3D-data
+    # La
+    data_3d_la = np.zeros(shape=(x_size, y_size, (e1 - e0)))
+    data_3d_la[:, :] = la_data
+    temp_3d_la = np.zeros(shape=(x_size, y_size, (e1 - e0)))
+    temp_3d_la = temp_3d_la.swapaxes(0, 2)
+    temp_3d_la[:] += la_spatial.data
+    temp_3d_la = temp_3d_la.swapaxes(0, 2)
+    data_3d_la *= temp_3d_la
+
+    # Mn
+    data_3d_mn = np.zeros(shape=(x_size, y_size, (e1 - e0)))
+    data_3d_mn[:, :] = mn_data
+    temp_3d_mn = np.zeros(shape=(x_size, y_size, (e1 - e0)))
+    temp_3d_mn = temp_3d_mn.swapaxes(0, 2)
+    temp_3d_mn[:] += mn_spatial.data
+    temp_3d_mn = temp_3d_mn.swapaxes(0, 2)
+    data_3d_mn *= temp_3d_mn
+
+    data_3d = data_3d_mn + data_3d_la
+
+    # Adding background and add noise
+    background = components1d.PowerLaw(A=1e10, r=3, origin=0)
+    background_data = background.function(np.arange(e0, e1, 1))
+    temp_background_data = np.zeros(shape=(x_size, y_size, (e1 - e0)))
+    temp_background_data[:, :] += background_data
+    data_3d += background_data
+
+    if add_noise:
+        data_noise = np.random.random((x_size, y_size, (e1 - e0)))*0.7
+        data_3d += data_noise
+
+    s_3d = EELSSpectrum(data_3d)
+    return s_3d
