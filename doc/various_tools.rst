@@ -4,6 +4,8 @@
 Various tools
 =============
 
+.. _rotate_images_points:
+
 Rotating image and points
 =========================
 

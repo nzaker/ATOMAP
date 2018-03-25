@@ -3,7 +3,14 @@ Welcome to Atomap's documentation!
 
 News
 ----
-**2017-11-16: Atomap 0.1.0 released!**
+
+**2018-03-25: Atomap 0.1.1 released!**
+
+The major new features are methods for integrating atomic column intensity and quantifying this intensity in ADF STEM images, see :ref:`integrate` and :ref:`absolute_integrator` for more info.
+Thanks to Katherine E. MacArthur for adding this!
+Other features include tools for rotating atomic positions for plotting purposes (:ref:`rotate_images_points`), and reduced memory use when processing data with many atoms.
+
+*2017-11-16: Atomap 0.1.0 released!*
 
 We are happy to announce a new Atomap release.
 It includes a **major makeover** of the tutorial, start with :ref:`finding_atom_lattices`.
