@@ -16,10 +16,6 @@ We are happy to announce a new Atomap release.
 It includes a **major makeover** of the tutorial, start with :ref:`finding_atom_lattices`.
 New features in this release are methods for finding atomic column intensity, new and simple plotting tools and a module for generating test data.
 
-*2017-07-03: version 0.0.8 released!*
-
-New features: ability to process dumbbell structures, fitting of multiple 2D Gaussians at the same time, improved background subtraction during 2D Gaussian fitting, and processing of nanoparticles.
-
 About Atomap
 ------------
 Atomap is a Python library for analysing atomic resolution scanning transmission electron microscopy images.
@@ -78,3 +74,7 @@ Contents on this webpage
 
 Old news
 --------
+
+*2017-07-03: version 0.0.8 released!*
+
+New features: ability to process dumbbell structures, fitting of multiple 2D Gaussians at the same time, improved background subtraction during 2D Gaussian fitting, and processing of nanoparticles.
