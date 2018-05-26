@@ -17,13 +17,13 @@ Open a terminal and start `ipython3`:
 
 .. code-block:: bash
 
-    $ ipython3 --matplotlib qt4
+    $ ipython3 --matplotlib qt
 
 If `ipython3` is not available, try `ipython`:
 
 .. code-block:: bash
 
-    $ ipython --matplotlib qt4
+    $ ipython --matplotlib qt
 
 Windows
 ^^^^^^^
@@ -40,7 +40,7 @@ In this terminal, run:
 
 .. code-block:: python
 
-    >>> %matplotlib qt4 # doctest: +SKIP
+    >>> %matplotlib qt # doctest: +SKIP
 
 
 Tutorials

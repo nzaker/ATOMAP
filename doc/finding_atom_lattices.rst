@@ -28,7 +28,7 @@ The dataset used in this example will be generated using the :py:mod:`atomap.dum
 
 .. code-block:: python
 
-    >>> %matplotlib qt4 # doctest: +SKIP
+    >>> %matplotlib qt # doctest: +SKIP
     >>> import atomap.api as am
     >>> import numpy as np
     >>> import atomap.dummy_data as dummy_data

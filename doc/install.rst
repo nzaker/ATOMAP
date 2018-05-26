@@ -29,7 +29,7 @@ This will open a new window. In this window, run:
 
 .. code-block:: python
 
-    %matplotlib qt4
+    %matplotlib qt
     import hyperspy.api as hs
     import atomap.api as am
 
@@ -63,34 +63,16 @@ Ubuntu 17.10
 
 .. code-block:: bash
 
-    $ sudo apt-get install ipython3 python3-pip python3-numpy python3-scipy python3-matplotlib python3-sklearn python3-skimage python3-h5py python3-dask python3-traits python3-tqdm python3-pint python3-dask python3-pyqt4 python3-lxml
+    $ sudo apt-get install ipython3 python3-pip python3-numpy python3-scipy python3-matplotlib python3-sklearn python3-skimage python3-h5py python3-dask python3-traits python3-tqdm python3-pint python3-dask python3-pyqt5 python3-lxml
     $ sudo apt-get install python3-sympy --no-install-recommends
     $ pip3 install --upgrade pip
-    $ pip3 install --user atomap
-
-
-Ubuntu 16.04
-************
-
-Due to the old version of matplotlib in the repository, the system matplotlib has to be removed.
-This is due to conflicts between the newer 2.x version in PIP and the older 1.5.x version in the repository.
-
-In addition, due to a recent bug with HyperSpy and matplotlib 2.1.x, matplotlib 2.0.2 has to be installed.
-
-.. code-block:: bash
-
-    $ sudo apt-get install python3-pip python3-numpy python3-scipy python3-h5py ipython3 python3-natsort python3-sklearn python3-dill python3-ipython-genutils python3-pyqt4
-    $ sudo apt-get install python3-sympy --no-install-recommends
-    $ sudo apt-get remove python3-matplotlib
-    $ pip3 install --user --upgrade pip
-    $ pip3 install --user matplotlib==2.0.2
     $ pip3 install --user atomap
 
 
 Starting Atomap
 ***************
 
-To check that everything is working, open a terminal and run :code:`ipython3 --matplotlib qt4`. In the ipython terminal run:
+To check that everything is working, open a terminal and run :code:`ipython3 --matplotlib qt`. In the ipython terminal run:
 
 .. code-block:: python
 
@@ -101,7 +83,6 @@ If this works, continue with the :ref:`finding_atom_lattices`.
 If you get some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
 Note, having the system and pip version of matplotlib installed at the same might cause an error with matplotlib not finding matplotlib.external.
 The easiest way of fixing this is by removing the system version of matplotlib.
-
 
 
 Development version
