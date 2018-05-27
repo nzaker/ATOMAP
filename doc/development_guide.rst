@@ -35,6 +35,22 @@ To run the tests using 5 parallel processes:
     $ python3 -m pytest -n 5 --doctest-glob="*.rst" doc/
 
 
+Testing notebooks
+*****************
+
+The Jupyter notebooks in https://gitlab.com/atomap/atomap_demos is also tested using pytest
+and ``nbval``.
+
+.. code-block:: bash
+
+      $ python3 -m pytest --nbval-lax introduction_to_atomap.ipynb
+
+
+Note: for some reason the ``%matplotlib nbagg`` or ``%matplotlib qt`` causes the tests to fail,
+the easiest way of avoiding this is skipping that specific notebook cell. This done
+by adding ``nbval-skip`` to the tag for that cell.
+
+
 Style checks
 ------------
 
