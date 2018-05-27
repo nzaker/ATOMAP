@@ -5,6 +5,7 @@ Absolute Integrator
 ===================
 
 The following section describes methods incorporated from the AbsoluteIntegrator code for normalisation and quantification of ADF STEM images.
+
 .. For a full example please see the notebook in the Atomap-demos repository: https://gitlab.com/atomap/atomap_demos/adf_quantification
 
 Detector Normalisation
