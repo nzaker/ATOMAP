@@ -1,5 +1,6 @@
 from tqdm import trange
 import numpy as np
+from hyperspy.signals import Signal2D
 from atomap.atom_finding_refining import\
         construct_zone_axes_from_sublattice, fit_atom_positions_gaussian
 from atomap.plotting import _make_atom_position_marker_list
@@ -35,6 +36,7 @@ class Atom_Lattice():
             self.sublattice_list = sublattice_list
         if image is None:
             self.image0 = None
+            self.image = None
         else:
             self.image0 = image
             self.image = image
@@ -64,6 +66,17 @@ class Atom_Lattice():
             y_list.append(subl.y_position)
         y_pos = np.concatenate(y_list)
         return(y_pos)
+
+    @property
+    def signal(self):
+        if self.image is None:
+            assert ValueError("image has not been set")
+        s = Signal2D(self.image)
+        if self.sublattice_list:
+            sublattice = self.get_sublattice(0)
+            s.axes_manager.signal_axes[0].scale = sublattice.pixel_size
+            s.axes_manager.signal_axes[1].scale = sublattice.pixel_size
+        return s
 
     def get_sublattice(self, sublattice_id):
         """
