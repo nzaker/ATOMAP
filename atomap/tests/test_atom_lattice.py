@@ -1,4 +1,6 @@
+import pytest
 import numpy as np
+from numpy.testing import assert_array_equal
 from atomap.atom_lattice import Atom_Lattice
 from atomap.sublattice import Sublattice
 from atomap.testing_tools import MakeTestData
@@ -91,3 +93,25 @@ class TestAtomLatticePlot:
         self.atom_lattice.plot()
         self.atom_lattice.plot(markersize=10, cmap='viridis')
         self.atom_lattice.plot(image=np.ones_like(self.atom_lattice.image0))
+
+
+class TestAtomLatticeSignalProperty:
+
+    def test_simple(self):
+        atom_lattice = Atom_Lattice(np.ones((100, 100)))
+        signal = atom_lattice.signal
+        assert_array_equal(atom_lattice.image, signal.data)
+
+    def test_no_image(self):
+        atom_lattice = Atom_Lattice()
+        with pytest.raises(ValueError):
+            atom_lattice.signal
+
+    def test_scaling(self):
+        sublattice = Sublattice(
+                [[10, 10], ], np.ones((20, 20)), pixel_size=0.2)
+        atom_lattice = Atom_Lattice(
+                np.ones((100, 100)), sublattice_list=[sublattice])
+        signal = atom_lattice.signal
+        assert signal.axes_manager.signal_axes[0].scale == 0.2
+        assert signal.axes_manager.signal_axes[1].scale == 0.2

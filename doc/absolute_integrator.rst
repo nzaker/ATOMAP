@@ -33,4 +33,4 @@ The detector flux weighting method is based on the following paper:
 
     >>> image_normalised = am.quant.detector_normalisation(image, det_image, inner_angle=60, outer_angle = None, flux_expo=2.873)
 
-If the flux_exponent is unknown then it is possible to create an interactive flux plot described in detail in the example notebook: Atomap-demos repository: https://gitlab.com/atomap/atomap_demos/adf_quantification.
+.. If the flux_exponent is unknown then it is possible to create an interactive flux plot described in detail in the example notebook: Atomap-demos repository: https://gitlab.com/atomap/atomap_demos/adf_quantification.

@@ -1,4 +1,8 @@
 from setuptools import setup, find_packages
+
+with open('README.md') as f:
+    long_description = f.read()
+
 setup(
         name = 'atomap',
         packages = [
@@ -8,8 +12,10 @@ setup(
             'atomap.external',
             'atomap.example_data',
             ],
-        version = '0.1.1',
+        version = '0.1.2.dev1',
         description = 'Library for analysing atomic resolution images',
+        long_description=long_description,
+        long_description_content_type='text/markdown',
         author = 'Magnus Nord',
         author_email = 'magnunor@gmail.com',
         license = 'GPL v3',
@@ -28,8 +34,6 @@ setup(
             'tqdm',
             'scikit-learn',
             'hyperspy>=1.3',
-            'hyperspy-gui-ipywidgets',
-            'hyperspy-gui-traitsui',
             ],
         classifiers = [
             'Development Status :: 3 - Alpha',

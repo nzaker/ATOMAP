@@ -39,6 +39,7 @@ class Sublattice():
         atom_position_list : NumPy array
             In the form [[x0, y0], [x1, y1], [x2, y2], ... ]
         image : 2D NumPy array
+            A HyperSpy signal with 2 dimensions can also be used directly.
         original_image : 2D NumPy array, optional
         name : string, default ''
         color : string, optional
@@ -49,7 +50,6 @@ class Sublattice():
         Attributes
         ----------
         image: 2D NumPy array, or 2D array-like.
-            A HyperSpy signal with 2 dimensions can also be used directly.
         x_position : list of floats
         y_position : list of floats
         sigma_x : list of floats
@@ -63,6 +63,7 @@ class Sublattice():
         rotation_ellipticity : list of floats
             In radians, the rotation between the "x-axis" and the major axis
             of the ellipse. Basically giving the direction of the ellipticity.
+        signal : HyperSpy 2D signal
         name : string
 
         Examples
@@ -220,6 +221,13 @@ class Sublattice():
         for atom in self.atom_list:
             intensity_mask.append(atom.intensity_mask)
         return(intensity_mask)
+
+    @property
+    def signal(self):
+        s = Signal2D(self.image)
+        s.axes_manager.signal_axes[0].scale = self.pixel_size
+        s.axes_manager.signal_axes[1].scale = self.pixel_size
+        return s
 
     def get_zone_vector_index(self, zone_vector_id):
         """Find zone vector index from zone vector name"""

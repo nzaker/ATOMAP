@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 from hyperspy.signals import Signal2D
 import atomap.atom_finding_refining as afr
 from atomap.sublattice import Sublattice
@@ -934,3 +934,18 @@ class TestGetPropertyMap:
         assert s.axes_manager[0].size == 120
         assert s.axes_manager[1].size == 120
         assert len(s.metadata['Markers'].keys()) == 4
+
+
+class TestSignalProperty:
+
+    def test_simple(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        signal = sublattice.signal
+        assert_array_equal(sublattice.image, signal.data)
+
+    def test_pixel_size(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.pixel_size = 0.5
+        signal = sublattice.signal
+        assert signal.axes_manager.signal_axes[0].scale == 0.5
+        assert signal.axes_manager.signal_axes[1].scale == 0.5
