@@ -23,6 +23,20 @@ In this prompt run:
     $ pip install atomap
 
 
+To check everything is working correctly, go to "Anaconda3" in the start menu, and start "Jupyter Notebook".
+This will open a browser window (or a new browser tab).
+Start a new Python 3 notebook, and run in the first cell:
+
+.. code-block:: python
+
+    %matplotlib qt5
+    import atomap.api as am
+
+
+If this works, continue with the :ref:`finding_atom_lattices`.
+If you get some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
+
+
 WinPython HyperSpy installer
 ****************************
 
