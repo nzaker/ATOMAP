@@ -1,4 +1,8 @@
 from setuptools import setup, find_packages
+
+with open('README.md') as f:
+    long_description = f.read()
+
 setup(
         name = 'atomap',
         packages = [
@@ -10,6 +14,8 @@ setup(
             ],
         version = '0.1.2.dev1',
         description = 'Library for analysing atomic resolution images',
+        long_description=long_description,
+        long_description_content_type='text/markdown',
         author = 'Magnus Nord',
         author_email = 'magnunor@gmail.com',
         license = 'GPL v3',
