@@ -19,7 +19,7 @@ In this prompt run:
 .. code-block:: bash
 
     $ conda install hyperspy -c conda-forge
-    $ pip install hyperspy_gui_traitsui
+    $ pip install hyperspy_gui_traitsui
     $ pip install atomap
 
 
