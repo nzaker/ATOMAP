@@ -28,8 +28,6 @@ setup(
             'tqdm',
             'scikit-learn',
             'hyperspy>=1.3',
-            'hyperspy-gui-ipywidgets',
-            'hyperspy-gui-traitsui',
             ],
         classifiers = [
             'Development Status :: 3 - Alpha',
