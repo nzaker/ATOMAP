@@ -18,7 +18,7 @@ In this prompt run:
 
 .. code-block:: bash
 
-    $ conda install hyperspy -c conda-forge
+    $ conda install hyperspy -c conda-forge
     $ pip install atomap
 
 
@@ -42,7 +42,7 @@ This will open a new window. In this window, run:
 
 .. code-block:: python
 
-    %matplotlib qt
+    %matplotlib qt5
     import hyperspy.api as hs
     import atomap.api as am
 
@@ -72,7 +72,7 @@ Ubuntu 17.10
 Starting Atomap
 ***************
 
-To check that everything is working, open a terminal and run :code:`ipython3 --matplotlib qt`. In the ipython terminal run:
+To check that everything is working, open a terminal and run :code:`ipython3 --matplotlib qt5`. In the ipython terminal run:
 
 .. code-block:: python
 
