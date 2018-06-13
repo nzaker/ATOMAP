@@ -9,12 +9,25 @@ Installing
 Installing in Windows
 ---------------------
 
+Anaconda Python environment
+***************************
+
+Currently, the easiest way to install Atomap is using the Anaconda python environment `Anaconda environment <https://www.continuum.io/downloads>`_,
+Install HyperSpy, then Atomap via the `Anaconda prompt` (Start menu - Anaconda3), this will open a command line prompt.
+In this prompt run:
+
+.. code-block:: bash
+
+    $ conda install hyperspy -c conda-forge
+    $ pip install atomap
+
+
 WinPython HyperSpy installer
 ****************************
 
-Currently, the easiest way to install Atomap is by using the WinPython HyperSpy installer.
-Firstly download and install the `WinPython HyperSpy bundle <http://hyperspy.org/download.html#windows-bundle-installers>`_:
-HyperSpy-1.3 for Windows 64-bits.
+Alternatively, the WinPython HyperSpy bundle can be used.
+Firstly download and install the `WinPython HyperSpy bundle <://github.com/hyperspy/hyperspy-bundle/releases>`_:
+HyperSpy-1.3 for Windows 64-bits (get the most recent version).
 
 After installing the bundle, there should be a folder in the start menu called "HyperSpy WinPython Bundle", and this
 folder should contain the "WinPython prompt". Start the "WinPython prompt". This will open a terminal window called
@@ -35,19 +48,6 @@ This will open a new window. In this window, run:
 
 If this works, continue with the :ref:`finding_atom_lattices`.
 If you get some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
-
-
-Alternative Windows installation
-********************************
-
-If you already have HyperSpy running in an Anaconda Python environment `Anaconda environment <https://www.continuum.io/downloads>`_,
-Atomap can be installed from the `Anaconda prompt` (Start menu - Anaconda3), this will open a command line prompt.
-In this prompt run:
-
-.. code-block:: bash
-
-    $ pip install atomap
-
 
 
 Installing in Linux
