@@ -13,11 +13,13 @@ planes with the largest spacings.
 Installing
 ----------
 
-The easiest way is installing using with pip:
+The easiest way is via PyPI:
 
 ```bash
 pip3 install atomap
 ```
+
+More install instructions: http://atomap.org/install.html
 
 Using
 -----
@@ -29,3 +31,5 @@ sublattice.construct_zone_axes()
 sublattice.refine_atom_positions_using_center_of_mass()
 sublattice.plot()
 ```
+
+More information on how to use Atomap: http://atomap.org/start_atomap.html
