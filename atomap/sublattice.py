@@ -831,6 +831,7 @@ class Sublattice():
             self,
             image_data=None,
             percent_to_nn=0.40,
+            mask_radius=None,
             rotation_enabled=True,
             show_progressbar=True):
         """
@@ -847,6 +848,12 @@ class Sublattice():
             this value times percent_to_nn will be the radius of the mask
             centered on the atom position. Value should be somewhere
             between 0.01 (1%) and 1 (100%).
+        mask_radius : float, optional
+            Radius of the mask around each atom. If this is not set,
+            the radius will be the distance to the nearest atom in the
+            same sublattice times the `percent_to_nn` value.
+            Note: if `mask_radius` is not specified, the Atom_Position objects
+            must have a populated nearest_neighbor_list.
         rotation_enabled : bool, default True
             If True, rotation will be enabled for the 2D Gaussians.
             This will most likely make the fitting better, but potentially
@@ -879,7 +886,8 @@ class Sublattice():
             atom.refine_position_using_2d_gaussian(
                     image_data,
                     rotation_enabled=rotation_enabled,
-                    percent_to_nn=percent_to_nn)
+                    percent_to_nn=percent_to_nn,
+                    mask_radius=mask_radius)
 
     def refine_atom_positions_using_center_of_mass(
             self, image_data=None, percent_to_nn=0.25, show_progressbar=True):
@@ -897,6 +905,7 @@ class Sublattice():
             this value times percent_to_nn will be the radius of the mask
             centered on the atom position. Value should be somewhere
             between 0.01 (1%) and 1 (100%).
+        mask_radius : float, optional
         show_progressbar : default True
 
         Example
