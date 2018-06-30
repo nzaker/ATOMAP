@@ -357,9 +357,10 @@ class Atom_Position:
         fit_atom_positions_gaussian(
                 [self],
                 image_data,
-                rotation_enabled=True,
-                percent_to_nn=0.40,
-                centre_free=True)
+                rotation_enabled=rotation_enabled,
+                percent_to_nn=percent_to_nn,
+                mask_radius=mask_radius,
+                centre_free=centre_free)
 
     def get_center_position_com(
             self,
@@ -396,7 +397,8 @@ class Atom_Position:
             mask_radius=None):
         new_x, new_y = self.get_center_position_com(
                 image_data,
-                percent_to_nn)
+                percent_to_nn=percent_to_nn,
+                mask_radius=mask_radius)
         self.old_pixel_x_list.append(self.pixel_x)
         self.old_pixel_y_list.append(self.pixel_y)
         self.pixel_x = new_x

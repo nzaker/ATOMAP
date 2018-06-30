@@ -1,4 +1,5 @@
 import pytest
+from pytest import approx
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 from hyperspy.signals import Signal2D
@@ -500,6 +501,51 @@ class TestRefineFunctions:
         sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_center_of_mass(
                 image_data=self.image_data, percent_to_nn=0.3)
+
+    def test_center_of_mass_single_atom_mask_radius(self):
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom(25, 20, 2, 2)
+        sublattice = test_data.sublattice
+        sublattice.refine_atom_positions_using_center_of_mass(mask_radius=5)
+        assert sublattice.x_position[0] == approx(25)
+        assert sublattice.y_position[0] == approx(20)
+
+    def test_2d_gaussian_single_atom_mask_radius(self):
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom(25, 20, 2, 2)
+        sublattice = test_data.sublattice
+        sublattice.refine_atom_positions_using_2d_gaussian(mask_radius=5)
+        assert sublattice.x_position[0] == approx(25)
+        assert sublattice.y_position[0] == approx(20)
+        assert sublattice.x_sigma[0] == approx(2)
+        assert sublattice.y_sigma[0] == approx(2)
+
+    def test_center_of_mass_mask_radius(self):
+        test_data = tt.MakeTestData(50, 50)
+        x_pos, y_pos = [25, 30, 40], [20, 40, 30]
+        test_data.add_atom_list(x_pos, y_pos, 2, 2)
+        sublattice = test_data.sublattice
+        sublattice.refine_atom_positions_using_center_of_mass(mask_radius=5)
+        assert sublattice.x_position == approx(x_pos)
+        assert sublattice.y_position == approx(y_pos)
+
+    def test_2d_gaussian_mask_radius(self):
+        test_data = tt.MakeTestData(50, 50)
+        x_pos, y_pos = [25, 30, 40], [20, 40, 30]
+        test_data.add_atom_list(x_pos, y_pos, 2, 2)
+        sublattice = test_data.sublattice
+        sublattice.refine_atom_positions_using_2d_gaussian(mask_radius=5)
+        assert sublattice.x_position[0] == approx(x_pos)
+        assert sublattice.y_position[0] == approx(y_pos)
+        assert sublattice.x_sigma == approx(2)
+        assert sublattice.y_sigma == approx(2)
+
+    def test_2d_gaussian_both_mask_radius_and_percent_to_nn(self):
+        test_data = tt.MakeTestData(50, 50)
+        sublattice = test_data.sublattice
+        with pytest.raises(ValueError):
+            sublattice.refine_atom_positions_using_2d_gaussian(
+                    percent_to_nn=0.4, mask_radius=5)
 
 
 class TestGetAtomListBetweenFourAtomPlanes:

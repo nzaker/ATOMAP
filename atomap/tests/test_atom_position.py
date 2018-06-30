@@ -2,6 +2,7 @@ from pytest import approx
 from numpy import pi
 import math
 from atomap.atom_position import Atom_Position
+import atomap.testing_tools as tt
 
 
 class TestCreateAtomPositionObject:
@@ -87,3 +88,31 @@ class TestAtomPositionObjectTools:
         assert g.sigma_y.value == sy
         assert g.A.value == A
         assert g.rotation.value == r
+
+
+class TestAtomPositionRefine:
+
+    def test_center_of_mass_mask_radius(self):
+        x, y, sx, sy = 15, 20, 2, 2
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom(x, y, sx, sy)
+        sublattice = test_data.sublattice
+        atom = sublattice.atom_list[0]
+        image_data = test_data.signal.data
+        atom.refine_position_using_center_of_mass(
+                image_data, mask_radius=5)
+        assert atom.pixel_x == approx(x)
+        assert atom.pixel_y == approx(y)
+
+    def test_2d_gaussian_mask_radius(self):
+        x, y, sx, sy = 15, 20, 2, 2
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom(x, y, sx, sy)
+        sublattice = test_data.sublattice
+        atom = sublattice.atom_list[0]
+        image_data = test_data.signal.data
+        atom.refine_position_using_2d_gaussian(image_data, mask_radius=5)
+        assert atom.pixel_x == approx(x)
+        assert atom.pixel_y == approx(y)
+        assert atom.sigma_x == approx(sx)
+        assert atom.sigma_y == approx(sy)

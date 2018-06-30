@@ -830,7 +830,7 @@ class Sublattice():
     def refine_atom_positions_using_2d_gaussian(
             self,
             image_data=None,
-            percent_to_nn=0.40,
+            percent_to_nn=None,
             mask_radius=None,
             rotation_enabled=True,
             show_progressbar=True):
@@ -872,11 +872,18 @@ class Sublattice():
         refine_atom_positions_using_center_of_mass
 
         """
-        if self.atom_list[0].nearest_neighbor_list is None:
+        if (mask_radius is not None) and (percent_to_nn is not None):
             raise ValueError(
-                    "The atom_position objects does not seem to have a "
-                    "populated nearest neighbor list. "
-                    "Has sublattice.find_nearest_neighbors() been called?")
+                    "Both percent_to_nn and mask_radius is specified, "
+                    "only one of them should be set")
+        if mask_radius is None:
+            if percent_to_nn is None:
+                percent_to_nn = 0.4
+            if self.atom_list[0].nearest_neighbor_list is None:
+                raise ValueError(
+                        "The atom_position objects does not seem to have a "
+                        "populated nearest neighbor list. "
+                        "Has sublattice.find_nearest_neighbors() been called?")
         if image_data is None:
             image_data = self.original_image
         image_data = image_data.astype('float64')
@@ -890,7 +897,8 @@ class Sublattice():
                     mask_radius=mask_radius)
 
     def refine_atom_positions_using_center_of_mass(
-            self, image_data=None, percent_to_nn=0.25, show_progressbar=True):
+            self, image_data=None, percent_to_nn=0.25,
+            mask_radius=None, show_progressbar=True):
         """
         Use center of mass to refine the atom positions on the image
         data.
@@ -920,11 +928,18 @@ class Sublattice():
         refine_atom_positions_using_2d_gaussian
 
         """
-        if self.atom_list[0].nearest_neighbor_list is None:
+         if (mask_radius is not None) and (percent_to_nn is not None):
             raise ValueError(
-                    "The atom_position objects does not seem to have a "
-                    "populated nearest neighbor list. "
-                    "Has sublattice.find_nearest_neighbors() been called?")
+                    "Both percent_to_nn and mask_radius is specified, "
+                    "only one of them should be set")
+        if mask_radius is None:
+            if percent_to_nn is None:
+                percent_to_nn = 0.4
+            if self.atom_list[0].nearest_neighbor_list is None:
+                raise ValueError(
+                        "The atom_position objects does not seem to have a "
+                        "populated nearest neighbor list. "
+                        "Has sublattice.find_nearest_neighbors() been called?")
         if image_data is None:
             image_data = self.original_image
         image_data = image_data.astype('float64')
@@ -933,7 +948,7 @@ class Sublattice():
                 disable=not show_progressbar):
             atom.refine_position_using_center_of_mass(
                 image_data,
-                percent_to_nn=percent_to_nn)
+                percent_to_nn=percent_to_nn, mask_radius=mask_radius)
 
     def get_nearest_neighbor_directions(
             self, pixel_scale=True, neighbors=None):
