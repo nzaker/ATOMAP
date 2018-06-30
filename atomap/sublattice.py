@@ -928,7 +928,7 @@ class Sublattice():
         refine_atom_positions_using_2d_gaussian
 
         """
-         if (mask_radius is not None) and (percent_to_nn is not None):
+        if (mask_radius is not None) and (percent_to_nn is not None):
             raise ValueError(
                     "Both percent_to_nn and mask_radius is specified, "
                     "only one of them should be set")
