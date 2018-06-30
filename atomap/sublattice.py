@@ -897,7 +897,7 @@ class Sublattice():
                     mask_radius=mask_radius)
 
     def refine_atom_positions_using_center_of_mass(
-            self, image_data=None, percent_to_nn=0.25,
+            self, image_data=None, percent_to_nn=None,
             mask_radius=None, show_progressbar=True):
         """
         Use center of mass to refine the atom positions on the image
@@ -934,7 +934,7 @@ class Sublattice():
                     "only one of them should be set")
         if mask_radius is None:
             if percent_to_nn is None:
-                percent_to_nn = 0.4
+                percent_to_nn = 0.25
             if self.atom_list[0].nearest_neighbor_list is None:
                 raise ValueError(
                         "The atom_position objects does not seem to have a "
