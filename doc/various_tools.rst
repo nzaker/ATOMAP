@@ -39,3 +39,27 @@ Rotating image and points
 .. image:: images/makevarioustools/rotate_image_and_points.png
     :align: center
     :scale: 70 %
+
+
+.. _single_atom_sublattice:
+
+
+Working with single atom sublattices
+====================================
+
+Normally refining the atom positions requires using knowing the distances to the
+atom's nearest neighbors, to avoid fitting overlap.
+However, with sublattices consisting of a single atom, this clearly does not work.
+The ``mask_radius`` argument in :py:meth:`~atomap.sublattice.Sublattice.refine_atom_positions_using_center_of_mass`
+and :py:meth:`~atomap.sublattice.Sublattice.refine_atom_positions_using_2d_gaussian` can be used in this case.
+
+.. code-block:: python
+
+    >>> sublattice = am.dummy_data.get_single_atom_sublattice()
+    >>> sublattice.refine_atom_positions_using_center_of_mass(mask_radius=9)
+    >>> sublattice.refine_atom_positions_using_2d_gaussian(mask_radius=9)
+    >>> sublattice.plot()
+
+.. image:: images/makevarioustools/single_atom_sublattice.png
+    :align: center
+    :scale: 70 %
