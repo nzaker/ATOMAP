@@ -547,3 +547,22 @@ def get_eels_spectrum_map(add_noise=True):
 
     s_3d = EELSSpectrum(data_3d)
     return s_3d
+
+
+def get_single_atom_sublattice():
+    """Get a sublattice containing a single atom.
+
+    Returns
+    -------
+    sublattice_single_atom : Atomap Sublattice class
+
+    Example
+    -------
+    >>> sublattice = am.dummy_data.get_single_atom_sublattice()
+    >>> sublattice.plot()
+
+    """
+    test_data = MakeTestData(50, 50)
+    test_data.add_atom(25, 20, 2, 2)
+    sublattice = test_data.sublattice
+    return sublattice
