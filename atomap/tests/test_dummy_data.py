@@ -57,7 +57,7 @@ class TestDummyData:
         s2.plot()
 
     def test_single_atom_sublattice(self):
-        sublattice = get_single_atom_sublattice()
+        sublattice = dd.get_single_atom_sublattice()
         sublattice.plot()
 
 
