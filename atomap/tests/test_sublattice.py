@@ -532,11 +532,11 @@ class TestRefineFunctions:
         sublattice.refine_atom_positions_using_2d_gaussian(
                 image_data=signal.data, mask_radius=4)
         assert sublattice.x_position[0] == approx(x)
-        assert sublattice.y_position[0] == approx(x)
+        assert sublattice.y_position[0] == approx(y)
         sublattice.refine_atom_positions_using_2d_gaussian(
                 image_data=signal.data, mask_radius=10)
         assert sublattice.x_position[0] != approx(x)
-        assert sublattice.y_position[0] != approx(x)
+        assert sublattice.y_position[0] != approx(y)
 
     def test_center_of_mass_single_atom_mask_radius(self):
         test_data = tt.MakeTestData(50, 50)

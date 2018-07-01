@@ -111,8 +111,8 @@ class TestAtomPositionRefine:
         sublattice = test_data.sublattice
         atom = sublattice.atom_list[0]
         image_data = test_data.signal.data
-        atom.refine_position_using_2d_gaussian(image_data, mask_radius=5)
+        atom.refine_position_using_2d_gaussian(image_data, mask_radius=10)
         assert atom.pixel_x == approx(x)
         assert atom.pixel_y == approx(y)
-        assert atom.sigma_x == approx(sx)
-        assert atom.sigma_y == approx(sy)
+        assert atom.sigma_x == approx(sx, rel=1e-4)
+        assert atom.sigma_y == approx(sy, rel=1e-4)
