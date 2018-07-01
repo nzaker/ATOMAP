@@ -347,8 +347,11 @@ class Atom_Position:
             the fitting due to less data to fit to.
             Default 0.4 (40%).
         mask_radius : float, optional
-            See the docstring in
-            atom_finding_refining.fit_atom_positions_gaussian
+            Radius of the mask around each atom. If this is not set,
+            the radius will be the distance to the nearest atom in the
+            same sublattice times the `percent_to_nn` value.
+            Note: if `mask_radius` is not specified, the Atom_Position objects
+            must have a populated nearest_neighbor_list.
         centre_free : bool, default True
             If True, the centre parameter will be free, meaning that
             the Gaussian can move.
@@ -356,7 +359,7 @@ class Atom_Position:
         """
         fit_atom_positions_gaussian(
                 [self],
-                image_data,
+                image_data=image_data,
                 rotation_enabled=rotation_enabled,
                 percent_to_nn=percent_to_nn,
                 mask_radius=mask_radius,
