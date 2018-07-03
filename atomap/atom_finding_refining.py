@@ -565,6 +565,7 @@ def _make_model_from_atom_list(
     >>> m, mask = _make_model_from_atom_list(
     ...     atom_list=atom_list, image_data=image, mask_radius=3)
     >>> m.fit()
+
     """
     image_data = image_data.astype('float64')
     mask = np.zeros_like(image_data)
@@ -656,6 +657,7 @@ def _fit_atom_positions_with_gaussian_model(
     >>> image[4, 4] = 1.
     >>> g_list = afr._fit_atom_positions_with_gaussian_model(
     ...     atom_list=atom_list, image_data=image, mask_radius=2)
+
     """
     if (not hasattr(atom_list[0], 'pixel_x')) or hasattr(atom_list, 'pixel_x'):
         raise TypeError(
@@ -788,17 +790,23 @@ def fit_atom_positions_gaussian(
     >>> g_list = fit_atom_positions_gaussian([atom0, atom1], image)
 
     """
+    if (mask_radius is None) and (percent_to_nn is None):
+        raise ValueError(
+                "Both mask_radius and percent_to_nn is None, one of them must "
+                "be set")
     if (not hasattr(atom_list[0], 'pixel_x')) or hasattr(atom_list, 'pixel_x'):
         raise TypeError(
             "atom_list argument must be a list of Atom_Position objects")
 
     for i in range(10):
+        temp_mask_radius = mask_radius
+        temp_percent_to_nn = percent_to_nn
         g_list = _fit_atom_positions_with_gaussian_model(
                 atom_list,
                 image_data,
                 rotation_enabled=rotation_enabled,
-                mask_radius=mask_radius,
-                percent_to_nn=percent_to_nn,
+                mask_radius=temp_mask_radius,
+                percent_to_nn=temp_percent_to_nn,
                 centre_free=centre_free)
         if g_list is False:
             if i == 9:
@@ -807,13 +815,15 @@ def fit_atom_positions_gaussian(
                     atom.old_pixel_y_list.append(atom.pixel_y)
                     atom.pixel_x, atom.pixel_y = atom.get_center_position_com(
                             image_data,
-                            percent_to_nn=percent_to_nn)
+                            percent_to_nn=temp_percent_to_nn,
+                            mask_radius=temp_mask_radius)
                     atom.amplitude_gaussian = 0.0
                 break
             else:
-                percent_to_nn *= 0.95
+                if percent_to_nn is not None:
+                    temp_percent_to_nn *= 0.95
                 if mask_radius is not None:
-                    mask_radius *= 0.95
+                    temp_mask_radius *= 0.95
         else:
             for g, atom in zip(g_list, atom_list):
                 atom.old_pixel_x_list.append(atom.pixel_x)

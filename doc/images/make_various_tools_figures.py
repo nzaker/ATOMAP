@@ -28,3 +28,13 @@ ax1.set_ylim(s.axes_manager[1].low_value, s.axes_manager[1].high_value)
 
 fig.tight_layout()
 fig.savefig(my_path + "rotate_image_and_points.png", dpi=200)
+
+#####
+sublattice = am.dummy_data.get_single_atom_sublattice()
+sublattice.refine_atom_positions_using_center_of_mass(mask_radius=9)
+sublattice.refine_atom_positions_using_2d_gaussian(mask_radius=9)
+s = sublattice.get_atom_list_on_image()
+
+s.plot()
+filename = my_path + 'single_atom_sublattice.png'
+s._plot.signal_plot.figure.savefig(filename, overwrite=True)

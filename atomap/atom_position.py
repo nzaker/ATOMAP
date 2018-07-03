@@ -326,6 +326,7 @@ class Atom_Position:
             image_data,
             rotation_enabled=True,
             percent_to_nn=0.40,
+            mask_radius=None,
             centre_free=True):
         """
         Use 2D Gaussian to refine the parameters of the atom position.
@@ -345,6 +346,12 @@ class Atom_Position:
             neighboring atoms, but might also decrease the accuracy of
             the fitting due to less data to fit to.
             Default 0.4 (40%).
+        mask_radius : float, optional
+            Radius of the mask around each atom. If this is not set,
+            the radius will be the distance to the nearest atom in the
+            same sublattice times the `percent_to_nn` value.
+            Note: if `mask_radius` is not specified, the Atom_Position objects
+            must have a populated nearest_neighbor_list.
         centre_free : bool, default True
             If True, the centre parameter will be free, meaning that
             the Gaussian can move.
@@ -352,27 +359,31 @@ class Atom_Position:
         """
         fit_atom_positions_gaussian(
                 [self],
-                image_data,
-                rotation_enabled=True,
-                percent_to_nn=0.40,
-                centre_free=True)
+                image_data=image_data,
+                rotation_enabled=rotation_enabled,
+                percent_to_nn=percent_to_nn,
+                mask_radius=mask_radius,
+                centre_free=centre_free)
 
     def get_center_position_com(
             self,
             image_data,
-            percent_to_nn=0.40):
-        closest_neighbor = 100000000000000000
-        for neighbor_atom in self.nearest_neighbor_list:
-            distance = self.get_pixel_distance_from_another_atom(
-                    neighbor_atom)
-            if distance < closest_neighbor:
-                closest_neighbor = distance
+            percent_to_nn=0.40,
+            mask_radius=None):
+        if mask_radius is None:
+            closest_neighbor = 100000000000000000
+            for neighbor_atom in self.nearest_neighbor_list:
+                distance = self.get_pixel_distance_from_another_atom(
+                        neighbor_atom)
+                if distance < closest_neighbor:
+                    closest_neighbor = distance
+            mask_radius = closest_neighbor * percent_to_nn
         mask = _make_circular_mask(
                 self.pixel_y,
                 self.pixel_x,
                 image_data.shape[0],
                 image_data.shape[1],
-                closest_neighbor*percent_to_nn)
+                mask_radius)
         data = copy.deepcopy(image_data)
         mask = np.invert(mask)
         data[mask] = 0
@@ -385,10 +396,12 @@ class Atom_Position:
     def refine_position_using_center_of_mass(
             self,
             image_data,
-            percent_to_nn=0.40):
+            percent_to_nn=0.40,
+            mask_radius=None):
         new_x, new_y = self.get_center_position_com(
                 image_data,
-                percent_to_nn)
+                percent_to_nn=percent_to_nn,
+                mask_radius=mask_radius)
         self.old_pixel_x_list.append(self.pixel_x)
         self.old_pixel_y_list.append(self.pixel_y)
         self.pixel_x = new_x

@@ -328,6 +328,13 @@ class TestFitAtomPositionsGaussian:
                     sublattice.atom_list[atom_index].pixel_y,
                     self.y[atom_index], rtol=1e-7)
 
+    def test_wrong_input_none_mask_radius_percent_to_nn(self):
+        sublattice = self.sublattice
+        with pytest.raises(ValueError):
+            afr.fit_atom_positions_gaussian(
+                    sublattice.atom_list, sublattice.image,
+                    percent_to_nn=None, mask_radius=None)
+
 
 class TestGetAtomPositions:
 

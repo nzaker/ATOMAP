@@ -56,6 +56,10 @@ class TestDummyData:
         s2 = dd.get_simple_atom_lattice_two_sublattices(image_noise=False)
         s2.plot()
 
+    def test_single_atom_sublattice(self):
+        sublattice = dd.get_single_atom_sublattice()
+        sublattice.plot()
+
 
 class TestDummyDataFantasite:
 
