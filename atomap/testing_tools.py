@@ -9,7 +9,9 @@ from atomap.atom_lattice import Atom_Lattice
 
 class MakeTestData(object):
 
-    def __init__(self, image_x, image_y, sublattice_generate_image=True):
+    def __init__(
+            self, image_x, image_y, sublattice_generate_image=True,
+            show_progressbar=False):
         """
         Class for generating test datasets of atomic resolution
         STEM images.
@@ -25,6 +27,10 @@ class MakeTestData(object):
             time. If sublattice_generate_image is False, this image will not
             be generated. Useful for generating sublattice objects for testing
             quicker, when only the atom positions themselves are needed.
+        show_progressbar : bool
+            If True, will show a progressbar when generating the image data,
+            which is normally the most time consuming part.
+            Default False.
 
         Attributes
         ----------
@@ -90,11 +96,13 @@ class MakeTestData(object):
         self._sublattice_generate_image = sublattice_generate_image
         self.__sublattice = Sublattice([], np.zeros((2, 2)))
         self.__sublattice.atom_list = []
+        self._show_progressbar = show_progressbar
 
     @property
     def signal(self):
         signal = self.__sublattice.get_model_image(
-                image_shape=self.data_extent, show_progressbar=False)
+                image_shape=self.data_extent,
+                show_progressbar=self._show_progressbar)
         if self._image_noise is not False:
             signal.data += self._image_noise
         return signal
