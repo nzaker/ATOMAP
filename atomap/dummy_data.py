@@ -6,6 +6,65 @@ from atomap.testing_tools import MakeTestData
 from atomap.atom_lattice import Atom_Lattice
 
 
+def _make_hexagonal_two_sublattice_testdata(image_noise=False):
+    hexagon_height = 40
+    dy = hexagon_height / 2
+    dx = hexagon_height / 2 / 3**0.5
+
+    im_x, im_y = 300, 300
+
+    test_data = MakeTestData(im_x, im_y)
+    sigma = 3.5
+
+    xs, ys = im_x + hexagon_height, im_y + hexagon_height
+
+    x0, y0 = np.mgrid[dx:xs:dx*2, 0:ys:dy*2]
+    x0, y0 = x0.flatten(), y0.flatten()
+    x1, y1 = np.mgrid[0:xs:dx*2, dy:ys:dy*2]
+    x1, y1 = x1.flatten(), y1.flatten()
+    x_a, y_a = np.append(x0, x1), np.append(y0, y1)
+    test_data.add_atom_list(
+            x_a, y_a, sigma_x=sigma, sigma_y=sigma, amplitude=10)
+
+    x2, y2 = np.mgrid[dx*2:xs:dx*2, dy*0.4:ys:dy*2]
+    x2, y2 = x2.flatten(), y2.flatten()
+    x3, y3 = np.mgrid[dx:xs:dx*2, dy*1.4:ys:dy*2]
+    x3, y3 = x3.flatten(), y3.flatten()
+    x_b, y_b = np.append(x2, x3), np.append(y2, y3)
+    test_data.add_atom_list(
+            x_b, y_b, sigma_x=sigma, sigma_y=sigma, amplitude=5)
+    if image_noise:
+        test_data.add_image_noise(mu=0, sigma=0.004)
+    return test_data
+
+
+def get_hexagonal_double_signal(image_noise=False):
+    """Generate a test image signal of a hexagonal structure.
+
+    Similar to MoS2.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    >>> s = am.dummy_data.get_hexagonal_double_signal()
+    >>> s.plot()
+
+    Adding image noise
+
+    >>> s = am.dummy_data.get_hexagonal_double_signal(image_noise=True)
+    >>> s.plot()
+
+    """
+    test_data = _make_hexagonal_two_sublattice_testdata(
+            image_noise=image_noise)
+    signal = test_data.signal
+    return signal
+
+
 def _make_simple_cubic_testdata(image_noise=False):
     simple_cubic = MakeTestData(300, 300)
     x, y = np.mgrid[10:290:20j, 10:290:20j]

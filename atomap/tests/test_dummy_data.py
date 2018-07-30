@@ -92,6 +92,16 @@ class TestDummyDataDistortedCubic:
         assert len(sublattice.x_position) == len(sublattice.y_position)
 
 
+class TestDummyDataHexagonalDouble:
+
+    def test_signal(self):
+        s0 = dd.get_hexagonal_double_signal(image_noise=False)
+        s1 = dd.get_hexagonal_double_signal(image_noise=True)
+        s0.plot()
+        s1.plot()
+        assert not (s0.data == s1.data).all()
+
+
 class TestDummyDataEELSMap:
 
     def test_make_eels_map_spatial_image_la(self):
