@@ -1199,10 +1199,11 @@ class Sublattice():
             zone_axis_list1.extend(zone_axis_list2[1:])
         return(zone_axis_list1)
 
-    def find_missing_atoms_from_zone_vector(self, zone_vector):
+    def find_missing_atoms_from_zone_vector(
+            self, zone_vector, vector_fraction=0.5):
         """Returns a list of coordinates between atoms given by a zone vector.
 
-        These coordinates are given by the mid-point between adjacent atoms
+        These coordinates are given by a point between adjacent atoms
         in the atom planes with the given zone_vector.
 
         Parameters
@@ -1210,6 +1211,10 @@ class Sublattice():
         zone_vector : tuple
             Zone vector for the atom planes where the new atoms are positioned
             between the atoms in the sublattice.
+        vector_fraction : float, optional
+            Fraction of the distance between the adjacent atoms.
+            Value between 0 and 1, default 0.5
+
 
         Returns
         -------
@@ -1224,6 +1229,18 @@ class Sublattice():
         >>> B_pos = sublattice_A.find_missing_atoms_from_zone_vector(
         ...                       zone_axis)
 
+        Using the vector_fraction parameter
+
+        >>> s = am.dummy_data.get_hexagonal_double_signal()
+        >>> peaksA = am.get_atom_positions(s, separation=10)
+        >>> sublatticeA = am.Sublattice(peaksA, s.data)
+        >>> sublatticeA.construct_zone_axes()
+        >>> zv = sublatticeA.zones_axis_average_distances[5]
+        >>> peaksB = sublatticeA.find_missing_atoms_from_zone_vector(
+        ...     zv, vector_fraction=0.7)
+        >>> sublatticeB = am.Sublattice(peaksB, s.data)
+        >>> sublatticeB.plot()
+
         """
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
 
@@ -1233,9 +1250,9 @@ class Sublattice():
                 previous_atom = atom_plane.atom_list[atom_index]
                 difference_vector = previous_atom.get_pixel_difference(atom)
                 new_atom_x = previous_atom.pixel_x -\
-                    difference_vector[0]*0.5
+                    difference_vector[0] * vector_fraction
                 new_atom_y = previous_atom.pixel_y -\
-                    difference_vector[1]*0.5
+                    difference_vector[1] * vector_fraction
                 new_atom_list.append((new_atom_x, new_atom_y))
         return(new_atom_list)
 

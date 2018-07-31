@@ -249,12 +249,17 @@ The optimal feature separation is found the same way as the earlier example, and
 The atom positions are shown in the left image, and the atom planes for one zone axis is shown in the right.
 This zone axis has index 1 in the list ``sublattice_A.zones_axis_average_distances``.
 Atomic columns belonging to the second, less intense sublattice ("B") are between the "A" atoms in the most intense sublattice.
-Knowing this, the trick to find the initial positions for the "B"-columns is:
+Knowing this, the trick to find the initial positions for the "B"-columns is using
+:py:meth:`~atomap.sublattice.Sublattice.find_missing_atoms_from_zone_vector`:
 
 .. code-block:: python
 
     >>> zone_axis_001 = sublattice_A.zones_axis_average_distances[1]
     >>> B_positions = sublattice_A.find_missing_atoms_from_zone_vector(zone_axis_001)
+
+In this case, the B-columns are exactly at the halfway point between the A-columns, however for other structures this
+might not work.
+If that is the case, use the ``vector_fraction`` parameter: ``sublattice_A.find_missing_atoms_from_zone_vector(zone_axis_001, vector_fraction=0.7)``.
 
 To enable robust fitting of the less intense B-positions, the intensity from the A-positions are "subtracted" from the image.
 This "subtracted"-image is then used to refine the B-positions.

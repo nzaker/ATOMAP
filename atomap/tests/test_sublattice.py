@@ -7,6 +7,7 @@ import atomap.atom_finding_refining as afr
 from atomap.sublattice import Sublattice
 import atomap.testing_tools as tt
 import atomap.dummy_data as dd
+from atomap.atom_plane import Atom_Plane
 
 
 class TestMakeSimpleSublattice:
@@ -1027,3 +1028,36 @@ class TestSignalProperty:
         signal = sublattice.signal
         assert signal.axes_manager.signal_axes[0].scale == 0.5
         assert signal.axes_manager.signal_axes[1].scale == 0.5
+
+
+class TestFindMissingAtomsFromZoneVector:
+
+    def setup_method(self):
+        pos = [[10, 10], [20, 10]]
+        image = np.zeros((40, 40))
+        sublattice = Sublattice(pos, image)
+        zv = (10, 0)
+        atom_list = sublattice.atom_list
+        atom_list[0]._start_atom = [zv]
+        atom_list[1]._end_atom = [zv]
+
+        atom_plane = Atom_Plane(sublattice.atom_list, zv, sublattice)
+        sublattice.atom_plane_list.append(atom_plane)
+        sublattice.atom_planes_by_zone_vector[zv] = [atom_plane]
+        self.zv, self.pos, self.sublattice = zv, pos, sublattice
+
+    def test_simple(self):
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv)
+        assert missing_pos == [(15., 10.)]
+
+    def test_vector_fraction(self):
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, vector_fraction=0.2)
+        assert missing_pos == [(12., 10.)]
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, vector_fraction=0.6)
+        assert missing_pos == [(16., 10.)]
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, vector_fraction=0.8)
+        assert missing_pos == [(18., 10.)]
