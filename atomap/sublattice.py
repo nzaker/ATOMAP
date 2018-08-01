@@ -1261,7 +1261,7 @@ class Sublattice():
         """
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
         if extend_outer_edges:
-            im_x, im_y = self.image.shape
+            im_y, im_x = self.image.shape
             im_x -= outer_edge_limit
             im_y -= outer_edge_limit
         new_atom_list = []

@@ -1034,7 +1034,7 @@ class TestFindMissingAtomsFromZoneVector:
 
     def setup_method(self):
         pos = [[10, 10], [20, 10]]
-        image = np.zeros((40, 40))
+        image = np.zeros((20, 40))
         sublattice = Sublattice(pos, image)
         zv = (10, 0)
         atom_list = sublattice.atom_list
@@ -1061,3 +1061,14 @@ class TestFindMissingAtomsFromZoneVector:
         missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
                 self.zv, vector_fraction=0.8)
         assert missing_pos == [(18., 10.)]
+
+    def test_extend_outer_edges(self):
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, extend_outer_edges=False)
+        assert len(missing_pos) == 1
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, extend_outer_edges=True)
+        assert missing_pos == [(15., 10.), (25., 10.)]
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, extend_outer_edges=True, outer_edge_limit=0)
+        assert missing_pos == [(15., 10.), (5., 10), (25., 10.)]
