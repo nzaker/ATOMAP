@@ -142,8 +142,8 @@ class TestDummyDataEELSMap:
 class TestGetSimpleCubicWithVacanciesSublattice:
 
     def test_signal(self):
-        s0 = dd.get_simple_cubic_with_vacancies_sublattice(image_noise=False)
-        s1 = dd.get_simple_cubic_with_vacancies_sublattice(image_noise=True)
+        s0 = dd.get_simple_cubic_with_vacancies_signal(image_noise=False)
+        s1 = dd.get_simple_cubic_with_vacancies_signal(image_noise=True)
         s0.plot()
         s1.plot()
         assert not (s0.data == s1.data).all()
