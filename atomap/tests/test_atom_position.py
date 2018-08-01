@@ -5,7 +5,6 @@ import math
 from atomap.atom_position import Atom_Position
 import atomap.testing_tools as tt
 import atomap.dummy_data as dd
-from atomap.sublattice import Sublattice
 
 
 class TestCreateAtomPositionObject:

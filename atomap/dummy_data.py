@@ -65,6 +65,83 @@ def get_hexagonal_double_signal(image_noise=False):
     return signal
 
 
+def _make_simple_cubic_with_vacancies_testdata(image_noise=False):
+    test_data = MakeTestData(300, 300)
+    x, y = np.mgrid[10:290:20j, 10:290:20j]
+    x, y = x.flatten().tolist(), y.flatten().tolist()
+    for i in [71, 193, 264]:
+        x.pop(i)
+        y.pop(i)
+    test_data.add_atom_list(x, y, sigma_x=3, sigma_y=3)
+    if image_noise:
+        test_data.add_image_noise(mu=0, sigma=0.002)
+    return test_data
+
+
+def get_simple_cubic_with_vacancies_signal(image_noise=False):
+    """Generate a test image signal with some vacancies
+
+    Same as the simple cubic signal, but with 3 missing atoms.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    signal : HyperSpy 2D
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_simple_cubic_with_vacancies_signal()
+    >>> s.plot()
+
+    With image noise
+
+    >>> s1 = am.dummy_data.get_simple_cubic_with_vacancies_signal(
+            image_noise=True)
+    >>> s1.plot()
+
+    """
+    test_data = _make_simple_cubic_with_vacancies_testdata(
+            image_noise=image_noise)
+    return test_data.signal
+
+
+def get_simple_cubic_with_vacancies_sublattice(image_noise=False):
+    """Generate a test sublattice with some vacancies
+
+    Same as the simple cubic sublattice, but with 3 missing atoms.
+
+    Parameters
+    ----------
+    image_noise : default False
+        If True, will add Gaussian noise to the image.
+
+    Returns
+    -------
+    signal : HyperSpy 2D
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_simple_cubic_with_vacancies_sublattice()
+    >>> s.plot()
+
+    With image noise
+
+    >>> s1 = am.dummy_data.get_simple_cubic_with_vacancies_sublattice(
+            image_noise=True)
+    >>> s1.plot()
+
+    """
+    test_data = _make_simple_cubic_with_vacancies_testdata(
+            image_noise=image_noise)
+    return test_data.sublattice
+
+
 def _make_simple_cubic_testdata(image_noise=False):
     simple_cubic = MakeTestData(300, 300)
     x, y = np.mgrid[10:290:20j, 10:290:20j]
