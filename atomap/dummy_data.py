@@ -101,7 +101,7 @@ def get_simple_cubic_with_vacancies_signal(image_noise=False):
     With image noise
 
     >>> s1 = am.dummy_data.get_simple_cubic_with_vacancies_signal(
-            image_noise=True)
+    ...     image_noise=True)
     >>> s1.plot()
 
     """
@@ -133,7 +133,7 @@ def get_simple_cubic_with_vacancies_sublattice(image_noise=False):
     With image noise
 
     >>> s1 = am.dummy_data.get_simple_cubic_with_vacancies_sublattice(
-            image_noise=True)
+    ...     image_noise=True)
     >>> s1.plot()
 
     """
