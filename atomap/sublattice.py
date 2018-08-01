@@ -890,11 +890,12 @@ class Sublattice():
         for atom in tqdm(
                 self.atom_list, desc="Gaussian fitting",
                 disable=not show_progressbar):
-            atom.refine_position_using_2d_gaussian(
-                    image_data,
-                    rotation_enabled=rotation_enabled,
-                    percent_to_nn=percent_to_nn,
-                    mask_radius=mask_radius)
+            if atom.refine_position:
+                atom.refine_position_using_2d_gaussian(
+                        image_data,
+                        rotation_enabled=rotation_enabled,
+                        percent_to_nn=percent_to_nn,
+                        mask_radius=mask_radius)
 
     def refine_atom_positions_using_center_of_mass(
             self, image_data=None, percent_to_nn=None,
@@ -946,9 +947,10 @@ class Sublattice():
         for atom in tqdm(
                 self.atom_list, desc="Center of mass",
                 disable=not show_progressbar):
-            atom.refine_position_using_center_of_mass(
-                image_data,
-                percent_to_nn=percent_to_nn, mask_radius=mask_radius)
+            if atom.refine_position:
+                atom.refine_position_using_center_of_mass(
+                    image_data,
+                    percent_to_nn=percent_to_nn, mask_radius=mask_radius)
 
     def get_nearest_neighbor_directions(
             self, pixel_scale=True, neighbors=None):

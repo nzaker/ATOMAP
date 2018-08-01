@@ -48,6 +48,13 @@ class Atom_Position:
         rotation_ellipticity : float
             The rotation of the longest sigma, relative to the x-axis in
             radians.
+        refine_position : bool
+            If True (default), the atom position will be fitted to the image
+            data when calling the sublattice.refine_... methods. Note, the
+            atom will still be fitted when directly calling the refine_...
+            methods in the atom position class itself. Setting it to False
+            can be useful when dealing with vacanies, or other features where
+            the automatic fitting doesn't work.
 
         Examples
         --------
@@ -74,6 +81,7 @@ class Atom_Position:
         self._gaussian_fitted = False
         self.amplitude_max_intensity = 1.0
         self.intensity_mask = 0.
+        self.refine_position = True
 
     def __repr__(self):
         return '<%s, %s (x:%s,y:%s,sx:%s,sy:%s,r:%s,e:%s)>' % (
