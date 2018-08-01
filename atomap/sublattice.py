@@ -1202,7 +1202,8 @@ class Sublattice():
         return(zone_axis_list1)
 
     def find_missing_atoms_from_zone_vector(
-            self, zone_vector, vector_fraction=0.5):
+            self, zone_vector, vector_fraction=0.5, extend_outer_edges=False,
+            outer_edge_limit=5):
         """Returns a list of coordinates between atoms given by a zone vector.
 
         These coordinates are given by a point between adjacent atoms
@@ -1216,7 +1217,14 @@ class Sublattice():
         vector_fraction : float, optional
             Fraction of the distance between the adjacent atoms.
             Value between 0 and 1, default 0.5
-
+        extend_outer_edge : bool
+            If True, atoms at the edges of the sublattice will also
+            be included. Default False.
+        outer_edge_limit : 5
+            Will only matter if extend_outer_edge is True. If the edge atoms
+            are too close to the edge of the image data, they will
+            not be included in the output. In pixel values, default 5.
+            Higher value means fewer atoms are included.
 
         Returns
         -------
@@ -1243,9 +1251,19 @@ class Sublattice():
         >>> sublatticeB = am.Sublattice(peaksB, s.data)
         >>> sublatticeB.plot()
 
+        Use extend_outer_edges to also get the second sublattice atoms
+        which are not between the first sublattice's atoms
+
+        >>> peaksB = sublatticeA.find_missing_atoms_from_zone_vector(
+        ...     zv, vector_fraction=0.7, extend_outer_edges=True)
+        >>> sublatticeB = am.Sublattice(peaksB, s.data)
+
         """
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
-
+        if extend_outer_edges:
+            im_x, im_y = self.image.shape
+            im_x -= outer_edge_limit
+            im_y -= outer_edge_limit
         new_atom_list = []
         for atom_plane in atom_plane_list:
             for atom_index, atom in enumerate(atom_plane.atom_list[1:]):
@@ -1256,6 +1274,25 @@ class Sublattice():
                 new_atom_y = previous_atom.pixel_y -\
                     difference_vector[1] * vector_fraction
                 new_atom_list.append((new_atom_x, new_atom_y))
+                if extend_outer_edges:
+                    if previous_atom is atom_plane.start_atom:
+                        new_atom_x = previous_atom.pixel_x -\
+                            difference_vector[0] * (vector_fraction - 1)
+                        new_atom_y = previous_atom.pixel_y -\
+                            difference_vector[1] * (vector_fraction - 1)
+                        if (
+                                outer_edge_limit < new_atom_x < im_x and
+                                outer_edge_limit < new_atom_y < im_y):
+                            new_atom_list.append((new_atom_x, new_atom_y))
+                    if atom is atom_plane.end_atom:
+                        new_atom_x = atom.pixel_x -\
+                            difference_vector[0] * vector_fraction
+                        new_atom_y = atom.pixel_y -\
+                            difference_vector[1] * vector_fraction
+                        if (
+                                outer_edge_limit < new_atom_x < im_x and
+                                outer_edge_limit < new_atom_y < im_y):
+                            new_atom_list.append((new_atom_x, new_atom_y))
         return(new_atom_list)
 
     def get_atom_planes_on_image(
