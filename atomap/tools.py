@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import copy
-from tqdm import tqdm
+from tqdm import tqdm, trange
 from scipy import interpolate
 from scipy import ndimage
 from scipy.spatial import cKDTree
@@ -940,7 +940,8 @@ class Fingerprinter:
         return self
 
 
-def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
+def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto',
+              show_progressbar=True):
     """Given a spectrum image a set of points and a maximum outer radius,
     this function integrates around each point in an image, using either
     Voronoi cell or watershed segmentation methods.
@@ -961,6 +962,8 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
         This allows analysis of a surface and particles.
         If 'max_radius' is left as 'Auto' then it will be set to the largest
         dimension in the image.
+    show_progressbar : bool, optional
+        Default True
 
     Returns
     -------
@@ -1053,7 +1056,8 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
         raise NotImplementedError(
                 "Oops! You have asked for an unimplemented method.")
     point_record -= 1
-    for point in range(points[0].shape[0]):
+    for point in trange(points[0].shape[0], desc='Integrating',
+                        disable=not show_progressbar):
         currentMask = (point_record == point)
         currentFeature = currentMask * image.T
         integrated_intensity[point] = sum(sum(currentFeature.T)).T
