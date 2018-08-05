@@ -95,22 +95,28 @@ def _radial_profile(data, centre):
 
 class InteractiveFluxAnalyser:
 
-    def __init__(self, profile, radius, flux_profile):
-        self.profile = profile[0]
-        self.radius = radius
-        self.flux_profile = flux_profile
-        self.left = np.int(min(self.profile.get_xdata()))
-        self.right = np.int(max(self.profile.get_xdata()))
-        self.l_line = self.profile.axes.axvline(
-                self.left, color='firebrick', linestyle='--')
-        self.r_line = self.profile.axes.axvline(
-                self.right, color='seagreen', linestyle='--')
-        self.cid = self.profile.figure.canvas.mpl_connect(
-                'button_press_event', self.onclick)
+    def __init__(self, profile, radius, flux_profile, limits=None):
+        if limits is None:
+            self.profile = profile[0]
+            self.radius = radius
+            self.flux_profile = flux_profile
+            self.left = np.int(min(self.profile.get_xdata()))
+            self.right = np.int(max(self.profile.get_xdata()))
+            self.l_line = self.profile.axes.axvline(
+                    self.left, color='firebrick', linestyle='--')
+            self.r_line = self.profile.axes.axvline(
+                    self.right, color='seagreen', linestyle='--')
+            self.cid = self.profile.figure.canvas.mpl_connect(
+                    'button_press_event', self.onclick)
+        else:
+            self.left, self.right = limits
+            self._set_coords()
 
     def __call__(self):
-
+        self._set_coords()
         print('Final coordinates are: {}, {}!'.format(self.left, self.right))
+
+    def _set_coords(self):
         self.coords = [self.left, self.right]
 
     def onclick(self, event):
@@ -135,7 +141,7 @@ class InteractiveFluxAnalyser:
         print('Coordinates selected', self.left, self.right)
 
 
-def find_flux_limits(flux_pattern, conv_angle):
+def find_flux_limits(flux_pattern, conv_angle, limits=None):
     """Using an input flux_pattern to create a line profile. The user is then
     able to select the region of this profile which follows an exponential.
 
@@ -143,6 +149,11 @@ def find_flux_limits(flux_pattern, conv_angle):
     ----------
     flux_pattern : NumPy array
     conv_angle : float
+    limits : tuple, optional
+        If this is not specified, the limits must be set interactively.
+        Must have 2 values: (left limit, right limit), for example (103, 406).
+        Default value is None, which gives opens a window to select the limits
+        interactively.
 
     Returns
     -------
@@ -153,6 +164,13 @@ def find_flux_limits(flux_pattern, conv_angle):
         1D array containing the values for the created flux_profile.
 
     """
+    if (limits is not None) and (len(limits) != 2):
+        raise ValueError(
+                "limits must either be None to get an interactive window, "
+                "or tuple with two values. Currently it is {0}".format(limits))
+    elif (limits is not None) and (limits[0] > limits[1]):
+        raise ValueError("limits[1] must be larger than limits[0], currently "
+                         " limits is {0}".format(limits))
     # normalise flux image to be scaled 0-1.
     low_values_indices = flux_pattern < 0
     flux_pattern[low_values_indices] = 0
@@ -168,19 +186,24 @@ def find_flux_limits(flux_pattern, conv_angle):
 
     # Plot the radial flux profile and allow the user to select the region for
     # power-law fitting.
-    fig = plt.figure()
-    fig.suptitle('Radial Flux Profile: select power-law region.', fontsize=10)
-    ax1 = fig.add_subplot(2, 1, 1)
-    ax1.plot(radius, flux_profile)
-    ax1.set_title('Radial Profile')
-    ax2 = fig.add_subplot(2, 1, 2)
-    ax2.set_title('Logarithmic Profile')
-    profile = ax2.plot(radius, flux_profile)
-    ax2.set_yscale('log')
-    fig.subplots_adjust(hspace=0.3)
-    fig.show()
+    if limits is None:
+        fig = plt.figure()
+        fig.suptitle('Radial Flux Profile: select power-law region.',
+                     fontsize=10)
+        ax1 = fig.add_subplot(2, 1, 1)
+        ax1.plot(radius, flux_profile)
+        ax1.set_title('Radial Profile')
+        ax2 = fig.add_subplot(2, 1, 2)
+        ax2.set_title('Logarithmic Profile')
+        profile = ax2.plot(radius, flux_profile)
+        ax2.set_yscale('log')
+        fig.subplots_adjust(hspace=0.3)
+        fig.show()
+    else:
+        profile = None
 
-    profiler = InteractiveFluxAnalyser(profile, radius, flux_profile)
+    profiler = InteractiveFluxAnalyser(profile, radius, flux_profile,
+                                       limits=limits)
 
     return(profiler, flux_profile)
 
