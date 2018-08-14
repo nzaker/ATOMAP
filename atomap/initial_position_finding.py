@@ -170,18 +170,19 @@ def make_atom_lattice_dumbbell_structure(
 
 class AtomAdderRemover:
 
-    def __init__(self, image, atom_list, distance_threshold=4):
+    def __init__(self, image, atom_list=None, distance_threshold=4):
         self.image = image
         self.distance_threshold = distance_threshold
         self.fig, self.ax = plt.subplots()
         self.cax = self.ax.imshow(self.image)
-        if hasattr(atom_list, 'tolist'):
-            atom_list = atom_list.tolist()
-        self.atom_list = copy.deepcopy(atom_list)
-        self.line, = self.ax.plot(
-                np.array(self.atom_list)[:, 0],
-                np.array(self.atom_list)[:, 1],
-                'o', color='red')
+        if atom_list is None:
+            self.atom_list = []
+        else:
+            if hasattr(atom_list, 'tolist'):
+                atom_list = atom_list.tolist()
+            self.atom_list = copy.deepcopy(atom_list)
+        x_pos, y_pos = self.get_xy_pos_lists()
+        self.line, = self.ax.plot(x_pos, y_pos, 'o', color='red')
         self.fig.show()
         self.cid = self.fig.canvas.mpl_connect(
                 'button_press_event', self.onclick)
@@ -229,7 +230,7 @@ class AtomAdderRemover:
         self.fig.canvas.flush_events()
 
 
-def add_atoms_with_gui(image, atom_list, distance_threshold=4):
+def add_atoms_with_gui(image, atom_list=None, distance_threshold=4):
     """Add or remove atoms from a list of atom positions.
 
     Will open a matplotlib figure, where atoms can be added or
@@ -239,7 +240,7 @@ def add_atoms_with_gui(image, atom_list, distance_threshold=4):
     ----------
     image : array-like
         Signal or NumPy array
-    atom_list : list of lists
+    atom_list : list of lists, optional
         In the form [[x0, y0], [x1, y1], ...]
     distance_threshold : int
         Default 4

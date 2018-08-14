@@ -2,13 +2,10 @@ import os
 from tempfile import TemporaryDirectory
 import pytest
 import numpy
-import atomap.api as am
-import matplotlib.pyplot as plt
 
 
 @pytest.fixture(autouse=True)
 def doctest_setup_teardown(request):
-    plt.ioff()
     doctest_plugin = request.config.pluginmanager.getplugin("doctest")
     if isinstance(request.node, doctest_plugin.DoctestItem):
         tmp_dir = TemporaryDirectory()
@@ -19,10 +16,12 @@ def doctest_setup_teardown(request):
         tmp_dir.cleanup()
     else:
         yield
+    import matplotlib.pyplot as plt
     plt.close('all')
 
 
 @pytest.fixture(autouse=True)
 def add_np_am(doctest_namespace):
+        import atomap.api as am
         doctest_namespace['np'] = numpy
         doctest_namespace['am'] = am
