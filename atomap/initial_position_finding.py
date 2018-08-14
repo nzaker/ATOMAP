@@ -1,5 +1,8 @@
-import numpy as np
+import copy
+import math
 from tqdm import tqdm
+import numpy as np
+import matplotlib.pyplot as plt
 from atomap.atom_finding_refining import get_atom_positions
 from atomap.tools import _get_n_nearest_neighbors, Fingerprinter
 from atomap.atom_finding_refining import _make_circular_mask, do_pca_on_signal

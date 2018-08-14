@@ -5,8 +5,6 @@ import hyperspy.api as hs
 import numpy as np
 from skimage.feature import peak_local_max
 import math
-import copy
-import matplotlib.pyplot as plt
 
 from atomap.external.gaussian2d import Gaussian2D
 
