@@ -6,8 +6,8 @@ pip_install_unittest_docstring_documentation_coverage:
     - apt-get install -qy python3-sympy --no-install-recommends
     - apt-get install -qy xvfb python3-pytest python3-pytest-cov
     - pip3 install .
-    - xvfb-run -a python3 -m pytest --doctest-modules --cov=atomap atomap/
-    - xvfb-run -a python3 -m pytest --doctest-glob="*.rst" doc/
+    - xvfb-run -a --server-args="-screen 0, 1024x768x24" python3 -m pytest --doctest-modules --cov=atomap atomap/
+    - xvfb-run -a --server-args="-screen 0, 1024x768x24" python3 -m pytest --doctest-glob="*.rst" doc/
 
 style_checks_flake8:
     image: debian:stable

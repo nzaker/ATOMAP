@@ -183,7 +183,6 @@ class AtomAdderRemover:
             self.atom_list = copy.deepcopy(atom_list)
         x_pos, y_pos = self.get_xy_pos_lists()
         self.line, = self.ax.plot(x_pos, y_pos, 'o', color='red')
-        self.fig.show()
         self.cid = self.fig.canvas.mpl_connect(
                 'button_press_event', self.onclick)
 
