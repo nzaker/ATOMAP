@@ -1,7 +1,9 @@
 from pytest import approx
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 import atomap.initial_position_finding as ipf
+import atomap.tools as at
 
 
 class TestAddAtomAdderRemoving:
@@ -64,3 +66,44 @@ class TestAddAtomAdderRemoving:
         fig1.canvas.button_press_event(x11, y11, 1)
         assert len(peaks1) == 2
         plt.close(fig1)
+
+
+class TestDrawCursor:
+
+    def test_simple(self):
+        fig0, ax0 = plt.subplots()
+        ax0.imshow(np.arange(100).reshape(10, 10))
+        fig0.canvas.draw()
+        fig1, ax1 = plt.subplots()
+        ax1.imshow(np.arange(100).reshape(10, 10))
+        fig1.canvas.draw()
+        assert fig0.canvas.tostring_rgb() == fig1.canvas.tostring_rgb()
+
+        fig2, ax2 = plt.subplots()
+        ax2.imshow(np.arange(100).reshape(10, 10))
+        at._draw_cursor(ax2, 5, 8)
+        fig2.canvas.draw()
+        assert fig0.canvas.tostring_rgb() != fig2.canvas.tostring_rgb()
+
+    def test_draw_outside(self):
+        fig0, ax0 = plt.subplots()
+        ax0.imshow(np.arange(100).reshape(10, 10))
+        fig0.canvas.draw()
+        fig1, ax1 = plt.subplots()
+        ax1.imshow(np.arange(100).reshape(10, 10))
+        at._draw_cursor(ax1, -1, 8)
+        fig1.canvas.draw()
+        assert fig0.canvas.tostring_rgb() != fig1.canvas.tostring_rgb()
+
+
+class TestUpdateFrame:
+
+    def test_simple(self):
+        fig, ax = plt.subplots()
+        ax.imshow(np.arange(100).reshape(10, 10))
+        at._draw_cursor(ax, 5, 8)
+        frames = [[5, 9, False], [2, 2, True]]
+        fargs = [fig, ]
+        FuncAnimation(fig, at._update_frame, frames=frames,
+                      fargs=fargs, interval=200, repeat=False)
+        plt.close(fig)
