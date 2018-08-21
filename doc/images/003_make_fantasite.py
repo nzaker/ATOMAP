@@ -2,7 +2,7 @@ import os
 import atomap.api as am
 from atomap.tools import remove_atoms_from_image_using_2d_gaussian
 
-my_path = os.path.dirname(__file__) + '/plotting_tutorial/'
+my_path = os.path.join(os.path.dirname(__file__), 'plotting_tutorial')
 if not os.path.exists(my_path):
     os.makedirs(my_path)
 

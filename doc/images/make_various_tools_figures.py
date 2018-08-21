@@ -4,7 +4,7 @@ import atomap.api as am
 from atomap.tools import rotate_points_around_signal_centre
 import matplotlib.pyplot as plt
 
-my_path = os.path.dirname(__file__) + '/makevarioustools/'
+my_path = os.path.join(os.path.dirname(__file__), 'makevarioustools')
 if not os.path.exists(my_path):
     os.makedirs(my_path)
 

@@ -2,7 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import atomap.api as am
 
-my_path = os.path.dirname(__file__) + '/automation/'
+my_path = os.path.join(os.path.dirname(__file__), 'automation')
 if not os.path.exists(my_path):
     os.makedirs(my_path)
 

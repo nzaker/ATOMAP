@@ -3,7 +3,7 @@ import numpy as np
 from hyperspy.signals import Signal2D
 from atomap.dummy_data import get_fantasite_atom_lattice
 
-my_path = os.path.dirname(__file__) + '/make_nice_figures/'
+my_path = os.path.joint(os.path.dirname(__file__), 'make_nice_figures')
 if not os.path.exists(my_path):
     os.makedirs(my_path)
 

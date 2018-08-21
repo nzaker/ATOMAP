@@ -3,7 +3,7 @@ import numpy as np
 import atomap.api as am
 import atomap.dummy_data as dummy_data
 
-my_path = os.path.dirname(__file__) + '/finding_atom_lattices/'
+my_path = os.path.join(os.path.dirname(__file__), 'finding_atom_lattices')
 if not os.path.exists(my_path):
     os.makedirs(my_path)
 

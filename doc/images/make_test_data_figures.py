@@ -3,7 +3,7 @@ import numpy as np
 import atomap.api as am
 import atomap.testing_tools as tt
 
-my_path = os.path.dirname(__file__) + '/maketestdata/'
+my_path = os.path.join(os.path.dirname(__file__), 'maketestdata')
 if not os.path.exists(my_path):
     os.makedirs(my_path)
 

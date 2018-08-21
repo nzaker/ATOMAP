@@ -8,7 +8,7 @@ import matplotlib.patheffects as patheffects
 import hyperspy.api as hs
 import atomap.api as am
 
-my_path = os.path.dirname(__file__) + '/make_nice_figures/'
+my_path = os.path.join(os.path.dirname(__file__), 'make_nice_figures')
 if not os.path.exists(my_path):
     os.makedirs(my_path)
 
