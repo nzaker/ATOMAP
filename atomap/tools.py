@@ -1275,7 +1275,7 @@ def _draw_cursor(ax, x, y, xd=10, yd=-30):
     -------
     >>> import matplotlib.pyplot as plt
     >>> fig, ax = plt.subplots()
-    >>> ax.imshow(np.random.random((100, 100)))
+    >>> cax = ax.imshow(np.random.random((100, 100)))
     >>> from pixstem.tools import _draw_cursor
     >>> _draw_cursor(ax, 20, 50)
 
