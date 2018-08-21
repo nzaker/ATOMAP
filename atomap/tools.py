@@ -1312,3 +1312,38 @@ def _update_frame(pos, fig):
     text.xy = (pos[0], pos[1])
     fig.canvas.draw()
     fig.canvas.flush_events()
+
+
+def _generate_frames_position_list(position_list, num=10):
+    """
+    Parameters
+    ----------
+    position_list : list
+        Needs to have at least two positions, [[x0, y0], [x1, y1]]
+    num : scalar
+        Number of points between each position. Default 10.
+
+    Returns
+    -------
+    frames : list
+        Length of num * (len(position_list) - 1) + position_list
+
+    Example
+    -------
+    >>> from pixstem.tools import _generate_frames_position_list
+    >>> pos_list = [[10, 20], [65, 10], [31, 71]]
+    >>> frames = _generate_frames_position_list(pos_list, num=20)
+
+    """
+    frames = []
+    for i in range(len(position_list) - 1):
+        x0, y0 = position_list[i]
+        x1, y1 = position_list[i + 1]
+        x_list = np.linspace(x0, x1, num=num, endpoint=False)
+        y_list = np.linspace(y0, y1, num=num, endpoint=False)
+        frames.append([x0, y0, True])
+        for x, y in zip(x_list, y_list):
+            frames.append([x, y, False])
+    x2, y2 = position_list[-1]
+    frames.append([x2, y2, True])
+    return frames

@@ -107,3 +107,33 @@ class TestUpdateFrame:
         FuncAnimation(fig, at._update_frame, frames=frames,
                       fargs=fargs, interval=200, repeat=False)
         plt.close(fig)
+
+
+class TestGenerateFramesPositionList:
+
+    def test_simple(self):
+        position_list = [[10, 10], [30, 20]]
+        frames = at._generate_frames_position_list(position_list, num=10)
+        assert len(frames) == 12
+        assert frames[0][0:2] == position_list[0]
+        assert frames[-1][0:2] == position_list[-1]
+        assert frames[0][-1] is True
+        assert frames[-1][-1] is True
+        for frame in frames[1:-1]:
+            assert frame[-1] is False
+
+    def test_num(self):
+        position_list = [[10, 10], [30, 20]]
+        frames = at._generate_frames_position_list(position_list, num=16)
+        assert len(frames) == 18
+        assert frames[0][0:2] == position_list[0]
+        assert frames[-1][0:2] == position_list[-1]
+        assert frames[0][-1] is True
+        assert frames[-1][-1] is True
+        for frame in frames[1:-1]:
+            assert frame[-1] is False
+
+    def test_longer(self):
+        position_list = [[10, 10], [30, 20], [50, 30], [20, 54], [13, 89]]
+        frames = at._generate_frames_position_list(position_list, num=10)
+        assert len(frames) == 45
