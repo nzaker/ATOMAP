@@ -185,6 +185,7 @@ class AtomAdderRemover:
         self.line, = self.ax.plot(x_pos, y_pos, 'o', color='red')
         self.cid = self.fig.canvas.mpl_connect(
                 'button_press_event', self.onclick)
+        self.fig.tight_layout()
 
     def onclick(self, event):
         if event.inaxes != self.ax.axes:
