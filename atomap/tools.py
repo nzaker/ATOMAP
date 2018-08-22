@@ -1276,7 +1276,7 @@ def _draw_cursor(ax, x, y, xd=10, yd=-30):
     >>> import matplotlib.pyplot as plt
     >>> fig, ax = plt.subplots()
     >>> cax = ax.imshow(np.random.random((100, 100)))
-    >>> from pixstem.tools import _draw_cursor
+    >>> from atomap.tools import _draw_cursor
     >>> _draw_cursor(ax, 20, 50)
 
     """
@@ -1330,7 +1330,7 @@ def _generate_frames_position_list(position_list, num=10):
 
     Example
     -------
-    >>> from pixstem.tools import _generate_frames_position_list
+    >>> from atomap.tools import _generate_frames_position_list
     >>> pos_list = [[10, 20], [65, 10], [31, 71]]
     >>> frames = _generate_frames_position_list(pos_list, num=20)
 
