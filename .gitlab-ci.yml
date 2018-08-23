@@ -14,7 +14,7 @@ style_checks_flake8:
     script:
     - apt-get update -q
     - apt-get install -qy python3-flake8
-    - python3 -m flake8 --exclude atomap/api.py atomap/
+    - python3 -m flake8 atomap/
 
 style_checks_flake8_docstrings:
     image: debian:stable
