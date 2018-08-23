@@ -12,7 +12,7 @@ if not os.path.exists(my_path):
     os.makedirs(my_path)
 
 # Load the atomic resolution image
-s_adf = hs.load(my_path + 'ADF_image.hdf5')
+s_adf = hs.load(os.path.join(my_path, 'ADF_image.hdf5'))
 
 # Load the structural data
 atoms_A = np.load(os.path.join(my_path, 'sublattice_A.npz'))
