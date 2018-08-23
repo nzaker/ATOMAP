@@ -13,4 +13,4 @@ atom_lattice = am.make_atom_lattice_from_image(
         s, process_parameter=process_parameter, pixel_separation=14)
 
 atom_lattice.plot()
-plt.gcf().savefig(my_path + 'atom_lattice.png')
+plt.gcf().savefig(os.path.join(my_path, 'atom_lattice.png'))

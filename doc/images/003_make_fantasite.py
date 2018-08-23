@@ -10,19 +10,19 @@ if not os.path.exists(my_path):
 def plot_fantasite(s):
     s.plot()
     s._plot.signal_plot.figure.savefig(
-            my_path + 'fantasite.png', overwrite=True)
+            os.path.join(my_path, 'fantasite.png'), overwrite=True)
 
 
 def plot_atom_lattice(atom_lattice):
     s = atom_lattice.get_sublattice_atom_list_on_image()
     s.plot()
     s._plot.signal_plot.figure.savefig(
-            my_path + 'atom_lattice.png', overwrite=True)
+            os.path.join(my_path, 'atom_lattice.png'), overwrite=True)
 
 
 s = am.dummy_data.get_fantasite()
 A_positions = am.get_atom_positions(s, separation=12, pca=True)
-sublattice_A = am.Sublattice(A_positions,image=s.data, color='r', name='A')
+sublattice_A = am.Sublattice(A_positions, image=s.data, color='r', name='A')
 sublattice_A.find_nearest_neighbors()
 sublattice_A.refine_atom_positions_using_center_of_mass()
 sublattice_A.refine_atom_positions_using_2d_gaussian()
@@ -41,7 +41,7 @@ sublattice_B.refine_atom_positions_using_2d_gaussian()
 atom_lattice = am.Atom_Lattice(
         image=s.data, name='fantasite',
         sublattice_list=[sublattice_A, sublattice_B])
-atom_lattice.save(my_path + "fantasite.hdf5", overwrite=True)
+atom_lattice.save(os.path.join(my_path, "fantasite.hdf5"), overwrite=True)
 
 plot_fantasite(s)
 plot_atom_lattice(atom_lattice)
