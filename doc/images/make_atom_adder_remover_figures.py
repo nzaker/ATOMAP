@@ -33,6 +33,7 @@ position_list = [
         ]
 frames = at._generate_frames_position_list(position_list, num=10)
 
+fig.dpi = 100
 fargs = [fig, ]
 at._draw_cursor(ax, frames[0][0], frames[0][1])
 anim = FuncAnimation(fig, at._update_frame, frames=frames, fargs=fargs, interval=200, repeat=False)

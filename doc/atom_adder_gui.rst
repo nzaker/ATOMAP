@@ -14,19 +14,19 @@ This function opens up a window showing the datasets, where atoms can be added o
 
    >>> %matplotlib qt # doctest: +SKIP
    >>> s = am.dummy_data.get_distorted_cubic_signal()
-   >>> peaks = am.get_atom_positions(s, 25)
-   >>> peaks_new = am.add_atoms_with_gui(s, peaks)
+   >>> atom_positions = am.get_atom_positions(s, 25)
+   >>> atom_positions_new = am.add_atoms_with_gui(s, atom_positions)
 
 .. image:: images/atomadderremovergui/add_atoms.gif
     :scale: 50 %
     :align: center
 
 
-After having added or removed the atoms, ``peaks_new`` is used to make a sublattice object:
+After having added or removed the atoms, ``atom_positions_new`` is used to make a sublattice object:
 
 .. code-block:: python
 
-   >>> sublattice = am.Sublattice(peaks_new, s)
+   >>> sublattice = am.Sublattice(atom_positions_new, s)
 
 
 :py:func:`~atomap.initial_position_finding.add_atoms_with_gui` can also be used without any initial atoms:
@@ -34,7 +34,7 @@ After having added or removed the atoms, ``peaks_new`` is used to make a sublatt
 
 .. code-block:: python
 
-   >>> peaks = am.add_atoms_with_gui(s)
+   >>> atom_positions = am.add_atoms_with_gui(s)
 
 
 If the atoms in the dataset are too close together, ``distance_threshold`` is used to decrease the distance for removing an atom.
@@ -42,5 +42,5 @@ If the atoms in the dataset are too close together, ``distance_threshold`` is us
 
 .. code-block:: python
 
-   >>> peaks = am.add_atoms_with_gui(s, distance_threshold=2)
+   >>> atom_positions = am.add_atoms_with_gui(s, distance_threshold=2)
 

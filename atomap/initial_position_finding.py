@@ -170,17 +170,17 @@ def make_atom_lattice_dumbbell_structure(
 
 class AtomAdderRemover:
 
-    def __init__(self, image, atom_list=None, distance_threshold=4):
+    def __init__(self, image, atom_positions=None, distance_threshold=4):
         self.image = image
         self.distance_threshold = distance_threshold
         self.fig, self.ax = plt.subplots()
         self.cax = self.ax.imshow(self.image)
-        if atom_list is None:
-            self.atom_list = []
+        if atom_positions is None:
+            self.atom_positions = []
         else:
-            if hasattr(atom_list, 'tolist'):
-                atom_list = atom_list.tolist()
-            self.atom_list = copy.deepcopy(atom_list)
+            if hasattr(atom_positions, 'tolist'):
+                atom_positions = atom_positions.tolist()
+            self.atom_positions = copy.deepcopy(atom_positions)
         x_pos, y_pos = self.get_xy_pos_lists()
         self.line, = self.ax.plot(x_pos, y_pos, 'o', color='red')
         self.cid = self.fig.canvas.mpl_connect(
@@ -195,9 +195,9 @@ class AtomAdderRemover:
             y = np.float(event.ydata)
             atom_nearby = self.is_atom_nearby(x, y)
             if atom_nearby is False:
-                self.atom_list.append([x, y])
+                self.atom_positions.append([x, y])
             else:
-                self.atom_list.pop(atom_nearby)
+                self.atom_positions.pop(atom_nearby)
             self.replot()
 
     def is_atom_nearby(self, x_press, y_press):
@@ -214,9 +214,9 @@ class AtomAdderRemover:
         return index
 
     def get_xy_pos_lists(self):
-        if self.atom_list:
-            x_pos_list = np.array(self.atom_list)[:, 0]
-            y_pos_list = np.array(self.atom_list)[:, 1]
+        if self.atom_positions:
+            x_pos_list = np.array(self.atom_positions)[:, 0]
+            y_pos_list = np.array(self.atom_positions)[:, 1]
         else:
             x_pos_list = []
             y_pos_list = []
@@ -230,7 +230,7 @@ class AtomAdderRemover:
         self.fig.canvas.flush_events()
 
 
-def add_atoms_with_gui(image, atom_list=None, distance_threshold=4):
+def add_atoms_with_gui(image, atom_positions=None, distance_threshold=4):
     """Add or remove atoms from a list of atom positions.
 
     Will open a matplotlib figure, where atoms can be added or
@@ -240,7 +240,7 @@ def add_atoms_with_gui(image, atom_list=None, distance_threshold=4):
     ----------
     image : array-like
         Signal or NumPy array
-    atom_list : list of lists, optional
+    atom_positions : list of lists, optional
         In the form [[x0, y0], [x1, y1], ...]
     distance_threshold : int
         Default 4
@@ -254,12 +254,12 @@ def add_atoms_with_gui(image, atom_list=None, distance_threshold=4):
     Examples
     --------
     >>> s = am.dummy_data.get_simple_cubic_signal()
-    >>> peaks = am.get_atom_positions(s, separation=9)
-    >>> peaks_new = am.add_atoms_with_gui(peaks, s)
+    >>> atom_positions = am.get_atom_positions(s, separation=9)
+    >>> atom_positions_new = am.add_atoms_with_gui(atom_positions, s)
 
     """
     global atom_adder_remover
     atom_adder_remover = AtomAdderRemover(
-            image, atom_list, distance_threshold=distance_threshold)
-    new_atom_list = atom_adder_remover.atom_list
-    return new_atom_list
+            image, atom_positions, distance_threshold=distance_threshold)
+    atom_positions_new = atom_adder_remover.atom_positions
+    return atom_positions_new

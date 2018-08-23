@@ -25,7 +25,7 @@ Atom plane
     :members:
     :undoc-members:
 
-Atom position 
+Atom position
 =============
 .. autoclass:: atomap.atom_position.Atom_Position
     :members:
@@ -75,6 +75,12 @@ Modules
 Atom finding refining
 =====================
 .. automodule:: atomap.atom_finding_refining
+    :members:
+    :undoc-members:
+
+Initial position finding
+========================
+.. automodule:: atomap.initial_position_finding
     :members:
     :undoc-members:
 
