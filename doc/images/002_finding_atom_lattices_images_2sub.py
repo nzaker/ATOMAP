@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import hyperspy.api as hs
 import atomap.api as am
 import atomap.dummy_data as dummy_data
@@ -14,26 +13,30 @@ def save_sub_A_image(sublattice):
     s = sublattice.get_atom_list_on_image()
     s.plot()
     s._plot.signal_plot.figure.savefig(
-            my_path + 'sublattice_A.png', overwrite=True)
-            
+            os.path.join(my_path, 'sublattice_A.png'), overwrite=True)
+
+
 def plot_planes_figure(sublattice):
     s = sublattice.get_all_atom_planes_by_zone_vector()
     s.plot()
     s.axes_manager.indices = (1,)
     s._plot.signal_plot.figure.savefig(
-            my_path + 'sublattice_A_zone1.png', overwrite=True)
+            os.path.join(my_path, 'sublattice_A_zone1.png'), overwrite=True)
+
 
 def plot_atom_lattice(atom_lattice):
     s = atom_lattice.get_sublattice_atom_list_on_image()
     s.plot()
     s._plot.signal_plot.figure.savefig(
-            my_path + 'atom_lattice.png', overwrite=True)
+            os.path.join(my_path, 'atom_lattice.png'), overwrite=True)
+
 
 def plot_image_wo_A(image):
     s = hs.signals.Signal2D(image)
     s.plot()
     s._plot.signal_plot.figure.savefig(
-            my_path + 'signal_wo_A.png', overwrite=True)
+            os.path.join(my_path, 'signal_wo_A.png'), overwrite=True)
+
 
 s = dummy_data.get_two_sublattice_signal()
 A_positions = am.get_atom_positions(s, separation=15)

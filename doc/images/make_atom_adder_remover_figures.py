@@ -1,11 +1,9 @@
 import os
-import numpy as np
 import matplotlib
-matplotlib.use('Qt5Agg')
+matplotlib.use('Qt5Agg') # noqa
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import atomap.api as am
-import atomap.testing_tools as tt
 import atomap.tools as at
 
 my_path = os.path.join(os.path.dirname(__file__), 'atomadderremovergui')
@@ -36,6 +34,7 @@ frames = at._generate_frames_position_list(position_list, num=10)
 fig.dpi = 100
 fargs = [fig, ]
 at._draw_cursor(ax, frames[0][0], frames[0][1])
-anim = FuncAnimation(fig, at._update_frame, frames=frames, fargs=fargs, interval=200, repeat=False)
-anim.save(os.path.join(my_path, "add_atoms.gif"), writer='imagemagick')
+anim = FuncAnimation(fig, at._update_frame, frames=frames, fargs=fargs,
+                     interval=200, repeat=False)
+anim.save(os.path.join(my_path, "atoms_add_remove_gui.gif"), writer='imagemagick')
 plt.close(fig)

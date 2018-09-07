@@ -6,27 +6,26 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 import matplotlib.font_manager as fm
 import matplotlib.patheffects as patheffects
 import hyperspy.api as hs
-import atomap.api as am
 
 my_path = os.path.join(os.path.dirname(__file__), 'make_nice_figures')
 if not os.path.exists(my_path):
     os.makedirs(my_path)
 
 # Load the atomic resolution image
-s_adf = hs.load(my_path + 'ADF_image.hdf5')
+s_adf = hs.load(os.path.join(my_path, 'ADF_image.hdf5'))
 
 # Load the structural data
-atoms_A = np.load(my_path + 'sublattice_A.npz')
-atoms_B = np.load(my_path + 'sublattice_B.npz')
-dd_map = hs.load(my_path + 'distance_difference_map.hdf5')
-dd_line = hs.load(my_path + 'dd_line.hdf5')
+atoms_A = np.load(os.path.join(my_path, 'sublattice_A.npz'))
+atoms_B = np.load(os.path.join(my_path, 'sublattice_B.npz'))
+dd_map = hs.load(os.path.join(my_path, 'distance_difference_map.hdf5'))
+dd_line = hs.load(os.path.join(my_path, 'dd_line.hdf5'))
 
 # Scaling the data
 scale = 0.142
 s_adf.axes_manager[0].scale = scale
 s_adf.axes_manager[1].scale = scale
 # dd_map has twice the amount of pixels, so the scale is half
-dd_map.axes_manager[0].scale = scale/2 
+dd_map.axes_manager[0].scale = scale/2
 dd_map.axes_manager[1].scale = scale/2
 
 # Crop images
@@ -111,8 +110,8 @@ ax_lp.set_ylim(-1.5, 4.5)
 
 # Add annotation
 path_effects = [
-        patheffects.withStroke(linewidth=2, 
-            foreground='black', capstyle="round")]
+        patheffects.withStroke(linewidth=2, foreground='black',
+                               capstyle="round")]
 ax_adf.text(
         0.015, 0.90, "a", fontsize=12, color='white',
         path_effects=path_effects,
@@ -130,4 +129,4 @@ ax_lp.text(
 gs.update(left=0.01, wspace=0.05, top=0.95, bottom=0.2, right=0.89)
 
 # Save
-fig.savefig(my_path + 'Atom_lattice.png', dpi=300)
+fig.savefig(os.path.join(my_path, 'Atom_lattice.png'), dpi=300)

@@ -17,7 +17,7 @@ This function opens up a window showing the datasets, where atoms can be added o
    >>> atom_positions = am.get_atom_positions(s, 25)
    >>> atom_positions_new = am.add_atoms_with_gui(s, atom_positions)
 
-.. image:: images/atomadderremovergui/add_atoms.gif
+.. image:: images/atomadderremovergui/atoms_add_remove_gui.gif
     :scale: 50 %
     :align: center
 
