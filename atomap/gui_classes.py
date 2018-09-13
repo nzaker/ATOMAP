@@ -46,7 +46,7 @@ class AtomToggleRefine:
             x = np.float(event.xdata)
             y = np.float(event.ydata)
             atom_nearby = self.is_atom_nearby(x, y)
-            if atom_nearby:
+            if atom_nearby is not None:
                 ref_pos_current = self.sublattice.atom_list[
                         atom_nearby].refine_position
                 self.sublattice.atom_list[
@@ -55,7 +55,7 @@ class AtomToggleRefine:
 
     def is_atom_nearby(self, x_press, y_press):
         dt = self.distance_threshold
-        index = False
+        index = None
         closest_dist = 9999999999999999
         x_pos = self.sublattice.x_position
         y_pos = self.sublattice.y_position

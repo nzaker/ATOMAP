@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import atomap.initial_position_finding as ipf
 import atomap.tools as at
+from atomap.sublattice import Sublattice
 
 
 class TestAddAtomAdderRemoving:
@@ -66,6 +67,37 @@ class TestAddAtomAdderRemoving:
         fig1.canvas.button_press_event(x11, y11, 1)
         assert len(peaks1) == 2
         plt.close(fig1)
+
+
+class TestToggleAtomRefinePosition:
+
+    def test_toggle_one(self):
+        atom_position_list = [[10, 10], [10, 20]]
+        sublattice = Sublattice(atom_position_list, np.zeros((30, 30)))
+        sublattice.toggle_atom_refine_position_with_gui()
+        fig = plt.figure(1)
+        x, y = fig.axes[0].transData.transform((10, 20))
+        assert sublattice.atom_list[1].refine_position
+        fig.canvas.button_press_event(x, y, 1)
+        assert not sublattice.atom_list[1].refine_position
+        fig.canvas.button_press_event(x, y, 1)
+        assert sublattice.atom_list[1].refine_position
+
+    def test_toggle_all(self):
+        atom_position_list = [[10, 10], [10, 20]]
+        sublattice = Sublattice(atom_position_list, np.zeros((30, 30)))
+        sublattice.toggle_atom_refine_position_with_gui()
+        fig = plt.figure(1)
+        x0, y0 = fig.axes[0].transData.transform((10, 10))
+        x1, y1 = fig.axes[0].transData.transform((10, 20))
+        fig.canvas.button_press_event(x0, y0, 1)
+        assert not sublattice.atom_list[0].refine_position
+        fig.canvas.button_press_event(x1, y1, 1)
+        assert not sublattice.atom_list[1].refine_position
+        fig.canvas.button_press_event(x0, y0, 1)
+        assert sublattice.atom_list[0].refine_position
+        fig.canvas.button_press_event(x1, y1, 1)
+        assert sublattice.atom_list[1].refine_position
 
 
 class TestDrawCursor:

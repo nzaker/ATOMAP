@@ -733,7 +733,7 @@ class Sublattice():
                         atom_plane_start_index:atom_plane_end_index]
         return(atom_plane_slice)
 
-    def toggle_refine_position_with_gui(
+    def toggle_atom_refine_position_with_gui(
             self, image=None, distance_threshold=4):
         global toggle_refine_position
         image = self.image
