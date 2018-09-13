@@ -18,6 +18,7 @@ from atomap.atom_finding_refining import _make_circular_mask
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
 from atomap.symmetry_finding import _remove_parallel_vectors
+import atomap.gui_classes as gui
 
 from atomap.external.add_marker import add_marker
 from atomap.external.gaussian2d import Gaussian2D
@@ -731,6 +732,13 @@ class Sublattice():
                 zone_vector][
                         atom_plane_start_index:atom_plane_end_index]
         return(atom_plane_slice)
+
+    def toggle_refine_position_with_gui(
+            self, image=None, distance_threshold=4):
+        global toggle_refine_position
+        image = self.image
+        toggle_refine_position = gui.AtomToggleRefine(
+                image, self, distance_threshold=distance_threshold)
 
     def get_atom_list_between_four_atom_planes(
             self,
