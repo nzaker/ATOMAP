@@ -735,6 +735,27 @@ class Sublattice():
 
     def toggle_atom_refine_position_with_gui(
             self, image=None, distance_threshold=4):
+        """Use GUI to toggle if atom positions will be fitted.
+
+        Use the press atom positions with the left mouse button toggle
+        if they will be fitted in the refine methods:
+
+        - refine_atom_positions_using_2d_gaussian
+        - refine_atom_positions_using_center_of_mass
+
+        Green color means they will be fitted.
+        Red color means they will not be fitted.
+
+        Parameters
+        ----------
+        image : None, optional
+            If None, sublattice.image will be used.
+        distance_threshold : int, optional
+            If a left mouse button click is within
+            distance_threshold, the closest atom will be
+            toggled.
+
+        """
         global toggle_refine_position
         image = self.image
         toggle_refine_position = gui.AtomToggleRefine(
