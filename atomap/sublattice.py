@@ -18,6 +18,7 @@ from atomap.atom_finding_refining import _make_circular_mask
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
 from atomap.symmetry_finding import _remove_parallel_vectors
+import atomap.gui_classes as gui
 
 from atomap.external.add_marker import add_marker
 from atomap.external.gaussian2d import Gaussian2D
@@ -731,6 +732,45 @@ class Sublattice():
                 zone_vector][
                         atom_plane_start_index:atom_plane_end_index]
         return(atom_plane_slice)
+
+    def toggle_atom_refine_position_with_gui(
+            self, image=None, distance_threshold=4):
+        """Use GUI to toggle if atom positions will be fitted.
+
+        Use the press atom positions with the left mouse button toggle
+        if they will be fitted in the refine methods:
+
+        - refine_atom_positions_using_2d_gaussian
+        - refine_atom_positions_using_center_of_mass
+
+        Green color means they will be fitted.
+        Red color means they will not be fitted.
+
+        Parameters
+        ----------
+        image : None, optional
+            If None, sublattice.image will be used.
+        distance_threshold : int, optional
+            If a left mouse button click is within
+            distance_threshold, the closest atom will be
+            toggled.
+
+        Examples
+        --------
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.toggle_atom_refine_position_with_gui()
+
+        Using a different image
+
+        >>> image = np.random.random((300, 300))
+        >>> sublattice.toggle_atom_refine_position_with_gui(image=image)
+
+        """
+        global toggle_refine_position
+        if image is None:
+            image = self.image
+        toggle_refine_position = gui.AtomToggleRefine(
+                image, self, distance_threshold=distance_threshold)
 
     def get_atom_list_between_four_atom_planes(
             self,

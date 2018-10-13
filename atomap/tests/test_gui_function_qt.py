@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import atomap.initial_position_finding as ipf
 import atomap.tools as at
+from atomap.sublattice import Sublattice
+import atomap.testing_tools as tt
 
 
 class TestAddAtomAdderRemoving:
@@ -66,6 +68,62 @@ class TestAddAtomAdderRemoving:
         fig1.canvas.button_press_event(x11, y11, 1)
         assert len(peaks1) == 2
         plt.close(fig1)
+
+
+class TestToggleAtomRefinePosition:
+
+    def test_toggle_one(self):
+        atom_position_list = [[10, 10], [10, 20]]
+        sublattice = Sublattice(atom_position_list, np.zeros((30, 30)))
+        sublattice.toggle_atom_refine_position_with_gui()
+        fig = plt.figure(1)
+        x, y = fig.axes[0].transData.transform((10, 20))
+        assert sublattice.atom_list[1].refine_position
+        fig.canvas.button_press_event(x, y, 1)
+        assert not sublattice.atom_list[1].refine_position
+        fig.canvas.button_press_event(x, y, 1)
+        assert sublattice.atom_list[1].refine_position
+
+    def test_toggle_all(self):
+        atom_position_list = [[10, 10], [10, 20]]
+        sublattice = Sublattice(atom_position_list, np.zeros((30, 30)))
+        sublattice.toggle_atom_refine_position_with_gui()
+        fig = plt.figure(1)
+        x0, y0 = fig.axes[0].transData.transform((10, 10))
+        x1, y1 = fig.axes[0].transData.transform((10, 20))
+        fig.canvas.button_press_event(x0, y0, 1)
+        assert not sublattice.atom_list[0].refine_position
+        fig.canvas.button_press_event(x1, y1, 1)
+        assert not sublattice.atom_list[1].refine_position
+        fig.canvas.button_press_event(x0, y0, 1)
+        assert sublattice.atom_list[0].refine_position
+        fig.canvas.button_press_event(x1, y1, 1)
+        assert sublattice.atom_list[1].refine_position
+
+    def test_with_fitting(self):
+        x_pos, y_pos = [[10, 10], [10, 20]]
+        delta_pos = 1
+        test_data = tt.MakeTestData(30, 30)
+        test_data.add_atom_list(x_pos, y_pos)
+        sublattice = test_data.sublattice
+        atom0, atom1 = sublattice.atom_list
+        atom0.pixel_x += delta_pos
+        atom0.pixel_y += delta_pos
+        atom1.pixel_x += delta_pos
+        atom1.pixel_y += delta_pos
+        sublattice.toggle_atom_refine_position_with_gui()
+        fig = plt.figure(1)
+        x0, y0 = fig.axes[0].transData.transform(
+                (x_pos[0] + delta_pos, y_pos[0] + delta_pos))
+        fig.canvas.button_press_event(x0, y0, 1)
+        print(atom0.refine_position)
+        print(atom1.refine_position)
+        sublattice.refine_atom_positions_using_center_of_mass(
+                mask_radius=4)
+        assert atom0.pixel_x == (x_pos[0] + delta_pos)
+        assert atom0.pixel_y == (y_pos[0] + delta_pos)
+        assert atom1.pixel_x != (x_pos[1] + delta_pos)
+        assert atom1.pixel_y != (y_pos[1] + delta_pos)
 
 
 class TestDrawCursor:

@@ -1072,3 +1072,19 @@ class TestFindMissingAtomsFromZoneVector:
         missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
                 self.zv, extend_outer_edges=True, outer_edge_limit=0)
         assert missing_pos == [(15., 10.), (5., 10), (25., 10.)]
+
+
+class TestToggleAtomRefinePositionWithGui:
+
+    def test_simple(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.toggle_atom_refine_position_with_gui()
+
+    def test_different_image(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        image = np.random.random((300, 300))
+        sublattice.toggle_atom_refine_position_with_gui(image=image)
+
+    def test_distance_threshold(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.toggle_atom_refine_position_with_gui(distance_threshold=10)

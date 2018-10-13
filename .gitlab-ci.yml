@@ -47,6 +47,7 @@ pages_development_branch:
     - xvfb-run -a python3 images/oxygen_tutorial.py
     - xvfb-run -a python3 images/make_various_tools_figures.py
     - xvfb-run -a python3 images/make_atom_adder_remover_figures.py
+    - xvfb-run -a python3 images/make_toggle_refine_position_figures.py
     - make html
     - cd ..
     - mv doc/_build/html pages_development
