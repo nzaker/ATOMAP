@@ -755,9 +755,20 @@ class Sublattice():
             distance_threshold, the closest atom will be
             toggled.
 
+        Examples
+        --------
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.toggle_atom_refine_position_with_gui()
+
+        Using a different image
+
+        >>> image = np.random.random((300, 300))
+        >>> sublattice.toggle_atom_refine_position_with_gui(image=image)
+
         """
         global toggle_refine_position
-        image = self.image
+        if image is None:
+            image = self.image
         toggle_refine_position = gui.AtomToggleRefine(
                 image, self, distance_threshold=distance_threshold)
 
