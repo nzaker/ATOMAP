@@ -1,6 +1,11 @@
+.. _gui_functions:
+
+=================
+GUI functionality
+=================
+
 .. _atom_adder_gui:
 
-======================
 Adding atoms using GUI
 ======================
 
@@ -44,3 +49,28 @@ If the atoms in the dataset are too close together, ``distance_threshold`` is us
 
    >>> atom_positions = am.add_atoms_with_gui(s, distance_threshold=2)
 
+
+Toggle atom refine
+==================
+
+To disable position refining or fitting of atoms in a sublattice, use :py:meth:`~atomap.sublattice.Sublattice.toggle_atom_refine_position_with_gui`:
+
+.. code-block:: python
+
+   >>> %matplotlib qt # doctest: +SKIP
+   >>> sublattice = am.dummy_data.get_distorted_cubic_sublattice()
+   >>> sublattice.toggle_atom_refine_position_with_gui()
+
+Use the left mouse button to toggle refinement of the atom positions.
+Green: refinement.
+Red: not refinement.
+
+.. image:: images/togglerefineposition/toggle_refine_position.gif
+    :scale: 50 %
+    :align: center
+
+This can also be set directly through the `refine_position` property in the `Atom_Position` objects.
+
+.. code-block:: python
+
+   >>> sublattice.atom_list[5].refine_position = False
