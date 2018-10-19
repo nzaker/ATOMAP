@@ -686,7 +686,12 @@ def _fit_atom_positions_with_gaussian_model(
     for atom, g in zip(atom_list, model):
         # If the Gaussian centre is located outside the masked region,
         # return False
-        inside_mask = mask[int(g.centre_y.value)][int(g.centre_x.value)]
+        centre_y, centre_x = g.centre_y.value, g.centre_x.value
+        if not (0 < centre_y < image_data.shape[0]):
+            return False
+        if not (0 < centre_x < image_data.shape[1]):
+            return False
+        inside_mask = mask[int(centre_y)][int(centre_x)]
         if not inside_mask:
             return(False)
         if g.A.value < 0.0:
