@@ -397,6 +397,12 @@ class TestBadFitCondition:
                 atom, sublattice.image, mask_radius=2)
         assert not g
 
+    def test_too_small_percent_to_nn(self):
+        sublattice = self.sublattice
+        afr._fit_atom_positions_with_gaussian_model(
+                [sublattice.atom_list[6]], sublattice.image,
+                percent_to_nn=0.01)
+
 
 class TestFitOutsideImageBounds:
 
