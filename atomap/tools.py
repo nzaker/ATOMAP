@@ -84,6 +84,11 @@ def remove_atoms_from_image_using_2d_gaussian(
     subtracted_image : NumPy 2D array
 
     """
+    if sublattice.atom_list[0].nearest_neighbor_list is None:
+        raise ValueError(
+                "The atom_position objects does not seem to have a "
+                "populated nearest neighbor list. "
+                "Has sublattice.find_nearest_neighbors() been called?")
     model_image = np.zeros(image.shape)
     X, Y = np.meshgrid(np.arange(
         model_image.shape[1]), np.arange(model_image.shape[0]))
