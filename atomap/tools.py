@@ -77,11 +77,38 @@ def remove_atoms_from_image_using_2d_gaussian(
     image : NumPy 2D array
     sublattice : Atomap sublattice object
     percent_to_nn : float
+        Percent to nearest neighbor. The function will find the closest
+        nearest neighbor to the current atom position, and
+        this value times percent_to_nn will be the radius of the mask
+        centered on the atom position. Value should be somewhere
+        between 0.01 (1%) and 1 (100%). Having a too low value might
+        lead to bad fitting.
     show_progressbar : bool, default True
 
     Returns
     -------
     subtracted_image : NumPy 2D array
+
+    Examples
+    --------
+    >>> atom_lattice = am.dummy_data.get_simple_atom_lattice_two_sublattices()
+    >>> sublattice0 = atom_lattice.sublattice_list[0]
+    >>> sublattice0.find_nearest_neighbors()
+    >>> import atomap.tools as at
+    >>> image_subtracted = at.remove_atoms_from_image_using_2d_gaussian(
+    ...        image=atom_lattice.image, sublattice=sublattice0,
+    ...        show_progressbar=False)
+    >>> import hyperspy.api as hs
+    >>> s = hs.signals.Signal2D(image_subtracted)
+    >>> s.plot()
+
+    Decrease percent_to_nn, to reduce the effect of overlapping atoms.
+    For this dataset it won't change much, but might be very useful for
+    real datasets.
+
+    >>> image_subtracted = at.remove_atoms_from_image_using_2d_gaussian(
+    ...        image=atom_lattice.image, sublattice=sublattice0,
+    ...        percent_to_nn=0.2, show_progressbar=False)
 
     """
     if sublattice.atom_list[0].nearest_neighbor_list is None:
