@@ -33,6 +33,7 @@ class Sublattice():
             name='',
             color='red',
             pixel_size=1.,
+            units='',
             ):
         """
         Parameters
@@ -47,6 +48,8 @@ class Sublattice():
             Plotting color, default red.
         pixel_size : float, optional
             Scaling number, default 1.
+        units : string
+            Units for the scaling number
 
         Attributes
         ----------
@@ -100,6 +103,7 @@ class Sublattice():
         self._plot_clim = None
         self.name = name
         self.pixel_size = pixel_size
+        self.units = units
         self._plot_color = color
         self._pixel_separation = 0.0
 
@@ -516,7 +520,8 @@ class Sublattice():
         data_map = self._get_regular_grid_from_unregular_property(
                 x_list, y_list, z_list, upscale=upscale_map)
         signal = at.array2signal2d(
-                data_map[2], self.pixel_size/upscale_map, rotate_flip=True)
+                data_map[2], self.pixel_size/upscale_map, units=self.units,
+                rotate_flip=True)
         if atom_plane_list is not None:
             marker_list = _make_atom_planes_marker_list(
                     atom_plane_list, scale=data_scale, add_numbers=False)
@@ -1372,7 +1377,7 @@ class Sublattice():
                 add_numbers=add_numbers,
                 scale=self.pixel_size,
                 color=color)
-        signal = at.array2signal2d(image, self.pixel_size)
+        signal = at.array2signal2d(image, self.pixel_size, units=self.units)
         add_marker(signal, marker_list, permanent=True, plot_marker=False)
         return signal
 
@@ -1443,7 +1448,7 @@ class Sublattice():
                     self.atom_planes_by_zone_vector[zone_vector])
         marker_list = _make_multidim_atom_plane_marker_list(
                 atom_plane_list, scale=self.pixel_size)
-        signal = at.array2signal2d(image, self.pixel_size)
+        signal = at.array2signal2d(image, self.pixel_size, units=self.units)
         signal = hs.stack([signal]*len(zone_vector_list))
         add_marker(signal, marker_list, permanent=True, plot_marker=False)
         signal.metadata.General.title = "Atom planes by zone vector"
@@ -1525,7 +1530,7 @@ class Sublattice():
                 color=color,
                 markersize=markersize,
                 add_numbers=add_numbers)
-        signal = at.array2signal2d(image, self.pixel_size)
+        signal = at.array2signal2d(image, self.pixel_size, units=self.units)
         add_marker(signal, marker_list, permanent=True, plot_marker=False)
 
         return signal
@@ -1595,7 +1600,7 @@ class Sublattice():
                     elli_rot[0]*vector_scale,
                     elli_rot[1]*vector_scale,
                     ])
-        signal = at.array2signal2d(image, self.pixel_size)
+        signal = at.array2signal2d(image, self.pixel_size, units=self.units)
         marker_list = _make_arrow_marker_list(
                 elli_list,
                 scale=self.pixel_size,

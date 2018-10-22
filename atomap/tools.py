@@ -833,13 +833,50 @@ def array2signal1d(array, scale=1.0, offset=0.0):
     return signal
 
 
-def array2signal2d(numpy_array, scale=1.0, rotate_flip=False):
+def array2signal2d(numpy_array, scale=1.0, units='',
+                   offset_x=0, offset_y=0, rotate_flip=False):
+    """Make a HyperSpy 2D signal from a 2D NumPy array
+
+    Parameters
+    ----------
+    numpy_array : array-like
+        Must be 2 dimensions
+    scale : float
+    units : str
+    offset_x : float
+    offset_y : float
+    rotate_flip : bool, optional
+        Default False
+
+    Returns
+    -------
+    signal : HyperSpy Signal2D
+
+    Examples
+    --------
+    >>> import atomap.tools as at
+    >>> numpy_array = np.random.random((50, 70))
+    >>> s = at.array2signal2d(numpy_array)
+    >>> s.plot()
+
+    All parameters
+
+    >>> s = at.array2signal2d(
+    ...     numpy_array scale=0.5, units='nm',
+    ...     offset_x=7.2, offset_y=-4.1, rotate_flip=True)
+    >>> s.plot()
+
+    """
     if rotate_flip:
         signal = Signal2D(np.rot90(np.fliplr(numpy_array)))
     else:
         signal = Signal2D(numpy_array)
     signal.axes_manager[-1].scale = scale
     signal.axes_manager[-2].scale = scale
+    signal.axes_manager[-1].units = units
+    signal.axes_manager[-2].units = units
+    signal.axes_manager[-1].offset = offset_y
+    signal.axes_manager[-2].offset = offset_x
     return signal
 
 
