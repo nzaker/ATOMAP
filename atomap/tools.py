@@ -862,7 +862,7 @@ def array2signal2d(numpy_array, scale=1.0, units='',
     All parameters
 
     >>> s = at.array2signal2d(
-    ...     numpy_array scale=0.5, units='nm',
+    ...     numpy_array, scale=0.5, units='nm',
     ...     offset_x=7.2, offset_y=-4.1, rotate_flip=True)
     >>> s.plot()
 
