@@ -28,7 +28,7 @@ setup(
             ],
         install_requires = [
             'scipy',
-            'numpy>=1.10',
+            'numpy>=1.13',
             'h5py',
             'matplotlib>=2.0',
             'tqdm',
