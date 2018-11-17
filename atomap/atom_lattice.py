@@ -141,7 +141,7 @@ class Atom_Lattice():
         if image is None:
             image = self.image0
         marker_list = []
-        scale = self.sublattice_list[0].pixel_size
+        scale = self.sublattice_list[0].signal.axes_manager[0].scale
         for sublattice in self.sublattice_list:
             marker_list.extend(_make_atom_position_marker_list(
                     sublattice.atom_list,

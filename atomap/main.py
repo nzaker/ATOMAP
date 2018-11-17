@@ -175,7 +175,7 @@ def make_atom_lattice_from_image(
             construct_zone_axes_from_sublattice(
                     sublattice, zone_axis_para_list=zone_axis_para_list)
             atom_subtract_config = sublattice_para.atom_subtract_config
-            image_data = sublattice.image
+            image_data = sublattice.signal.data
             for atom_subtract_para in atom_subtract_config:
                 temp_sublattice = atom_lattice.get_sublattice(
                         atom_subtract_para['sublattice'])
@@ -184,7 +184,7 @@ def make_atom_lattice_from_image(
                     image_data,
                     temp_sublattice,
                     percent_to_nn=neighbor_distance)
-            sublattice.image = image_data
+            sublattice._image_init_array(image_data)
             sublattice.original_image = image_data
 
         refinement_config = sublattice_para.refinement_config
@@ -194,7 +194,7 @@ def make_atom_lattice_from_image(
             if refinement_step[0] == 'image_data':
                 refinement_step[0] = sublattice.original_image
             elif refinement_step[0] == 'image_data_modified':
-                refinement_step[0] = sublattice.image
+                refinement_step[0] = sublattice.signal.data
             else:
                 refinement_step[0] = sublattice.original_image
 

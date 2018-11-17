@@ -76,14 +76,14 @@ class TestRemoveAtomsFromImageUsing2dGaussian:
         sublattice = self.sublattice
         sublattice.find_nearest_neighbors()
         remove_atoms_from_image_using_2d_gaussian(
-            sublattice.image,
+            sublattice.signal.data,
             sublattice,
             percent_to_nn=0.40)
 
     def test_no_nearest_neighbors(self):
         sublattice = self.sublattice
         with pytest.raises(ValueError):
-            remove_atoms_from_image_using_2d_gaussian(sublattice.image,
+            remove_atoms_from_image_using_2d_gaussian(sublattice.signal.data,
                                                       sublattice)
 
 
@@ -295,7 +295,7 @@ class TestIntegrate:
     def test_array_input(self):
         sublattice = am.dummy_data.get_simple_cubic_sublattice()
         x, y = sublattice.x_position, sublattice.y_position
-        i_points0, i_record0, p_record0 = integrate(sublattice.image, x, y)
+        i_points0, i_record0, p_record0 = integrate(sublattice.signal.data, x, y)
 
         signal = am.dummy_data.get_simple_cubic_signal()
         i_points1, i_record1, p_record1 = integrate(signal, x, y)

@@ -100,28 +100,41 @@ class Sublattice():
         self._pixel_separation = 0.0
 
     def _image_init(self, image):
+
         if not hasattr(image, '__array__'):
             raise ValueError(
                     "image needs to be a NumPy compatible array" +
                     ", not " + str(type(image)))
-        if hasattr(image, 'axes_manager'):  # Probably a HyperSpy signal
-            self.signal = image
-        else:
-            image_out = np.array(image)
-        if image_out.dtype == 'float16':
+        if image.__array__().dtype == 'float16':
             raise ValueError(
                     "image has the dtype float16, which is not supported. "
                     "Convert it to something else, for example using "
                     "image.astype('float64')")
+        if hasattr(image, 'axes_manager'):  # Probably a HyperSpy signal
+            self._image_init_signal(image)
+            return
+        else:
+            self._image_init_array(image)
+
+    def _image_init_array(self, image):
+        image_out = np.array(image)
         if not len(image_out.shape) == 2:
             raise ValueError(
                     "image needs to be 2 dimensions, not " +
                     str(len(image_out.shape)))
+        self.signal = Signal2D(image_out)
 
-        if hasattr(image, 'axes_manager'):  # Probably a HyperSpy signal
-            self.signal = image
-        else:
-            self.image = Signal2D(image_out)
+    def _image_init_signal(self, signal):
+        if len(signal.axes_manager.shape) != 2:
+            raise ValueError(
+                    "image needs to be 2 dimensions, not " +
+                    str(len(signal.axes_manager.shape)))
+        if signal.axes_manager.signal_dimension != 2:
+            raise ValueError(
+                    "image input as signal needs to have 2 signal dimensions" +
+                    " , not " + str(len(signal.axes_manager.shape)))
+        self.signal = signal
+
 
     def __repr__(self):
         return '<%s, %s (atoms:%s,planes:%s)>' % (
@@ -917,7 +930,7 @@ class Sublattice():
                         "populated nearest neighbor list. "
                         "Has sublattice.find_nearest_neighbors() been called?")
         if image_data is None:
-            image_data = self.original_image
+            image_data = self.signal.data
         image_data = image_data.astype('float64')
         for atom in tqdm(
                 self.atom_list, desc="Gaussian fitting",
@@ -974,7 +987,7 @@ class Sublattice():
                         "populated nearest neighbor list. "
                         "Has sublattice.find_nearest_neighbors() been called?")
         if image_data is None:
-            image_data = self.original_image
+            image_data = self.signal.data
         image_data = image_data.astype('float64')
         for atom in tqdm(
                 self.atom_list, desc="Center of mass",
@@ -1358,7 +1371,7 @@ class Sublattice():
         >>> s.plot()
         """
         if image is None:
-            image = self.original_image
+            image = self.signal.data
         marker_list = _make_atom_planes_marker_list(
                 atom_plane_list,
                 add_numbers=add_numbers,
@@ -1420,7 +1433,7 @@ class Sublattice():
         >>> s.plot()
         """
         if image is None:
-            image = self.original_image
+            image = self.signal.data
         if zone_vector_list is None:
             if self.zones_axis_average_distances is None:
                 raise Exception(
@@ -1508,7 +1521,7 @@ class Sublattice():
         if color is None:
             color = self._plot_color
         if image is None:
-            image = self.original_image
+            image = self.signal.data
         if atom_list is None:
             atom_list = self.atom_list
         marker_list = _make_atom_position_marker_list(
@@ -1577,7 +1590,7 @@ class Sublattice():
         >>> s.plot()
         """
         if image is None:
-            image = self.original_image
+            image = self.signal.data
         elli_list = []
         for atom in self.atom_list:
             elli_rot = atom.get_ellipticity_vector()
@@ -1671,7 +1684,7 @@ class Sublattice():
 
         """
         if image is None:
-            image = self.original_image
+            image = self.signal.data
 
         percent_distance = percent_to_nn
         for atom in self.atom_list:
@@ -2326,7 +2339,7 @@ class Sublattice():
 
         """
         if image is None:
-            image = self.original_image
+            image = self.signal.data
 
         pos_num = len(self.atom_list[0].old_pixel_x_list) + 1
         if pos_num == 1:
@@ -2386,7 +2399,7 @@ class Sublattice():
 
         """
         if image_data is None:
-            image_data = self.original_image
+            image_data = self.signal.data
         mask_list = []
         for atom in self.atom_list:
             centerX, centerY = atom.pixel_x, atom.pixel_y
@@ -2427,7 +2440,7 @@ class Sublattice():
 
         """
         if image_data is None:
-            image_data = self.original_image
+            image_data = self.signal.data
         mask = np.full_like(image_data, False)
         for atom in self.atom_list:
             centerX, centerY = atom.pixel_x, atom.pixel_y
@@ -2466,7 +2479,7 @@ class Sublattice():
 
         """
         if image_data is None:
-            image_data = self.original_image
+            image_data = self.signal.data
         for atom in self.atom_list:
             atom.find_atom_intensity_inside_mask(image_data, radius)
 

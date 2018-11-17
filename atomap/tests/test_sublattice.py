@@ -2,7 +2,7 @@ import pytest
 from pytest import approx
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
-from hyperspy.signals import Signal2D
+from hyperspy.signals import Signal2D, Signal1D
 import atomap.atom_finding_refining as afr
 from atomap.sublattice import Sublattice
 import atomap.testing_tools as tt
@@ -51,46 +51,29 @@ class TestInitSublattice:
         with pytest.raises(ValueError):
             Sublattice(atom_position_list=self.peaks, image="test")
 
-    def test_image_original_image_input(self):
-        image = np.zeros((100, 50))
-        original_image = np.zeros((100, 50))
-        Sublattice(atom_position_list=self.peaks, image=image,
-                   original_image=original_image)
-
-    def test_wrong_original_image_dimension_input(self):
-        image = np.zeros((100, 50))
-        original_image = np.zeros((100, 50, 5))
-        with pytest.raises(ValueError):
-            Sublattice(atom_position_list=self.peaks, image=image,
-                       original_image=original_image)
-
-    def test_wrong_original_image_type_input(self):
-        image = np.zeros((100, 50))
-        with pytest.raises(ValueError):
-            Sublattice(atom_position_list=self.peaks, image=image,
-                       original_image="test1")
-
     def test_input_signal(self):
         s = Signal2D(np.zeros((100, 50)))
         Sublattice(atom_position_list=self.peaks, image=s)
 
-    def test_input_signal_wrong_dimensions(self):
+    def test_input_signal_wrong_dimensions0(self):
         s = Signal2D(np.zeros((100, 50, 10)))
         with pytest.raises(ValueError):
             Sublattice(atom_position_list=self.peaks, image=s)
 
-    def test_input_signal_and_original_image(self):
-        s = Signal2D(np.zeros((100, 50)))
-        s_orig = Signal2D(np.zeros((100, 50)))
-        Sublattice(atom_position_list=self.peaks, image=s,
-                   original_image=s_orig)
-
-    def test_input_signal_and_original_image_wrong_dim(self):
-        s = Signal2D(np.zeros((100, 50)))
-        s_orig = Signal2D(np.zeros((100, 50, 9)))
+    def test_input_signal_wrong_dimensions1(self):
+        s = Signal1D(np.zeros(10))
         with pytest.raises(ValueError):
-            Sublattice(atom_position_list=self.peaks, image=s,
-                       original_image=s_orig)
+            Sublattice(atom_position_list=self.peaks, image=s)
+
+    def test_input_signal_dimensions_nav_sig0(self):
+        s = Signal1D(np.zeros((50, 10)))
+        with pytest.raises(ValueError):
+            Sublattice(atom_position_list=self.peaks, image=s)
+
+    def test_input_signal_dimensions_nav_sig1(self):
+        s = Signal1D(np.zeros((20, 50, 10)))
+        with pytest.raises(ValueError):
+            Sublattice(atom_position_list=self.peaks, image=s)
 
     def test_different_dtypes(self):
         dtype_list = ['float64', 'float32', 'int64', 'int32',
@@ -170,7 +153,7 @@ class TestSublatticeWithAtomPlanes:
         afr.refine_sublattice(
                 sublattice,
                 [
-                    (sublattice.image, 1, 'center_of_mass')],
+                    (sublattice.signal.data, 1, 'center_of_mass')],
                 0.25)
 
 
@@ -250,7 +233,7 @@ class TestSublatticeGetSignal:
         assert len(sublattice.atom_list) == len(s0.metadata.Markers)
         plane = sublattice.atom_plane_list[3]
         sublattice.get_ellipticity_vector(
-                sublattice.image,
+                sublattice.signal.data,
                 atom_plane_list=[plane],
                 color='red',
                 vector_scale=10)
@@ -326,7 +309,7 @@ class TestSublatticeGetModelImage:
     def test_image_shape_default(self):
         sublattice = self.sublattice
         s = sublattice.get_model_image()
-        assert s.axes_manager.shape == sublattice.image.shape
+        assert s.axes_manager.shape == sublattice.signal.data.shape
 
     def test_image_shape_small(self):
         sublattice = self.sublattice
@@ -754,7 +737,7 @@ class TestSublatticeMask:
     def test_radius_is_0(self):
         sublattice = self.sublattice
         s = sublattice.mask_image_around_sublattice(
-            image_data=sublattice.image, radius=0)
+            image_data=sublattice.signal.data, radius=0)
         assert np.count_nonzero(s.data) == len(sublattice.atom_list)
 
 
@@ -788,7 +771,8 @@ class TestMaskIndices:
         t1.add_atom_list([5, 15], [5, 5])
         sublattice = t1.sublattice
         self.mask_list = sublattice._get_sublattice_atom_list_mask()
-        s = sublattice.mask_image_around_sublattice(sublattice.image, radius=1)
+        s = sublattice.mask_image_around_sublattice(sublattice.signal.data,
+                                                    radius=1)
         self.s_i = np.asarray(np.nonzero(s.data))
 
     def test_mask_atom_list_len(self):
@@ -931,8 +915,8 @@ class TestSubLatticeIntegrate:
         sublattice = dd.get_simple_cubic_sublattice()
         results = sublattice.integrate_column_intensity()
         assert len(results[0]) == len(sublattice.x_position)
-        assert sublattice.image.shape == results[1].data.shape
-        assert sublattice.image.shape == results[2].shape
+        assert sublattice.signal.data.shape == results[1].data.shape
+        assert sublattice.signal.data.shape == results[2].shape
 
 
 class TestProjectPropertyLineCrossing:
@@ -998,7 +982,7 @@ class TestGetPropertyMap:
         sublattice = self.sublattice
         sublattice.construct_zone_axes()
         z_list = self.z_list
-        sub0 = Sublattice(np.array([[18, 15]]), image=sublattice.image)
+        sub0 = Sublattice(np.array([[18, 15]]), image=sublattice.signal.data)
         s = sublattice.get_property_map(
                     sublattice.x_position,
                     sublattice.y_position,
@@ -1020,11 +1004,12 @@ class TestSignalProperty:
     def test_simple(self):
         sublattice = dd.get_simple_cubic_sublattice()
         signal = sublattice.signal
-        assert_array_equal(sublattice.image, signal.data)
+        assert_array_equal(sublattice.signal.data, signal.data)
 
     def test_pixel_size(self):
         sublattice = dd.get_simple_cubic_sublattice()
-        sublattice.pixel_size = 0.5
+        sublattice.signal.axes_manager[0].scale = 0.5
+        sublattice.signal.axes_manager[1].scale = 0.5
         signal = sublattice.signal
         assert signal.axes_manager.signal_axes[0].scale == 0.5
         assert signal.axes_manager.signal_axes[1].scale == 0.5

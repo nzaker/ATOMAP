@@ -174,7 +174,7 @@ class TestMakeTestData:
         x, y = x.flatten(), y.flatten()
         testdata.add_atom_list(x, y)
         sublattice = testdata.sublattice
-        assert (sublattice.image == 0).all()
+        assert (sublattice.signal.data == 0).all()
         assert len(sublattice.atom_list) == 150*150
 
 

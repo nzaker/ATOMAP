@@ -34,8 +34,8 @@ def plot_atom_column_hist_sigma_maps(
             ax.plot(
                     atom.pixel_x, atom.pixel_y,
                     'o', markersize=markersize)
-        ax.set_ylim(0, sublattice.image.shape[0])
-        ax.set_xlim(0, sublattice.image.shape[1])
+        ax.set_ylim(0, sublattice.signal.data.shape[0])
+        ax.set_xlim(0, sublattice.signal.data.shape[1])
     fig.tight_layout()
     return fig
 
@@ -58,8 +58,8 @@ def plot_atom_column_hist_amplitude_gauss2d_maps(
                 (bin_sizes[index], bin_sizes[index+1]))
         for atom in atom_list:
             ax.plot(atom.pixel_x, atom.pixel_y, 'o', markersize=markersize)
-        ax.set_ylim(0, sublattice.image.shape[0])
-        ax.set_xlim(0, sublattice.image.shape[1])
+        ax.set_ylim(0, sublattice.signal.data.shape[0])
+        ax.set_xlim(0, sublattice.signal.data.shape[1])
     fig.tight_layout()
     return fig
 
