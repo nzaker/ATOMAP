@@ -108,6 +108,8 @@ class InteractiveFluxAnalyser:
                     self.right, color='seagreen', linestyle='--')
             self.cid = self.profile.figure.canvas.mpl_connect(
                     'button_press_event', self.onclick)
+            self.key = self.profile.figure.canvas.mpl_connect(
+                    'key_press_event', self.onkey)
         else:
             self.left, self.right = limits
             self._set_coords()
@@ -135,10 +137,15 @@ class InteractiveFluxAnalyser:
                 self.right = right
             self.r_line.set_xdata(self.right)
             self.profile.figure.canvas.draw_idle()
-        elif event.button == 2:  # Middle mouse button
-            event.canvas.mpl_disconnect(self.cid)
-            self()
         print('Coordinates selected', self.left, self.right)
+
+    def onkey(self, event):
+        if event.inaxes != self.profile.axes:
+            return
+        if event.key == 'enter':  # Enter key
+            event.canvas.mpl_disconnect(self.cid)
+            event.canvas.mpl_disconnect(self.key)
+            self()
 
 
 def find_flux_limits(flux_pattern, conv_angle, limits=None):
@@ -188,7 +195,8 @@ def find_flux_limits(flux_pattern, conv_angle, limits=None):
     # power-law fitting.
     if limits is None:
         fig = plt.figure()
-        fig.suptitle('Radial Flux Profile: select power-law region.',
+        fig.suptitle('Radial Flux Profile: select power-law region with left and right mouse button.\n'
+                     'Press the Enter key to confirm selection.',
                      fontsize=10)
         ax1 = fig.add_subplot(2, 1, 1)
         ax1.plot(radius, flux_profile)
