@@ -195,7 +195,8 @@ def find_flux_limits(flux_pattern, conv_angle, limits=None):
     # power-law fitting.
     if limits is None:
         fig = plt.figure()
-        fig.suptitle('Radial Flux Profile: select power-law region with left and right mouse button.\n'
+        fig.suptitle('Radial Flux Profile: select power-law region with left '
+                     'and right mouse button.\n'
                      'Press the Enter key to confirm selection.',
                      fontsize=10)
         ax1 = fig.add_subplot(2, 1, 1)
