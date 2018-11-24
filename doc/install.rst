@@ -19,7 +19,6 @@ In this prompt run:
 .. code-block:: bash
 
     $ conda install hyperspy -c conda-forge
-    $ pip install hyperspy_gui_traitsui
     $ pip install atomap
 
 
@@ -56,7 +55,7 @@ This will open a new window. In this window, run:
 
 .. code-block:: python
 
-    %matplotlib qt
+    %matplotlib nbagg
     import hyperspy.api as hs
     import atomap.api as am
 

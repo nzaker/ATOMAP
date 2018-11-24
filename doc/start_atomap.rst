@@ -8,7 +8,7 @@ Start Atomap
 Starting Python
 ---------------
 
-The first step is starting an interactive Python environment (IPython).
+The first step is starting an interactive Jupyter Notebook environment.
 
 Linux
 ^^^^^
@@ -17,13 +17,13 @@ Open a terminal and start `ipython3`:
 
 .. code-block:: bash
 
-    $ ipython3 --matplotlib qt
+    $ ipython3 notebook
 
 If `ipython3` is not available, try `ipython`:
 
 .. code-block:: bash
 
-    $ ipython --matplotlib qt
+    $ ipython notebook
 
 Windows
 ^^^^^^^

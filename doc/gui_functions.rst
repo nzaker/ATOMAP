@@ -17,7 +17,7 @@ This function opens up a window showing the datasets, where atoms can be added o
 
 .. code-block:: python
 
-   >>> %matplotlib qt # doctest: +SKIP
+   >>> %matplotlib nbagg # doctest: +SKIP
    >>> s = am.dummy_data.get_distorted_cubic_signal()
    >>> atom_positions = am.get_atom_positions(s, 25)
    >>> atom_positions_new = am.add_atoms_with_gui(s, atom_positions)
