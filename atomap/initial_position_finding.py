@@ -174,6 +174,7 @@ class AtomAdderRemover:
         self.image = image
         self.distance_threshold = distance_threshold
         self.fig, self.ax = plt.subplots()
+        self.ax.set_title("Use the left mouse button to add or remove atoms")
         self.cax = self.ax.imshow(self.image)
         if atom_positions is None:
             self.atom_positions = []
