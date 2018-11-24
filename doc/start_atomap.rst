@@ -30,10 +30,10 @@ Windows
 
 This depends on the installation method.
 
-If the HyperSpy bundle was installed, go to the "HyperSpy WinPython Bundle" in the start-menu and start "Jupyter QtConsole".
+If the HyperSpy bundle was installed, go to the "HyperSpy Bundle" in the start-menu and start "Jupyter Notebook".
 
 If Anaconda was used, there should be an *Anaconda3* folder in the start menu.
-Start the interactive Python environment, it should be called either *IPython* or *Jupyter QtConsole*.
+Start the "Jupyter Notebook".
 
 This will open a command line prompt, which will referred to as the *IPython terminal*.
 In this terminal, run:

@@ -42,7 +42,7 @@ WinPython HyperSpy installer
 Alternatively, the WinPython HyperSpy bundle can be used.
 Firstly download and install the `WinPython HyperSpy bundle <https://github.com/hyperspy/hyperspy-bundle/releases>`_:
 
-After installing the bundle, there should be a folder in the start menu called "HyperSpy WinPython Bundle", and this
+After installing the bundle, there should be a folder in the start menu called "HyperSpy Bundle", and this
 folder should contain the "WinPython prompt". Start the "WinPython prompt". This will open a terminal window called
 "WinPython prompt", in this window type and run:
 
@@ -50,8 +50,11 @@ folder should contain the "WinPython prompt". Start the "WinPython prompt". This
 
     pip install atomap
 
-To check everything is working correctly, go to the "HyperSpy WinPython Bundle" and start "Jupyter QtConsole".
-This will open a new window. In this window, run:
+To check everything is working correctly, go to the "HyperSpy Bundle" and start "Jupyter Notebook".
+This will open a web browser with the Jupyter environment.
+Press the "New" button (top right), and start a Python 3 Notebook.
+In the first cell, run the following commands (paste them, and press Shift + Enter).
+If you are having problems using it, `see the Jupyter Notebook guide <https://nbviewer.jupyter.org/github/jupyter/notebook/blob/master/docs/source/examples/Notebook/Notebook%20Basics.ipynb>`_.
 
 .. code-block:: python
 
