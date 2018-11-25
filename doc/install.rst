@@ -21,19 +21,8 @@ In this prompt run:
     $ conda install hyperspy -c conda-forge
     $ pip install atomap
 
-
-To check everything is working correctly, go to "Anaconda3" in the start menu, and start "Jupyter Notebook".
-This will open a browser window (or a new browser tab).
-Start a new Python 3 notebook, and run in the first cell:
-
-.. code-block:: python
-
-    %matplotlib nbagg
-    import atomap.api as am
-
-
-If this works, continue with the :ref:`finding_atom_lattices`.
-If you get some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
+If everything installed, continue to :ref:`start_atomap_windows`.
+If you got some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
 
 
 WinPython HyperSpy installer
@@ -50,20 +39,23 @@ folder should contain the "WinPython prompt". Start the "WinPython prompt". This
 
     pip install atomap
 
-To check everything is working correctly, go to the "HyperSpy Bundle" and start "Jupyter Notebook".
-This will open a web browser with the Jupyter environment.
-Press the "New" button (top right), and start a Python 3 Notebook.
-In the first cell, run the following commands (paste them, and press Shift + Enter).
-If you are having problems using it, `see the Jupyter Notebook guide <https://nbviewer.jupyter.org/github/jupyter/notebook/blob/master/docs/source/examples/Notebook/Notebook%20Basics.ipynb>`_.
+If everything installed, continue to :ref:`start_atomap_windows`.
+If you got some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
 
-.. code-block:: python
 
-    %matplotlib nbagg
-    import hyperspy.api as hs
-    import atomap.api as am
+Installing in MacOS
+-------------------
 
-If this works, continue with the :ref:`finding_atom_lattices`.
-If you get some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
+Install the Anaconda python environment: `Anaconda environment <https://www.continuum.io/downloads>`_, and through the `Anaconda prompt` install HyperSpy and Atomap:
+
+.. code-block:: bash
+
+    $ conda install hyperspy -c conda-forge
+    $ pip install atomap
+
+
+If everything installed, continue to :ref:`start_atomap_macos`.
+If you got some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
 
 
 Installing in Linux
@@ -74,37 +66,22 @@ It is recommended to first install the precompiled dependencies using the system
 
 `HyperSpy <http://hyperspy.org/>`_ is also included as Atomap relies heavily on the modelling and visualization functionality in HyperSpy.
 
-Ubuntu 17.10
+Ubuntu 18.04
 ************
 
 .. code-block:: bash
 
-    $ sudo apt-get install ipython3 python3-pip python3-numpy python3-scipy python3-matplotlib python3-sklearn python3-skimage python3-h5py python3-dask python3-traits python3-tqdm python3-pint python3-dask python3-pyqt5 python3-lxml
-    $ sudo apt-get install python3-sympy --no-install-recommends
-    $ pip3 install --upgrade pip
+    $ sudo apt-get install ipython3 python3-pip python3-numpy python3-scipy python3-matplotlib python3-sklearn python3-skimage python3-h5py python3-dask python3-traits python3-tqdm python3-pint python3-dask python3-pyqt5 python3-lxml python3-sympy python3-sparse python3-statsmodels python3-numexpr python3-ipykernel python3-jupyter-client python3-requests python3-dill python3-natsort
     $ pip3 install --user atomap
 
-
-Starting Atomap
-***************
-
-To check that everything is working, open a terminal and run :code:`ipython3 --matplotlib qt5`. In the ipython terminal run:
-
-.. code-block:: python
-
-    import hyperspy.api as hs
-    import atomap.api as am
-
-If this works, continue with the :ref:`finding_atom_lattices`.
-If you get some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
-Note, having the system and pip version of matplotlib installed at the same might cause an error with matplotlib not finding matplotlib.external.
-The easiest way of fixing this is by removing the system version of matplotlib.
+If everything installed, continue to :ref:`start_atomap_linux`.
+If you got some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
 
 
 Development version
 -------------------
 
-Grab the development version using the version control system git:
+Grab the development version using the version control system git (see :ref:`contribute`):
 
 .. code-block:: bash
 
