@@ -15,14 +15,14 @@ The first step is starting an interactive Jupyter Notebook environment.
 Linux
 ^^^^^
 
-Open a terminal and start `ipython3`:
+Open a terminal and start ``ipython3``:
 
 .. code-block:: bash
 
     $ ipython3 notebook
 
 
-If `ipython3` is not available, try `ipython`:
+If ``ipython3`` is not available, try ``ipython``:
 
 .. code-block:: bash
 
