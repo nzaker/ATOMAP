@@ -72,8 +72,26 @@ If you get some kind of error, please report it as a New issue on the `Atomap Gi
 MacOS
 ^^^^^
 
+Open the Terminal, and write:
+
+.. code-block:: bash
+
+    $ jupyter notebook
+
+
+This will open a browser window (or a new browser tab).
+Press the "New" button (top right), and start a Python 3 Notebook.
+In the first cell, run the following commands (paste them, and press Shift + Enter).
+If you are unfamiliar with the Jupyter Notebook interface, `see the Jupyter Notebook guide <https://nbviewer.jupyter.org/github/jupyter/notebook/blob/master/docs/source/examples/Notebook/Notebook%20Basics.ipynb>`_.
+
+.. code-block:: python
+
+    %matplotlib nbagg
+    import atomap.api as am
+
 If this works, continue to the :ref:`tutorials`.
 If you get some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
+
 
 .. _tutorials:
 
