@@ -34,6 +34,7 @@ setup(
             'tqdm',
             'scikit-learn',
             'hyperspy>=1.3',
+            'pillow>=5.3',
             ],
         classifiers = [
             'Development Status :: 3 - Alpha',
