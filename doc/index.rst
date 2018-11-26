@@ -4,15 +4,19 @@ Welcome to Atomap's documentation!
 News
 ----
 
-**2018-06-13: Atomap 0.1.2 released!**
+**2018-06-13: Atomap 0.1.3 released!**
+
+Major features in this release includes:
+
+* A GUI function for adding and removing atoms, which makes it easier to set up the initial atom positions. See :ref:`atom_adder_gui` for more information.
+* A GUI function for toggling if atom positions should be refined or not, see :ref:`toggle_atom_refine`.
+* Better handling of hexagonal structures, by adding a adding a ``vector_fraction`` parameter to ``find_missing_atoms_from_zone_vector``, thanks to Eoghan O'Connell for the suggestion!
+* The addition of ``mask_radius`` to the refine functions, which makes it easier to work with non-perodic atom positions, for example :ref:`single_atom_sublattice`.
+
+
+*2018-06-13: Atomap 0.1.2 released!*
 
 This is a minor release, including a `signal` attribute in `Sublattice` and `Atom_Lattice` classes, minor changes in package dependencies and some improvements to the documentation.
-
-*2018-03-25: Atomap 0.1.1 released!*
-
-The major new features are methods for integrating atomic column intensity and quantifying this intensity in ADF STEM images, see :ref:`integrate` and :ref:`absolute_integrator` for more info.
-Thanks to Katherine E. MacArthur for adding this!
-Other features include tools for rotating atomic positions for plotting purposes (:ref:`rotate_images_points`), and reduced memory use when processing data with many atoms.
 
 
 About Atomap
@@ -58,6 +62,7 @@ Contents on this webpage
    start_atomap
    finding_atom_lattices
    analysing_atom_lattices
+   gui_functions
    automation
    nanoparticle_example
    absolute_integrator
@@ -73,6 +78,13 @@ Contents on this webpage
 
 Old news
 --------
+
+*2018-03-25: Atomap 0.1.1 released!*
+
+The major new features are methods for integrating atomic column intensity and quantifying this intensity in ADF STEM images, see :ref:`integrate` and :ref:`absolute_integrator` for more info.
+Thanks to Katherine E. MacArthur for adding this!
+Other features include tools for rotating atomic positions for plotting purposes (:ref:`rotate_images_points`), and reduced memory use when processing data with many atoms.
+
 
 *2017-11-16: Atomap 0.1.0 released!*
 

@@ -118,7 +118,6 @@ class Atom_Lattice():
 
         Examples
         --------
-        >>> import atomap.api as am
         >>> al = am.dummy_data.get_simple_atom_lattice_two_sublattices()
         >>> i_points, i_record, p_record = al.integrate_column_intensity()
 
@@ -171,15 +170,14 @@ class Atom_Lattice():
         Examples
         --------
         >>> from numpy.random import random
-        >>> import atomap.api as am
         >>> sl = am.dummy_data.get_simple_cubic_sublattice()
         >>> atom_lattice = am.Atom_Lattice(random((9, 9)), "test", [sl])
         >>> atom_lattice.save("test.hdf5", overwrite=True)
 
         Loading the atom lattice:
 
-        >>> import atomap.api as am
         >>> atom_lattice1 = am.load_atom_lattice_from_hdf5("test.hdf5")
+
         """
         from atomap.io import save_atom_lattice_to_hdf5
         if filename is None:
@@ -211,7 +209,6 @@ class Atom_Lattice():
 
         Examples
         --------
-        >>> import atomap.api as am
         >>> import atomap.testing_tools as tt
         >>> test_data = tt.MakeTestData(50, 50)
         >>> import numpy as np

@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import copy
-from tqdm import tqdm
+from tqdm import tqdm, trange
 from scipy import interpolate
 from scipy import ndimage
 from scipy.spatial import cKDTree
@@ -77,13 +77,45 @@ def remove_atoms_from_image_using_2d_gaussian(
     image : NumPy 2D array
     sublattice : Atomap sublattice object
     percent_to_nn : float
+        Percent to nearest neighbor. The function will find the closest
+        nearest neighbor to the current atom position, and
+        this value times percent_to_nn will be the radius of the mask
+        centered on the atom position. Value should be somewhere
+        between 0.01 (1%) and 1 (100%). Having a too low value might
+        lead to bad fitting.
     show_progressbar : bool, default True
 
     Returns
     -------
     subtracted_image : NumPy 2D array
 
+    Examples
+    --------
+    >>> atom_lattice = am.dummy_data.get_simple_atom_lattice_two_sublattices()
+    >>> sublattice0 = atom_lattice.sublattice_list[0]
+    >>> sublattice0.find_nearest_neighbors()
+    >>> import atomap.tools as at
+    >>> image_subtracted = at.remove_atoms_from_image_using_2d_gaussian(
+    ...        image=atom_lattice.image, sublattice=sublattice0,
+    ...        show_progressbar=False)
+    >>> import hyperspy.api as hs
+    >>> s = hs.signals.Signal2D(image_subtracted)
+    >>> s.plot()
+
+    Decrease percent_to_nn, to reduce the effect of overlapping atoms.
+    For this dataset it won't change much, but might be very useful for
+    real datasets.
+
+    >>> image_subtracted = at.remove_atoms_from_image_using_2d_gaussian(
+    ...        image=atom_lattice.image, sublattice=sublattice0,
+    ...        percent_to_nn=0.2, show_progressbar=False)
+
     """
+    if sublattice.atom_list[0].nearest_neighbor_list is None:
+        raise ValueError(
+                "The atom_position objects does not seem to have a "
+                "populated nearest neighbor list. "
+                "Has sublattice.find_nearest_neighbors() been called?")
     model_image = np.zeros(image.shape)
     X, Y = np.meshgrid(np.arange(
         model_image.shape[1]), np.arange(model_image.shape[0]))
@@ -940,7 +972,8 @@ class Fingerprinter:
         return self
 
 
-def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
+def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto',
+              show_progressbar=True):
     """Given a spectrum image a set of points and a maximum outer radius,
     this function integrates around each point in an image, using either
     Voronoi cell or watershed segmentation methods.
@@ -961,6 +994,8 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
         This allows analysis of a surface and particles.
         If 'max_radius' is left as 'Auto' then it will be set to the largest
         dimension in the image.
+    show_progressbar : bool, optional
+        Default True
 
     Returns
     -------
@@ -1053,7 +1088,8 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto'):
         raise NotImplementedError(
                 "Oops! You have asked for an unimplemented method.")
     point_record -= 1
-    for point in range(points[0].shape[0]):
+    for point in trange(points[0].shape[0], desc='Integrating',
+                        disable=not show_progressbar):
         currentMask = (point_record == point)
         currentFeature = currentMask * image.T
         integrated_intensity[point] = sum(sum(currentFeature.T)).T
@@ -1249,3 +1285,97 @@ def _get_signal_centre(signal):
     a0_middle = (sa[0].high_value + sa[0].low_value) * 0.5
     a1_middle = (sa[1].high_value + sa[1].low_value) * 0.5
     return(a0_middle, a1_middle)
+
+
+def _draw_cursor(ax, x, y, xd=10, yd=-30):
+    """Draw an arrow resembling a mouse pointer.
+
+    Used for making figures in the documentation.
+    Uses the matplotlib ax.annotate to draw the arrow.
+
+    Parameters
+    ----------
+    ax : matplotlib subplot
+    x, y : scalar
+        Coordinates for the point of the cursor. In data
+        coordinates for the ax. This point can be outside
+        the ax extent.
+    xd, yd : scalar, optional
+        Size of the cursor, in figure display coordinates.
+
+    Example
+    -------
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> cax = ax.imshow(np.random.random((100, 100)))
+    >>> from atomap.tools import _draw_cursor
+    >>> _draw_cursor(ax, 20, 50)
+
+    """
+    xd, yd = 10, -30
+    arrowprops = dict(
+            width=2.9, headwidth=10.3, headlength=15.06,
+            edgecolor='white', facecolor='black')
+    ax.annotate('', xy=(x, y), xytext=(xd, yd),
+                xycoords='data', textcoords='offset pixels',
+                arrowprops=arrowprops, annotation_clip=False)
+
+
+def _update_frame(pos, fig):
+    """Update an image frame in a matplotlib FuncAnimation function.
+
+    Will simulate a mouse button press, and update a matplotlib
+    annotation.
+
+    Parameters
+    ----------
+    pos : tuple
+        (x, y, press_mouse_button). If press_button is True, a mouse click
+        will be done at (x, y), and the cursor will be moved there. If False,
+        the cursor will just be moved.
+    fig : matplotlib figure object
+
+    """
+    ax = fig.axes[0]
+    if pos[2]:
+        x, y = ax.transData.transform((pos[0], pos[1]))
+        fig.canvas.button_press_event(x, y, 1)
+    text = ax.texts[0]
+    text.xy = (pos[0], pos[1])
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+
+
+def _generate_frames_position_list(position_list, num=10):
+    """
+    Parameters
+    ----------
+    position_list : list
+        Needs to have at least two positions, [[x0, y0], [x1, y1]]
+    num : scalar
+        Number of points between each position. Default 10.
+
+    Returns
+    -------
+    frames : list
+        Length of num * (len(position_list) - 1) + position_list
+
+    Example
+    -------
+    >>> from atomap.tools import _generate_frames_position_list
+    >>> pos_list = [[10, 20], [65, 10], [31, 71]]
+    >>> frames = _generate_frames_position_list(pos_list, num=20)
+
+    """
+    frames = []
+    for i in range(len(position_list) - 1):
+        x0, y0 = position_list[i]
+        x1, y1 = position_list[i + 1]
+        x_list = np.linspace(x0, x1, num=num, endpoint=False)
+        y_list = np.linspace(y0, y1, num=num, endpoint=False)
+        frames.append([x0, y0, True])
+        for x, y in zip(x_list, y_list):
+            frames.append([x, y, False])
+    x2, y2 = position_list[-1]
+    frames.append([x2, y2, True])
+    return frames

@@ -10,6 +10,13 @@ class TestMakeTestData:
     def test_simple_init(self):
         tt.MakeTestData(100, 100)
 
+    def test_show_progressbar(self):
+        test_data0 = tt.MakeTestData(100, 100, show_progressbar=True)
+        assert test_data0._show_progressbar
+
+        test_data1 = tt.MakeTestData(100, 100, show_progressbar=False)
+        assert not test_data1._show_progressbar
+
     def test_get_signal(self):
         imX0, imY0 = 100, 100
         test_data0 = tt.MakeTestData(imX0, imY0)

@@ -70,15 +70,21 @@ class TestRemoveAtomsFromImageUsing2dGaussian:
         x, y = x.flatten(), y.flatten()
         test_data.add_atom_list(x, y)
         sublattice = test_data.sublattice
-        sublattice.find_nearest_neighbors()
         self.sublattice = sublattice
 
     def test_running(self):
         sublattice = self.sublattice
+        sublattice.find_nearest_neighbors()
         remove_atoms_from_image_using_2d_gaussian(
             sublattice.image,
             sublattice,
             percent_to_nn=0.40)
+
+    def test_no_nearest_neighbors(self):
+        sublattice = self.sublattice
+        with pytest.raises(ValueError):
+            remove_atoms_from_image_using_2d_gaussian(sublattice.image,
+                                                      sublattice)
 
 
 @pytest.mark.parametrize(

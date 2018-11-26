@@ -1,7 +1,10 @@
 from pytest import approx
+import numpy as np
 from numpy import pi
 import math
 from atomap.atom_position import Atom_Position
+import atomap.testing_tools as tt
+import atomap.dummy_data as dd
 
 
 class TestCreateAtomPositionObject:
@@ -87,3 +90,85 @@ class TestAtomPositionObjectTools:
         assert g.sigma_y.value == sy
         assert g.A.value == A
         assert g.rotation.value == r
+
+
+class TestAtomPositionRefine:
+
+    def test_center_of_mass_mask_radius(self):
+        x, y, sx, sy = 15, 20, 2, 2
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom(x, y, sx, sy)
+        sublattice = test_data.sublattice
+        atom = sublattice.atom_list[0]
+        image_data = test_data.signal.data
+        atom.refine_position_using_center_of_mass(
+                image_data, mask_radius=5)
+        assert atom.pixel_x == approx(x)
+        assert atom.pixel_y == approx(y)
+
+    def test_2d_gaussian_mask_radius(self):
+        x, y, sx, sy = 15, 20, 2, 2
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom(x, y, sx, sy)
+        sublattice = test_data.sublattice
+        atom = sublattice.atom_list[0]
+        image_data = test_data.signal.data
+        atom.refine_position_using_2d_gaussian(image_data, mask_radius=10)
+        assert atom.pixel_x == approx(x)
+        assert atom.pixel_y == approx(y)
+        assert atom.sigma_x == approx(sx, rel=1e-4)
+        assert atom.sigma_y == approx(sy, rel=1e-4)
+
+
+class TestAtomPositionRefinePositionFlag:
+
+    def test_one_atom_center_of_mass(self):
+        test_data = tt.MakeTestData(20, 20)
+        x, y = 10, 15
+        test_data.add_atom(x, y)
+        sublattice = test_data.sublattice
+        atom = sublattice.atom_list[0]
+        atom.pixel_x += 1
+        atom.refine_position = False
+        sublattice.refine_atom_positions_using_center_of_mass(mask_radius=5)
+        assert atom.pixel_x == x + 1
+        assert atom.pixel_y == y
+        atom.refine_position = True
+        sublattice.refine_atom_positions_using_center_of_mass(mask_radius=5)
+        assert approx(atom.pixel_x, abs=0.001) == x
+        assert approx(atom.pixel_y, abs=0.001) == y
+
+    def test_one_atom_2d_gaussian_refine(self):
+        test_data = tt.MakeTestData(20, 20)
+        x, y = 10, 15
+        test_data.add_atom(x, y)
+        sublattice = test_data.sublattice
+        atom = sublattice.atom_list[0]
+        atom.pixel_x += 1
+        atom.refine_position = False
+        sublattice.refine_atom_positions_using_2d_gaussian(mask_radius=5)
+        assert atom.pixel_x == x + 1
+        assert atom.pixel_y == y
+        atom.refine_position = True
+        sublattice.refine_atom_positions_using_2d_gaussian(mask_radius=5)
+        assert approx(atom.pixel_x) == x
+        assert approx(atom.pixel_y) == y
+
+    def test_many_atoms(self):
+        sublattice = dd.get_simple_cubic_sublattice(
+                image_noise=True)
+        atom = sublattice.atom_list[0]
+        atom.refine_position = False
+        x_pos_orig = np.array(sublattice.x_position)
+        y_pos_orig = np.array(sublattice.y_position)
+        sublattice.find_nearest_neighbors()
+        sublattice.refine_atom_positions_using_2d_gaussian()
+        assert atom.pixel_x == x_pos_orig[0]
+        assert atom.pixel_y == x_pos_orig[1]
+        assert not (x_pos_orig[1:] == sublattice.x_position[1:]).any()
+        assert not (y_pos_orig[1:] == sublattice.y_position[1:]).any()
+        sublattice.refine_atom_positions_using_2d_gaussian()
+        assert atom.pixel_x == x_pos_orig[0]
+        assert atom.pixel_y == x_pos_orig[1]
+        assert not (x_pos_orig[1:] == sublattice.x_position[1:]).any()
+        assert not (y_pos_orig[1:] == sublattice.y_position[1:]).any()

@@ -1,4 +1,5 @@
 import pytest
+from pytest import approx
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 from hyperspy.signals import Signal2D
@@ -6,6 +7,7 @@ import atomap.atom_finding_refining as afr
 from atomap.sublattice import Sublattice
 import atomap.testing_tools as tt
 import atomap.dummy_data as dd
+from atomap.atom_plane import Atom_Plane
 
 
 class TestMakeSimpleSublattice:
@@ -501,6 +503,83 @@ class TestRefineFunctions:
         sublattice.refine_atom_positions_using_center_of_mass(
                 image_data=self.image_data, percent_to_nn=0.3)
 
+    def test_center_of_mass_mask_radius_very_large_value(self):
+        x0, y0, x1, y1 = 20, 25, 15, 25
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom(x0, y0, 2, 2)
+        signal = test_data.signal
+        sublattice = test_data.sublattice
+        signal.data[y1, x1] = 1000000
+        sublattice.refine_atom_positions_using_center_of_mass(
+                image_data=signal.data, mask_radius=4)
+        assert sublattice.x_position[0] == approx(x0)
+        assert sublattice.y_position[0] == approx(y0)
+        sublattice.refine_atom_positions_using_center_of_mass(
+                image_data=signal.data, mask_radius=5)
+        assert sublattice.x_position[0] == approx(x1)
+        assert sublattice.y_position[0] == approx(y1)
+        sublattice.refine_atom_positions_using_center_of_mass(
+                image_data=signal.data, mask_radius=20)
+        assert sublattice.x_position[0] == approx(x1)
+        assert sublattice.y_position[0] == approx(y1)
+
+    def test_2d_gaussian_mask_radius_very_large_value(self):
+        x, y = 20, 25
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom(x, y, 2, 2)
+        signal = test_data.signal
+        sublattice = test_data.sublattice
+        signal.data[25:28, 13:15] = 0.1
+        sublattice.refine_atom_positions_using_2d_gaussian(
+                image_data=signal.data, mask_radius=4)
+        assert sublattice.x_position[0] == approx(x)
+        assert sublattice.y_position[0] == approx(y)
+        sublattice.refine_atom_positions_using_2d_gaussian(
+                image_data=signal.data, mask_radius=10)
+        assert sublattice.x_position[0] != approx(x)
+        assert sublattice.y_position[0] != approx(y)
+
+    def test_center_of_mass_single_atom_mask_radius(self):
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom(25, 20, 2, 2)
+        sublattice = test_data.sublattice
+        sublattice.refine_atom_positions_using_center_of_mass(mask_radius=5)
+        assert sublattice.x_position[0] == approx(25)
+        assert sublattice.y_position[0] == approx(20)
+
+    def test_2d_gaussian_single_atom_mask_radius(self):
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom(25, 20, 2, 2)
+        sublattice = test_data.sublattice
+        sublattice.refine_atom_positions_using_2d_gaussian(mask_radius=5)
+        assert sublattice.x_position[0] == approx(25)
+        assert sublattice.y_position[0] == approx(20)
+
+    def test_center_of_mass_mask_radius(self):
+        test_data = tt.MakeTestData(50, 50)
+        x_pos, y_pos = [25, 30, 40], [20, 40, 30]
+        test_data.add_atom_list(x_pos, y_pos, 2, 2)
+        sublattice = test_data.sublattice
+        sublattice.refine_atom_positions_using_center_of_mass(mask_radius=5)
+        assert sublattice.x_position == approx(x_pos)
+        assert sublattice.y_position == approx(y_pos)
+
+    def test_2d_gaussian_mask_radius(self):
+        test_data = tt.MakeTestData(50, 50)
+        x_pos, y_pos = [25, 30, 40], [20, 40, 30]
+        test_data.add_atom_list(x_pos, y_pos, 2, 2)
+        sublattice = test_data.sublattice
+        sublattice.refine_atom_positions_using_2d_gaussian(mask_radius=5)
+        assert sublattice.x_position == approx(x_pos)
+        assert sublattice.y_position == approx(y_pos)
+
+    def test_2d_gaussian_both_mask_radius_and_percent_to_nn(self):
+        test_data = tt.MakeTestData(50, 50)
+        sublattice = test_data.sublattice
+        with pytest.raises(ValueError):
+            sublattice.refine_atom_positions_using_2d_gaussian(
+                    percent_to_nn=0.4, mask_radius=5)
+
 
 class TestGetAtomListBetweenFourAtomPlanes:
 
@@ -949,3 +1028,63 @@ class TestSignalProperty:
         signal = sublattice.signal
         assert signal.axes_manager.signal_axes[0].scale == 0.5
         assert signal.axes_manager.signal_axes[1].scale == 0.5
+
+
+class TestFindMissingAtomsFromZoneVector:
+
+    def setup_method(self):
+        pos = [[10, 10], [20, 10]]
+        image = np.zeros((20, 40))
+        sublattice = Sublattice(pos, image)
+        zv = (10, 0)
+        atom_list = sublattice.atom_list
+        atom_list[0]._start_atom = [zv]
+        atom_list[1]._end_atom = [zv]
+
+        atom_plane = Atom_Plane(sublattice.atom_list, zv, sublattice)
+        sublattice.atom_plane_list.append(atom_plane)
+        sublattice.atom_planes_by_zone_vector[zv] = [atom_plane]
+        self.zv, self.pos, self.sublattice = zv, pos, sublattice
+
+    def test_simple(self):
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv)
+        assert missing_pos == [(15., 10.)]
+
+    def test_vector_fraction(self):
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, vector_fraction=0.2)
+        assert missing_pos == [(12., 10.)]
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, vector_fraction=0.6)
+        assert missing_pos == [(16., 10.)]
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, vector_fraction=0.8)
+        assert missing_pos == [(18., 10.)]
+
+    def test_extend_outer_edges(self):
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, extend_outer_edges=False)
+        assert len(missing_pos) == 1
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, extend_outer_edges=True)
+        assert missing_pos == [(15., 10.), (25., 10.)]
+        missing_pos = self.sublattice.find_missing_atoms_from_zone_vector(
+                self.zv, extend_outer_edges=True, outer_edge_limit=0)
+        assert missing_pos == [(15., 10.), (5., 10), (25., 10.)]
+
+
+class TestToggleAtomRefinePositionWithGui:
+
+    def test_simple(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.toggle_atom_refine_position_with_gui()
+
+    def test_different_image(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        image = np.random.random((300, 300))
+        sublattice.toggle_atom_refine_position_with_gui(image=image)
+
+    def test_distance_threshold(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.toggle_atom_refine_position_with_gui(distance_threshold=10)

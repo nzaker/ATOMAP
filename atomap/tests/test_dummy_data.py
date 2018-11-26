@@ -56,6 +56,10 @@ class TestDummyData:
         s2 = dd.get_simple_atom_lattice_two_sublattices(image_noise=False)
         s2.plot()
 
+    def test_single_atom_sublattice(self):
+        sublattice = dd.get_single_atom_sublattice()
+        sublattice.plot()
+
 
 class TestDummyDataFantasite:
 
@@ -86,6 +90,16 @@ class TestDummyDataDistortedCubic:
     def test_sublattice(self):
         sublattice = dd.get_distorted_cubic_sublattice()
         assert len(sublattice.x_position) == len(sublattice.y_position)
+
+
+class TestDummyDataHexagonalDouble:
+
+    def test_signal(self):
+        s0 = dd.get_hexagonal_double_signal(image_noise=False)
+        s1 = dd.get_hexagonal_double_signal(image_noise=True)
+        s0.plot()
+        s1.plot()
+        assert not (s0.data == s1.data).all()
 
 
 class TestDummyDataEELSMap:
@@ -123,3 +137,17 @@ class TestDummyDataEELSMap:
         assert len(s.axes_manager.shape) == 3
         assert hasattr(s, 'plot')
         assert not (s_no_noise.data == s.data).all()
+
+
+class TestGetSimpleCubicWithVacanciesSublattice:
+
+    def test_signal(self):
+        s0 = dd.get_simple_cubic_with_vacancies_signal(image_noise=False)
+        s1 = dd.get_simple_cubic_with_vacancies_signal(image_noise=True)
+        s0.plot()
+        s1.plot()
+        assert not (s0.data == s1.data).all()
+
+    def test_sublattice(self):
+        sublattice = dd.get_simple_cubic_with_vacancies_sublattice()
+        assert len(sublattice.x_position) == len(sublattice.y_position)

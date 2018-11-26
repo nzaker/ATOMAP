@@ -328,6 +328,13 @@ class TestFitAtomPositionsGaussian:
                     sublattice.atom_list[atom_index].pixel_y,
                     self.y[atom_index], rtol=1e-7)
 
+    def test_wrong_input_none_mask_radius_percent_to_nn(self):
+        sublattice = self.sublattice
+        with pytest.raises(ValueError):
+            afr.fit_atom_positions_gaussian(
+                    sublattice.atom_list, sublattice.image,
+                    percent_to_nn=None, mask_radius=None)
+
 
 class TestGetAtomPositions:
 
@@ -389,6 +396,79 @@ class TestBadFitCondition:
         g = afr._fit_atom_positions_with_gaussian_model(
                 atom, sublattice.image, mask_radius=2)
         assert not g
+
+    def test_too_small_percent_to_nn(self):
+        sublattice = self.sublattice
+        afr._fit_atom_positions_with_gaussian_model(
+                [sublattice.atom_list[6]], sublattice.image,
+                percent_to_nn=0.01)
+
+
+class TestFitOutsideImageBounds:
+
+    def test_outside_low_y(self):
+        im_x, im_y = 100, 90
+        test_data = MakeTestData(im_x, im_y)
+        test_data.add_atom(50, -10, amplitude=200, sigma_x=10, sigma_y=10)
+
+        image = test_data.signal.data
+        atom_position = Atom_Position(50, 10)
+        gaussian_list = afr._fit_atom_positions_with_gaussian_model(
+                [atom_position], image, mask_radius=30)
+        if gaussian_list is not False:
+            gaussian = gaussian_list[0]
+            assert gaussian.centre_x.value > 0
+            assert gaussian.centre_x.value < im_x
+            assert gaussian.centre_y.value > 0
+            assert gaussian.centre_y.value < im_y
+
+    def test_outside_low_x(self):
+        im_x, im_y = 80, 90
+        test_data = MakeTestData(im_x, im_y)
+        test_data.add_atom(-10, 30, amplitude=200, sigma_x=10, sigma_y=10)
+
+        image = test_data.signal.data
+        atom_position = Atom_Position(10, 30)
+        gaussian_list = afr._fit_atom_positions_with_gaussian_model(
+                [atom_position], image, mask_radius=30)
+        if gaussian_list is not False:
+            gaussian = gaussian_list[0]
+            assert gaussian.centre_x.value > 0
+            assert gaussian.centre_x.value < im_x
+            assert gaussian.centre_y.value > 0
+            assert gaussian.centre_y.value < im_y
+
+    def test_outside_high_y(self):
+        im_x, im_y = 100, 90
+        test_data = MakeTestData(im_x, im_y)
+        test_data.add_atom(50, 100, amplitude=200, sigma_x=10, sigma_y=10)
+
+        image = test_data.signal.data
+        atom_position = Atom_Position(50, 90)
+        gaussian_list = afr._fit_atom_positions_with_gaussian_model(
+                [atom_position], image, mask_radius=30)
+        if gaussian_list is not False:
+            gaussian = gaussian_list[0]
+            assert gaussian.centre_x.value > 0
+            assert gaussian.centre_x.value < im_x
+            assert gaussian.centre_y.value > 0
+            assert gaussian.centre_y.value < im_y
+
+    def test_outside_high_x(self):
+        im_x, im_y = 90, 100
+        test_data = MakeTestData(im_x, im_y)
+        test_data.add_atom(100, 50, amplitude=200, sigma_x=10, sigma_y=10)
+
+        image = test_data.signal.data
+        atom_position = Atom_Position(80, 50)
+        gaussian_list = afr._fit_atom_positions_with_gaussian_model(
+                [atom_position], image, mask_radius=30)
+        if gaussian_list is not False:
+            gaussian = gaussian_list[0]
+            assert gaussian.centre_x.value > 0
+            assert gaussian.centre_x.value < im_x
+            assert gaussian.centre_y.value > 0
+            assert gaussian.centre_y.value < im_y
 
 
 class TestGetFeatureSeparation:

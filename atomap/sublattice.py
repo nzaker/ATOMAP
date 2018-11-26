@@ -18,6 +18,7 @@ from atomap.atom_finding_refining import _make_circular_mask
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
 from atomap.symmetry_finding import _remove_parallel_vectors
+import atomap.gui_classes as gui
 
 from atomap.external.add_marker import add_marker
 from atomap.external.gaussian2d import Gaussian2D
@@ -732,6 +733,45 @@ class Sublattice():
                         atom_plane_start_index:atom_plane_end_index]
         return(atom_plane_slice)
 
+    def toggle_atom_refine_position_with_gui(
+            self, image=None, distance_threshold=4):
+        """Use GUI to toggle if atom positions will be fitted.
+
+        Use the press atom positions with the left mouse button toggle
+        if they will be fitted in the refine methods:
+
+        - refine_atom_positions_using_2d_gaussian
+        - refine_atom_positions_using_center_of_mass
+
+        Green color means they will be fitted.
+        Red color means they will not be fitted.
+
+        Parameters
+        ----------
+        image : None, optional
+            If None, sublattice.image will be used.
+        distance_threshold : int, optional
+            If a left mouse button click is within
+            distance_threshold, the closest atom will be
+            toggled.
+
+        Examples
+        --------
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.toggle_atom_refine_position_with_gui()
+
+        Using a different image
+
+        >>> image = np.random.random((300, 300))
+        >>> sublattice.toggle_atom_refine_position_with_gui(image=image)
+
+        """
+        global toggle_refine_position
+        if image is None:
+            image = self.image
+        toggle_refine_position = gui.AtomToggleRefine(
+                image, self, distance_threshold=distance_threshold)
+
     def get_atom_list_between_four_atom_planes(
             self,
             par_atom_plane1,
@@ -830,7 +870,8 @@ class Sublattice():
     def refine_atom_positions_using_2d_gaussian(
             self,
             image_data=None,
-            percent_to_nn=0.40,
+            percent_to_nn=None,
+            mask_radius=None,
             rotation_enabled=True,
             show_progressbar=True):
         """
@@ -847,6 +888,12 @@ class Sublattice():
             this value times percent_to_nn will be the radius of the mask
             centered on the atom position. Value should be somewhere
             between 0.01 (1%) and 1 (100%).
+        mask_radius : float, optional
+            Radius of the mask around each atom. If this is not set,
+            the radius will be the distance to the nearest atom in the
+            same sublattice times the `percent_to_nn` value.
+            Note: if `mask_radius` is not specified, the Atom_Position objects
+            must have a populated nearest_neighbor_list.
         rotation_enabled : bool, default True
             If True, rotation will be enabled for the 2D Gaussians.
             This will most likely make the fitting better, but potentially
@@ -865,24 +912,34 @@ class Sublattice():
         refine_atom_positions_using_center_of_mass
 
         """
-        if self.atom_list[0].nearest_neighbor_list is None:
+        if (mask_radius is not None) and (percent_to_nn is not None):
             raise ValueError(
-                    "The atom_position objects does not seem to have a "
-                    "populated nearest neighbor list. "
-                    "Has sublattice.find_nearest_neighbors() been called?")
+                    "Both percent_to_nn and mask_radius is specified, "
+                    "only one of them should be set")
+        if mask_radius is None:
+            if percent_to_nn is None:
+                percent_to_nn = 0.4
+            if self.atom_list[0].nearest_neighbor_list is None:
+                raise ValueError(
+                        "The atom_position objects does not seem to have a "
+                        "populated nearest neighbor list. "
+                        "Has sublattice.find_nearest_neighbors() been called?")
         if image_data is None:
             image_data = self.original_image
         image_data = image_data.astype('float64')
         for atom in tqdm(
                 self.atom_list, desc="Gaussian fitting",
                 disable=not show_progressbar):
-            atom.refine_position_using_2d_gaussian(
-                    image_data,
-                    rotation_enabled=rotation_enabled,
-                    percent_to_nn=percent_to_nn)
+            if atom.refine_position:
+                atom.refine_position_using_2d_gaussian(
+                        image_data,
+                        rotation_enabled=rotation_enabled,
+                        percent_to_nn=percent_to_nn,
+                        mask_radius=mask_radius)
 
     def refine_atom_positions_using_center_of_mass(
-            self, image_data=None, percent_to_nn=0.25, show_progressbar=True):
+            self, image_data=None, percent_to_nn=None,
+            mask_radius=None, show_progressbar=True):
         """
         Use center of mass to refine the atom positions on the image
         data.
@@ -897,6 +954,7 @@ class Sublattice():
             this value times percent_to_nn will be the radius of the mask
             centered on the atom position. Value should be somewhere
             between 0.01 (1%) and 1 (100%).
+        mask_radius : float, optional
         show_progressbar : default True
 
         Example
@@ -911,20 +969,28 @@ class Sublattice():
         refine_atom_positions_using_2d_gaussian
 
         """
-        if self.atom_list[0].nearest_neighbor_list is None:
+        if (mask_radius is not None) and (percent_to_nn is not None):
             raise ValueError(
-                    "The atom_position objects does not seem to have a "
-                    "populated nearest neighbor list. "
-                    "Has sublattice.find_nearest_neighbors() been called?")
+                    "Both percent_to_nn and mask_radius is specified, "
+                    "only one of them should be set")
+        if mask_radius is None:
+            if percent_to_nn is None:
+                percent_to_nn = 0.25
+            if self.atom_list[0].nearest_neighbor_list is None:
+                raise ValueError(
+                        "The atom_position objects does not seem to have a "
+                        "populated nearest neighbor list. "
+                        "Has sublattice.find_nearest_neighbors() been called?")
         if image_data is None:
             image_data = self.original_image
         image_data = image_data.astype('float64')
         for atom in tqdm(
                 self.atom_list, desc="Center of mass",
                 disable=not show_progressbar):
-            atom.refine_position_using_center_of_mass(
-                image_data,
-                percent_to_nn=percent_to_nn)
+            if atom.refine_position:
+                atom.refine_position_using_center_of_mass(
+                    image_data,
+                    percent_to_nn=percent_to_nn, mask_radius=mask_radius)
 
     def get_nearest_neighbor_directions(
             self, pixel_scale=True, neighbors=None):
@@ -1175,10 +1241,12 @@ class Sublattice():
             zone_axis_list1.extend(zone_axis_list2[1:])
         return(zone_axis_list1)
 
-    def find_missing_atoms_from_zone_vector(self, zone_vector):
+    def find_missing_atoms_from_zone_vector(
+            self, zone_vector, vector_fraction=0.5, extend_outer_edges=False,
+            outer_edge_limit=5):
         """Returns a list of coordinates between atoms given by a zone vector.
 
-        These coordinates are given by the mid-point between adjacent atoms
+        These coordinates are given by a point between adjacent atoms
         in the atom planes with the given zone_vector.
 
         Parameters
@@ -1186,6 +1254,17 @@ class Sublattice():
         zone_vector : tuple
             Zone vector for the atom planes where the new atoms are positioned
             between the atoms in the sublattice.
+        vector_fraction : float, optional
+            Fraction of the distance between the adjacent atoms.
+            Value between 0 and 1, default 0.5
+        extend_outer_edge : bool
+            If True, atoms at the edges of the sublattice will also
+            be included. Default False.
+        outer_edge_limit : 5
+            Will only matter if extend_outer_edge is True. If the edge atoms
+            are too close to the edge of the image data, they will
+            not be included in the output. In pixel values, default 5.
+            Higher value means fewer atoms are included.
 
         Returns
         -------
@@ -1200,19 +1279,60 @@ class Sublattice():
         >>> B_pos = sublattice_A.find_missing_atoms_from_zone_vector(
         ...                       zone_axis)
 
+        Using the vector_fraction parameter
+
+        >>> s = am.dummy_data.get_hexagonal_double_signal()
+        >>> peaksA = am.get_atom_positions(s, separation=10)
+        >>> sublatticeA = am.Sublattice(peaksA, s.data)
+        >>> sublatticeA.construct_zone_axes()
+        >>> zv = sublatticeA.zones_axis_average_distances[5]
+        >>> peaksB = sublatticeA.find_missing_atoms_from_zone_vector(
+        ...     zv, vector_fraction=0.7)
+        >>> sublatticeB = am.Sublattice(peaksB, s.data)
+        >>> sublatticeB.plot()
+
+        Use extend_outer_edges to also get the second sublattice atoms
+        which are not between the first sublattice's atoms
+
+        >>> peaksB = sublatticeA.find_missing_atoms_from_zone_vector(
+        ...     zv, vector_fraction=0.7, extend_outer_edges=True)
+        >>> sublatticeB = am.Sublattice(peaksB, s.data)
+
         """
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
-
+        if extend_outer_edges:
+            im_y, im_x = self.image.shape
+            im_x -= outer_edge_limit
+            im_y -= outer_edge_limit
         new_atom_list = []
         for atom_plane in atom_plane_list:
             for atom_index, atom in enumerate(atom_plane.atom_list[1:]):
                 previous_atom = atom_plane.atom_list[atom_index]
                 difference_vector = previous_atom.get_pixel_difference(atom)
                 new_atom_x = previous_atom.pixel_x -\
-                    difference_vector[0]*0.5
+                    difference_vector[0] * vector_fraction
                 new_atom_y = previous_atom.pixel_y -\
-                    difference_vector[1]*0.5
+                    difference_vector[1] * vector_fraction
                 new_atom_list.append((new_atom_x, new_atom_y))
+                if extend_outer_edges:
+                    if previous_atom is atom_plane.start_atom:
+                        new_atom_x = previous_atom.pixel_x -\
+                            difference_vector[0] * (vector_fraction - 1)
+                        new_atom_y = previous_atom.pixel_y -\
+                            difference_vector[1] * (vector_fraction - 1)
+                        if (
+                                outer_edge_limit < new_atom_x < im_x and
+                                outer_edge_limit < new_atom_y < im_y):
+                            new_atom_list.append((new_atom_x, new_atom_y))
+                    if atom is atom_plane.end_atom:
+                        new_atom_x = atom.pixel_x -\
+                            difference_vector[0] * vector_fraction
+                        new_atom_y = atom.pixel_y -\
+                            difference_vector[1] * vector_fraction
+                        if (
+                                outer_edge_limit < new_atom_x < im_x and
+                                outer_edge_limit < new_atom_y < im_y):
+                            new_atom_list.append((new_atom_x, new_atom_y))
         return(new_atom_list)
 
     def get_atom_planes_on_image(

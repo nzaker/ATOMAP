@@ -28,7 +28,7 @@ The dataset used in this example will be generated using the :py:mod:`atomap.dum
 
 .. code-block:: python
 
-    >>> %matplotlib qt # doctest: +SKIP
+    >>> %matplotlib nbagg # doctest: +SKIP
     >>> import atomap.api as am
     >>> import numpy as np
     >>> import atomap.dummy_data as dummy_data
@@ -120,6 +120,7 @@ The function also allows for PCA, relative threshold, background subtraction and
     >>> atom_positions = am.get_atom_positions(s, separation=7)
 
 ``atom_positions`` is a list of x and y coordinates of initial atom positions.
+If there are any missing or extra atoms :py:func:`~atomap.initial_position_finding.add_atoms_with_gui` can be used, see :ref:`atom_adder_gui` for more info.
 This list will be used to initialize a :py:class:`~atomap.sublattice.Sublattice` object, which will contain all the information about the atoms.
 In our simple example, all atoms belong to the same sublattice, so only one ``Sublattice`` object is needed.
 (In the more advanced example below, images containing more than one sublattice will be analysed).
@@ -249,12 +250,17 @@ The optimal feature separation is found the same way as the earlier example, and
 The atom positions are shown in the left image, and the atom planes for one zone axis is shown in the right.
 This zone axis has index 1 in the list ``sublattice_A.zones_axis_average_distances``.
 Atomic columns belonging to the second, less intense sublattice ("B") are between the "A" atoms in the most intense sublattice.
-Knowing this, the trick to find the initial positions for the "B"-columns is:
+Knowing this, the trick to find the initial positions for the "B"-columns is using
+:py:meth:`~atomap.sublattice.Sublattice.find_missing_atoms_from_zone_vector`:
 
 .. code-block:: python
 
     >>> zone_axis_001 = sublattice_A.zones_axis_average_distances[1]
     >>> B_positions = sublattice_A.find_missing_atoms_from_zone_vector(zone_axis_001)
+
+In this case, the B-columns are exactly at the halfway point between the A-columns, however for other structures this
+might not work.
+If that is the case, use the ``vector_fraction`` parameter: ``sublattice_A.find_missing_atoms_from_zone_vector(zone_axis_001, vector_fraction=0.7)``.
 
 To enable robust fitting of the less intense B-positions, the intensity from the A-positions are "subtracted" from the image.
 This "subtracted"-image is then used to refine the B-positions.
