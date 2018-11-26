@@ -50,6 +50,8 @@ If the atoms in the dataset are too close together, ``distance_threshold`` is us
    >>> atom_positions = am.add_atoms_with_gui(s, distance_threshold=2)
 
 
+.. _toggle_atom_refine:
+
 Toggle atom refine
 ==================
 
