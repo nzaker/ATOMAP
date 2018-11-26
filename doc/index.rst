@@ -4,7 +4,7 @@ Welcome to Atomap's documentation!
 News
 ----
 
-**2018-06-13: Atomap 0.1.3 released!**
+**2018-11-26: Atomap 0.1.3 released!**
 
 Major features in this release includes:
 
