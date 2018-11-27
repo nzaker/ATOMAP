@@ -50,11 +50,15 @@ class Atom_Position:
             radians.
         refine_position : bool
             If True (default), the atom position will be fitted to the image
-            data when calling the sublattice.refine_... methods. Note, the
-            atom will still be fitted when directly calling the refine_...
-            methods in the atom position class itself. Setting it to False
-            can be useful when dealing with vacanies, or other features where
-            the automatic fitting doesn't work.
+            data when calling the
+            Sublattice.refine_atom_positions_using_center_of_mass and
+            Sublattice.refine_atom_positions_using_2d_gaussian methods.
+            Note, the atom will still be fitted when directly calling the
+            Atom_Position.refine_position_using_center_of_mass and
+            Atom_Position.refine_position_using_2d_gaussian methods in the
+            atom position class itself. Setting it to False can be useful when
+            dealing with vacancies, or other features where the automatic
+            fitting doesn't work.
 
         Examples
         --------
