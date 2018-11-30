@@ -799,6 +799,38 @@ def _make_single_marker_arrow(x, y, vecX, vecY, scale=1., color='red'):
     return marker
 
 
+def vector_list_to_marker_list(vector_list, color='red', scale=1.):
+    """Make a marker list from a vector list.
+
+    Parameters
+    ----------
+    vector_list : list
+        In the form [[x0, y0, dx0, dy0], ...]
+    color : string, optional
+        Default 'red'
+    scale : scalar, optional
+        Default 1.
+
+    Returns
+    -------
+    marker_list : list of markers
+
+    Examples
+    --------
+    >>> import atomap.plotting as pl
+    >>> vector_list = [[13, 11, -2, 1], [20, 12, 2, -3]]
+    >>> marker_list = pl.vector_list_to_marker_list(
+    ...     vector_list, color='red', scale=1.)
+
+    """
+    marker_list = []
+    for x, y, dx, dy in vector_list:
+        x1, y1 = x - dx, y - dy
+        marker = LineSegment(x*scale, y*scale, x1*scale, y1*scale, color=color)
+        marker_list.append(marker)
+    return marker_list
+
+
 def _make_zone_vector_text_marker_list(
         zone_vector_list, x=1, y=1, scale=1., color='red'):
     number = len(zone_vector_list)
