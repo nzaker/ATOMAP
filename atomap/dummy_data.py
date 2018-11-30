@@ -246,6 +246,10 @@ def get_polarization_film_atom_lattice(image_noise=False):
 
     sublattice0 = test_data0.sublattice
     sublattice1 = test_data1.sublattice
+    sublattice0.image = image
+    sublattice1.image = image
+    sublattice0.original_image = image
+    sublattice1.original_image = image
     sublattice1._plot_color = 'b'
     atom_lattice = Atom_Lattice(
             image=image, name='Perovskite film',
