@@ -8,6 +8,7 @@ from hyperspy.signals import Signal2D
 from hyperspy.drawing._markers.point import Point
 
 import atomap.tools as at
+import atomap.analysis_tools as an
 from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
         _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
@@ -2607,3 +2608,36 @@ class Sublattice():
         """
         s_elli = self.get_ellipticity_map()
         s_elli.plot(**kwargs)
+
+    def get_middle_position_list(self, zone_axis0, zone_axis1):
+        """Find the middle point between all four neighboring atoms.
+
+        The neighbors are found by moving one step along the atom planes
+        belonging to zone_axis0 and zone_axis1.
+
+        So atom planes must be constructed first.
+
+        Parameters
+        ----------
+        sublattice : Sublattice object
+        za0 : tuple
+        za1 : tuple
+
+        Return
+        ------
+        middle_position_list : list
+
+        Examples
+        --------
+        >>> import atomap.analysis_tools as an
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.construct_zone_axes()
+        >>> za0 = sublattice.zones_axis_average_distances[0]
+        >>> za1 = sublattice.zones_axis_average_distances[1]
+        >>> middle_position_list = an.get_middle_position_list(
+        ...     sublattice, za0, za1)
+
+        """
+        middle_position_list = an.get_middle_position_list(
+                self, zone_axis0, zone_axis1)
+        return middle_position_list

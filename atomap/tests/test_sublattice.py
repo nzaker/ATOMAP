@@ -6,6 +6,7 @@ from hyperspy.signals import Signal2D
 import atomap.atom_finding_refining as afr
 from atomap.sublattice import Sublattice
 import atomap.testing_tools as tt
+import atomap.analysis_tools as an
 import atomap.dummy_data as dd
 from atomap.atom_plane import Atom_Plane
 
@@ -1088,3 +1089,14 @@ class TestToggleAtomRefinePositionWithGui:
     def test_distance_threshold(self):
         sublattice = dd.get_simple_cubic_sublattice()
         sublattice.toggle_atom_refine_position_with_gui(distance_threshold=10)
+
+
+class TestGetMiddlePositionList:
+
+    def simple(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.construct_zone_axes()
+        za0 = sublattice.zones_axis_average_distances[0]
+        za1 = sublattice.zones_axis_average_distances[1]
+        middle_pos_list = an.get_middle_position_list(sublattice, za0, za1)
+        assert len(middle_pos_list) > 0
