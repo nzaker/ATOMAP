@@ -393,3 +393,38 @@ The property of interest here was the separation of monolayers, and the separati
     :align: center
 
 Naturally, in these functions any atomic plane can be defined as the interface.
+
+
+.. _finding_polarization:
+
+Finding polarization
+====================
+
+.. code-block:: python
+
+    >>> import atomap.analysis_tools as an
+    >>> import atomap.plotting as pl
+
+    >>> atom_lattice = am.dummy_data.get_polarization_film_atom_lattice()
+    >>> sublatticeA = atom_lattice.sublattice_list[0]
+    >>> sublatticeB = atom_lattice.sublattice_list[1]
+    >>> sublatticeA.construct_zone_axes()
+    >>> sublatticeB.construct_zone_axes()
+
+    >>> za0 = sublatticeA.zones_axis_average_distances[0]
+    >>> za1 = sublatticeA.zones_axis_average_distances[1]
+
+    >>> middle_position_list = sublatticeA.get_middle_position_list(za0, za1)
+    >>> vector_list = an.get_vector_shift_list(sublatticeB, middle_position_list)
+    >>> marker_list = pl.vector_list_to_marker_list(vector_list, color='cyan', scale=1.)
+
+    >>> s = sublatticeA.get_atom_list_on_image()
+    >>> s.add_marker(marker_list, permanent=True, plot_signal=False)
+    >>> s.plot()
+
+
+.. image:: images/makepolarization/polarization_signal.png
+    :scale: 50 %
+
+.. image:: images/makepolarization/polarization_signal_marker.png
+    :scale: 50 %
