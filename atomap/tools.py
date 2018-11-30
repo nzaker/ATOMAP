@@ -418,17 +418,35 @@ def get_arbitrary_slice(
 
 
 def get_point_between_four_atoms(atom_list):
-    atom0 = atom_list[0]
-    atom1 = atom_list[1]
-    atom2 = atom_list[2]
-    atom3 = atom_list[3]
+    """Get the mean point between four atom position objects.
 
-    x_pos = (
-        atom0.pixel_x + atom1.pixel_x +
-        atom2.pixel_x + atom3.pixel_x) * 0.25
-    y_pos = (
-        atom0.pixel_y + atom1.pixel_y +
-        atom2.pixel_y + atom3.pixel_y) * 0.25
+    Parameters
+    ----------
+    atom_list : list
+        List of four atom position objects
+
+    Returns
+    -------
+    middle_position : tuple
+        (x_pos, y_pos)
+
+    Example
+    -------
+    >>> import atomap.tools as at
+    >>> import atomap.atom_position as ap
+    >>> atom0, atom1 = ap.Atom_Position(10, 30), ap.Atom_Position(20, 30)
+    >>> atom2, atom3 = ap.Atom_Position(10, 40), ap.Atom_Position(20, 40)
+    >>> mid_pos = at.get_point_between_four_atoms((atom0, atom1, atom2, atom3))
+
+    """
+    if len(atom_list) != 4:
+        raise ValueError("atom_list must contain 4 Atom_Position objects, "
+                         "not {0}".format(len(atom_list)))
+    a0, a1, a2, a3 = atom_list
+    x_pos = np.mean((a0.pixel_x, a1.pixel_x,
+                     a2.pixel_x, a3.pixel_x), dtype=np.float32)
+    y_pos = np.mean((a0.pixel_y, a1.pixel_y,
+                     a2.pixel_y, a3.pixel_y), dtype=np.float32)
     return((x_pos, y_pos))
 
 

@@ -3,6 +3,7 @@ from pytest import approx
 import numpy as np
 import atomap.api as am
 import atomap.tools as to
+import atomap.atom_position as ap
 from hyperspy.signals import Signal2D
 from atomap.tools import array2signal1d, array2signal2d, Fingerprinter
 from atomap.tools import remove_atoms_from_image_using_2d_gaussian
@@ -28,6 +29,35 @@ class TestArray2Signal:
         s = array2signal1d(array, scale=scale)
         assert s.axes_manager[0].scale == scale
         assert s.axes_manager.shape == array.shape
+
+
+class TestGetPointBetweenFourAtoms:
+
+    def test_simple(self):
+        atom0, atom1 = ap.Atom_Position(10, 30), ap.Atom_Position(20, 30)
+        atom2, atom3 = ap.Atom_Position(10, 40), ap.Atom_Position(20, 40)
+        mid_pos = to.get_point_between_four_atoms((atom0, atom1, atom2, atom3))
+        assert mid_pos == (15., 35.)
+
+    def test_negative(self):
+        atom0, atom1 = ap.Atom_Position(-15, 30), ap.Atom_Position(-10, 30)
+        atom2, atom3 = ap.Atom_Position(-15, 40), ap.Atom_Position(-10, 40)
+        mid_pos = to.get_point_between_four_atoms((atom0, atom1, atom2, atom3))
+        assert mid_pos == (-12.5, 35.)
+
+    def test_diagonal(self):
+        atom0, atom1 = ap.Atom_Position(5, 0), ap.Atom_Position(0, 5)
+        atom2, atom3 = ap.Atom_Position(5, 10), ap.Atom_Position(10, 5)
+        mid_pos = to.get_point_between_four_atoms((atom0, atom1, atom2, atom3))
+        assert mid_pos == (5., 5.)
+
+    def test_wrong_size(self):
+        atom0, atom1 = ap.Atom_Position(5, 0), ap.Atom_Position(0, 5)
+        atom2, atom3 = ap.Atom_Position(5, 10), ap.Atom_Position(10, 5)
+        atom4 = ap.Atom_Position(10, 10)
+        with pytest.raises(ValueError):
+            to.get_point_between_four_atoms(
+                    (atom0, atom1, atom2, atom3, atom4))
 
 
 class TestFingerprinter:
