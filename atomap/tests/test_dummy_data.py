@@ -151,3 +151,20 @@ class TestGetSimpleCubicWithVacanciesSublattice:
     def test_sublattice(self):
         sublattice = dd.get_simple_cubic_with_vacancies_sublattice()
         assert len(sublattice.x_position) == len(sublattice.y_position)
+
+
+class TestGetPolarizationFilmSignal:
+
+    def test_signal(self):
+        s0 = dd.get_polarization_film_signal(image_noise=False)
+        s1 = dd.get_polarization_film_signal(image_noise=True)
+        s0.plot()
+        s1.plot()
+        assert not (s0.data == s1.data).all()
+
+    def test_atom_lattice(self):
+        a0 = dd.get_polarization_film_atom_lattice(image_noise=False)
+        a1 = dd.get_polarization_film_atom_lattice(image_noise=True)
+        a0.plot()
+        a1.plot()
+        assert not (a0.image == a1.image).all()
