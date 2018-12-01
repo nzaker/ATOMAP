@@ -10,25 +10,32 @@ if not os.path.exists(my_path):
     os.makedirs(my_path)
 
 ######
-signal = am.dummy_data.get_polarization_film_signal()
-signal.plot()
-signal._plot.signal_plot.figure.savefig(os.path.join(my_path, 'polarization_signal.png'))
+atom_lattice = am.dummy_data.get_polarization_film_atom_lattice()
+s_al = atom_lattice.get_sublattice_atom_list_on_image()
+s_al.plot()
+s_al._plot.signal_plot.figure.savefig(os.path.join(my_path, 'polarization_atom_lattice.png'))
 
 ######
-atom_lattice = am.dummy_data.get_polarization_film_atom_lattice()
 sublatticeA = atom_lattice.sublattice_list[0]
-sublatticeB = atom_lattice.sublattice_list[1]
 sublatticeA.construct_zone_axes()
-sublatticeB.construct_zone_axes()
 
 za0 = sublatticeA.zones_axis_average_distances[0]
 za1 = sublatticeA.zones_axis_average_distances[1]
+atom_planes0 = sublatticeA.atom_planes_by_zone_vector[za0]
+atom_planes1 = sublatticeA.atom_planes_by_zone_vector[za1]
 
-middle_position_list = sublatticeA.get_middle_position_list(za0, za1)
-vector_list = an.get_vector_shift_list(sublatticeB, middle_position_list)
-marker_list = pl.vector_list_to_marker_list(vector_list, color='cyan', scale=1.)
+s_ap0 = sublatticeA.get_atom_planes_on_image(atom_planes0)
+s_ap1 = sublatticeA.get_atom_planes_on_image(atom_planes1)
 
-s = sublatticeA.get_atom_list_on_image()
-s.add_marker(marker_list, permanent=True, plot_signal=False)
-s.plot()
-s._plot.signal_plot.figure.savefig(os.path.join(my_path, 'polarization_signal_marker.png'))
+s_ap0.plot()
+s_ap0._plot.signal_plot.figure.savefig(os.path.join(my_path, 'polarization_atom_plane0.png'))
+s_ap1.plot()
+s_ap1._plot.signal_plot.figure.savefig(os.path.join(my_path, 'polarization_atom_plane1.png'))
+
+######
+sublatticeB = atom_lattice.sublattice_list[1]
+s_polarization = sublatticeA.get_polarization_from_second_sublattice(
+        za0, za1, sublatticeB)
+s_polarization.plot()
+s_polarization._plot.signal_plot.figure.savefig(os.path.join(
+    my_path, 'polarization_signal_marker.png'), dpi=150)
