@@ -162,7 +162,7 @@ def _make_polarization_film_A(image_noise=False):
 
 
 def _make_polarization_film_B(image_noise=False):
-    max_x = 3
+    max_x = -3
     test_data = MakeTestData(312, 312)
     x0, y0 = np.mgrid[15:312:20, 15:136:20]
     x0 = x0.astype('float64')
