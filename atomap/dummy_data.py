@@ -142,6 +142,127 @@ def get_simple_cubic_with_vacancies_sublattice(image_noise=False):
     return test_data.sublattice
 
 
+def _make_polarization_film_A(image_noise=False):
+    test_data = MakeTestData(312, 312)
+    x0, y0 = np.mgrid[5:312:20, 5:156:20]
+    x0_list = x0.flatten()
+    y0_list = y0.flatten()
+    amplitude0 = np.ones(len(x0_list)) * 20
+    test_data.add_atom_list(
+            x0_list, y0_list, sigma_x=3, sigma_y=3, amplitude=amplitude0)
+    x1, y1 = np.mgrid[5:312:20, 145+20:312:20]
+    x1_list = x1.flatten()
+    y1_list = y1.flatten()
+    amplitude1 = np.ones(len(x1_list)) * 15
+    test_data.add_atom_list(
+            x1_list, y1_list, sigma_x=3, sigma_y=3, amplitude=amplitude1)
+    if image_noise:
+        test_data.add_image_noise(mu=0, sigma=0.004)
+    return test_data
+
+
+def _make_polarization_film_B(image_noise=False):
+    max_x = -3
+    test_data = MakeTestData(312, 312)
+    x0, y0 = np.mgrid[15:312:20, 15:136:20]
+    x0 = x0.astype('float64')
+    y0 = y0.astype('float64')
+    dx = max_x/y0.shape[1]
+    for i in range(y0.shape[1]):
+        x0[:, y0.shape[1] - 1 - i] += dx * i
+    x0_list = x0.flatten()
+    y0_list = y0.flatten()
+    amplitude0 = np.ones(len(x0_list)) * 8
+    test_data.add_atom_list(
+            x0_list, y0_list, sigma_x=3, sigma_y=3, amplitude=amplitude0)
+    x1, y1 = np.mgrid[15:312:20, 135+20:312:20]
+    x1_list = x1.flatten()
+    y1_list = y1.flatten()
+    amplitude1 = np.ones(len(x1_list)) * 8
+    test_data.add_atom_list(
+            x1_list, y1_list, sigma_x=3, sigma_y=3, amplitude=amplitude1)
+    if image_noise:
+        test_data.add_image_noise(mu=0, sigma=0.004)
+    return test_data
+
+
+def get_polarization_film_signal(image_noise=False):
+    """Get a signal with two sublattices resembling a perovskite film.
+
+    Similar to a perovskite oxide thin film, where the B cations
+    are shifted in the film.
+
+    Parameters
+    ----------
+    image_noise : bool, optional
+        Default False
+
+    Returns
+    -------
+    signal : HyperSpy 2D signal
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> s = am.dummy_data.get_polarization_film_signal()
+    >>> s.plot()
+
+    With image noise
+
+    >>> s = am.dummy_data.get_polarization_film_signal(image_noise=True)
+    >>> s.plot()
+
+    """
+    test_data0 = _make_polarization_film_A(image_noise=image_noise)
+    test_data1 = _make_polarization_film_B(image_noise=image_noise)
+    signal = test_data0.signal + test_data1.signal
+    return signal
+
+
+def get_polarization_film_atom_lattice(image_noise=False):
+    """Get an Atom Lattice with two sublattices resembling a perovskite film.
+
+    Similar to a perovskite oxide thin film, where the B cations
+    are shifted in the film.
+
+    Parameters
+    ----------
+    image_noise : bool, default False
+
+    Returns
+    -------
+    simple_atom_lattice : Atom_Lattice object
+
+    Examples
+    --------
+    >>> import atomap.api as am
+    >>> atom_lattice = am.dummy_data.get_polarization_film_atom_lattice()
+    >>> atom_lattice.plot()
+
+    With image noise
+
+    >>> atom_lattice = am.dummy_data.get_polarization_film_atom_lattice(
+    ...     image_noise=True)
+    >>> atom_lattice.plot()
+
+    """
+    test_data0 = _make_polarization_film_A(image_noise=image_noise)
+    test_data1 = _make_polarization_film_B(image_noise=image_noise)
+    image = test_data0.signal.data + test_data1.signal.data
+
+    sublattice0 = test_data0.sublattice
+    sublattice1 = test_data1.sublattice
+    sublattice0.image = image
+    sublattice1.image = image
+    sublattice0.original_image = image
+    sublattice1.original_image = image
+    sublattice1._plot_color = 'b'
+    atom_lattice = Atom_Lattice(
+            image=image, name='Perovskite film',
+            sublattice_list=[sublattice0, sublattice1])
+    return atom_lattice
+
+
 def _make_simple_cubic_testdata(image_noise=False):
     simple_cubic = MakeTestData(300, 300)
     x, y = np.mgrid[10:290:20j, 10:290:20j]
