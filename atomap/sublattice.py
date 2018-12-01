@@ -12,7 +12,8 @@ import atomap.analysis_tools as an
 from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
         _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
-        _make_zone_vector_text_marker_list, plot_vector_field)
+        _make_zone_vector_text_marker_list, plot_vector_field,
+        vector_list_to_marker_list)
 from atomap.atom_finding_refining import construct_zone_axes_from_sublattice
 from atomap.atom_finding_refining import _make_circular_mask
 
@@ -2641,3 +2642,45 @@ class Sublattice():
         middle_position_list = an.get_middle_position_list(
                 self, zone_axis0, zone_axis1)
         return middle_position_list
+
+    def get_polarization_from_second_sublattice(
+            self, zone_axis0, zone_axis1, sublattice, color='cyan'):
+        """Get a signal showing the polarization using a second sublattice.
+
+        Parameters
+        ----------
+        zone_axis0 : tuple
+        zone_axis1 : tuple
+        sublattice : Sublattice object
+        color : string, optional
+            Default 'cyan'.
+
+        Returns
+        -------
+        signal_polarization : HyperSpy Signal2D
+            The vector data is stored in s.metadata.vector_list. These
+            are visualized using the plot() method.
+
+        Examples
+        --------
+        >>> atom_lattice = am.dummy_data.get_polarization_film_atom_lattice()
+        >>> sublatticeA = atom_lattice.sublattice_list[0]
+        >>> sublatticeB = atom_lattice.sublattice_list[1]
+        >>> sublatticeA.construct_zone_axes()
+        >>> za0, za1 = sublatticeA.zones_axis_average_distances[0:2]
+        >>> s_p = sublatticeA.get_polarization_from_second_sublattice(
+        ...     za0, za1, sublatticeB, color='blue')
+        >>> s_p.plot()
+        >>> vector_list = s_p.metadata.vector_list
+
+        """
+        middle_pos_list = self.get_middle_position_list(
+                zone_axis0, zone_axis1)
+        vector_list = an.get_vector_shift_list(sublattice, middle_pos_list)
+        marker_list = vector_list_to_marker_list(
+                vector_list, color=color, scale=self.pixel_size)
+        signal = at.array2signal2d(self.image, self.pixel_size)
+        signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        signal.metadata.add_node('vector_list')
+        signal.metadata.vector_list = vector_list
+        return signal

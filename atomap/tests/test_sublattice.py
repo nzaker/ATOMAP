@@ -1100,3 +1100,56 @@ class TestGetMiddlePositionList:
         za1 = sublattice.zones_axis_average_distances[1]
         middle_pos_list = an.get_middle_position_list(sublattice, za0, za1)
         assert len(middle_pos_list) > 0
+
+
+class TestGetPolarizationFromSecondSublattice:
+
+    def setup_method(self):
+        t0 = tt.MakeTestData(100, 100)
+        x0, y0 = np.mgrid[5:100:10, 5:100:10]
+        x0, y0 = x0.flatten(), y0.flatten()
+        t0.add_atom_list(x0, y0)
+        sublattice0 = t0.sublattice
+        sublattice0.construct_zone_axes()
+        za0 = sublattice0.zones_axis_average_distances[0]
+        za1 = sublattice0.zones_axis_average_distances[1]
+
+        t1 = tt.MakeTestData(100, 100)
+        x1, y1 = np.mgrid[10:100:10, 10:100:10]
+        x1, y1 = x1.flatten(), y1.flatten()
+        x1[7] += 2
+        y1[7] += 1
+        t1.add_atom_list(x1, y1)
+        sublattice1 = t1.sublattice
+
+        self.sublattice0 = sublattice0
+        self.sublattice1 = sublattice1
+        self.za0 = za0
+        self.za1 = za1
+
+    def test_simple(self):
+        sublattice0, sublattice1 = self.sublattice0, self.sublattice1
+        za0, za1 = self.za0, self.za1
+        s_p = sublattice0.get_polarization_from_second_sublattice(
+                za0, za1, sublattice1)
+        s_p.plot()
+
+    def test_color(self):
+        sublattice0, sublattice1 = self.sublattice0, self.sublattice1
+        za0, za1 = self.za0, self.za1
+        s_p = sublattice0.get_polarization_from_second_sublattice(
+                za0, za1, sublattice1, color='red')
+        color = s_p.metadata.Markers.line_segment1.marker_properties['color']
+        assert color == 'red'
+
+    def test_values(self):
+        sublattice0, sublattice1 = self.sublattice0, self.sublattice1
+        za0, za1 = self.za0, self.za1
+        s_p = sublattice0.get_polarization_from_second_sublattice(
+                za0, za1, sublattice1)
+        for ivector, vector in enumerate(s_p.metadata.vector_list):
+            temp_vector = vector[2:]
+            if ivector == 7:
+                assert temp_vector == (-2, -1)
+            else:
+                assert temp_vector == (0, 0)
