@@ -162,8 +162,14 @@ def _make_polarization_film_A(image_noise=False):
 
 
 def _make_polarization_film_B(image_noise=False):
+    max_x = 3
     test_data = MakeTestData(312, 312)
-    x0, y0 = np.mgrid[14:312:20, 13:136:20]
+    x0, y0 = np.mgrid[15:312:20, 15:136:20]
+    x0 = x0.astype('float64')
+    y0 = y0.astype('float64')
+    dx = max_x/y0.shape[1]
+    for i in range(y0.shape[1]):
+        x0[:, y0.shape[1] - 1 - i] += dx * i
     x0_list = x0.flatten()
     y0_list = y0.flatten()
     amplitude0 = np.ones(len(x0_list)) * 8
