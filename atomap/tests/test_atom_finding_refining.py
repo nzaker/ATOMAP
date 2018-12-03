@@ -525,3 +525,9 @@ class TestGetFeatureSeparation:
         s = dd.get_simple_cubic_signal()
         with pytest.raises(ValueError):
             afr.get_feature_separation(s, separation_range)
+
+    def test_small_input_size_large_separation_range(self):
+        # For small images and large separation, no peaks can be returned.
+        # This test checks that this doesn't result in an error.
+        s = dd.get_simple_cubic_signal().isig[:50., :50.]
+        afr.get_feature_separation(s)

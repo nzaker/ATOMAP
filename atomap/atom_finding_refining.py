@@ -230,8 +230,9 @@ def get_feature_separation(
     marker_list_y = np.ones((len(peak_list), max_peaks))*-100
 
     for index, peaks in enumerate(peak_list):
-        marker_list_x[index, 0:len(peaks)] = (peaks[:, 0]*scale_x)+offset_x
-        marker_list_y[index, 0:len(peaks)] = (peaks[:, 1]*scale_y)+offset_y
+        if len(peaks) != 0:
+            marker_list_x[index, 0:len(peaks)] = (peaks[:, 0]*scale_x)+offset_x
+            marker_list_y[index, 0:len(peaks)] = (peaks[:, 1]*scale_y)+offset_y
 
     marker_list = []
     for i in trange(marker_list_x.shape[1], disable=not show_progressbar):
