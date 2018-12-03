@@ -225,6 +225,10 @@ def get_feature_separation(
     for peaks in peak_list:
         if len(peaks) > max_peaks:
             max_peaks = len(peaks)
+    if max_peaks == 0:
+        raise ValueError(
+                "No peaks found, try either reducing separation_range, or "
+                "using a better image")
 
     marker_list_x = np.ones((len(peak_list), max_peaks))*-100
     marker_list_y = np.ones((len(peak_list), max_peaks))*-100

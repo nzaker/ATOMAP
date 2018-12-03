@@ -531,3 +531,8 @@ class TestGetFeatureSeparation:
         # This test checks that this doesn't result in an error.
         s = dd.get_simple_cubic_signal().isig[:50., :50.]
         afr.get_feature_separation(s)
+
+    def test_find_no_peaks(self):
+        s = dd.get_simple_cubic_signal().isig[:5., :5.]
+        with pytest.raises(ValueError):
+            afr.get_feature_separation(s)
