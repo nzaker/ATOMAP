@@ -78,6 +78,12 @@ Atom finding refining
     :members:
     :undoc-members:
 
+Analysis tools
+==============
+.. automodule:: atomap.analysis_tools
+    :members:
+    :undoc-members:
+
 Initial position finding
 ========================
 .. automodule:: atomap.initial_position_finding
