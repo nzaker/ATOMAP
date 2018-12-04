@@ -70,7 +70,7 @@ Ubuntu 18.04
 
 .. code-block:: bash
 
-    $ sudo apt-get install ipython3 python3-pip python3-numpy python3-scipy python3-matplotlib python3-sklearn python3-skimage python3-h5py python3-dask python3-traits python3-tqdm python3-pint python3-dask python3-pyqt5 python3-lxml python3-sympy python3-sparse python3-statsmodels python3-numexpr python3-ipykernel python3-jupyter-client python3-requests python3-dill python3-natsort
+    $ sudo apt-get install ipython3 python3-pip python3-numpy python3-scipy python3-matplotlib python3-sklearn python3-skimage python3-h5py python3-traits python3-tqdm python3-pint python3-dask python3-pyqt5 python3-lxml python3-sympy python3-sparse python3-statsmodels python3-numexpr python3-ipykernel python3-jupyter-client python3-requests python3-dill python3-natsort
     $ pip3 install --user atomap
 
 If everything installed, continue to :ref:`starting Atomap in Linux <start_atomap_linux>`.
