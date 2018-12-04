@@ -33,6 +33,7 @@ setup(
             'matplotlib>=2.0',
             'tqdm',
             'scikit-learn',
+            'scikit-image>=0.13',
             'hyperspy>=1.4',
             ],
         classifiers = [
