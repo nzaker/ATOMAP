@@ -64,6 +64,45 @@ class TestMakeMaskFromPositions:
                     position_list=pos, radius_list=rad, data_shape=(40, 40))
 
 
+class TestRemoveTooCloseAtoms:
+
+    def test_simple(self):
+        afr._remove_too_close_atoms(np.array([[0, 1]]), 5)
+
+    def test_two_atoms(self):
+        data = np.array([[1, 10], [10, 1]])
+        data_new0 = afr._remove_too_close_atoms(data, 5)
+        assert (data_new0 == data).all()
+        data_new1 = afr._remove_too_close_atoms(data, 20)
+        assert len(data_new1) == 1
+        assert (data_new1 == data[0]).all()
+
+    def test_three_atoms(self):
+        data = np.array([[1, 10], [10, 1], [3, 10]])
+        data_new = afr._remove_too_close_atoms(data, 5)
+        assert (data_new == data[:2]).all()
+
+    def test_several_overlap(self):
+        data = np.array([[1, 10], [10, 1], [10, 10]])
+        data_new0 = afr._remove_too_close_atoms(data, 5)
+        assert (data_new0 == data).all()
+        data_new1 = afr._remove_too_close_atoms(data, 20)
+        assert len(data_new1) == 1
+        assert (data_new1 == data[0]).all()
+
+    def test_many_atoms(self):
+        x, y = np.meshgrid(np.arange(10, 90, 10), np.arange(10, 90, 10))
+        x, y = x.flatten(), y.flatten()
+        data = np.stack((x, y)).T
+        data_new0 = afr._remove_too_close_atoms(data, 5)
+        assert (data_new0 == data).all()
+        data_new1 = afr._remove_too_close_atoms(data, 20)
+        assert len(data_new1) != len(data_new0)
+        data_new2 = afr._remove_too_close_atoms(data, 200)
+        assert len(data_new2)
+        assert (data_new2 == data[0]).all()
+
+
 class TestCropMask:
 
     def test_radius_1(self):

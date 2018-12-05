@@ -84,20 +84,43 @@ def get_atom_positions(
 
 
 def _remove_too_close_atoms(atom_positions, pixel_separation_tolerance):
-    index_list = []
-    for index0, atom0 in enumerate(atom_positions):
-        for index1, atom1 in enumerate(atom_positions):
-            if not ((atom0[0] == atom1[0]) and (atom0[1] == atom1[1])):
-                dist = math.hypot(atom0[0]-atom1[0], atom0[1]-atom1[1])
-                if pixel_separation_tolerance > dist:
-                    if not (index0 in index_list):
-                        index_list.append(index1)
-    new_atom_positions = []
-    for index, atom in enumerate(atom_positions):
-        if index not in index_list:
-            new_atom_positions.append(atom)
-    new_atom_positions = np.array(new_atom_positions)
-    return(new_atom_positions)
+    """Remove atoms which are within the tolerance from a list of positions
+
+    Parameters
+    ----------
+    atom_positions : NumPy array
+        In the form [[x0, y0], [x1, y1], ...]
+    pixel_separation_tolerance : scalar
+        Minimum separation between the positions.
+
+    Returns
+    -------
+    atom_positions_new : NumPy array
+        With the too close atoms removed.
+
+    Examples
+    --------
+    >>> import atomap.atom_finding_refining as afr
+    >>> data = np.array([[1, 10], [10, 1], [4, 10]])
+    >>> data_new = afr._remove_too_close_atoms(data, 5)
+
+    """
+    x_array = atom_positions[:, 0]
+    y_array = atom_positions[:, 1]
+    remove_list = []
+    for i, (x, y) in enumerate(atom_positions):
+        r = np.hypot(x_array - x, y_array - y)
+        index_list = np.where(r < pixel_separation_tolerance)[0]
+        for index in index_list:
+            if i != index:
+                if not (i in remove_list):
+                    remove_list.append(index)
+    remove_list = list(set(remove_list))  # Only get unique indices
+    remove_list.sort()
+    atom_list_new = atom_positions.tolist()
+    for i_remove in remove_list[::-1]:
+        atom_list_new.pop(i_remove)
+    return np.array(atom_list_new)
 
 
 def find_features_by_separation(
