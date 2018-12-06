@@ -241,8 +241,9 @@ class Sublattice():
         raise ValueError('Could not find zone_vector ' + str(zone_vector_id))
 
     def _check_if_nearest_neighbor_list(self):
+        """Check if the nearest neighbor lists has been populated."""
         if self.atom_list[0].nearest_neighbor_list is None:
-            raise ValueError(
+            raise Exception(
                     "The atom_position objects does not seem to have a "
                     "populated nearest neighbor list. "
                     "Has sublattice.find_nearest_neighbors() been called?")
