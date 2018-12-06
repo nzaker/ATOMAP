@@ -359,6 +359,7 @@ class Sublattice():
         zone_vector : tuple
             Zone vector for the system
         """
+        self._check_if_zone_axis_list()
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
         x_list, y_list, z_list = [], [], []
         for index, atom_plane in enumerate(atom_plane_list[1:]):
@@ -940,11 +941,7 @@ class Sublattice():
         if mask_radius is None:
             if percent_to_nn is None:
                 percent_to_nn = 0.4
-            if self.atom_list[0].nearest_neighbor_list is None:
-                raise ValueError(
-                        "The atom_position objects does not seem to have a "
-                        "populated nearest neighbor list. "
-                        "Has sublattice.find_nearest_neighbors() been called?")
+            self._check_if_nearest_neighbor_list()
         if image_data is None:
             image_data = self.original_image
         image_data = image_data.astype('float64')
@@ -997,11 +994,7 @@ class Sublattice():
         if mask_radius is None:
             if percent_to_nn is None:
                 percent_to_nn = 0.25
-            if self.atom_list[0].nearest_neighbor_list is None:
-                raise ValueError(
-                        "The atom_position objects does not seem to have a "
-                        "populated nearest neighbor list. "
-                        "Has sublattice.find_nearest_neighbors() been called?")
+            self._check_if_nearest_neighbor_list()
         if image_data is None:
             image_data = self.original_image
         image_data = image_data.astype('float64')
@@ -1451,12 +1444,8 @@ class Sublattice():
         if image is None:
             image = self.original_image
         if zone_vector_list is None:
-            if self.zones_axis_average_distances is None:
-                raise Exception(
-                        "zones_axis_average_distances is empty. "
-                        "Has construct_zone_axes been run?")
-            else:
-                zone_vector_list = self.zones_axis_average_distances
+            self._check_if_zone_axis_list()
+            zone_vector_list = self.zones_axis_average_distances
 
         atom_plane_list = []
         for zone_vector in zone_vector_list:
@@ -1902,6 +1891,7 @@ class Sublattice():
         >>> plane = sublattice.atom_planes_by_zone_vector[zone][0]
         >>> s = sublattice.get_monolayer_distance_line_profile(zone,plane)
         """
+        self._check_if_zone_axis_list()
         data_list = self.get_monolayer_distance_list_from_zone_vector(
                 zone_vector)
         signal = self._get_property_line_profile(
@@ -1920,6 +1910,7 @@ class Sublattice():
             zone_vector_list=None,
             atom_plane_list=None,
             upscale_map=2):
+        self._check_if_zone_axis_list()
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
         zone_vector_list = []
@@ -1964,7 +1955,7 @@ class Sublattice():
             invert_line_profile=False,
             add_zero_value_sublattice=None,
             upscale_map=2):
-
+        self._check_if_zone_axis_list()
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
 
@@ -2010,6 +2001,7 @@ class Sublattice():
             atom_plane,
             invert_line_profile=False,
             interpolate_value=50):
+        self._check_if_zone_axis_list()
         data_list = self.get_atom_distance_difference_from_zone_vector(
                 zone_vector)
         signal = self._get_property_line_profile(
@@ -2031,6 +2023,7 @@ class Sublattice():
             invert_line_profile=False,
             add_zero_value_sublattice=None,
             upscale_map=2):
+        self._check_if_zone_axis_list()
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
         zone_vector_list = []
