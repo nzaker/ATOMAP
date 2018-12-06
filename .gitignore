@@ -3,6 +3,7 @@ __pycache__
 atomap.egg-info
 *.swp
 *.swo
+*.swn
 *.jpg
 *.png
 *.npz
