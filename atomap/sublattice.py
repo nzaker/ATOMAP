@@ -248,6 +248,17 @@ class Sublattice():
                     "populated nearest neighbor list. "
                     "Has sublattice.find_nearest_neighbors() been called?")
 
+    def _check_if_zone_axis_list(self):
+        """Check if the zone axis list has been populated."""
+        if self.zones_axis_average_distances is None:
+            raise Exception(
+                    "zones_axis_average_distances is empty. "
+                    "Has sublattice.construct_zone_axes() been called?")
+        elif len(self.zones_axis_average_distances) == 0:
+            raise Exception(
+                    "zones_axis_average_distances is empty. "
+                    "Has sublattice.construct_zone_axes() been called?")
+
     def get_atom_angles_from_zone_vector(
             self,
             zone_vector0,

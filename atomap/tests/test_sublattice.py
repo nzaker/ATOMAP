@@ -128,13 +128,26 @@ class TestCheckIfNearestNeighborList:
 
     def test_has_nearest_neighbor_list(self):
         sublattice = dd.get_simple_cubic_sublattice()
-        sublattice.construct_zone_axes()
+        sublattice.find_nearest_neighbors()
         sublattice._check_if_nearest_neighbor_list()
 
     def test_has_no_nearest_neighbor_list(self):
         sublattice = dd.get_simple_cubic_sublattice()
-        with pytest.raises(ValueError):
+        with pytest.raises(Exception):
             sublattice._check_if_nearest_neighbor_list()
+
+
+class TestCheckIfZoneAxisList:
+
+    def test_has_zone_axis_list(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.construct_zone_axes()
+        sublattice._check_if_zone_axis_list()
+
+    def test_has_no_zone_axis_list(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        with pytest.raises(Exception):
+            sublattice._check_if_zone_axis_list()
 
 
 class TestSublatticeWithAtomPlanes:
@@ -472,7 +485,7 @@ class TestRefineFunctions:
 
     def test_2d_gaussian_simple(self):
         sublattice = Sublattice(self.xy, self.image_data)
-        with pytest.raises(ValueError):
+        with pytest.raises(Exception):
             sublattice.refine_atom_positions_using_2d_gaussian()
         sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_2d_gaussian()
@@ -496,7 +509,7 @@ class TestRefineFunctions:
 
     def test_center_of_mass_simple(self):
         sublattice = Sublattice(self.xy, self.image_data)
-        with pytest.raises(ValueError):
+        with pytest.raises(Exception):
             sublattice.refine_atom_positions_using_center_of_mass()
         sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_center_of_mass()
