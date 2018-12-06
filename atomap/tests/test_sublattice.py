@@ -124,6 +124,19 @@ class TestSublatticeSingleAtom:
         assert sublattice.y_position[0] == self.atom_position_list[0][1]
 
 
+class TestCheckIfNearestNeighborList:
+
+    def test_has_nearest_neighbor_list(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.construct_zone_axes()
+        sublattice._check_if_nearest_neighbor_list()
+
+    def test_has_no_nearest_neighbor_list(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        with pytest.raises(ValueError):
+            sublattice._check_if_nearest_neighbor_list()
+
+
 class TestSublatticeWithAtomPlanes:
 
     def setup_method(self):

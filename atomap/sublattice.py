@@ -240,6 +240,13 @@ class Sublattice():
                 return(zone_vector_index)
         raise ValueError('Could not find zone_vector ' + str(zone_vector_id))
 
+    def _check_if_nearest_neighbor_list(self):
+        if self.atom_list[0].nearest_neighbor_list is None:
+            raise ValueError(
+                    "The atom_position objects does not seem to have a "
+                    "populated nearest neighbor list. "
+                    "Has sublattice.find_nearest_neighbors() been called?")
+
     def get_atom_angles_from_zone_vector(
             self,
             zone_vector0,
