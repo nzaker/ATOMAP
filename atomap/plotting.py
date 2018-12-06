@@ -16,19 +16,18 @@ from atomap.tools import\
 
 def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list,
                       save=True):
-    fig, ax = plt.subplots()
+    x_shape = min(x_pos_list), max(x_pos_list)
+    y_shape = min(y_pos_list), max(y_pos_list)
+    ar = (x_shape[1] - x_shape[0])/(y_shape[1] - y_shape[0])
+    fig, ax = plt.subplots(figsize=(6*ar, 6))
     ax.quiver(
-            x_pos_list,
-            y_pos_list,
-            x_rot_list,
-            y_rot_list,
-            scale=20.0,
-            headwidth=0.0,
-            headlength=0.0,
-            headaxislength=0.0,
-            pivot='middle')
+            x_pos_list, y_pos_list,
+            x_rot_list, y_rot_list,
+            headwidth=0.0, headlength=0.0, headaxislength=0.0,
+            scale=20.0, pivot='middle')
     ax.set_xlim(min(x_pos_list), max(x_pos_list))
     ax.set_ylim(min(y_pos_list), max(y_pos_list))
+    ax.set_aspect('equal')
     if save:
         fig.savefig("vector_field.png", dpi=200)
 

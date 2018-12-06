@@ -2551,8 +2551,7 @@ class Sublattice():
         signal.plot(**kwargs)
 
     def plot_ellipticity_vectors(self, save=False):
-        """
-        Get a quiver plot of the rotation and ellipticity for the sublattice.
+        """Get a quiver plot of rotation and ellipticity for the sublattice.
 
         sublattice.refine_atom_positions_using_2d_gaussian has to be run
         at least once before using this function.
@@ -2583,10 +2582,8 @@ class Sublattice():
         u_quiver *= -1
 
         plot_vector_field(
-                self.x_position,
-                self.y_position,
-                u_quiver,
-                v_quiver,
+                self.x_position, self.y_position,
+                u_quiver, v_quiver,
                 save=save)
 
     def plot_ellipticity_map(self, **kwargs):

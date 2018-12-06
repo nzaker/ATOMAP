@@ -1,10 +1,8 @@
-from atomap.plotting import _make_atom_position_marker_list
+import numpy as np
 from atomap.atom_position import Atom_Position
 from atomap.atom_plane import Atom_Plane
 from atomap.atom_lattice import Atom_Lattice
-from atomap.plotting import (
-        _make_single_atom_plane_marker_list,
-        _make_atom_planes_marker_list)
+import atomap.plotting as pl
 
 
 class TestMakeAtomPositionMarkerList:
@@ -14,7 +12,7 @@ class TestMakeAtomPositionMarkerList:
         for i in range(20):
             atom_position = Atom_Position(i, i)
             atom_position_list.append(atom_position)
-        marker_list = _make_atom_position_marker_list(
+        marker_list = pl._make_atom_position_marker_list(
                 atom_position_list,
                 scale=0.2,
                 markersize=30,
@@ -43,17 +41,30 @@ class TestAtomPlaneMarkerPlotting:
 
     def test_single_atom_plane_marker(self):
         atom_plane = self.atom_plane_list[0]
-        marker_list = _make_single_atom_plane_marker_list(atom_plane)
+        marker_list = pl._make_single_atom_plane_marker_list(atom_plane)
         assert len(marker_list) == 1
 
     def test_make_atom_planes_marker_list_no_number(self):
         atom_plane_list = self.atom_plane_list
-        marker_list = _make_atom_planes_marker_list(
+        marker_list = pl._make_atom_planes_marker_list(
                 atom_plane_list, add_numbers=False)
         assert len(marker_list) == 2
 
     def test_make_atom_planes_marker_list(self):
         atom_plane_list = self.atom_plane_list
-        marker_list = _make_atom_planes_marker_list(
+        marker_list = pl._make_atom_planes_marker_list(
                 atom_plane_list, add_numbers=True)
         assert len(marker_list) == 4
+
+
+class TestPlotVectorField:
+
+    def test_simple(self):
+        x_list, y_list = np.arange(100), np.arange(100, 200)
+        xr_list, yr_list = np.arange(200, 300), np.arange(300, 400)
+        pl.plot_vector_field(x_list, y_list, xr_list, yr_list)
+
+    def test_save_argument(self):
+        x_list, y_list = np.arange(100), np.arange(100, 200)
+        xr_list, yr_list = np.arange(200, 300), np.arange(300, 400)
+        pl.plot_vector_field(x_list, y_list, xr_list, yr_list, save=True)
