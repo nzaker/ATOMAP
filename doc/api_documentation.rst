@@ -84,6 +84,12 @@ Analysis tools
     :members:
     :undoc-members:
 
+Quantification
+==============
+.. automodule:: atomap.quantification
+    :members:
+    :undoc-members:
+
 Initial position finding
 ========================
 .. automodule:: atomap.initial_position_finding
