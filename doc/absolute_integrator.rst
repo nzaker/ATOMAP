@@ -11,6 +11,8 @@ The following section describes methods incorporated from the AbsoluteIntegrator
 Detector Normalisation
 ======================
 
+:py:func:`~atomap.quantification.detector_normalisation`
+
 To carry out normal detector normalisation only the detector image and experimental image are needed.
 
 .. code-block:: python
@@ -20,6 +22,7 @@ To carry out normal detector normalisation only the detector image and experimen
     >>> det_image = am.example_data.get_detector_image_signal()
     >>> image = am.dummy_data.get_simple_cubic_signal(image_noise=True)
     >>> image_normalised = am.quant.detector_normalisation(image, det_image, 60)
+
 
 Flux Weighting Analysis
 =======================
@@ -33,4 +36,5 @@ The detector flux weighting method is based on the following paper:
 
     >>> image_normalised = am.quant.detector_normalisation(image, det_image, inner_angle=60, outer_angle = None, flux_expo=2.873)
 
-.. If the flux_exponent is unknown then it is possible to create an interactive flux plot described in detail in the example notebook: Atomap-demos repository: https://gitlab.com/atomap/atomap_demos/adf_quantification.
+
+If the flux_exponent is unknown then it is possible to create an interactive flux plot described in detail in the example notebook: https://gitlab.com/atomap/atomap_demos/blob/release/adf_quantification_notebook/adf_quantification.ipynb
