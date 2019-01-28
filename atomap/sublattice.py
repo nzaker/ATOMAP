@@ -2519,7 +2519,8 @@ class Sublattice():
 
         Setting color and color map
 
-        >>> sublattice.plot(color='green', cmap='viridis')
+        >>> sublattice.plot(color='green', cmap='viridis', add_numbers=True,
+        ...                 markersize=15)
 
         See also
         --------
@@ -2527,7 +2528,8 @@ class Sublattice():
                                  as markers. More customizability.
 
         """
-        signal = self.get_atom_list_on_image(color=color)
+        signal = self.get_atom_list_on_image(
+                color=color, add_numbers=add_numbers, markersize=markersize)
         signal.plot(**kwargs, plot_markers=True)
 
     def plot_planes(self, image=None, add_numbers=True, color='red', **kwargs):
