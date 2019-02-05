@@ -136,6 +136,13 @@ class TestCropMask:
         mask_crop = mask[x0:x1, y0:y1]
         assert mask_crop.shape == (2*r+1, 2*r+1)
 
+class TestCropArray:
+    
+    def test_crop(self):
+        arr = np.array([[100]])
+        arr2 = np.zeros((9,9))
+        arr2[4,4] = 100
+        assert (afr_crop_array(arr, 0,0,5) == arr2).all()
 
 class TestFindBackgroundValue:
 
@@ -202,6 +209,18 @@ class TestMakeModelFromAtomList:
                 image_data=image,
                 mask_radius=3)
         assert len(model) == 2
+
+class TestCenterOfMass:
+
+    def find_center(self):
+        center = np.zeros((5,5))
+        center[1,1] = 1
+        assert afr.calculate_center_of_mass(center) == (1,1)
+
+    def compare_center_of_mass(self):
+        from scipy.ndimage import center_of_mass
+        rand = np.random.random((5,5))
+        center_of_mass(rand) == afr.calculate_center_of_mass(rand)
 
 
 class TestFitAtomPositionsWithGaussianModel:
@@ -292,6 +311,10 @@ class TestMakeCircularMask:
     def test_all_false_mask(self):
         mask = afr._make_circular_mask(10, 10, 5, 5, 3)
         assert not mask.any()
+
+    def test_correct_number_of_ones(self):
+        one = np.ones((10,10))
+        assert np.sum(afr.zero_array_outside_circle(one, 3)) == 32
 
 
 class TestFitAtomPositionsGaussian:

@@ -401,8 +401,12 @@ def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
 
 #atom_finding_refining
 
-def _mask_outside_circle(arr, radius):
-    'Circular mask for cropped images'
+def _mask_circle(arr, radius):
+    '''
+    Create a circlular mask centered on the array
+    The circle has values of False
+    Numba jit compatible.
+    '''
     imageSizeX, imageSizeY = arr.shape
     centerX = (arr.shape[0]-1)/2
     centerY = (arr.shape[1]-1)/2
@@ -411,16 +415,39 @@ def _mask_outside_circle(arr, radius):
     mask = x*x + y*y > radius*radius
     return mask
 
-def get_circle_around_point(arr, radius):
-    # if we want to use numba jit, it only supports masking 1D arrays for now
-    # hence we flatten the mask and data, then reshape after masking to 0
+def zero_array_outside_circle(arr, radius):
+    '''
+    Zero all values outside a centered circle of a given radius on array
+    Numba jit compatible
+    '''
     shape = arr.shape
-    mask = _mask_outside_circle(arr, radius).flatten()
+    mask = _mask_circle(arr, radius).flatten()
     arr = arr.flatten()
     arr[mask] = 0
     return np.reshape(arr, shape)
 
 def _crop_array(arr, centerX, centerY, radius):
+    '''
+    Crop an array around a center point to give a square of sidelengths
+    `2*radius-1`
+
+    If the center point is such that the radius will intersect the array 
+    edges, the space outside the array will be padded as zeros.
+
+    Parameters
+    ----------
+    arr : Numpy 2D Array
+    centreX, centreY : int
+        Centre point of the cropped array.
+    radius : int
+        Radius of the crop around the center point.
+
+    Returns
+    -------
+    Numpy 2D Array
+        Array with the shape (2*radius-1, 2*radius-1).
+    '''
+    
     radius_left = radius-1
     radius_right = radius
     
@@ -445,6 +472,7 @@ def calculate_center_of_mass(arr):
     Simple center of mass approach from stackoverflow:
     https://stackoverflow.com/questions/37519238/python-find-center-of-object-in-an-image
     '''
+    #arr -= arr.min() # Can consider doing this - this gives the center of mass higher "contrast"
     arr = arr / np.sum(arr)
 
     dx = np.sum(arr, 1)
@@ -456,6 +484,9 @@ def calculate_center_of_mass(arr):
     return cx, cy
     
 def _pad_array(arr, padding=1):
+    '''
+    Pad an array to give it extra zero-value pixels around the edges.
+    '''
     x,y = arr.shape
     arr2 = np.zeros((x+padding*2,y+padding*2))
     arr2[padding:-padding,padding:-padding] = arr.copy()
