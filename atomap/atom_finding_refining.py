@@ -399,6 +399,67 @@ def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
     mask = x*x + y*y <= radius*radius
     return(mask)
 
+#atom_finding_refining
+
+def _mask_outside_circle(arr, radius):
+    'Circular mask for cropped images'
+    imageSizeX, imageSizeY = arr.shape
+    centerX = (arr.shape[0]-1)/2
+    centerY = (arr.shape[1]-1)/2
+    
+    y, x = np.expand_dims(np.arange(-centerX, imageSizeX-centerX), axis=1), np.arange(-centerY,imageSizeY-centerY)
+    mask = x*x + y*y > radius*radius
+    return mask
+
+def get_circle_around_point(arr, radius):
+    # if we want to use numba jit, it only supports masking 1D arrays for now
+    # hence we flatten the mask and data, then reshape after masking to 0
+    shape = arr.shape
+    mask = _mask_outside_circle(arr, radius).flatten()
+    arr = arr.flatten()
+    arr[mask] = 0
+    return np.reshape(arr, shape)
+
+def _crop_array(arr, centerX, centerY, radius):
+    radius_left = radius-1
+    radius_right = radius
+    
+    #reversed first two indices so we can subtract the edges
+    edges_of_crop = np.array([
+        radius_left - centerX, 
+        radius_left - centerY, 
+        centerX + radius_right, 
+        centerY + radius_right])
+    ymax, xmax = arr.shape
+    edges_of_arr = np.array([0,0,xmax-1, ymax-1])
+    edge_difference_max = np.max(edges_of_crop - edges_of_arr)
+    
+    if edge_difference_max > 0:
+        arr = _pad_array(arr, edge_difference_max)
+        centerX += edge_difference_max
+        centerY += edge_difference_max
+    return arr[centerY-radius_left:centerY+radius_right, centerX-radius_left:centerX+radius_right]
+
+def calculate_center_of_mass(arr):
+    '''
+    Simple center of mass approach from stackoverflow:
+    https://stackoverflow.com/questions/37519238/python-find-center-of-object-in-an-image
+    '''
+    arr = arr / np.sum(arr)
+
+    dx = np.sum(arr, 1)
+    dy = np.sum(arr, 0)
+
+    (Y, X) = arr.shape
+    cx = np.sum(dx * np.arange(X))
+    cy = np.sum(dy * np.arange(Y))
+    return cx, cy
+    
+def _pad_array(arr, padding=1):
+    x,y = arr.shape
+    arr2 = np.zeros((x+padding*2,y+padding*2))
+    arr2[padding:-padding,padding:-padding] = arr.copy()
+    return arr2
 
 def _make_mask_from_positions(
         position_list,
@@ -710,6 +771,7 @@ def _fit_atom_positions_with_gaussian_model(
 
     if model.signal.axes_manager.signal_size < 6:
         return False
+    print(model.components)
     model.fit()
 
     gaussian_list = []

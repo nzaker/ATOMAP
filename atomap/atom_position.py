@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
 import math
-from atomap.atom_finding_refining import _make_circular_mask
+from atomap.atom_finding_refining import _make_circular_mask, _crop_array, get_circle_around_point, calculate_center_of_mass
 from atomap.atom_finding_refining import fit_atom_positions_gaussian
 from atomap.atom_finding_refining import _atom_to_gaussian_component
 
@@ -377,34 +377,6 @@ class Atom_Position:
                 mask_radius=mask_radius,
                 centre_free=centre_free)
 
-    def get_center_position_com(
-            self,
-            image_data,
-            percent_to_nn=0.40,
-            mask_radius=None):
-        if mask_radius is None:
-            closest_neighbor = 100000000000000000
-            for neighbor_atom in self.nearest_neighbor_list:
-                distance = self.get_pixel_distance_from_another_atom(
-                        neighbor_atom)
-                if distance < closest_neighbor:
-                    closest_neighbor = distance
-            mask_radius = closest_neighbor * percent_to_nn
-        mask = _make_circular_mask(
-                self.pixel_y,
-                self.pixel_x,
-                image_data.shape[0],
-                image_data.shape[1],
-                mask_radius)
-        data = copy.deepcopy(image_data)
-        mask = np.invert(mask)
-        data[mask] = 0
-
-        center_of_mass = self._calculate_center_of_mass(data)
-
-        new_x, new_y = center_of_mass[1], center_of_mass[0]
-        return(new_x, new_y)
-
     def refine_position_using_center_of_mass(
             self,
             image_data,
@@ -418,6 +390,32 @@ class Atom_Position:
         self.old_pixel_y_list.append(self.pixel_y)
         self.pixel_x = new_x
         self.pixel_y = new_y
+
+    def get_center_position_com(
+            self,
+            image_data,
+            percent_to_nn=0.40,
+            mask_radius=None):
+        closest_neighbor = 100000000000000000
+        for neighbor_atom in self.nearest_neighbor_list:
+            distance = self.get_pixel_distance_from_another_atom(
+                    neighbor_atom)
+            if distance < closest_neighbor:
+                closest_neighbor = distance
+        radius = int(round(closest_neighbor*percent_to_nn))
+        cx, cy = int(round(self.pixel_x)), int(round(self.pixel_y))
+        data = _crop_array(image_data,
+                cx,
+                cy,
+                radius+1,
+        )
+        #fig, ax1 = plt.subplots(ncols=1)
+        edgeX, edgeY = cx - radius, cy - radius
+        data2 = get_circle_around_point(data, radius)
+        #ax1.imshow(data2)
+        new_x, new_y = calculate_center_of_mass(data2)
+        #ax1.scatter(new_x, new_y)
+        return edgeX + new_x, edgeY + new_y
 
     def _calculate_center_of_mass(self, data):
         center_of_mass = ndimage.measurements.center_of_mass(
