@@ -465,7 +465,11 @@ def _crop_array(arr, centerX, centerY, radius):
         arr = _pad_array(arr, edge_difference_max)
         centerX += edge_difference_max
         centerY += edge_difference_max
-    return arr[centerY-radius_left:centerY+radius_right, centerX-radius_left:centerX+radius_right]
+    ymin = centerY-radius_left
+    ymax = centerY+radius_right
+    xmin = centerX-radius_left
+    xmax = centerX+radius_right
+    return arr[ymin:ymax, xmin:xmax]
 
 def calculate_center_of_mass(arr):
     '''

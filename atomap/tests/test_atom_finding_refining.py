@@ -222,6 +222,16 @@ class TestCenterOfMass:
         rand = np.random.random((5,5))
         center_of_mass(rand) == afr.calculate_center_of_mass(rand)
 
+    def test_center_of_mass_dummy_data(self):
+        sub = dd.get_distorted_cubic_sublattice()
+        sub.find_nearest_neighbors()
+        sub.refine_atom_positions_using_center_of_mass(show_progressbar=False)
+        np.testing.assert_almost_equal(
+            np.array(sub.atom_positions)[:10,:10],
+            [[ 30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.],
+                [ 30.,  50.,  70.,  90., 110., 130., 150., 170., 190., 210.]]
+        )
+
 
 class TestFitAtomPositionsWithGaussianModel:
 

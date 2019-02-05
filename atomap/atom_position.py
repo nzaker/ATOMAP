@@ -425,14 +425,17 @@ class Atom_Position:
                     neighbor_atom)
                 if distance < closest_neighbor:
                     closest_neighbor = distance
-            mask_radius = int(round(closest_neighbor * percent_to_nn))
+            mask_radius = closest_neighbor * percent_to_nn
 
         cx, cy = int(round(self.pixel_x)), int(round(self.pixel_y))
-        data = _crop_array(image_data, cx, cy, mask_radius+1)
-        edgeX, edgeY = cx - mask_radius, cy - mask_radius
+        crop_radius = np.ceil(mask_radius).astype(int)
+        data = _crop_array(image_data, cx, cy, crop_radius+1)
+        edgeX, edgeY = cx - crop_radius, cy - crop_radius
         data2 = zero_array_outside_circle(data, mask_radius)
-        new_x, new_y = calculate_center_of_mass(data2)
-        return edgeX + new_x, edgeY + new_y
+        new_y, new_x = calculate_center_of_mass(data2)
+        new_x, new_y = edgeX + new_x, edgeY + new_y
+
+        return new_x, new_y
 
     def get_atomic_plane_from_zone_vector(self, zone_vector):
         for atomic_plane in self.in_atomic_plane:
