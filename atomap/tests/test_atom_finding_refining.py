@@ -230,7 +230,7 @@ class TestCenterOfMass:
             np.array(sub.atom_positions)[:10,:10],
             [[ 30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.],
                 [ 30.,  50.,  70.,  90., 110., 130., 150., 170., 190., 210.]]
-        )
+        , decimal=5)
 
 
 class TestFitAtomPositionsWithGaussianModel:
