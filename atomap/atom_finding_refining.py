@@ -806,7 +806,6 @@ def _fit_atom_positions_with_gaussian_model(
 
     if model.signal.axes_manager.signal_size < 6:
         return False
-    print(model.components)
     model.fit()
 
     gaussian_list = []
