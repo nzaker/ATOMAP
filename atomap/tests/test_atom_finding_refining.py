@@ -61,7 +61,7 @@ class TestMakeMaskFromPositions:
         rad = [r, r]
         with pytest.raises(ValueError):
             afr._make_mask_from_positions(
-                    position_list=pos, radius_list=rad, data_shape=(40, 40))
+                position_list=pos, radius_list=rad, data_shape=(40, 40))
 
 
 class TestRemoveTooCloseAtoms:
@@ -136,13 +136,15 @@ class TestCropMask:
         mask_crop = mask[x0:x1, y0:y1]
         assert mask_crop.shape == (2*r+1, 2*r+1)
 
+
 class TestCropArray:
-    
+
     def test_crop(self):
         arr = np.array([[100]])
-        arr2 = np.zeros((9,9))
-        arr2[4,4] = 100
-        assert (afr_crop_array(arr, 0,0,5) == arr2).all()
+        arr2 = np.zeros((9, 9))
+        arr2[4, 4] = 100
+        assert (afr._crop_array(arr, 0, 0, 5) == arr2).all()
+
 
 class TestFindBackgroundValue:
 
@@ -183,43 +185,44 @@ class TestMakeModelFromAtomList:
     def test_1_atom(self):
         sublattice = self.sublattice
         model, mask = afr._make_model_from_atom_list(
-                [sublattice.atom_list[10]],
-                sublattice.image)
+            [sublattice.atom_list[10]],
+            sublattice.image)
         assert len(model) == 1
 
     def test_2_atom(self):
         sublattice = self.sublattice
         model, mask = afr._make_model_from_atom_list(
-                sublattice.atom_list[10:12],
-                sublattice.image)
+            sublattice.atom_list[10:12],
+            sublattice.image)
         assert len(model) == 2
 
     def test_5_atom(self):
         sublattice = self.sublattice
         model, mask = afr._make_model_from_atom_list(
-                sublattice.atom_list[10:15],
-                sublattice.image)
+            sublattice.atom_list[10:15],
+            sublattice.image)
         assert len(model) == 5
 
     def test_set_mask_radius_atom(self):
         atom_list = [Atom_Position(2, 2), Atom_Position(4, 4)]
         image = np.random.random((20, 20))
         model, mask = afr._make_model_from_atom_list(
-                atom_list=atom_list,
-                image_data=image,
-                mask_radius=3)
+            atom_list=atom_list,
+            image_data=image,
+            mask_radius=3)
         assert len(model) == 2
+
 
 class TestCenterOfMass:
 
     def find_center(self):
-        center = np.zeros((5,5))
-        center[1,1] = 1
-        assert afr.calculate_center_of_mass(center) == (1,1)
+        center = np.zeros((5, 5))
+        center[1, 1] = 1
+        assert afr.calculate_center_of_mass(center) == (1, 1)
 
     def compare_center_of_mass(self):
         from scipy.ndimage import center_of_mass
-        rand = np.random.random((5,5))
+        rand = np.random.random((5, 5))
         center_of_mass(rand) == afr.calculate_center_of_mass(rand)
 
     def test_center_of_mass_dummy_data(self):
@@ -227,10 +230,9 @@ class TestCenterOfMass:
         sub.find_nearest_neighbors()
         sub.refine_atom_positions_using_center_of_mass(show_progressbar=False)
         np.testing.assert_almost_equal(
-            np.array(sub.atom_positions)[:10,:10],
-            [[ 30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.],
-                [ 30.,  50.,  70.,  90., 110., 130., 150., 170., 190., 210.]]
-        , decimal=5)
+            np.array(sub.atom_positions)[:10, :10],
+            [[30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.],
+                [30.,  50.,  70.,  90., 110., 130., 150., 170., 190., 210.]], decimal=5)
 
 
 class TestFitAtomPositionsWithGaussianModel:
@@ -241,44 +243,44 @@ class TestFitAtomPositionsWithGaussianModel:
         x, y = x.flatten(), y.flatten()
         sigma, A = 1, 50
         test_data.add_atom_list(
-                x, y, sigma_x=sigma, sigma_y=sigma, amplitude=A)
+            x, y, sigma_x=sigma, sigma_y=sigma, amplitude=A)
         self.sublattice = test_data.sublattice
         self.sublattice.find_nearest_neighbors()
 
     def test_1_atom(self):
         sublattice = self.sublattice
         g_list = afr._fit_atom_positions_with_gaussian_model(
-                [sublattice.atom_list[5]],
-                sublattice.image)
+            [sublattice.atom_list[5]],
+            sublattice.image)
         assert len(g_list) == 1
 
     def test_2_atom(self):
         sublattice = self.sublattice
         g_list = afr._fit_atom_positions_with_gaussian_model(
-                sublattice.atom_list[5:7],
-                sublattice.image)
+            sublattice.atom_list[5:7],
+            sublattice.image)
         assert len(g_list) == 2
 
     def test_5_atom(self):
         sublattice = self.sublattice
         g_list = afr._fit_atom_positions_with_gaussian_model(
-                sublattice.atom_list[5:10],
-                sublattice.image)
+            sublattice.atom_list[5:10],
+            sublattice.image)
         assert len(g_list) == 5
 
     def test_wrong_input_0(self):
         sublattice = self.sublattice
         with pytest.raises(TypeError):
             afr._fit_atom_positions_with_gaussian_model(
-                    sublattice.atom_list[5],
-                    sublattice.image)
+                sublattice.atom_list[5],
+                sublattice.image)
 
     def test_wrong_input_1(self):
         sublattice = self.sublattice
         with pytest.raises(TypeError):
             afr._fit_atom_positions_with_gaussian_model(
-                    [sublattice.atom_list[5:7]],
-                    sublattice.image)
+                [sublattice.atom_list[5:7]],
+                sublattice.image)
 
 
 class TestAtomToGaussianComponent:
@@ -286,9 +288,9 @@ class TestAtomToGaussianComponent:
     def test_simple(self):
         x, y, sX, sY, r = 7.1, 2.8, 2.1, 3.3, 1.9
         atom_position = Atom_Position(
-                x=x, y=y,
-                sigma_x=sX, sigma_y=sY,
-                rotation=r)
+            x=x, y=y,
+            sigma_x=sX, sigma_y=sY,
+            rotation=r)
         gaussian = afr._atom_to_gaussian_component(atom_position)
         assert x == gaussian.centre_x.value
         assert y == gaussian.centre_y.value
@@ -323,7 +325,7 @@ class TestMakeCircularMask:
         assert not mask.any()
 
     def test_correct_number_of_ones(self):
-        one = np.ones((10,10))
+        one = np.ones((10, 10))
         assert np.sum(afr.zero_array_outside_circle(one, 3)) == 32
 
 
@@ -346,11 +348,11 @@ class TestFitAtomPositionsGaussian:
         image_data = sublattice.image
         afr.fit_atom_positions_gaussian(atom_list, image_data)
         assert_allclose(
-                sublattice.atom_list[atom_index].pixel_x,
-                self.x[atom_index], rtol=1e-7)
+            sublattice.atom_list[atom_index].pixel_x,
+            self.x[atom_index], rtol=1e-7)
         assert_allclose(
-                sublattice.atom_list[atom_index].pixel_y,
-                self.y[atom_index], rtol=1e-7)
+            sublattice.atom_list[atom_index].pixel_y,
+            self.y[atom_index], rtol=1e-7)
 
     def test_two_atoms(self):
         sublattice = self.sublattice
@@ -362,11 +364,11 @@ class TestFitAtomPositionsGaussian:
         afr.fit_atom_positions_gaussian(atom_list, image_data)
         for atom_index in atom_indices:
             assert_allclose(
-                    sublattice.atom_list[atom_index].pixel_x,
-                    self.x[atom_index], rtol=1e-7)
+                sublattice.atom_list[atom_index].pixel_x,
+                self.x[atom_index], rtol=1e-7)
             assert_allclose(
-                    sublattice.atom_list[atom_index].pixel_y,
-                    self.y[atom_index], rtol=1e-7)
+                sublattice.atom_list[atom_index].pixel_y,
+                self.y[atom_index], rtol=1e-7)
 
     def test_four_atoms(self):
         sublattice = self.sublattice
@@ -378,11 +380,11 @@ class TestFitAtomPositionsGaussian:
         afr.fit_atom_positions_gaussian(atom_list, image_data)
         for atom_index in atom_indices:
             assert_allclose(
-                    sublattice.atom_list[atom_index].pixel_x,
-                    self.x[atom_index], rtol=1e-7)
+                sublattice.atom_list[atom_index].pixel_x,
+                self.x[atom_index], rtol=1e-7)
             assert_allclose(
-                    sublattice.atom_list[atom_index].pixel_y,
-                    self.y[atom_index], rtol=1e-7)
+                sublattice.atom_list[atom_index].pixel_y,
+                self.y[atom_index], rtol=1e-7)
 
     def test_nine_atoms(self):
         sublattice = self.sublattice
@@ -394,18 +396,18 @@ class TestFitAtomPositionsGaussian:
         afr.fit_atom_positions_gaussian(atom_list, image_data)
         for atom_index in atom_indices:
             assert_allclose(
-                    sublattice.atom_list[atom_index].pixel_x,
-                    self.x[atom_index], rtol=1e-7)
+                sublattice.atom_list[atom_index].pixel_x,
+                self.x[atom_index], rtol=1e-7)
             assert_allclose(
-                    sublattice.atom_list[atom_index].pixel_y,
-                    self.y[atom_index], rtol=1e-7)
+                sublattice.atom_list[atom_index].pixel_y,
+                self.y[atom_index], rtol=1e-7)
 
     def test_wrong_input_none_mask_radius_percent_to_nn(self):
         sublattice = self.sublattice
         with pytest.raises(ValueError):
             afr.fit_atom_positions_gaussian(
-                    sublattice.atom_list, sublattice.image,
-                    percent_to_nn=None, mask_radius=None)
+                sublattice.atom_list, sublattice.image,
+                percent_to_nn=None, mask_radius=None)
 
 
 class TestGetAtomPositions:
@@ -441,7 +443,7 @@ class TestBadFitCondition:
         x0 = atom[0].pixel_x
         atom[0].pixel_x += 2
         g = afr._fit_atom_positions_with_gaussian_model(
-                atom, sublattice.image, mask_radius=4)
+            atom, sublattice.image, mask_radius=4)
         assert_allclose(g[0].centre_x.value, x0, rtol=1e-2)
 
     def test_initial_position_outside_mask_x(self):
@@ -449,7 +451,7 @@ class TestBadFitCondition:
         atom = [sublattice.atom_list[6]]
         atom[0].pixel_x += 3
         g = afr._fit_atom_positions_with_gaussian_model(
-                atom, sublattice.image, mask_radius=2)
+            atom, sublattice.image, mask_radius=2)
         assert not g
 
     def test_initial_position_outside_mask_y(self):
@@ -457,7 +459,7 @@ class TestBadFitCondition:
         atom = [sublattice.atom_list[6]]
         atom[0].pixel_y -= 4
         g = afr._fit_atom_positions_with_gaussian_model(
-                atom, sublattice.image, mask_radius=2)
+            atom, sublattice.image, mask_radius=2)
         assert not g
 
     def test_initial_position_outside_mask_xy(self):
@@ -466,14 +468,14 @@ class TestBadFitCondition:
         atom[0].pixel_y += 3
         atom[0].pixel_x += 3
         g = afr._fit_atom_positions_with_gaussian_model(
-                atom, sublattice.image, mask_radius=2)
+            atom, sublattice.image, mask_radius=2)
         assert not g
 
     def test_too_small_percent_to_nn(self):
         sublattice = self.sublattice
         afr._fit_atom_positions_with_gaussian_model(
-                [sublattice.atom_list[6]], sublattice.image,
-                percent_to_nn=0.01)
+            [sublattice.atom_list[6]], sublattice.image,
+            percent_to_nn=0.01)
 
 
 class TestFitOutsideImageBounds:
@@ -486,7 +488,7 @@ class TestFitOutsideImageBounds:
         image = test_data.signal.data
         atom_position = Atom_Position(50, 10)
         gaussian_list = afr._fit_atom_positions_with_gaussian_model(
-                [atom_position], image, mask_radius=30)
+            [atom_position], image, mask_radius=30)
         if gaussian_list is not False:
             gaussian = gaussian_list[0]
             assert gaussian.centre_x.value > 0
@@ -502,7 +504,7 @@ class TestFitOutsideImageBounds:
         image = test_data.signal.data
         atom_position = Atom_Position(10, 30)
         gaussian_list = afr._fit_atom_positions_with_gaussian_model(
-                [atom_position], image, mask_radius=30)
+            [atom_position], image, mask_radius=30)
         if gaussian_list is not False:
             gaussian = gaussian_list[0]
             assert gaussian.centre_x.value > 0
@@ -518,7 +520,7 @@ class TestFitOutsideImageBounds:
         image = test_data.signal.data
         atom_position = Atom_Position(50, 90)
         gaussian_list = afr._fit_atom_positions_with_gaussian_model(
-                [atom_position], image, mask_radius=30)
+            [atom_position], image, mask_radius=30)
         if gaussian_list is not False:
             gaussian = gaussian_list[0]
             assert gaussian.centre_x.value > 0
@@ -534,7 +536,7 @@ class TestFitOutsideImageBounds:
         image = test_data.signal.data
         atom_position = Atom_Position(80, 50)
         gaussian_list = afr._fit_atom_positions_with_gaussian_model(
-                [atom_position], image, mask_radius=30)
+            [atom_position], image, mask_radius=30)
         if gaussian_list is not False:
             gaussian = gaussian_list[0]
             assert gaussian.centre_x.value > 0
@@ -561,20 +563,20 @@ class TestGetFeatureSeparation:
         sr0, sr1, s_step = 10, 16, 2
         s = dd.get_simple_cubic_signal()
         s_fs = afr.get_feature_separation(
-                s, separation_range=(sr0, sr1), separation_step=s_step)
+            s, separation_range=(sr0, sr1), separation_step=s_step)
         assert s_fs.axes_manager.navigation_size == ((sr1 - sr0) / s_step)
 
     def test_pca_subtract_background_normalize_intensity(self):
         s = dd.get_simple_cubic_signal()
         s_fs = afr.get_feature_separation(
-                s, pca=True, subtract_background=True,
-                normalize_intensity=True)
+            s, pca=True, subtract_background=True,
+            normalize_intensity=True)
         assert hasattr(s_fs, 'data')
 
     def test_dtypes(self):
         dtype_list = [
-                'float64', 'float32', 'uint64', 'uint32', 'uint16', 'uint8',
-                'int64', 'int32', 'int16', 'int8']
+            'float64', 'float32', 'uint64', 'uint32', 'uint16', 'uint8',
+            'int64', 'int32', 'int16', 'int8']
         s = dd.get_simple_cubic_signal()
         s *= 10**9
         for dtype in dtype_list:
