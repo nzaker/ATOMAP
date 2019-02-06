@@ -345,8 +345,7 @@ Furthermore, the inverse of the ABF image is used, such that the intensities of 
 
 .. code-block:: python
 
-    >>> initial_positions = np.asarray(sublattice_A.atom_positions)
-    >>> initial_positions = np.swapaxes(initial_positions, 0, 1)
+    >>> initial_positions = sublattice_A.atom_positions
     >>> sublattice_A2 = am.Sublattice(initial_positions, image=np.divide(1, s_ABF.data), color='r')
     >>> sublattice_A2.find_nearest_neighbors()
     >>> sublattice_A2.refine_atom_positions_using_center_of_mass()
@@ -358,8 +357,7 @@ The same is done for the B-sublattice
 
 .. code-block:: python
 
-    >>> initial_positions = np.asarray(sublattice_B.atom_positions)
-    >>> initial_positions = np.swapaxes(initial_positions, 0, 1)
+    >>> initial_positions = sublattice_B.atom_positions
     >>> sublattice_B2 = am.Sublattice(initial_positions, image=image_without_A2, color='b')
     >>> sublattice_B2.find_nearest_neighbors()
     >>> sublattice_B2.refine_atom_positions_using_center_of_mass()

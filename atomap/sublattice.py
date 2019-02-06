@@ -53,17 +53,19 @@ class Sublattice():
         Attributes
         ----------
         image: 2D NumPy array, or 2D array-like.
-        x_position : list of floats
-        y_position : list of floats
-        sigma_x : list of floats
-        sigma_y : list of floats
-        sigma_average : list of floats
-        rotation : list of floats
+        x_position : NumPy Array
+        y_position : NumPy Array
+        atom_positions : NumPy Array
+            In the form [[x0, y0], [x1, y1], ...]
+        sigma_x : NumPy Array
+        sigma_y : NumPy Array
+        sigma_average : NumPy Array
+        rotation : NumPy Array
             In radians. The rotation of the axes of each 2D-Gaussian relative
             to the horizontal axes. For the rotation of the ellipticity, see
             rotation_ellipticity.
-        ellipticity : list of floats
-        rotation_ellipticity : list of floats
+        ellipticity : NumPy Array
+        rotation_ellipticity : NumPy Array
             In radians, the rotation between the "x-axis" and the major axis
             of the ellipse. Basically giving the direction of the ellipticity.
         signal : HyperSpy 2D signal
@@ -147,68 +149,77 @@ class Sublattice():
 
     @property
     def atom_positions(self):
-        return([self.x_position, self.y_position])
+        atom_pos = np.stack((self.x_position, self.y_position), axis=-1)
+        return atom_pos
 
     @property
     def x_position(self):
         x_pos = []
         for atom in self.atom_list:
             x_pos.append(atom.pixel_x)
-        return(x_pos)
+        x_pos = np.array(x_pos)
+        return x_pos
 
     @property
     def y_position(self):
         y_pos = []
         for atom in self.atom_list:
             y_pos.append(atom.pixel_y)
-        return(y_pos)
+        y_pos = np.array(y_pos)
+        return y_pos
 
     @property
     def sigma_x(self):
         sigma_x = []
         for atom in self.atom_list:
             sigma_x.append(abs(atom.sigma_x))
-        return(sigma_x)
+        sigma_x = np.array(sigma_x)
+        return sigma_x
 
     @property
     def sigma_y(self):
         sigma_y = []
         for atom in self.atom_list:
             sigma_y.append(abs(atom.sigma_y))
-        return(sigma_y)
+        sigma_y = np.array(sigma_y)
+        return sigma_y
 
     @property
     def sigma_average(self):
-        sigma = np.array(self.sigma_x)+np.array(self.sigma_y)
+        sigma = self.sigma_x + self.sigma_y
         sigma *= 0.5
-        return(sigma)
+        return sigma
 
     @property
     def atom_amplitude_gaussian2d(self):
         amplitude = []
         for atom in self.atom_list:
             amplitude.append(atom.amplitude_gaussian)
-        return(amplitude)
+        amplitude = np.array(amplitude)
+        return amplitude
 
     @property
     def atom_amplitude_max_intensity(self):
         amplitude = []
         for atom in self.atom_list:
             amplitude.append(atom.amplitude_max_intensity)
-        return(amplitude)
+        amplitude = np.array(amplitude)
+        return amplitude
 
     @property
     def rotation(self):
         rotation = []
         for atom in self.atom_list:
             rotation.append(atom.rotation)
-        return(rotation)
+        rotation = np.array(rotation)
+        return rotation
 
     @property
     def ellipticity(self):
         ellipticity = []
         for atom in self.atom_list:
             ellipticity.append(atom.ellipticity)
+        ellipticity = np.array(ellipticity)
         return(ellipticity)
 
     @property
@@ -216,14 +227,16 @@ class Sublattice():
         rotation_ellipticity = []
         for atom in self.atom_list:
             rotation_ellipticity.append(atom.rotation_ellipticity)
-        return(rotation_ellipticity)
+        rotation_ellipticity = np.array(rotation_ellipticity)
+        return rotation_ellipticity
 
     @property
     def intensity_mask(self):
         intensity_mask = []
         for atom in self.atom_list:
             intensity_mask.append(atom.intensity_mask)
-        return(intensity_mask)
+        intensity_mask = np.array(intensity_mask)
+        return intensity_mask
 
     @property
     def signal(self):
@@ -1559,9 +1572,9 @@ class Sublattice():
         zero_position_x_list : list of numbers
         zero_position_y_list : list of numbers
         """
-        x_list.extend(zero_position_x_list)
-        y_list.extend(zero_position_y_list)
-        z_list.extend(np.zeros_like(zero_position_x_list))
+        np.append(x_list, zero_position_x_list)
+        np.append(y_list, zero_position_y_list)
+        np.append(z_list, np.zeros_like(zero_position_x_list))
 
     def get_ellipticity_vector(
             self,

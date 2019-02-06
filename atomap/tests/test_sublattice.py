@@ -34,6 +34,46 @@ class TestMakeSimpleSublattice:
         assert sublattice.__repr__() == repr_str
 
 
+class TestSublatticeProperties:
+
+    def setup_method(self):
+        self.x = np.random.randint(100, size=100)
+        self.y = np.random.randint(100, size=100)
+        self.sx = np.random.randint(100, size=100)
+        self.sy = np.random.randint(100, size=100)
+        self.r = np.random.random(100) % np.pi
+        test_data = tt.MakeTestData(100, 100, sublattice_generate_image=False)
+        test_data.add_atom_list(
+                x=self.x, y=self.y, sigma_x=self.sx, sigma_y=self.sy,
+                rotation=self.r)
+        self.sublattice = test_data.sublattice
+
+    def test_x_position(self):
+        sublattice = self.sublattice
+        assert hasattr(sublattice.x_position, '__array__')
+        assert_array_equal(sublattice.x_position, self.x)
+
+    def test_y_position(self):
+        sublattice = self.sublattice
+        assert hasattr(sublattice.y_position, '__array__')
+        assert_array_equal(sublattice.y_position, self.y)
+
+    def test_sigma_x_position(self):
+        sublattice = self.sublattice
+        assert hasattr(sublattice.sigma_x, '__array__')
+        assert_array_equal(sublattice.sigma_x, self.sx)
+
+    def test_sigma_y_position(self):
+        sublattice = self.sublattice
+        assert hasattr(sublattice.sigma_y, '__array__')
+        assert_array_equal(sublattice.sigma_y, self.sy)
+
+    def test_rotation_position(self):
+        sublattice = self.sublattice
+        assert hasattr(sublattice.rotation, '__array__')
+        assert_array_equal(sublattice.rotation, self.r)
+
+
 class TestInitSublattice:
 
     def setup_method(self):
