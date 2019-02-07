@@ -6,9 +6,10 @@ the information about the individual atomic columns.
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import ndimage
 import math
-from atomap.atom_finding_refining import _make_circular_mask, _crop_array, zero_array_outside_circle, calculate_center_of_mass
+from atomap.atom_finding_refining import _make_circular_mask, _crop_array
+from atomap.atom_finding_refining import zero_array_outside_circle
+from atomap.atom_finding_refining import calculate_center_of_mass
 from atomap.atom_finding_refining import fit_atom_positions_gaussian
 from atomap.atom_finding_refining import _atom_to_gaussian_component
 
@@ -400,7 +401,7 @@ class Atom_Position:
         Get new atom position based on the center of mass approach
 
         Parameters
-        ----------        
+        ----------
         image_data : Numpy 2D array
         percent_to_nn : float, optional
             The percent of the distance to the nearest neighbor atom

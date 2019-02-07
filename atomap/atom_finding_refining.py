@@ -399,7 +399,6 @@ def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
     mask = x*x + y*y <= radius*radius
     return(mask)
 
-#atom_finding_refining
 
 def _mask_circle(arr, radius):
     '''
@@ -410,10 +409,12 @@ def _mask_circle(arr, radius):
     imageSizeX, imageSizeY = arr.shape
     centerX = (arr.shape[0]-1)/2
     centerY = (arr.shape[1]-1)/2
-    
-    y, x = np.expand_dims(np.arange(-centerX, imageSizeX-centerX), axis=1), np.arange(-centerY,imageSizeY-centerY)
+
+    x = np.expand_dims(np.arange(-centerX, imageSizeX-centerX), axis=1)
+    y = np.arange(-centerY, imageSizeY-centerY)
     mask = x*x + y*y > radius*radius
     return mask
+
 
 def zero_array_outside_circle(arr, radius):
     '''
@@ -426,12 +427,13 @@ def zero_array_outside_circle(arr, radius):
     arr[mask] = 0
     return np.reshape(arr, shape)
 
+
 def _crop_array(arr, centerX, centerY, radius):
     '''
     Crop an array around a center point to give a square of sidelengths
     `2*radius-1`
 
-    If the center point is such that the radius will intersect the array 
+    If the center point is such that the radius will intersect the array
     edges, the space outside the array will be padded as zeros.
 
     Parameters
@@ -447,20 +449,19 @@ def _crop_array(arr, centerX, centerY, radius):
     Numpy 2D Array
         Array with the shape (2*radius-1, 2*radius-1).
     '''
-    
     radius_left = radius-1
     radius_right = radius
-    
-    #reversed first two indices so we can subtract the edges
+
+    # Reversed first two indices so we can subtract the edges
     edges_of_crop = np.array([
-        radius_left - centerX, 
-        radius_left - centerY, 
-        centerX + radius_right, 
+        radius_left - centerX,
+        radius_left - centerY,
+        centerX + radius_right,
         centerY + radius_right])
     ymax, xmax = arr.shape
-    edges_of_arr = np.array([0,0,xmax-1, ymax-1])
+    edges_of_arr = np.array([0, 0, xmax-1, ymax-1])
     edge_difference_max = np.max(edges_of_crop - edges_of_arr)
-    
+
     if edge_difference_max > 0:
         arr = _pad_array(arr, edge_difference_max)
         centerX += edge_difference_max
@@ -471,12 +472,26 @@ def _crop_array(arr, centerX, centerY, radius):
     xmax = centerX+radius_right
     return arr[ymin:ymax, xmin:xmax]
 
+
 def calculate_center_of_mass(arr):
     '''
-    Simple center of mass approach from stackoverflow:
+    Find the center of mass of an array
+
+    Parameters
+    ----------
+    arr : Numpy 2D Array
+
+    Returns
+    -------
+    cx, cy: tuple of floats
+
+    This is a much simpler center of mass approach than
+    the one from scipy. Gotten from stackoverflow:
     https://stackoverflow.com/questions/37519238/python-find-center-of-object-in-an-image
     '''
-    #arr -= arr.min() # Can consider doing this - this gives the center of mass higher "contrast"
+    # Can consider subtracting minimum value
+    # this gives the center of mass higher "contrast"
+    # arr -= arr.min()
     arr = arr / np.sum(arr)
 
     dx = np.sum(arr, 1)
@@ -486,15 +501,17 @@ def calculate_center_of_mass(arr):
     cx = np.sum(dx * np.arange(X))
     cy = np.sum(dy * np.arange(Y))
     return cx, cy
-    
+
+
 def _pad_array(arr, padding=1):
     '''
     Pad an array to give it extra zero-value pixels around the edges.
     '''
-    x,y = arr.shape
-    arr2 = np.zeros((x+padding*2,y+padding*2))
-    arr2[padding:-padding,padding:-padding] = arr.copy()
+    x, y = arr.shape
+    arr2 = np.zeros((x+padding*2, y+padding*2))
+    arr2[padding:-padding, padding:-padding] = arr.copy()
     return arr2
+
 
 def _make_mask_from_positions(
         position_list,

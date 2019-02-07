@@ -137,13 +137,22 @@ class TestCropMask:
         assert mask_crop.shape == (2*r+1, 2*r+1)
 
 
-class TestCropArray:
+class TestCropAndPadArray:
 
     def test_crop(self):
         arr = np.array([[100]])
         arr2 = np.zeros((9, 9))
         arr2[4, 4] = 100
-        assert (afr._crop_array(arr, 0, 0, 5) == arr2).all()
+        assert np.all(afr._crop_array(arr, 0, 0, 5) == arr2)
+        assert not np.all(afr._crop_array(arr, 1, 0, 5) == arr2)
+        assert not np.all(afr._crop_array(arr, 0, 1, 5) == arr2)
+        assert afr._crop_array(arr, 0, 0, 4).shape != arr2.shape
+
+    def test_pad_array(self):
+        arr = np.ones((2, 2))
+        arr2 = afr._pad_array(arr, 1)
+        assert arr2.sum() == arr.sum()
+        assert arr2.shape == (4, 4)
 
 
 class TestFindBackgroundValue:
@@ -215,12 +224,12 @@ class TestMakeModelFromAtomList:
 
 class TestCenterOfMass:
 
-    def find_center(self):
+    def test_find_center(self):
         center = np.zeros((5, 5))
         center[1, 1] = 1
         assert afr.calculate_center_of_mass(center) == (1, 1)
 
-    def compare_center_of_mass(self):
+    def test_compare_center_of_mass(self):
         from scipy.ndimage import center_of_mass
         rand = np.random.random((5, 5))
         center_of_mass(rand) == afr.calculate_center_of_mass(rand)
@@ -232,7 +241,8 @@ class TestCenterOfMass:
         np.testing.assert_almost_equal(
             np.array(sub.atom_positions)[:10, :10],
             [[30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.],
-                [30.,  50.,  70.,  90., 110., 130., 150., 170., 190., 210.]], decimal=5)
+                [30.,  50.,  70.,  90., 110., 130., 150., 170., 190., 210.]],
+            decimal=5)
 
 
 class TestFitAtomPositionsWithGaussianModel:
@@ -327,6 +337,14 @@ class TestMakeCircularMask:
     def test_correct_number_of_ones(self):
         one = np.ones((10, 10))
         assert np.sum(afr.zero_array_outside_circle(one, 3)) == 32
+
+    def test_centered_mask(self):
+        Z = np.zeros((3, 3))
+        np.testing.assert_equal(
+            afr._mask_circle(Z, 1),
+            np.array([[True, False, True],
+                      [False, False, False],
+                      [True, False, True]]))
 
 
 class TestFitAtomPositionsGaussian:
