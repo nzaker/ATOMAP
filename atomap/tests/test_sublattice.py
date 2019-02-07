@@ -628,8 +628,8 @@ class TestRefineFunctions:
         test_data.add_atom_list(x_pos, y_pos, 2, 2)
         sublattice = test_data.sublattice
         sublattice.refine_atom_positions_using_center_of_mass(mask_radius=5)
-        assert sublattice.x_position == approx(x_pos)
-        assert sublattice.y_position == approx(y_pos)
+        assert_allclose(sublattice.x_position, x_pos, atol=0.0001)
+        assert_allclose(sublattice.y_position, y_pos, atol=0.0001)
 
     def test_2d_gaussian_mask_radius(self):
         test_data = tt.MakeTestData(50, 50)
@@ -637,8 +637,8 @@ class TestRefineFunctions:
         test_data.add_atom_list(x_pos, y_pos, 2, 2)
         sublattice = test_data.sublattice
         sublattice.refine_atom_positions_using_2d_gaussian(mask_radius=5)
-        assert sublattice.x_position == approx(x_pos)
-        assert sublattice.y_position == approx(y_pos)
+        assert_allclose(sublattice.x_position, x_pos)
+        assert_allclose(sublattice.y_position, y_pos)
 
     def test_2d_gaussian_both_mask_radius_and_percent_to_nn(self):
         test_data = tt.MakeTestData(50, 50)
