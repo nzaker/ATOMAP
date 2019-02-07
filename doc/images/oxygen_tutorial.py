@@ -36,8 +36,7 @@ sublattice_B.refine_atom_positions_using_center_of_mass()
 sublattice_B.refine_atom_positions_using_2d_gaussian()
 
 # Finding sublattice_A2 in ABF for subtraction
-xy = np.asarray(sublattice_A.atom_positions)
-xy = np.swapaxes(xy, 0, 1)
+xy = sublattice_A.atom_positions
 sublattice_A2 = am.Sublattice(xy, image=np.divide(1, s_ABF.data), color='r')
 sublattice_A2.find_nearest_neighbors()
 sublattice_A2.refine_atom_positions_using_center_of_mass()
@@ -48,8 +47,7 @@ sublattice_A2.construct_zone_axes()
 image_without_A2 = remove_atoms_from_image_using_2d_gaussian(
         sublattice_A2.image,
         sublattice_A2)
-xy = np.asarray(sublattice_B.atom_positions)
-xy = np.swapaxes(xy, 0, 1)
+xy = sublattice_B.atom_positions
 sublattice_B2 = am.Sublattice(xy, image=image_without_A2, color='b')
 sublattice_B2.find_nearest_neighbors()
 sublattice_B2.refine_atom_positions_using_center_of_mass()
