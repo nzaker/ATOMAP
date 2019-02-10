@@ -148,6 +148,14 @@ class TestCropAndPadArray:
         assert not np.all(afr._crop_array(arr, 0, 1, 5) == arr2)
         assert afr._crop_array(arr, 0, 0, 4).shape != arr2.shape
 
+    @pytest.mark.parametrize("dtype", ['uint8', 'uint16', 'uint32',
+                                       'float16', 'float32', 'bool'])
+    def test_dtypes(self, dtype):
+        arr = np.ones((20, 30), dtype=dtype)
+        data = afr._crop_array(arr, 10, 15, 5)
+        # Should return float64 dtype
+        assert data.dtype == np.float64
+
     def test_pad_array(self):
         arr = np.ones((2, 2))
         arr2 = afr._pad_array(arr, 1)
@@ -334,17 +342,62 @@ class TestMakeCircularMask:
         mask = afr._make_circular_mask(10, 10, 5, 5, 3)
         assert not mask.any()
 
+
+class TestMakeMaskCircleCentre:
+
+    @pytest.mark.parametrize("dtype", ['uint8', 'uint16', 'uint32',
+                                       'float16', 'float32', 'bool'])
+    def test_dtypes(self, dtype):
+        arr = np.zeros((3, 3), dtype=dtype)
+        mask = afr._make_mask_circle_centre(arr, 1)
+        np.testing.assert_equal(mask,
+                                np.array([[True, False, True],
+                                          [False, False, False],
+                                          [True, False, True]]))
+
+    @pytest.mark.parametrize("shape", [(3, 3), (5, 3), (6, 9)])
+    def test_different_arr_shapes(self, shape):
+        arr = np.zeros(shape)
+        mask = afr._make_mask_circle_centre(arr, 2)
+        assert arr.shape == mask.shape
+
+    def test_radius_2(self):
+        arr = np.zeros((3, 3))
+        mask = afr._make_mask_circle_centre(arr, 2)
+        np.testing.assert_array_equal(mask, np.zeros((3, 3), dtype=np.bool))
+
+    def test_wrong_arr_dimensions(self):
+        arr = np.zeros((3, 3, 4))
+        with pytest.raises(ValueError):
+            afr._make_mask_circle_centre(arr, 2)
+
+
+class TestZeroArrayOutsideCircle:
+
+    @pytest.mark.parametrize("dtype", ['uint8', 'uint16', 'uint32',
+                                       'float16', 'float32', 'bool'])
+    def test_dtypes(self, dtype):
+        arr = np.ones((3, 3)) * 9
+        arr = arr.astype(dtype)
+        data = afr.zero_array_outside_circle(arr, 1)
+        np.testing.assert_equal(data,
+                                np.array([[0, 9, 0],
+                                          [9, 9, 9],
+                                          [0, 9, 0]], dtype=dtype))
+
     def test_correct_number_of_ones(self):
         one = np.ones((10, 10))
         assert np.sum(afr.zero_array_outside_circle(one, 3)) == 32
 
-    def test_centered_mask(self):
-        Z = np.zeros((3, 3))
-        np.testing.assert_equal(
-            afr._mask_circle(Z, 1),
-            np.array([[True, False, True],
-                      [False, False, False],
-                      [True, False, True]]))
+    def test_radius_2(self):
+        arr = np.zeros((3, 3))
+        mask = afr._make_mask_circle_centre(arr, 2)
+        np.testing.assert_equal(mask == 0, True)
+
+    def test_wrong_arr_dimensions(self):
+        arr = np.zeros((3, 3, 4))
+        with pytest.raises(ValueError):
+            afr.zero_array_outside_circle(arr, 2)
 
 
 class TestFitAtomPositionsGaussian:
