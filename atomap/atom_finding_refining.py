@@ -493,6 +493,12 @@ def _crop_array(arr, center_x, center_y, radius):
     Numpy 2D Array
         Array with the shape (2*radius-1, 2*radius-1).
 
+    Examples
+    --------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(30, 50))
+    >>> data = afr._crop_array(arr, 25, 10, 5)
+
     """
     radius_left = radius-1
     radius_right = radius
@@ -527,6 +533,12 @@ def calculate_center_of_mass(arr):
     -------
     cx, cy: tuple of floats
 
+    Examples
+    --------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(10, 10))
+    >>> data = afr.calculate_center_of_mass(arr)
+
     Notes
     -----
     This is a much simpler center of mass approach that the one from scipy.
@@ -549,9 +561,25 @@ def calculate_center_of_mass(arr):
 
 
 def _pad_array(arr, padding=1):
-    '''
-    Pad an array to give it extra zero-value pixels around the edges.
-    '''
+    """Pad an array to give it extra zero-value pixels around the edges.
+
+    Parameters
+    ----------
+    arr : Numpy 2D Array
+    padding : int, optional
+        Default 1
+
+    Returns
+    -------
+    arr2 : NumPy array
+
+    Examples
+    --------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(10, 10))
+    >>> data = afr._pad_array(arr, padding=2)
+
+    """
     x, y = arr.shape
     arr2 = np.zeros((x+padding*2, y+padding*2))
     arr2[padding:-padding, padding:-padding] = arr.copy()
@@ -1006,7 +1034,7 @@ def fit_atom_positions_gaussian(
                 for atom in atom_list:
                     atom.old_pixel_x_list.append(atom.pixel_x)
                     atom.old_pixel_y_list.append(atom.pixel_y)
-                    atom.pixel_x, atom.pixel_y = atom.get_center_position_com(
+                    atom.pixel_x, atom.pixel_y = atom._get_center_position_com(
                             image_data,
                             percent_to_nn=temp_percent_to_nn,
                             mask_radius=temp_mask_radius)

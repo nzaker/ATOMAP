@@ -92,6 +92,18 @@ class TestAtomPositionObjectTools:
         assert g.rotation.value == r
 
 
+class TestGetCenterPositionCom:
+
+    def test_mask_radius(self):
+        atom_position0 = Atom_Position(15, 20)
+        atom_position1 = Atom_Position(15, 20)
+        image = np.random.randint(1000, size=(30, 30))
+        x0, y0 = atom_position0._get_center_position_com(image, mask_radius=5)
+        x1, y1 = atom_position1._get_center_position_com(image, mask_radius=10)
+        assert x0 != x1
+        assert y0 != y1
+
+
 class TestAtomPositionRefine:
 
     def test_center_of_mass_mask_radius(self):

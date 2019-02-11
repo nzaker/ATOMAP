@@ -383,22 +383,11 @@ class Atom_Position:
             image_data,
             percent_to_nn=0.40,
             mask_radius=None):
-        new_x, new_y = self.get_center_position_com(
-            image_data,
-            percent_to_nn=percent_to_nn,
-            mask_radius=mask_radius)
-        self.old_pixel_x_list.append(self.pixel_x)
-        self.old_pixel_y_list.append(self.pixel_y)
-        self.pixel_x = new_x
-        self.pixel_y = new_y
+        """Refine the position of the atom position using center of mass
 
-    def get_center_position_com(
-            self,
-            image_data,
-            percent_to_nn=0.40,
-            mask_radius=None):
-        '''
-        Get new atom position based on the center of mass approach
+        The position is stored in atom_position.pixel_x and
+        atom_position.pixel_y. The old positions are saved in
+        atom_position.old_pixel_x_list and atom_position.old_pixel_x_list.
 
         Parameters
         ----------
@@ -417,6 +406,54 @@ class Atom_Position:
             same sublattice times the `percent_to_nn` value.
             Note: if `mask_radius` is not specified, the Atom_Position objects
             must have a populated nearest_neighbor_list.
+
+        Examples
+        --------
+        >>> from atomap.atom_position import Atom_Position
+        >>> atom = Atom_Position(15, 10)
+        >>> image_data = np.random.randint(100, size=(20, 20))
+        >>> atom.refine_position_using_center_of_mass(
+        ...     image_data, mask_radius=5)
+
+        """
+        new_x, new_y = self._get_center_position_com(
+            image_data,
+            percent_to_nn=percent_to_nn,
+            mask_radius=mask_radius)
+        self.old_pixel_x_list.append(self.pixel_x)
+        self.old_pixel_y_list.append(self.pixel_y)
+        self.pixel_x = new_x
+        self.pixel_y = new_y
+
+    def _get_center_position_com(
+            self,
+            image_data,
+            percent_to_nn=0.40,
+            mask_radius=None):
+        '''Get new atom position based on the center of mass approach
+
+        Parameters
+        ----------
+        image_data : Numpy 2D array
+        percent_to_nn : float, optional
+            The percent of the distance to the nearest neighbor atom
+            in the same sub lattice. The distance times this percentage
+            defines the mask around the atom where the Gaussian will be
+            fitted. A smaller value can reduce the effect from
+            neighboring atoms, but might also decrease the accuracy of
+            the fitting due to less data to fit to.
+            Default 0.4 (40%).
+        mask_radius : float, optional
+            Radius of the mask around each atom. If this is not set,
+            the radius will be the distance to the nearest atom in the
+            same sublattice times the `percent_to_nn` value.
+            Note: if `mask_radius` is not specified, the Atom_Position objects
+            must have a populated nearest_neighbor_list.
+
+        Returns
+        -------
+        new_position : tuple
+            (new x, new y)
 
         '''
         if mask_radius is None:
