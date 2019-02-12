@@ -400,6 +400,192 @@ def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
     return(mask)
 
 
+def _make_mask_circle_centre(arr, radius):
+    """Create a circular mask with same shape as arr
+
+    The circle is centered on the center of the array,
+    with the circle having False values.
+
+    Similar to _make_circular_mask, but simpler and potentially
+    faster.
+
+    Numba jit compatible.
+
+    Parameters
+    ----------
+    arr : NumPy array
+        Must be 2 dimensions
+    radius : scalar
+        Radius of the circle
+
+    Returns
+    -------
+    mask : NumPy array
+        Boolean array
+
+    Example
+    -------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(20, 20))
+    >>> mask = afr._make_mask_circle_centre(arr, 10)
+
+    """
+    if len(arr.shape) != 2:
+        raise ValueError("arr must be 2D, not {0}".format(len(arr.shape)))
+    imageSizeX, imageSizeY = arr.shape
+    centerX = (arr.shape[0]-1)/2
+    centerY = (arr.shape[1]-1)/2
+
+    x = np.expand_dims(np.arange(-centerX, imageSizeX-centerX), axis=1)
+    y = np.arange(-centerY, imageSizeY-centerY)
+    mask = x*x + y*y > radius*radius
+    return mask
+
+
+def zero_array_outside_circle(arr, radius):
+    """Set all values in an array to zero outside a circle defined by radius
+
+    Numba jit compatible
+
+    Parameters
+    ----------
+    arr : NumPy array
+        Must be 2 dimensions
+    radius : scalar
+        Radius of the circle
+
+    Returns
+    -------
+    output_array : NumPy array
+        Same shape as arr, but with values outside the circle set to zero.
+
+    Example
+    -------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(30, 20))
+
+    """
+    shape = arr.shape
+    mask = _make_mask_circle_centre(arr, radius).flatten()
+    arr = arr.flatten()
+    arr[mask] = 0
+    return np.reshape(arr, shape)
+
+
+def _crop_array(arr, center_x, center_y, radius):
+    """Crop an array around a center point to give a square.
+
+    The square has sidelengths `2*radius-1`.
+
+    If the center point is such that the radius will intersect the array
+    edges, the space outside the array will be padded as zeros.
+
+    Parameters
+    ----------
+    arr : Numpy 2D Array
+    centre_x, centre_y : int
+        Centre point of the cropped array.
+    radius : int
+        Radius of the crop around the center point.
+
+    Returns
+    -------
+    Numpy 2D Array
+        Array with the shape (2*radius-1, 2*radius-1).
+
+    Examples
+    --------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(30, 50))
+    >>> data = afr._crop_array(arr, 25, 10, 5)
+
+    """
+    radius_left = radius-1
+    radius_right = radius
+
+    # Reversed first two indices so we can subtract the edges
+    edges_of_crop = np.array(
+            [radius_left - center_x, radius_left - center_y,
+             center_x + radius_right, center_y + radius_right])
+    ymax, xmax = arr.shape
+    edges_of_arr = np.array([0, 0, xmax - 1, ymax - 1])
+    edge_difference_max = np.max(edges_of_crop - edges_of_arr)
+
+    if edge_difference_max > 0:
+        arr = _pad_array(arr, edge_difference_max)
+        center_x += edge_difference_max
+        center_y += edge_difference_max
+    ymin = center_y - radius_left
+    ymax = center_y + radius_right
+    xmin = center_x - radius_left
+    xmax = center_x + radius_right
+    return arr[ymin:ymax, xmin:xmax]
+
+
+def calculate_center_of_mass(arr):
+    """Find the center of mass of an array
+
+    Parameters
+    ----------
+    arr : Numpy 2D Array
+
+    Returns
+    -------
+    cx, cy: tuple of floats
+
+    Examples
+    --------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(10, 10))
+    >>> data = afr.calculate_center_of_mass(arr)
+
+    Notes
+    -----
+    This is a much simpler center of mass approach that the one from scipy.
+    Gotten from stackoverflow:
+    https://stackoverflow.com/questions/37519238/python-find-center-of-object-in-an-image
+
+    """
+    # Can consider subtracting minimum value
+    # this gives the center of mass higher "contrast"
+    # arr -= arr.min()
+    arr = arr / np.sum(arr)
+
+    dx = np.sum(arr, 1)
+    dy = np.sum(arr, 0)
+
+    (Y, X) = arr.shape
+    cx = np.sum(dx * np.arange(X))
+    cy = np.sum(dy * np.arange(Y))
+    return cx, cy
+
+
+def _pad_array(arr, padding=1):
+    """Pad an array to give it extra zero-value pixels around the edges.
+
+    Parameters
+    ----------
+    arr : Numpy 2D Array
+    padding : int, optional
+        Default 1
+
+    Returns
+    -------
+    arr2 : NumPy array
+
+    Examples
+    --------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(10, 10))
+    >>> data = afr._pad_array(arr, padding=2)
+
+    """
+    x, y = arr.shape
+    arr2 = np.zeros((x+padding*2, y+padding*2))
+    arr2[padding:-padding, padding:-padding] = arr.copy()
+    return arr2
+
+
 def _make_mask_from_positions(
         position_list,
         radius_list,
@@ -848,7 +1034,7 @@ def fit_atom_positions_gaussian(
                 for atom in atom_list:
                     atom.old_pixel_x_list.append(atom.pixel_x)
                     atom.old_pixel_y_list.append(atom.pixel_y)
-                    atom.pixel_x, atom.pixel_y = atom.get_center_position_com(
+                    atom.pixel_x, atom.pixel_y = atom._get_center_position_com(
                             image_data,
                             percent_to_nn=temp_percent_to_nn,
                             mask_radius=temp_mask_radius)
