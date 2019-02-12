@@ -246,11 +246,12 @@ class TestCenterOfMass:
         sub = dd.get_distorted_cubic_sublattice()
         sub.find_nearest_neighbors()
         sub.refine_atom_positions_using_center_of_mass(show_progressbar=False)
+        positions = [
+                [30.,  30.], [30., 50.], [30., 70.], [30., 90.], [30., 110.],
+                [30., 130.], [30., 150.], [30., 170.], [30., 190.], [30., 210.]
+                ]
         np.testing.assert_almost_equal(
-            np.array(sub.atom_positions)[:10, :10],
-            [[30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.,  30.],
-                [30.,  50.,  70.,  90., 110., 130., 150., 170., 190., 210.]],
-            decimal=5)
+                np.array(sub.atom_positions)[:10, :10], positions, decimal=5)
 
 
 class TestFitAtomPositionsWithGaussianModel:
