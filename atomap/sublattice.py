@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import scipy as sp
 from tqdm import tqdm, trange
@@ -2073,7 +2074,19 @@ class Sublattice():
         signal.metadata.General.title = title
         return signal
 
-    def get_model_image(self, image_shape=None, show_progressbar=True):
+    def _get_atom_slice(self, x, y, sx, sy, im_x, im_y, quantile=5):
+        smax = max(sx, sy)
+        ix0 = math.floor(x - (smax * quantile))
+        ix1 = math.ceil(x + (smax * quantile))
+        iy0 = math.floor(y - (smax * quantile))
+        iy1 = math.ceil(y + (smax * quantile))
+        ix0, iy0 = max(0, ix0), max(0, iy0)
+        ix1, iy1 = min(im_x, ix1), min(im_y, iy1)
+        atom_slice = np.s_[iy0:iy1, ix0:ix1]
+        return atom_slice
+
+    def get_model_image(self, image_shape=None, quantile=5,
+                        show_progressbar=True):
         """
         Generate an image of the atomic positions from the
         atom positions Gaussian parameter's.
@@ -2105,16 +2118,21 @@ class Sublattice():
             rotation=1.0,
             A=1.0)
 
+        im_y, im_x = model_image.shape
         for atom in tqdm(self.atom_list, disable=not show_progressbar):
+            x, y = atom.pixel_x, atom.pixel_y
+            sx, sy = atom.sigma_x, atom.sigma_y
+            atom_slice = self._get_atom_slice(x, y, sx, sy, im_x, im_y,
+                                              quantile=quantile)
+            Xa, Ya = X[atom_slice], Y[atom_slice]
             g.A.value = atom.amplitude_gaussian
-            g.centre_x.value = atom.pixel_x
-            g.centre_y.value = atom.pixel_y
-            g.sigma_x.value = atom.sigma_x
-            g.sigma_y.value = atom.sigma_y
+            g.centre_x.value = x
+            g.centre_y.value = y
+            g.sigma_x.value = sx
+            g.sigma_y.value = sy
             g.rotation.value = atom.rotation
-            model_image += g.function(X, Y)
+            model_image[atom_slice] += g.function(Xa, Ya)
         s = Signal2D(model_image)
-
         return(s)
 
     def _get_zone_vector_index_list(self, zone_vector_list):
