@@ -11,7 +11,7 @@ class MakeTestData(object):
 
     def __init__(
             self, image_x, image_y, sublattice_generate_image=True,
-            show_progressbar=False):
+            sigma_quantile=5, show_progressbar=False):
         """
         Class for generating test datasets of atomic resolution
         STEM images.
@@ -27,6 +27,14 @@ class MakeTestData(object):
             time. If sublattice_generate_image is False, this image will not
             be generated. Useful for generating sublattice objects for testing
             quicker, when only the atom positions themselves are needed.
+        sigma_quantile : scalar
+            When generating the image of Gaussians
+            (if sublattice_generate_image is True),
+            only a subset of the region around each atom is calculated.
+            This region is defined by the (x, y) position of the atom, and the
+            maximum sigma (max(sx, sy)) * sigma_quantile. Setting a high sigma
+            will mean the Gaussians are calculated further out, but this leads
+            to the image generating process being slower. Default 5.
         show_progressbar : bool
             If True, will show a progressbar when generating the image data,
             which is normally the most time consuming part.
@@ -96,12 +104,14 @@ class MakeTestData(object):
         self._sublattice_generate_image = sublattice_generate_image
         self.__sublattice = Sublattice([], np.zeros((2, 2)))
         self.__sublattice.atom_list = []
+        self._sigma_quantile = sigma_quantile
         self._show_progressbar = show_progressbar
 
     @property
     def signal(self):
         signal = self.__sublattice.get_model_image(
                 image_shape=self.data_extent,
+                sigma_quantile=self._sigma_quantile,
                 show_progressbar=self._show_progressbar)
         if self._image_noise is not False:
             signal.data += self._image_noise
