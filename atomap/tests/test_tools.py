@@ -236,7 +236,7 @@ class TestFliplrPointsAndSignal:
 class TestIntegrate:
 
     def test_two_atoms(self):
-        test_data = tt.MakeTestData(50, 100)
+        test_data = tt.MakeTestData(50, 100, sigma_quantile=8)
         x, y, A = [25, 25], [25, 75], [5, 10]
         test_data.add_atom_list(x=x, y=y, amplitude=A)
         s = test_data.signal
@@ -250,7 +250,7 @@ class TestIntegrate:
         assert (p_record[51:] == 1).all()
 
     def test_four_atoms(self):
-        test_data = tt.MakeTestData(60, 100)
+        test_data = tt.MakeTestData(60, 100, sigma_quantile=8)
         x, y, A = [20, 20, 40, 40], [25, 75, 25, 75], [5, 10, 15, 20]
         test_data.add_atom_list(x=x, y=y, amplitude=A)
         s = test_data.signal
