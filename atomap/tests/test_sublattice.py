@@ -415,6 +415,12 @@ class TestSublatticeGetModelImage:
         s = sublattice.get_model_image(image_shape=(200, 100))
         assert s.axes_manager.shape == (200, 100)
 
+    def test_sigma_quantile(self):
+        sublattice = self.sublattice
+        s0 = sublattice.get_model_image(sigma_quantile=7)
+        s1 = sublattice.get_model_image(sigma_quantile=2)
+        assert s0.data.sum() > s1.data.sum()
+
 
 class TestGetPositionHistory:
 
