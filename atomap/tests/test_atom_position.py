@@ -1,4 +1,4 @@
-from pytest import approx
+from pytest import approx, mark
 import numpy as np
 from numpy import pi
 import math
@@ -184,3 +184,60 @@ class TestAtomPositionRefinePositionFlag:
         assert atom.pixel_y == x_pos_orig[1]
         assert not (x_pos_orig[1:] == sublattice.x_position[1:]).any()
         assert not (y_pos_orig[1:] == sublattice.y_position[1:]).any()
+
+
+class TestAtomPositionGetAtomSlice:
+
+    @mark.parametrize("quantile", [1, 2, 3, 4])
+    def test_sigma_quantile(self, quantile):
+        x, y, sx, sy, sigma_quantile = 25, 30, 2, 4, quantile
+        atom_position = Atom_Position(x=x, y=y, sigma_x=sx, sigma_y=sy)
+        slice_y, slice_x = atom_position._get_atom_slice(
+                100, 100, sigma_quantile=sigma_quantile)
+        smax = max(sx, sy)
+        assert slice_x.start == x - smax * sigma_quantile
+        assert slice_x.stop == x + smax * sigma_quantile
+        assert slice_y.start == y - smax * sigma_quantile
+        assert slice_y.stop == y + smax * sigma_quantile
+
+    def test_image_border_x_0(self):
+        x, y, sigma, sigma_quantile = 5, 50, 3, 3
+        atom_position = Atom_Position(x, y, sigma_x=sigma, sigma_y=sigma)
+        slice_y, slice_x = atom_position._get_atom_slice(
+                100, 100, sigma_quantile=sigma_quantile)
+        assert slice_x.start == 0
+        assert slice_x.stop == x + sigma * sigma_quantile
+        assert slice_y.start == y - sigma * sigma_quantile
+        assert slice_y.stop == y + sigma * sigma_quantile
+
+    def test_image_border_y_0(self):
+        x, y, sigma, sigma_quantile = 50, 0, 3, 3
+        atom_position = Atom_Position(x, y, sigma_x=sigma, sigma_y=sigma)
+        slice_y, slice_x = atom_position._get_atom_slice(
+                100, 100, sigma_quantile=sigma_quantile)
+        assert slice_x.start == x - sigma * sigma_quantile
+        assert slice_x.stop == x + sigma * sigma_quantile
+        assert slice_y.start == 0
+        assert slice_y.stop == y + sigma * sigma_quantile
+
+    @mark.parametrize("im_x", [96, 97, 98])
+    def test_image_border_x_max(self, im_x):
+        x, y, sigma, sigma_quantile = 95, 50, 3, 3
+        atom_position = Atom_Position(x, y, sigma_x=sigma, sigma_y=sigma)
+        slice_y, slice_x = atom_position._get_atom_slice(
+                im_x, 100, sigma_quantile=sigma_quantile)
+        assert slice_x.start == x - sigma * sigma_quantile
+        assert slice_x.stop == im_x
+        assert slice_y.start == y - sigma * sigma_quantile
+        assert slice_y.stop == y + sigma * sigma_quantile
+
+    @mark.parametrize("im_y", [96, 97, 98])
+    def test_image_border_y_max(self, im_y):
+        x, y, sigma, sigma_quantile = 50, 95, 3, 3
+        atom_position = Atom_Position(x, y, sigma_x=sigma, sigma_y=sigma)
+        slice_y, slice_x = atom_position._get_atom_slice(
+                100, im_y, sigma_quantile=sigma_quantile)
+        assert slice_x.start == x - sigma * sigma_quantile
+        assert slice_x.stop == x + sigma * sigma_quantile
+        assert slice_y.start == y - sigma * sigma_quantile
+        assert slice_y.stop == im_y

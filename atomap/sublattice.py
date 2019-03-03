@@ -1,4 +1,3 @@
-import math
 import numpy as np
 import scipy as sp
 from tqdm import tqdm, trange
@@ -2074,17 +2073,6 @@ class Sublattice():
         signal.metadata.General.title = title
         return signal
 
-    def _get_atom_slice(self, x, y, sx, sy, im_x, im_y, sigma_quantile=5):
-        smax = max(sx, sy)
-        ix0 = math.floor(x - (smax * sigma_quantile))
-        ix1 = math.ceil(x + (smax * sigma_quantile))
-        iy0 = math.floor(y - (smax * sigma_quantile))
-        iy1 = math.ceil(y + (smax * sigma_quantile))
-        ix0, iy0 = max(0, ix0), max(0, iy0)
-        ix1, iy1 = min(im_x, ix1), min(im_y, iy1)
-        atom_slice = np.s_[iy0:iy1, ix0:ix1]
-        return atom_slice
-
     def get_model_image(self, image_shape=None, sigma_quantile=5,
                         show_progressbar=True):
         """
@@ -2122,7 +2110,7 @@ class Sublattice():
         for atom in tqdm(self.atom_list, disable=not show_progressbar):
             x, y = atom.pixel_x, atom.pixel_y
             sx, sy = atom.sigma_x, atom.sigma_y
-            atom_slice = self._get_atom_slice(x, y, sx, sy, im_x, im_y,
+            atom_slice = atom._get_atom_slice(im_x, im_y,
                                               sigma_quantile=sigma_quantile)
             Xa, Ya = X[atom_slice], Y[atom_slice]
             g.A.value = atom.amplitude_gaussian

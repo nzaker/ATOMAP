@@ -605,3 +605,38 @@ class Atom_Position:
             image_data.shape[0], image_data.shape[1], radius)
         data_mask = image_data*mask
         self.intensity_mask = np.mean(data_mask[np.nonzero(mask)])
+
+    def _get_atom_slice(self, im_x, im_y, sigma_quantile=5):
+        """Get a 2D slice for slicing an image, based on the centre and sigma
+
+        slice is defined by:
+        x - sigma_x * sigma_quantile, x + sigma_x * sigma_quantile
+        y - sigma_y * sigma_quantile, y + sigma_y * sigma_quantile
+
+        Parameters
+        ----------
+        im_x, im_y : int
+            x and y size of the image.
+        sigma_quantile : scalar
+
+        Returns
+        -------
+        atom_slice : tuple of slices
+
+        Examples
+        --------
+        >>> from atomap.atom_position import Atom_Position
+        >>> atom = Atom_Position(x=15, y=10, sigma_x=5, sigma_y=3)
+        >>> atom_slice = atom._get_atom_slice(100, 150, sigma_quantile=4)
+
+        """
+        x, y = self.pixel_x, self.pixel_y
+        smax = max(self.sigma_x, self.sigma_y)
+        ix0 = math.floor(x - (smax * sigma_quantile))
+        ix1 = math.ceil(x + (smax * sigma_quantile))
+        iy0 = math.floor(y - (smax * sigma_quantile))
+        iy1 = math.ceil(y + (smax * sigma_quantile))
+        ix0, iy0 = max(0, ix0), max(0, iy0)
+        ix1, iy1 = min(im_x, ix1), min(im_y, iy1)
+        atom_slice = np.s_[iy0:iy1, ix0:ix1]
+        return atom_slice
