@@ -53,6 +53,10 @@ def get_atom_positions(
     """
     if separation < 1:
         raise ValueError("Separation can not be smaller than 1")
+    sig_dims = len(signal.data.shape)
+    if sig_dims != 2:
+        raise ValueError(
+                "signal must have 2 dimensions, not {0}".format(sig_dims))
     if pca:
         signal = do_pca_on_signal(signal)
     if subtract_background:

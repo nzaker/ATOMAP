@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from numpy.testing import assert_allclose
+from hyperspy.signals import Signal1D, Signal2D
 from atomap.atom_position import Atom_Position
 from atomap.sublattice import Sublattice
 from atomap.testing_tools import MakeTestData
@@ -497,6 +498,17 @@ class TestGetAtomPositions:
         s = dd.get_simple_cubic_signal()
         with pytest.raises(ValueError):
             afr.get_atom_positions(s, separation)
+
+    def test_wrong_dimensions(self):
+        s1 = Signal1D(np.random.random(200))
+        s3 = Signal2D(np.random.random((4, 200, 200)))
+        s4 = Signal2D(np.random.random((3, 4, 200, 200)))
+        with pytest.raises(ValueError):
+            afr.get_atom_positions(s1, 2)
+        with pytest.raises(ValueError):
+            afr.get_atom_positions(s3, 2)
+        with pytest.raises(ValueError):
+            afr.get_atom_positions(s4, 2)
 
 
 class TestBadFitCondition:
