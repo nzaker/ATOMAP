@@ -12,7 +12,7 @@ setup(
             'atomap.external',
             'atomap.example_data',
             ],
-        version = '0.1.4',
+        version = '0.1.5.dev1',
         description = 'Library for analysing atomic resolution images',
         long_description=long_description,
         long_description_content_type='text/markdown',
