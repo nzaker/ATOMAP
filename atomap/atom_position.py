@@ -6,9 +6,10 @@ the information about the individual atomic columns.
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import ndimage
 import math
-from atomap.atom_finding_refining import _make_circular_mask
+from atomap.atom_finding_refining import _make_circular_mask, _crop_array
+from atomap.atom_finding_refining import zero_array_outside_circle
+from atomap.atom_finding_refining import calculate_center_of_mass
 from atomap.atom_finding_refining import fit_atom_positions_gaussian
 from atomap.atom_finding_refining import _atom_to_gaussian_component
 
@@ -50,11 +51,15 @@ class Atom_Position:
             radians.
         refine_position : bool
             If True (default), the atom position will be fitted to the image
-            data when calling the sublattice.refine_... methods. Note, the
-            atom will still be fitted when directly calling the refine_...
-            methods in the atom position class itself. Setting it to False
-            can be useful when dealing with vacanies, or other features where
-            the automatic fitting doesn't work.
+            data when calling the
+            Sublattice.refine_atom_positions_using_center_of_mass and
+            Sublattice.refine_atom_positions_using_2d_gaussian methods.
+            Note, the atom will still be fitted when directly calling the
+            Atom_Position.refine_position_using_center_of_mass and
+            Atom_Position.refine_position_using_2d_gaussian methods in the
+            atom position class itself. Setting it to False can be useful when
+            dealing with vacancies, or other features where the automatic
+            fitting doesn't work.
 
         Examples
         --------
@@ -90,7 +95,7 @@ class Atom_Position:
             round(self.pixel_x, 1), round(self.pixel_y, 1),
             round(self.sigma_x, 1), round(self.sigma_y, 1),
             round(self.rotation, 1), round(self.ellipticity, 1),
-            )
+        )
 
     @property
     def sigma_x(self):
@@ -268,29 +273,29 @@ class Atom_Position:
             gaussian,
             data_slice):
 
-            X, Y = np.meshgrid(
-                    np.arange(-slice_radius, slice_radius, 1),
-                    np.arange(-slice_radius, slice_radius, 1))
-            s_m = gaussian.function(X, Y)
+        X, Y = np.meshgrid(
+            np.arange(-slice_radius, slice_radius, 1),
+            np.arange(-slice_radius, slice_radius, 1))
+        s_m = gaussian.function(X, Y)
 
-            fig, axarr = plt.subplots(2, 2)
-            ax0 = axarr[0][0]
-            ax1 = axarr[0][1]
-            ax2 = axarr[1][0]
-            ax3 = axarr[1][1]
+        fig, axarr = plt.subplots(2, 2)
+        ax0 = axarr[0][0]
+        ax1 = axarr[0][1]
+        ax2 = axarr[1][0]
+        ax3 = axarr[1][1]
 
-            ax0.imshow(data_slice, interpolation="nearest")
-            ax1.imshow(s_m, interpolation="nearest")
-            ax2.plot(data_slice.sum(0))
-            ax2.plot(s_m.sum(0))
-            ax3.plot(data_slice.sum(1))
-            ax3.plot(s_m.sum(1))
+        ax0.imshow(data_slice, interpolation="nearest")
+        ax1.imshow(s_m, interpolation="nearest")
+        ax2.plot(data_slice.sum(0))
+        ax2.plot(s_m.sum(0))
+        ax3.plot(data_slice.sum(1))
+        ax3.plot(s_m.sum(1))
 
-            fig.tight_layout()
-            fig.savefig(
-                "debug_plot_2d_gaussian_" +
-                str(np.random.randint(1000, 10000)) + ".jpg", dpi=400)
-            plt.close('all')
+        fig.tight_layout()
+        fig.savefig(
+            "debug_plot_2d_gaussian_" +
+            str(np.random.randint(1000, 10000)) + ".jpg", dpi=400)
+        plt.close('all')
 
     def get_closest_neighbor(self):
         """
@@ -304,7 +309,7 @@ class Atom_Position:
         closest_neighbor = 100000000000000000
         for neighbor_atom in self.nearest_neighbor_list:
             distance = self.get_pixel_distance_from_another_atom(
-                    neighbor_atom)
+                neighbor_atom)
             if distance < closest_neighbor:
                 closest_neighbor = distance
         return(closest_neighbor)
@@ -322,7 +327,7 @@ class Atom_Position:
 
         slice_size = closest_neighbor * percent_to_nn * 2
         data_slice, x0, y0 = self._get_image_slice_around_atom(
-                image_data, slice_size)
+            image_data, slice_size)
 
         data_slice_max = data_slice.max()
         self.amplitude_max_intensity = data_slice_max
@@ -366,59 +371,109 @@ class Atom_Position:
 
         """
         fit_atom_positions_gaussian(
-                [self],
-                image_data=image_data,
-                rotation_enabled=rotation_enabled,
-                percent_to_nn=percent_to_nn,
-                mask_radius=mask_radius,
-                centre_free=centre_free)
-
-    def get_center_position_com(
-            self,
-            image_data,
-            percent_to_nn=0.40,
-            mask_radius=None):
-        if mask_radius is None:
-            closest_neighbor = 100000000000000000
-            for neighbor_atom in self.nearest_neighbor_list:
-                distance = self.get_pixel_distance_from_another_atom(
-                        neighbor_atom)
-                if distance < closest_neighbor:
-                    closest_neighbor = distance
-            mask_radius = closest_neighbor * percent_to_nn
-        mask = _make_circular_mask(
-                self.pixel_y,
-                self.pixel_x,
-                image_data.shape[0],
-                image_data.shape[1],
-                mask_radius)
-        data = copy.deepcopy(image_data)
-        mask = np.invert(mask)
-        data[mask] = 0
-
-        center_of_mass = self._calculate_center_of_mass(data)
-
-        new_x, new_y = center_of_mass[1], center_of_mass[0]
-        return(new_x, new_y)
+            [self],
+            image_data=image_data,
+            rotation_enabled=rotation_enabled,
+            percent_to_nn=percent_to_nn,
+            mask_radius=mask_radius,
+            centre_free=centre_free)
 
     def refine_position_using_center_of_mass(
             self,
             image_data,
             percent_to_nn=0.40,
             mask_radius=None):
-        new_x, new_y = self.get_center_position_com(
-                image_data,
-                percent_to_nn=percent_to_nn,
-                mask_radius=mask_radius)
+        """Refine the position of the atom position using center of mass
+
+        The position is stored in atom_position.pixel_x and
+        atom_position.pixel_y. The old positions are saved in
+        atom_position.old_pixel_x_list and atom_position.old_pixel_x_list.
+
+        Parameters
+        ----------
+        image_data : Numpy 2D array
+        percent_to_nn : float, optional
+            The percent of the distance to the nearest neighbor atom
+            in the same sub lattice. The distance times this percentage
+            defines the mask around the atom where the Gaussian will be
+            fitted. A smaller value can reduce the effect from
+            neighboring atoms, but might also decrease the accuracy of
+            the fitting due to less data to fit to.
+            Default 0.4 (40%).
+        mask_radius : float, optional
+            Radius of the mask around each atom. If this is not set,
+            the radius will be the distance to the nearest atom in the
+            same sublattice times the `percent_to_nn` value.
+            Note: if `mask_radius` is not specified, the Atom_Position objects
+            must have a populated nearest_neighbor_list.
+
+        Examples
+        --------
+        >>> from atomap.atom_position import Atom_Position
+        >>> atom = Atom_Position(15, 10)
+        >>> image_data = np.random.randint(100, size=(20, 20))
+        >>> atom.refine_position_using_center_of_mass(
+        ...     image_data, mask_radius=5)
+
+        """
+        new_x, new_y = self._get_center_position_com(
+            image_data,
+            percent_to_nn=percent_to_nn,
+            mask_radius=mask_radius)
         self.old_pixel_x_list.append(self.pixel_x)
         self.old_pixel_y_list.append(self.pixel_y)
         self.pixel_x = new_x
         self.pixel_y = new_y
 
-    def _calculate_center_of_mass(self, data):
-        center_of_mass = ndimage.measurements.center_of_mass(
-                data.astype('float32'))
-        return(center_of_mass)
+    def _get_center_position_com(
+            self,
+            image_data,
+            percent_to_nn=0.40,
+            mask_radius=None):
+        '''Get new atom position based on the center of mass approach
+
+        Parameters
+        ----------
+        image_data : Numpy 2D array
+        percent_to_nn : float, optional
+            The percent of the distance to the nearest neighbor atom
+            in the same sub lattice. The distance times this percentage
+            defines the mask around the atom where the Gaussian will be
+            fitted. A smaller value can reduce the effect from
+            neighboring atoms, but might also decrease the accuracy of
+            the fitting due to less data to fit to.
+            Default 0.4 (40%).
+        mask_radius : float, optional
+            Radius of the mask around each atom. If this is not set,
+            the radius will be the distance to the nearest atom in the
+            same sublattice times the `percent_to_nn` value.
+            Note: if `mask_radius` is not specified, the Atom_Position objects
+            must have a populated nearest_neighbor_list.
+
+        Returns
+        -------
+        new_position : tuple
+            (new x, new y)
+
+        '''
+        if mask_radius is None:
+            closest_neighbor = 100000000000000000
+            for neighbor_atom in self.nearest_neighbor_list:
+                distance = self.get_pixel_distance_from_another_atom(
+                    neighbor_atom)
+                if distance < closest_neighbor:
+                    closest_neighbor = distance
+            mask_radius = closest_neighbor * percent_to_nn
+
+        cx, cy = int(round(self.pixel_x)), int(round(self.pixel_y))
+        crop_radius = np.ceil(mask_radius).astype(int)
+        data = _crop_array(image_data, cx, cy, crop_radius+1)
+        edgeX, edgeY = cx - crop_radius, cy - crop_radius
+        data2 = zero_array_outside_circle(data, mask_radius)
+        new_y, new_x = calculate_center_of_mass(data2)
+        new_x, new_y = edgeX + new_x, edgeY + new_y
+
+        return new_x, new_y
 
     def get_atomic_plane_from_zone_vector(self, zone_vector):
         for atomic_plane in self.in_atomic_plane:
@@ -452,8 +507,8 @@ class Atom_Position:
     def get_rotation_vector(self):
         rot = self.rotation
         vector = (
-                math.cos(rot),
-                math.sin(rot))
+            math.cos(rot),
+            math.sin(rot))
         return(vector)
 
     def get_ellipticity_rotation_vector(self):
@@ -469,7 +524,7 @@ class Atom_Position:
 
     def pixel_distance_from_point(self, point=(0, 0)):
         dist = math.hypot(
-                self.pixel_x - point[0], self.pixel_y - point[1])
+            self.pixel_x - point[0], self.pixel_y - point[1])
         return(dist)
 
     def get_index_in_atom_plane(self, atom_plane):
@@ -546,7 +601,42 @@ class Atom_Position:
             radius = 1
         centerX, centerY = self.pixel_x, self.pixel_y
         mask = _make_circular_mask(
-                centerY, centerX,
-                image_data.shape[0], image_data.shape[1], radius)
+            centerY, centerX,
+            image_data.shape[0], image_data.shape[1], radius)
         data_mask = image_data*mask
         self.intensity_mask = np.mean(data_mask[np.nonzero(mask)])
+
+    def _get_atom_slice(self, im_x, im_y, sigma_quantile=5):
+        """Get a 2D slice for slicing an image, based on the centre and sigma
+
+        slice is defined by:
+        x - sigma_x * sigma_quantile, x + sigma_x * sigma_quantile
+        y - sigma_y * sigma_quantile, y + sigma_y * sigma_quantile
+
+        Parameters
+        ----------
+        im_x, im_y : int
+            x and y size of the image.
+        sigma_quantile : scalar
+
+        Returns
+        -------
+        atom_slice : tuple of slices
+
+        Examples
+        --------
+        >>> from atomap.atom_position import Atom_Position
+        >>> atom = Atom_Position(x=15, y=10, sigma_x=5, sigma_y=3)
+        >>> atom_slice = atom._get_atom_slice(100, 150, sigma_quantile=4)
+
+        """
+        x, y = self.pixel_x, self.pixel_y
+        smax = max(self.sigma_x, self.sigma_y)
+        ix0 = math.floor(x - (smax * sigma_quantile))
+        ix1 = math.ceil(x + (smax * sigma_quantile))
+        iy0 = math.floor(y - (smax * sigma_quantile))
+        iy1 = math.ceil(y + (smax * sigma_quantile))
+        ix0, iy0 = max(0, ix0), max(0, iy0)
+        ix1, iy1 = min(im_x, ix1), min(im_y, iy1)
+        atom_slice = np.s_[iy0:iy1, ix0:ix1]
+        return atom_slice

@@ -78,6 +78,12 @@ Atom finding refining
     :members:
     :undoc-members:
 
+Analysis tools
+==============
+.. automodule:: atomap.analysis_tools
+    :members:
+    :undoc-members:
+
 Quantification
 ==============
 .. automodule:: atomap.quantification

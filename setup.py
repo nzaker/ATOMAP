@@ -12,7 +12,7 @@ setup(
             'atomap.external',
             'atomap.example_data',
             ],
-        version = '0.1.3',
+        version = '0.1.4.dev1',
         description = 'Library for analysing atomic resolution images',
         long_description=long_description,
         long_description_content_type='text/markdown',
@@ -33,8 +33,8 @@ setup(
             'matplotlib>=2.0',
             'tqdm',
             'scikit-learn',
+            'scikit-image>=0.13',
             'hyperspy>=1.4',
-            'pillow>=5.3',
             ],
         classifiers = [
             'Development Status :: 3 - Alpha',

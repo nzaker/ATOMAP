@@ -8,10 +8,12 @@ from hyperspy.signals import Signal2D
 from hyperspy.drawing._markers.point import Point
 
 import atomap.tools as at
+import atomap.analysis_tools as an
 from atomap.plotting import (
         _make_atom_planes_marker_list, _make_atom_position_marker_list,
         _make_arrow_marker_list, _make_multidim_atom_plane_marker_list,
-        _make_zone_vector_text_marker_list, plot_vector_field)
+        _make_zone_vector_text_marker_list, plot_vector_field,
+        vector_list_to_marker_list)
 from atomap.atom_finding_refining import construct_zone_axes_from_sublattice
 from atomap.atom_finding_refining import _make_circular_mask
 
@@ -51,17 +53,19 @@ class Sublattice():
         Attributes
         ----------
         image: 2D NumPy array, or 2D array-like.
-        x_position : list of floats
-        y_position : list of floats
-        sigma_x : list of floats
-        sigma_y : list of floats
-        sigma_average : list of floats
-        rotation : list of floats
+        x_position : NumPy Array
+        y_position : NumPy Array
+        atom_positions : NumPy Array
+            In the form [[x0, y0], [x1, y1], ...]
+        sigma_x : NumPy Array
+        sigma_y : NumPy Array
+        sigma_average : NumPy Array
+        rotation : NumPy Array
             In radians. The rotation of the axes of each 2D-Gaussian relative
             to the horizontal axes. For the rotation of the ellipticity, see
             rotation_ellipticity.
-        ellipticity : list of floats
-        rotation_ellipticity : list of floats
+        ellipticity : NumPy Array
+        rotation_ellipticity : NumPy Array
             In radians, the rotation between the "x-axis" and the major axis
             of the ellipse. Basically giving the direction of the ellipticity.
         signal : HyperSpy 2D signal
@@ -145,68 +149,77 @@ class Sublattice():
 
     @property
     def atom_positions(self):
-        return([self.x_position, self.y_position])
+        atom_pos = np.stack((self.x_position, self.y_position), axis=-1)
+        return atom_pos
 
     @property
     def x_position(self):
         x_pos = []
         for atom in self.atom_list:
             x_pos.append(atom.pixel_x)
-        return(x_pos)
+        x_pos = np.array(x_pos)
+        return x_pos
 
     @property
     def y_position(self):
         y_pos = []
         for atom in self.atom_list:
             y_pos.append(atom.pixel_y)
-        return(y_pos)
+        y_pos = np.array(y_pos)
+        return y_pos
 
     @property
     def sigma_x(self):
         sigma_x = []
         for atom in self.atom_list:
             sigma_x.append(abs(atom.sigma_x))
-        return(sigma_x)
+        sigma_x = np.array(sigma_x)
+        return sigma_x
 
     @property
     def sigma_y(self):
         sigma_y = []
         for atom in self.atom_list:
             sigma_y.append(abs(atom.sigma_y))
-        return(sigma_y)
+        sigma_y = np.array(sigma_y)
+        return sigma_y
 
     @property
     def sigma_average(self):
-        sigma = np.array(self.sigma_x)+np.array(self.sigma_y)
+        sigma = self.sigma_x + self.sigma_y
         sigma *= 0.5
-        return(sigma)
+        return sigma
 
     @property
     def atom_amplitude_gaussian2d(self):
         amplitude = []
         for atom in self.atom_list:
             amplitude.append(atom.amplitude_gaussian)
-        return(amplitude)
+        amplitude = np.array(amplitude)
+        return amplitude
 
     @property
     def atom_amplitude_max_intensity(self):
         amplitude = []
         for atom in self.atom_list:
             amplitude.append(atom.amplitude_max_intensity)
-        return(amplitude)
+        amplitude = np.array(amplitude)
+        return amplitude
 
     @property
     def rotation(self):
         rotation = []
         for atom in self.atom_list:
             rotation.append(atom.rotation)
-        return(rotation)
+        rotation = np.array(rotation)
+        return rotation
 
     @property
     def ellipticity(self):
         ellipticity = []
         for atom in self.atom_list:
             ellipticity.append(atom.ellipticity)
+        ellipticity = np.array(ellipticity)
         return(ellipticity)
 
     @property
@@ -214,14 +227,16 @@ class Sublattice():
         rotation_ellipticity = []
         for atom in self.atom_list:
             rotation_ellipticity.append(atom.rotation_ellipticity)
-        return(rotation_ellipticity)
+        rotation_ellipticity = np.array(rotation_ellipticity)
+        return rotation_ellipticity
 
     @property
     def intensity_mask(self):
         intensity_mask = []
         for atom in self.atom_list:
             intensity_mask.append(atom.intensity_mask)
-        return(intensity_mask)
+        intensity_mask = np.array(intensity_mask)
+        return intensity_mask
 
     @property
     def signal(self):
@@ -237,6 +252,25 @@ class Sublattice():
             if zone_vector == zone_vector_id:
                 return(zone_vector_index)
         raise ValueError('Could not find zone_vector ' + str(zone_vector_id))
+
+    def _check_if_nearest_neighbor_list(self):
+        """Check if the nearest neighbor lists has been populated."""
+        if self.atom_list[0].nearest_neighbor_list is None:
+            raise Exception(
+                    "The atom_position objects does not seem to have a "
+                    "populated nearest neighbor list. "
+                    "Has sublattice.find_nearest_neighbors() been called?")
+
+    def _check_if_zone_axis_list(self):
+        """Check if the zone axis list has been populated."""
+        if self.zones_axis_average_distances is None:
+            raise Exception(
+                    "zones_axis_average_distances is empty. "
+                    "Has sublattice.construct_zone_axes() been called?")
+        elif len(self.zones_axis_average_distances) == 0:
+            raise Exception(
+                    "zones_axis_average_distances is empty. "
+                    "Has sublattice.construct_zone_axes() been called?")
 
     def get_atom_angles_from_zone_vector(
             self,
@@ -338,6 +372,7 @@ class Sublattice():
         zone_vector : tuple
             Zone vector for the system
         """
+        self._check_if_zone_axis_list()
         atom_plane_list = self.atom_planes_by_zone_vector[zone_vector]
         x_list, y_list, z_list = [], [], []
         for index, atom_plane in enumerate(atom_plane_list[1:]):
@@ -919,11 +954,7 @@ class Sublattice():
         if mask_radius is None:
             if percent_to_nn is None:
                 percent_to_nn = 0.4
-            if self.atom_list[0].nearest_neighbor_list is None:
-                raise ValueError(
-                        "The atom_position objects does not seem to have a "
-                        "populated nearest neighbor list. "
-                        "Has sublattice.find_nearest_neighbors() been called?")
+            self._check_if_nearest_neighbor_list()
         if image_data is None:
             image_data = self.original_image
         image_data = image_data.astype('float64')
@@ -976,11 +1007,7 @@ class Sublattice():
         if mask_radius is None:
             if percent_to_nn is None:
                 percent_to_nn = 0.25
-            if self.atom_list[0].nearest_neighbor_list is None:
-                raise ValueError(
-                        "The atom_position objects does not seem to have a "
-                        "populated nearest neighbor list. "
-                        "Has sublattice.find_nearest_neighbors() been called?")
+            self._check_if_nearest_neighbor_list()
         if image_data is None:
             image_data = self.original_image
         image_data = image_data.astype('float64')
@@ -1430,12 +1457,8 @@ class Sublattice():
         if image is None:
             image = self.original_image
         if zone_vector_list is None:
-            if self.zones_axis_average_distances is None:
-                raise Exception(
-                        "zones_axis_average_distances is empty. "
-                        "Has construct_zone_axes been run?")
-            else:
-                zone_vector_list = self.zones_axis_average_distances
+            self._check_if_zone_axis_list()
+            zone_vector_list = self.zones_axis_average_distances
 
         atom_plane_list = []
         for zone_vector in zone_vector_list:
@@ -1549,9 +1572,9 @@ class Sublattice():
         zero_position_x_list : list of numbers
         zero_position_y_list : list of numbers
         """
-        x_list.extend(zero_position_x_list)
-        y_list.extend(zero_position_y_list)
-        z_list.extend(np.zeros_like(zero_position_x_list))
+        np.append(x_list, zero_position_x_list)
+        np.append(y_list, zero_position_y_list)
+        np.append(z_list, np.zeros_like(zero_position_x_list))
 
     def get_ellipticity_vector(
             self,
@@ -1881,6 +1904,7 @@ class Sublattice():
         >>> plane = sublattice.atom_planes_by_zone_vector[zone][0]
         >>> s = sublattice.get_monolayer_distance_line_profile(zone,plane)
         """
+        self._check_if_zone_axis_list()
         data_list = self.get_monolayer_distance_list_from_zone_vector(
                 zone_vector)
         signal = self._get_property_line_profile(
@@ -1899,6 +1923,7 @@ class Sublattice():
             zone_vector_list=None,
             atom_plane_list=None,
             upscale_map=2):
+        self._check_if_zone_axis_list()
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
         zone_vector_list = []
@@ -1943,7 +1968,7 @@ class Sublattice():
             invert_line_profile=False,
             add_zero_value_sublattice=None,
             upscale_map=2):
-
+        self._check_if_zone_axis_list()
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
 
@@ -1989,6 +2014,7 @@ class Sublattice():
             atom_plane,
             invert_line_profile=False,
             interpolate_value=50):
+        self._check_if_zone_axis_list()
         data_list = self.get_atom_distance_difference_from_zone_vector(
                 zone_vector)
         signal = self._get_property_line_profile(
@@ -2010,6 +2036,7 @@ class Sublattice():
             invert_line_profile=False,
             add_zero_value_sublattice=None,
             upscale_map=2):
+        self._check_if_zone_axis_list()
         zone_vector_index_list = self._get_zone_vector_index_list(
                 zone_vector_list)
         zone_vector_list = []
@@ -2046,7 +2073,8 @@ class Sublattice():
         signal.metadata.General.title = title
         return signal
 
-    def get_model_image(self, image_shape=None, show_progressbar=True):
+    def get_model_image(self, image_shape=None, sigma_quantile=5,
+                        show_progressbar=True):
         """
         Generate an image of the atomic positions from the
         atom positions Gaussian parameter's.
@@ -2078,16 +2106,21 @@ class Sublattice():
             rotation=1.0,
             A=1.0)
 
+        im_y, im_x = model_image.shape
         for atom in tqdm(self.atom_list, disable=not show_progressbar):
+            x, y = atom.pixel_x, atom.pixel_y
+            sx, sy = atom.sigma_x, atom.sigma_y
+            atom_slice = atom._get_atom_slice(im_x, im_y,
+                                              sigma_quantile=sigma_quantile)
+            Xa, Ya = X[atom_slice], Y[atom_slice]
             g.A.value = atom.amplitude_gaussian
-            g.centre_x.value = atom.pixel_x
-            g.centre_y.value = atom.pixel_y
-            g.sigma_x.value = atom.sigma_x
-            g.sigma_y.value = atom.sigma_y
+            g.centre_x.value = x
+            g.centre_y.value = y
+            g.sigma_x.value = sx
+            g.sigma_y.value = sy
             g.rotation.value = atom.rotation
-            model_image += g.function(X, Y)
+            model_image[atom_slice] += g.function(Xa, Ya)
         s = Signal2D(model_image)
-
         return(s)
 
     def _get_zone_vector_index_list(self, zone_vector_list):
@@ -2505,7 +2538,8 @@ class Sublattice():
 
         Setting color and color map
 
-        >>> sublattice.plot(color='green', cmap='viridis')
+        >>> sublattice.plot(color='green', cmap='viridis', add_numbers=True,
+        ...                 markersize=15)
 
         See also
         --------
@@ -2513,7 +2547,8 @@ class Sublattice():
                                  as markers. More customizability.
 
         """
-        signal = self.get_atom_list_on_image(color=color)
+        signal = self.get_atom_list_on_image(
+                color=color, add_numbers=add_numbers, markersize=markersize)
         signal.plot(**kwargs, plot_markers=True)
 
     def plot_planes(self, image=None, add_numbers=True, color='red', **kwargs):
@@ -2549,8 +2584,7 @@ class Sublattice():
         signal.plot(**kwargs)
 
     def plot_ellipticity_vectors(self, save=False):
-        """
-        Get a quiver plot of the rotation and ellipticity for the sublattice.
+        """Get a quiver plot of rotation and ellipticity for the sublattice.
 
         sublattice.refine_atom_positions_using_2d_gaussian has to be run
         at least once before using this function.
@@ -2581,10 +2615,8 @@ class Sublattice():
         u_quiver *= -1
 
         plot_vector_field(
-                self.x_position,
-                self.y_position,
-                u_quiver,
-                v_quiver,
+                self.x_position, self.y_position,
+                u_quiver, v_quiver,
                 save=save)
 
     def plot_ellipticity_map(self, **kwargs):
@@ -2607,3 +2639,78 @@ class Sublattice():
         """
         s_elli = self.get_ellipticity_map()
         s_elli.plot(**kwargs)
+
+    def get_middle_position_list(self, zone_axis0, zone_axis1):
+        """Find the middle point between all four neighboring atoms.
+
+        The neighbors are found by moving one step along the atom planes
+        belonging to zone_axis0 and zone_axis1.
+
+        So atom planes must be constructed first.
+
+        Parameters
+        ----------
+        sublattice : Sublattice object
+        za0 : tuple
+        za1 : tuple
+
+        Return
+        ------
+        middle_position_list : list
+
+        Examples
+        --------
+        >>> import atomap.analysis_tools as an
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.construct_zone_axes()
+        >>> za0 = sublattice.zones_axis_average_distances[0]
+        >>> za1 = sublattice.zones_axis_average_distances[1]
+        >>> middle_position_list = an.get_middle_position_list(
+        ...     sublattice, za0, za1)
+
+        """
+        middle_position_list = an.get_middle_position_list(
+                self, zone_axis0, zone_axis1)
+        return middle_position_list
+
+    def get_polarization_from_second_sublattice(
+            self, zone_axis0, zone_axis1, sublattice, color='cyan'):
+        """Get a signal showing the polarization using a second sublattice.
+
+        Parameters
+        ----------
+        zone_axis0 : tuple
+        zone_axis1 : tuple
+        sublattice : Sublattice object
+        color : string, optional
+            Default 'cyan'.
+
+        Returns
+        -------
+        signal_polarization : HyperSpy Signal2D
+            The vector data is stored in s.metadata.vector_list. These
+            are visualized using the plot() method.
+
+        Examples
+        --------
+        >>> atom_lattice = am.dummy_data.get_polarization_film_atom_lattice()
+        >>> sublatticeA = atom_lattice.sublattice_list[0]
+        >>> sublatticeB = atom_lattice.sublattice_list[1]
+        >>> sublatticeA.construct_zone_axes()
+        >>> za0, za1 = sublatticeA.zones_axis_average_distances[0:2]
+        >>> s_p = sublatticeA.get_polarization_from_second_sublattice(
+        ...     za0, za1, sublatticeB, color='blue')
+        >>> s_p.plot()
+        >>> vector_list = s_p.metadata.vector_list
+
+        """
+        middle_pos_list = self.get_middle_position_list(
+                zone_axis0, zone_axis1)
+        vector_list = an.get_vector_shift_list(sublattice, middle_pos_list)
+        marker_list = vector_list_to_marker_list(
+                vector_list, color=color, scale=self.pixel_size)
+        signal = at.array2signal2d(self.image, self.pixel_size)
+        signal.add_marker(marker_list, permanent=True, plot_marker=False)
+        signal.metadata.add_node('vector_list')
+        signal.metadata.vector_list = vector_list
+        return signal

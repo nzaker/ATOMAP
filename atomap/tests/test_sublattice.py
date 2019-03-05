@@ -6,6 +6,7 @@ from hyperspy.signals import Signal2D
 import atomap.atom_finding_refining as afr
 from atomap.sublattice import Sublattice
 import atomap.testing_tools as tt
+import atomap.analysis_tools as an
 import atomap.dummy_data as dd
 from atomap.atom_plane import Atom_Plane
 
@@ -31,6 +32,46 @@ class TestMakeSimpleSublattice:
         repr_str = '<Sublattice, test (atoms:%s,planes:0)>' % (
                 self.atoms_N)
         assert sublattice.__repr__() == repr_str
+
+
+class TestSublatticeProperties:
+
+    def setup_method(self):
+        self.x = np.random.randint(100, size=100)
+        self.y = np.random.randint(100, size=100)
+        self.sx = np.random.randint(100, size=100)
+        self.sy = np.random.randint(100, size=100)
+        self.r = np.random.random(100) % np.pi
+        test_data = tt.MakeTestData(100, 100, sublattice_generate_image=False)
+        test_data.add_atom_list(
+                x=self.x, y=self.y, sigma_x=self.sx, sigma_y=self.sy,
+                rotation=self.r)
+        self.sublattice = test_data.sublattice
+
+    def test_x_position(self):
+        sublattice = self.sublattice
+        assert hasattr(sublattice.x_position, '__array__')
+        assert_array_equal(sublattice.x_position, self.x)
+
+    def test_y_position(self):
+        sublattice = self.sublattice
+        assert hasattr(sublattice.y_position, '__array__')
+        assert_array_equal(sublattice.y_position, self.y)
+
+    def test_sigma_x_position(self):
+        sublattice = self.sublattice
+        assert hasattr(sublattice.sigma_x, '__array__')
+        assert_array_equal(sublattice.sigma_x, self.sx)
+
+    def test_sigma_y_position(self):
+        sublattice = self.sublattice
+        assert hasattr(sublattice.sigma_y, '__array__')
+        assert_array_equal(sublattice.sigma_y, self.sy)
+
+    def test_rotation_position(self):
+        sublattice = self.sublattice
+        assert hasattr(sublattice.rotation, '__array__')
+        assert_array_equal(sublattice.rotation, self.r)
 
 
 class TestInitSublattice:
@@ -121,6 +162,32 @@ class TestSublatticeSingleAtom:
         assert len(sublattice.atom_list) == 1
         assert sublattice.x_position[0] == self.atom_position_list[0][0]
         assert sublattice.y_position[0] == self.atom_position_list[0][1]
+
+
+class TestCheckIfNearestNeighborList:
+
+    def test_has_nearest_neighbor_list(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.find_nearest_neighbors()
+        sublattice._check_if_nearest_neighbor_list()
+
+    def test_has_no_nearest_neighbor_list(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        with pytest.raises(Exception):
+            sublattice._check_if_nearest_neighbor_list()
+
+
+class TestCheckIfZoneAxisList:
+
+    def test_has_zone_axis_list(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.construct_zone_axes()
+        sublattice._check_if_zone_axis_list()
+
+    def test_has_no_zone_axis_list(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        with pytest.raises(Exception):
+            sublattice._check_if_zone_axis_list()
 
 
 class TestSublatticeWithAtomPlanes:
@@ -348,6 +415,12 @@ class TestSublatticeGetModelImage:
         s = sublattice.get_model_image(image_shape=(200, 100))
         assert s.axes_manager.shape == (200, 100)
 
+    def test_sigma_quantile(self):
+        sublattice = self.sublattice
+        s0 = sublattice.get_model_image(sigma_quantile=7)
+        s1 = sublattice.get_model_image(sigma_quantile=2)
+        assert s0.data.sum() > s1.data.sum()
+
 
 class TestGetPositionHistory:
 
@@ -458,7 +531,7 @@ class TestRefineFunctions:
 
     def test_2d_gaussian_simple(self):
         sublattice = Sublattice(self.xy, self.image_data)
-        with pytest.raises(ValueError):
+        with pytest.raises(Exception):
             sublattice.refine_atom_positions_using_2d_gaussian()
         sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_2d_gaussian()
@@ -482,7 +555,7 @@ class TestRefineFunctions:
 
     def test_center_of_mass_simple(self):
         sublattice = Sublattice(self.xy, self.image_data)
-        with pytest.raises(ValueError):
+        with pytest.raises(Exception):
             sublattice.refine_atom_positions_using_center_of_mass()
         sublattice.find_nearest_neighbors()
         sublattice.refine_atom_positions_using_center_of_mass()
@@ -561,8 +634,8 @@ class TestRefineFunctions:
         test_data.add_atom_list(x_pos, y_pos, 2, 2)
         sublattice = test_data.sublattice
         sublattice.refine_atom_positions_using_center_of_mass(mask_radius=5)
-        assert sublattice.x_position == approx(x_pos)
-        assert sublattice.y_position == approx(y_pos)
+        assert_allclose(sublattice.x_position, x_pos, atol=0.0001)
+        assert_allclose(sublattice.y_position, y_pos, atol=0.0001)
 
     def test_2d_gaussian_mask_radius(self):
         test_data = tt.MakeTestData(50, 50)
@@ -570,8 +643,8 @@ class TestRefineFunctions:
         test_data.add_atom_list(x_pos, y_pos, 2, 2)
         sublattice = test_data.sublattice
         sublattice.refine_atom_positions_using_2d_gaussian(mask_radius=5)
-        assert sublattice.x_position == approx(x_pos)
-        assert sublattice.y_position == approx(y_pos)
+        assert_allclose(sublattice.x_position, x_pos)
+        assert_allclose(sublattice.y_position, y_pos)
 
     def test_2d_gaussian_both_mask_radius_and_percent_to_nn(self):
         test_data = tt.MakeTestData(50, 50)
@@ -1088,3 +1161,67 @@ class TestToggleAtomRefinePositionWithGui:
     def test_distance_threshold(self):
         sublattice = dd.get_simple_cubic_sublattice()
         sublattice.toggle_atom_refine_position_with_gui(distance_threshold=10)
+
+
+class TestGetMiddlePositionList:
+
+    def simple(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.construct_zone_axes()
+        za0 = sublattice.zones_axis_average_distances[0]
+        za1 = sublattice.zones_axis_average_distances[1]
+        middle_pos_list = an.get_middle_position_list(sublattice, za0, za1)
+        assert len(middle_pos_list) > 0
+
+
+class TestGetPolarizationFromSecondSublattice:
+
+    def setup_method(self):
+        t0 = tt.MakeTestData(100, 100)
+        x0, y0 = np.mgrid[5:100:10, 5:100:10]
+        x0, y0 = x0.flatten(), y0.flatten()
+        t0.add_atom_list(x0, y0)
+        sublattice0 = t0.sublattice
+        sublattice0.construct_zone_axes()
+        za0 = sublattice0.zones_axis_average_distances[0]
+        za1 = sublattice0.zones_axis_average_distances[1]
+
+        t1 = tt.MakeTestData(100, 100)
+        x1, y1 = np.mgrid[10:100:10, 10:100:10]
+        x1, y1 = x1.flatten(), y1.flatten()
+        x1[7] += 2
+        y1[7] += 1
+        t1.add_atom_list(x1, y1)
+        sublattice1 = t1.sublattice
+
+        self.sublattice0 = sublattice0
+        self.sublattice1 = sublattice1
+        self.za0 = za0
+        self.za1 = za1
+
+    def test_simple(self):
+        sublattice0, sublattice1 = self.sublattice0, self.sublattice1
+        za0, za1 = self.za0, self.za1
+        s_p = sublattice0.get_polarization_from_second_sublattice(
+                za0, za1, sublattice1)
+        s_p.plot()
+
+    def test_color(self):
+        sublattice0, sublattice1 = self.sublattice0, self.sublattice1
+        za0, za1 = self.za0, self.za1
+        s_p = sublattice0.get_polarization_from_second_sublattice(
+                za0, za1, sublattice1, color='red')
+        color = s_p.metadata.Markers.line_segment1.marker_properties['color']
+        assert color == 'red'
+
+    def test_values(self):
+        sublattice0, sublattice1 = self.sublattice0, self.sublattice1
+        za0, za1 = self.za0, self.za1
+        s_p = sublattice0.get_polarization_from_second_sublattice(
+                za0, za1, sublattice1)
+        for ivector, vector in enumerate(s_p.metadata.vector_list):
+            temp_vector = vector[2:]
+            if ivector == 7:
+                assert temp_vector == (-2, -1)
+            else:
+                assert temp_vector == (0, 0)

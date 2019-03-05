@@ -177,6 +177,15 @@ class TestMakeTestData:
         assert (sublattice.image == 0).all()
         assert len(sublattice.atom_list) == 150*150
 
+    def test_sigma_quantile(self):
+        testdata0 = tt.MakeTestData(500, 500, sigma_quantile=5)
+        testdata1 = tt.MakeTestData(500, 500, sigma_quantile=1)
+        x, y = np.mgrid[0:490:30, 0:490:30]
+        x, y = x.flatten(), y.flatten()
+        testdata0.add_atom_list(x, y)
+        testdata1.add_atom_list(x, y)
+        assert testdata0.signal.data.sum() > testdata1.signal.data.sum()
+
 
 class TestMakeVectorTestGaussian(unittest.TestCase):
     def test_running(self):

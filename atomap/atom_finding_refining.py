@@ -53,6 +53,10 @@ def get_atom_positions(
     """
     if separation < 1:
         raise ValueError("Separation can not be smaller than 1")
+    sig_dims = len(signal.data.shape)
+    if sig_dims != 2:
+        raise ValueError(
+                "signal must have 2 dimensions, not {0}".format(sig_dims))
     if pca:
         signal = do_pca_on_signal(signal)
     if subtract_background:
@@ -84,20 +88,43 @@ def get_atom_positions(
 
 
 def _remove_too_close_atoms(atom_positions, pixel_separation_tolerance):
-    index_list = []
-    for index0, atom0 in enumerate(atom_positions):
-        for index1, atom1 in enumerate(atom_positions):
-            if not ((atom0[0] == atom1[0]) and (atom0[1] == atom1[1])):
-                dist = math.hypot(atom0[0]-atom1[0], atom0[1]-atom1[1])
-                if pixel_separation_tolerance > dist:
-                    if not (index0 in index_list):
-                        index_list.append(index1)
-    new_atom_positions = []
-    for index, atom in enumerate(atom_positions):
-        if index not in index_list:
-            new_atom_positions.append(atom)
-    new_atom_positions = np.array(new_atom_positions)
-    return(new_atom_positions)
+    """Remove atoms which are within the tolerance from a list of positions
+
+    Parameters
+    ----------
+    atom_positions : NumPy array
+        In the form [[x0, y0], [x1, y1], ...]
+    pixel_separation_tolerance : scalar
+        Minimum separation between the positions.
+
+    Returns
+    -------
+    atom_positions_new : NumPy array
+        With the too close atoms removed.
+
+    Examples
+    --------
+    >>> import atomap.atom_finding_refining as afr
+    >>> data = np.array([[1, 10], [10, 1], [4, 10]])
+    >>> data_new = afr._remove_too_close_atoms(data, 5)
+
+    """
+    x_array = atom_positions[:, 0]
+    y_array = atom_positions[:, 1]
+    remove_list = []
+    for i, (x, y) in enumerate(atom_positions):
+        r = np.hypot(x_array - x, y_array - y)
+        index_list = np.where(r < pixel_separation_tolerance)[0]
+        for index in index_list:
+            if i != index:
+                if not (i in remove_list):
+                    remove_list.append(index)
+    remove_list = list(set(remove_list))  # Only get unique indices
+    remove_list.sort()
+    atom_list_new = atom_positions.tolist()
+    for i_remove in remove_list[::-1]:
+        atom_list_new.pop(i_remove)
+    return np.array(atom_list_new)
 
 
 def find_features_by_separation(
@@ -225,13 +252,18 @@ def get_feature_separation(
     for peaks in peak_list:
         if len(peaks) > max_peaks:
             max_peaks = len(peaks)
+    if max_peaks == 0:
+        raise ValueError(
+                "No peaks found, try either reducing separation_range, or "
+                "using a better image")
 
     marker_list_x = np.ones((len(peak_list), max_peaks))*-100
     marker_list_y = np.ones((len(peak_list), max_peaks))*-100
 
     for index, peaks in enumerate(peak_list):
-        marker_list_x[index, 0:len(peaks)] = (peaks[:, 0]*scale_x)+offset_x
-        marker_list_y[index, 0:len(peaks)] = (peaks[:, 1]*scale_y)+offset_y
+        if len(peaks) != 0:
+            marker_list_x[index, 0:len(peaks)] = (peaks[:, 0]*scale_x)+offset_x
+            marker_list_y[index, 0:len(peaks)] = (peaks[:, 1]*scale_y)+offset_y
 
     marker_list = []
     for i in trange(marker_list_x.shape[1], disable=not show_progressbar):
@@ -370,6 +402,192 @@ def _make_circular_mask(centerX, centerY, imageSizeX, imageSizeY, radius):
     y, x = np.ogrid[-centerX:imageSizeX-centerX, -centerY:imageSizeY-centerY]
     mask = x*x + y*y <= radius*radius
     return(mask)
+
+
+def _make_mask_circle_centre(arr, radius):
+    """Create a circular mask with same shape as arr
+
+    The circle is centered on the center of the array,
+    with the circle having False values.
+
+    Similar to _make_circular_mask, but simpler and potentially
+    faster.
+
+    Numba jit compatible.
+
+    Parameters
+    ----------
+    arr : NumPy array
+        Must be 2 dimensions
+    radius : scalar
+        Radius of the circle
+
+    Returns
+    -------
+    mask : NumPy array
+        Boolean array
+
+    Example
+    -------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(20, 20))
+    >>> mask = afr._make_mask_circle_centre(arr, 10)
+
+    """
+    if len(arr.shape) != 2:
+        raise ValueError("arr must be 2D, not {0}".format(len(arr.shape)))
+    imageSizeX, imageSizeY = arr.shape
+    centerX = (arr.shape[0]-1)/2
+    centerY = (arr.shape[1]-1)/2
+
+    x = np.expand_dims(np.arange(-centerX, imageSizeX-centerX), axis=1)
+    y = np.arange(-centerY, imageSizeY-centerY)
+    mask = x*x + y*y > radius*radius
+    return mask
+
+
+def zero_array_outside_circle(arr, radius):
+    """Set all values in an array to zero outside a circle defined by radius
+
+    Numba jit compatible
+
+    Parameters
+    ----------
+    arr : NumPy array
+        Must be 2 dimensions
+    radius : scalar
+        Radius of the circle
+
+    Returns
+    -------
+    output_array : NumPy array
+        Same shape as arr, but with values outside the circle set to zero.
+
+    Example
+    -------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(30, 20))
+
+    """
+    shape = arr.shape
+    mask = _make_mask_circle_centre(arr, radius).flatten()
+    arr = arr.flatten()
+    arr[mask] = 0
+    return np.reshape(arr, shape)
+
+
+def _crop_array(arr, center_x, center_y, radius):
+    """Crop an array around a center point to give a square.
+
+    The square has sidelengths `2*radius-1`.
+
+    If the center point is such that the radius will intersect the array
+    edges, the space outside the array will be padded as zeros.
+
+    Parameters
+    ----------
+    arr : Numpy 2D Array
+    centre_x, centre_y : int
+        Centre point of the cropped array.
+    radius : int
+        Radius of the crop around the center point.
+
+    Returns
+    -------
+    Numpy 2D Array
+        Array with the shape (2*radius-1, 2*radius-1).
+
+    Examples
+    --------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(30, 50))
+    >>> data = afr._crop_array(arr, 25, 10, 5)
+
+    """
+    radius_left = radius-1
+    radius_right = radius
+
+    # Reversed first two indices so we can subtract the edges
+    edges_of_crop = np.array(
+            [radius_left - center_x, radius_left - center_y,
+             center_x + radius_right, center_y + radius_right])
+    ymax, xmax = arr.shape
+    edges_of_arr = np.array([0, 0, xmax - 1, ymax - 1])
+    edge_difference_max = np.max(edges_of_crop - edges_of_arr)
+
+    if edge_difference_max > 0:
+        arr = _pad_array(arr, edge_difference_max)
+        center_x += edge_difference_max
+        center_y += edge_difference_max
+    ymin = center_y - radius_left
+    ymax = center_y + radius_right
+    xmin = center_x - radius_left
+    xmax = center_x + radius_right
+    return arr[ymin:ymax, xmin:xmax]
+
+
+def calculate_center_of_mass(arr):
+    """Find the center of mass of an array
+
+    Parameters
+    ----------
+    arr : Numpy 2D Array
+
+    Returns
+    -------
+    cx, cy: tuple of floats
+
+    Examples
+    --------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(10, 10))
+    >>> data = afr.calculate_center_of_mass(arr)
+
+    Notes
+    -----
+    This is a much simpler center of mass approach that the one from scipy.
+    Gotten from stackoverflow:
+    https://stackoverflow.com/questions/37519238/python-find-center-of-object-in-an-image
+
+    """
+    # Can consider subtracting minimum value
+    # this gives the center of mass higher "contrast"
+    # arr -= arr.min()
+    arr = arr / np.sum(arr)
+
+    dx = np.sum(arr, 1)
+    dy = np.sum(arr, 0)
+
+    (Y, X) = arr.shape
+    cx = np.sum(dx * np.arange(X))
+    cy = np.sum(dy * np.arange(Y))
+    return cx, cy
+
+
+def _pad_array(arr, padding=1):
+    """Pad an array to give it extra zero-value pixels around the edges.
+
+    Parameters
+    ----------
+    arr : Numpy 2D Array
+    padding : int, optional
+        Default 1
+
+    Returns
+    -------
+    arr2 : NumPy array
+
+    Examples
+    --------
+    >>> import atomap.atom_finding_refining as afr
+    >>> arr = np.random.randint(100, size=(10, 10))
+    >>> data = afr._pad_array(arr, padding=2)
+
+    """
+    x, y = arr.shape
+    arr2 = np.zeros((x+padding*2, y+padding*2))
+    arr2[padding:-padding, padding:-padding] = arr.copy()
+    return arr2
 
 
 def _make_mask_from_positions(
@@ -820,7 +1038,7 @@ def fit_atom_positions_gaussian(
                 for atom in atom_list:
                     atom.old_pixel_x_list.append(atom.pixel_x)
                     atom.old_pixel_y_list.append(atom.pixel_y)
-                    atom.pixel_x, atom.pixel_y = atom.get_center_position_com(
+                    atom.pixel_x, atom.pixel_y = atom._get_center_position_com(
                             image_data,
                             percent_to_nn=temp_percent_to_nn,
                             mask_radius=temp_mask_radius)

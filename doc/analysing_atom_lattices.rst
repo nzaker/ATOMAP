@@ -393,3 +393,74 @@ The property of interest here was the separation of monolayers, and the separati
     :align: center
 
 Naturally, in these functions any atomic plane can be defined as the interface.
+
+
+.. _finding_polarization:
+
+Finding polarization
+====================
+
+In many ferroelectric materials, the spontaneous electric polarization can be determined by looking at the shift of some atomic columns in relation to the others.
+One example of this is in the ferroelectric perovskite oxides, where the B-cation is shifted from its cubic centrosymmetric position.
+The polarization can be determined by finding both the direction and magnitude of this shift.
+
+Firstly, we get an appropriate artificial dataset, resembling a ferroelectric thin film grown on top of a non-ferroelectric substrate.
+
+.. code-block:: python
+
+    >>> atom_lattice = am.dummy_data.get_polarization_film_atom_lattice()
+    >>> atom_lattice.plot()
+
+
+.. image:: images/makepolarization/polarization_atom_lattice.png
+    :scale: 50 %
+    :align: center
+
+
+The blue, B-cation, atom columns in the top part of the image are shifted towards the left.
+By finding the centre position of four neighboring red A-cation forming a square, this shift can be quantified.
+
+Finding these neighbors relies on moving along two zone axis directions in the A-cation sublattice.
+
+.. code-block:: python
+
+    >>> sublatticeA = atom_lattice.sublattice_list[0]
+    >>> sublatticeA.construct_zone_axes()
+
+
+Next, find the two perpendicular zone axes spanning this square.
+For the perovskite oxide 100 projection, this is most likely the two first ones.
+
+.. code-block:: python
+
+   >>> sublatticeA.plot_planes()
+
+
+.. image:: images/makepolarization/polarization_atom_plane0.png
+    :scale: 50 %
+
+.. image:: images/makepolarization/polarization_atom_plane1.png
+    :scale: 50 %
+
+
+The zone axes are then used with the B-cation sublattice in the :py:meth:`~atomap.sublattice.Sublattice.get_polarization_from_second_sublattice` method:
+
+.. code-block:: python
+
+    >>> za0 = sublatticeA.zones_axis_average_distances[0]
+    >>> za1 = sublatticeA.zones_axis_average_distances[1]
+    >>> sublatticeB = atom_lattice.sublattice_list[1]
+    >>> s_polarization = sublatticeA.get_polarization_from_second_sublattice(za0, za1, sublatticeB)
+
+
+This can be visualized directly by using the ``plot`` method, and the data itself can be accessed in the signal's metadata.
+
+.. code-block:: python
+
+    >>> s_polarization.plot()
+    >>> vector_list = s_polarization.metadata.vector_list
+
+
+.. image:: images/makepolarization/polarization_signal_marker.png
+    :scale: 50 %
+    :align: center

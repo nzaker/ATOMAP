@@ -16,19 +16,18 @@ from atomap.tools import\
 
 def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list,
                       save=True):
-    fig, ax = plt.subplots()
+    x_shape = min(x_pos_list), max(x_pos_list)
+    y_shape = min(y_pos_list), max(y_pos_list)
+    ar = (x_shape[1] - x_shape[0])/(y_shape[1] - y_shape[0])
+    fig, ax = plt.subplots(figsize=(6*ar, 6))
     ax.quiver(
-            x_pos_list,
-            y_pos_list,
-            x_rot_list,
-            y_rot_list,
-            scale=20.0,
-            headwidth=0.0,
-            headlength=0.0,
-            headaxislength=0.0,
-            pivot='middle')
+            x_pos_list, y_pos_list,
+            x_rot_list, y_rot_list,
+            headwidth=0.0, headlength=0.0, headaxislength=0.0,
+            scale=20.0, pivot='middle')
     ax.set_xlim(min(x_pos_list), max(x_pos_list))
     ax.set_ylim(min(y_pos_list), max(y_pos_list))
+    ax.set_aspect('equal')
     if save:
         fig.savefig("vector_field.png", dpi=200)
 
@@ -797,6 +796,38 @@ def _make_single_marker_arrow(x, y, vecX, vecY, scale=1., color='red'):
             y2=y2*scale,
             color=color)
     return marker
+
+
+def vector_list_to_marker_list(vector_list, color='red', scale=1.):
+    """Make a marker list from a vector list.
+
+    Parameters
+    ----------
+    vector_list : list
+        In the form [[x0, y0, dx0, dy0], ...]
+    color : string, optional
+        Default 'red'
+    scale : scalar, optional
+        Default 1.
+
+    Returns
+    -------
+    marker_list : list of markers
+
+    Examples
+    --------
+    >>> import atomap.plotting as pl
+    >>> vector_list = [[13, 11, -2, 1], [20, 12, 2, -3]]
+    >>> marker_list = pl.vector_list_to_marker_list(
+    ...     vector_list, color='red', scale=1.)
+
+    """
+    marker_list = []
+    for x, y, dx, dy in vector_list:
+        x1, y1 = x - dx, y - dy
+        marker = LineSegment(x*scale, y*scale, x1*scale, y1*scale, color=color)
+        marker_list.append(marker)
+    return marker_list
 
 
 def _make_zone_vector_text_marker_list(
