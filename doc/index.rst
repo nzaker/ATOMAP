@@ -4,7 +4,18 @@ Welcome to Atomap's documentation!
 News
 ----
 
-**2018-11-26: Atomap 0.1.3 released!**
+**2019-03-05: Atomap 0.1.4 released!**
+
+This release includes:
+
+* Functions to find shifts within unit cells, often seen in materials with polarization. This can for example be used to find shifts in B-cations in relation to the A-cations in a perovskite structure: :ref:`finding_polarization`.
+* Big optimization in refining the atom positions using centre of mass, which makes it much easier to work with images containing a large number of atoms. For smaller images the improvement is around 5-10 times, while for larger ones it is 1000 times faster. Thanks to `Thomas Aarholt <https://gitlab.com/thomasaarholt>`_ for `implementing this <https://gitlab.com/atomap/atomap/merge_requests/47>`_!
+* Similar optimizations to :py:meth:`~atomap.sublattice.Sublattice.get_model_image`, which is primarily used to generate test data via the :ref:`dummy_data_module` module. This means generating test data like :py:func:`~atomap.dummy_data.get_fantasite` is 60 times faster, with even bigger improvements to larger test data. Thanks to Annick De Backer at EMAT for tips on how to improve this!
+
+Another optimization for the :ref:`integrate` functionality is in the pipeline, with a `merge request <https://gitlab.com/atomap/atomap/merge_requests/48>`_ from Thomas Aarholt.
+
+
+*2018-11-26: Atomap 0.1.3 released!*
 
 Major features in this release includes:
 
@@ -12,11 +23,6 @@ Major features in this release includes:
 * A GUI function for toggling if atom positions should be refined or not, see :ref:`toggle_atom_refine`.
 * Better handling of hexagonal structures, by adding a adding a ``vector_fraction`` parameter to ``find_missing_atoms_from_zone_vector``, thanks to Eoghan O'Connell for the suggestion!
 * The addition of ``mask_radius`` to the refine functions, which makes it easier to work with non-perodic atom positions, for example :ref:`single_atom_sublattice`.
-
-
-*2018-06-13: Atomap 0.1.2 released!*
-
-This is a minor release, including a `signal` attribute in `Sublattice` and `Atom_Lattice` classes, minor changes in package dependencies and some improvements to the documentation.
 
 
 About Atomap
@@ -78,6 +84,11 @@ Contents on this webpage
 
 Old news
 --------
+
+*2018-06-13: Atomap 0.1.2 released!*
+
+This is a minor release, including a `signal` attribute in `Sublattice` and `Atom_Lattice` classes, minor changes in package dependencies and some improvements to the documentation.
+
 
 *2018-03-25: Atomap 0.1.1 released!*
 

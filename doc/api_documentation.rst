@@ -120,6 +120,8 @@ Tools
     :members:
     :undoc-members:
 
+.. _dummy_data_module:
+
 Dummy data
 ==========
 .. automodule:: atomap.dummy_data
