@@ -18,8 +18,7 @@ In this prompt run:
 
 .. code-block:: bash
 
-    $ conda install hyperspy -c conda-forge
-    $ pip install atomap
+    $ conda install atomap hyperspy-gui-traitsui hyperspy-gui-ipywidgets -c conda-forge
 
 If everything installed, continue to :ref:`starting Atomap in Windows <start_atomap_windows>`.
 If you got some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
@@ -50,8 +49,7 @@ Install the Anaconda python environment: `Anaconda environment <https://www.cont
 
 .. code-block:: bash
 
-    $ conda install hyperspy -c conda-forge
-    $ pip install atomap
+    $ conda install atomap hyperspy-gui-traitsui hyperspy-gui-ipywidgets -c conda-forge
 
 If everything installed, continue to :ref:`starting Atomap in MacOS <start_atomap_macos>`.
 If you got some kind of error, please report it as a New issue on the `Atomap GitLab <https://gitlab.com/atomap/atomap/issues>`_.
