@@ -2233,9 +2233,9 @@ class Sublattice():
         atom_plane_tolerance : scalar, default 0.5
             When constructing the atomic planes, the method will try to locate
             the atoms by "jumping" one zone vector, and seeing if there is an
-            atom with the pixel_separation times atom_plane_tolerance. So this
-            value should be increased the atomic planes are non-continuous and
-            "split".
+            atom within the pixel_separation times atom_plane_tolerance. So
+            this value should be increased if the atomic planes are
+            non-continuous and "split".
         zone_axis_para_list : parameter list or bool, default False
             A zone axes parameter list is used to name and index the zone
             axes. See atomap.process_parameters for more info. Useful for
