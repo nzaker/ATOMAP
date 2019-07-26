@@ -398,3 +398,34 @@ def plot_statistical_quant_criteria(sublattice,max_atom_nums):
     plt.ylabel('Information criterion')
     plt.legend(loc=2)
     fig.show()
+    
+def plot_fitted_hist(intensities,model,rgb,sort_indices,bins=50):
+    """Plot the atomic column intensity histogram with the best Gaussian
+    mixture model superimposed.
+    
+    Parameters
+    ----------
+    intensities : 1D NumPy Array
+        Intensities of 2D Gaussians fitted to each atomic column.
+    model : GuassianMixture model object
+        The chosen model.
+    rgb : list
+        List of discrete values from a Matplotlib colormap.
+    sort_indices : list
+    bins : int
+    """
+    x = np.linspace(0, intensities.max()*1.2, 1000)
+    x = x.reshape(-1,1)
+    logprob = model.score_samples(x)
+    responsibilities = model.predict_proba(x)
+    pdf = np.exp(logprob)
+    pdf_individual = responsibilities * pdf[:, np.newaxis]
+    
+    fig = plt.figure()
+    plt.hist(intensities, bins, density=True, alpha=0.4)
+    plt.plot(x, pdf, '-k')
+    for j,i in enumerate(sort_indices.ravel()):
+        plt.plot(x, pdf_individual[:,i], color=rgb[0][j])
+    plt.xlabel('$x$')
+    plt.ylabel('$p(x)$')
+    fig.show()
