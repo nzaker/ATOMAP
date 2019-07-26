@@ -362,11 +362,12 @@ def detector_normalisation(
 
     return image._deepcopy_with_new_data(normalised_image, copy_variance=True)
 
-def plot_statistical_quant_criteria(sublattice,max_atom_nums):
+
+def plot_statistical_quant_criteria(sublattice, max_atom_nums):
     """Plot the criteria of the Gaussian Mixture Model fitting in order to
     determine the number of different atomimc column intensities. It will try
     fitting between 1 and tot_atom_nums number of Gaussians.
-    
+
     Parameters
     ----------
     sublattice : Sublattice object
@@ -374,25 +375,25 @@ def plot_statistical_quant_criteria(sublattice,max_atom_nums):
         Maximum number of Gaussians to fit, i.e. max number of atoms in one
         column.
     """
-    
+
     #Get array of intensities of Gaussians of each atom
     intensities = [2*np.pi*atom.amplitude_gaussian*atom.sigma_x*atom.sigma_y 
                    for atom in sublattice.atom_list]
     int_array = np.asarray(intensities)
-    int_array = int_array.reshape(-1,1)
-    
+    int_array = int_array.reshape(-1, 1)
+
     #Fit Gaussian Mixture models with components from 1 to tot_atom_nums
     N = np.arange(1, max_atom_nums)
     models = [None for i in range(len(N))]
 
     for i in range(len(N)):
-        models[i] = mixture.GaussianMixture(N[i],covariance_type=
+        models[i] = mixture.GaussianMixture(N[i], covariance_type=
               'tied').fit(int_array)
 
     # compute the AIC and the BIC
     AIC = [m.aic(int_array) for m in models]
     BIC = [m.bic(int_array) for m in models]
-    
+
     # plot 2: AIC and BIC
     fig = plt.figure()
     plt.plot(N, AIC, '-k', label='AIC')
@@ -401,11 +402,12 @@ def plot_statistical_quant_criteria(sublattice,max_atom_nums):
     plt.ylabel('Information criterion')
     plt.legend(loc=2)
     fig.show()
-    
-def plot_fitted_hist(intensities,model,rgb,sort_indices,bins=50):
+
+
+def plot_fitted_hist(intensities, model, rgb,sort_indices, bins=50):
     """Plot the atomic column intensity histogram with the best Gaussian
     mixture model superimposed.
-    
+
     Parameters
     ----------
     intensities : 1D NumPy Array
@@ -432,13 +434,13 @@ def plot_fitted_hist(intensities,model,rgb,sort_indices,bins=50):
     plt.xlabel('$x$')
     plt.ylabel('$p(x)$')
     fig.show()
-    
+
 def statistical_quant(image,sublattice,num_atoms,plot=True):
     """Use the statistical quantification technique to estimate the number of
     atoms within each atomic column in an ADF-STEM image.
-    
+
     Reference: Van Aert et al. Phys Rev B 87, (2013).
-    
+
     Parameters
     ----------
     image : Hyperspy Signal object
@@ -447,7 +449,7 @@ def statistical_quant(image,sublattice,num_atoms,plot=True):
         Number of atoms in longest atomic column as determined using the
         plot_statistical_quant_criteria() function.
     plot : bool, default True
-    
+
         Returns
     -------
     sub_lattices : dict
@@ -458,20 +460,20 @@ def statistical_quant(image,sublattice,num_atoms,plot=True):
     intensities = [2*np.pi*atom.amplitude_gaussian*atom.sigma_x*atom.sigma_y for atom in sublattice.atom_list]
     int_array = np.asarray(intensities)
     int_array = int_array.reshape(-1,1)
-    
+
     model = mixture.GaussianMixture(num_atoms,covariance_type='tied').fit(int_array)
-    
+
     sort_indices = model.means_.argsort(axis=0)
-    
+
     labels = model.predict(int_array)
-    
+
     dic = {}
     for i in range(num_atoms):
         dic[int(sort_indices[i])] = i
 
     sorted_labels = np.copy(labels)
     for k, v in dic.items(): sorted_labels[labels==k] = v
-    
+
     from matplotlib import cm
     x = np.linspace(0.0, 1.0, num_atoms)
     rgb = cm.get_cmap('viridis')(x)[np.newaxis, :, :3].tolist()
@@ -479,11 +481,11 @@ def statistical_quant(image,sublattice,num_atoms,plot=True):
     atom_positions = np.column_stack(sublattice.atom_positions)
     for i, num in enumerate(sort_indices.ravel()):
         sub_lattices[i] = Sublattice(atom_positions[np.where(sorted_labels==num)], image=image.data, color=rgb[0][num])
-        
+
     atom_lattice = Atom_Lattice(image=image.data, name='quant', sublattice_list=list(sub_lattices.values()))
-    
+
     if plot==True:
-        plot_fitted_hist(int_array,model,rgb,sort_indices)
+        plot_fitted_hist(int_array, model, rgb, sort_indices)
         atom_lattice.plot()
-        
+
     return(sub_lattices)
