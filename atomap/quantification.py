@@ -386,8 +386,8 @@ def get_statistical_quant_criteria(sublattices, max_atom_nums):
     # Get array of intensities of Gaussians of each atom
     intensities = []
     for sublattice in sublattices:
-        intensities.append([2*np.pi*atom.amplitude_gaussian*atom.sigma_x*
-                            atom.sigma_y for atom in sublattice.atom_list])
+        intensities.append([2 * np.pi * atom.amplitude_gaussian * atom.sigma_x
+                            * atom.sigma_y for atom in sublattice.atom_list])
     int_array = np.asarray(intensities)
     int_array = int_array.reshape(-1, 1)
 
@@ -396,7 +396,7 @@ def get_statistical_quant_criteria(sublattices, max_atom_nums):
     models = [None for i in range(len(N))]
 
     for i in range(len(N)):
-        models[i] = mixture.GaussianMixture(N[i], covariance_type ='tied').fit(
+        models[i] = mixture.GaussianMixture(N[i], covariance_type='tied').fit(
                 int_array)
 
     # compute the AIC and the BIC
@@ -411,11 +411,11 @@ def get_statistical_quant_criteria(sublattices, max_atom_nums):
     plt.ylabel('Information criterion')
     plt.legend(loc=2)
     fig.show()
-    
+
     return(models)
 
 
-def plot_fitted_hist(intensities, model, rgb,sort_indices, bins=50):
+def plot_fitted_hist(intensities, model, rgb, sort_indices, bins=50):
     """Plot the atomic column intensity histogram with the best Gaussian
     mixture model superimposed.
 
@@ -431,17 +431,17 @@ def plot_fitted_hist(intensities, model, rgb,sort_indices, bins=50):
     bins : int
     """
     x = np.linspace(0, intensities.max()*1.2, 1000)
-    x = x.reshape(-1,1)
+    x = x.reshape(-1, 1)
     logprob = model.score_samples(x)
     responsibilities = model.predict_proba(x)
     pdf = np.exp(logprob)
     pdf_individual = responsibilities * pdf[:, np.newaxis]
-    
+
     fig = plt.figure()
     plt.hist(intensities, bins, density=True, alpha=0.4)
     plt.plot(x, pdf, '-k')
-    for j,i in enumerate(sort_indices.ravel()):
-        plt.plot(x, pdf_individual[:,i], color=rgb[0][j])
+    for j, i in enumerate(sort_indices.ravel()):
+        plt.plot(x, pdf_individual[:, i], color=rgb[0][j])
     plt.xlabel('$x$')
     plt.ylabel('$p(x)$')
     fig.show()
@@ -470,10 +470,10 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
         column intensity.
     """
     # Get array of intensities of Gaussians of each atom
-    intensities = [2*np.pi*atom.amplitude_gaussian*atom.sigma_x*atom.sigma_y 
+    intensities = [2*np.pi*atom.amplitude_gaussian*atom.sigma_x*atom.sigma_y
                    for atom in sublattice.atom_list]
     int_array = np.asarray(intensities)
-    int_array = int_array.reshape(-1,1)
+    int_array = int_array.reshape(-1, 1)
 
     # model = mixture.GaussianMixture(num_atoms,covariance_type='tied').
     # fit(int_array)
@@ -487,7 +487,8 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
         dic[int(sort_indices[i])] = i
 
     sorted_labels = np.copy(labels)
-    for k, v in dic.items(): sorted_labels[labels==k] = v
+    for k, v in dic.items():
+        sorted_labels[labels == k] = v
 
     from matplotlib import cm
     x = np.linspace(0.0, 1.0, num_atoms)
@@ -495,11 +496,11 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
     sub_lattices = {}
     atom_positions = np.column_stack(sublattice.atom_positions)
     for i, num in enumerate(sort_indices.ravel()):
-        sub_lattices[i] = Sublattice(atom_positions[np.where(sorted_labels == 
-                    num)], image = image.data, color=rgb[0][num])
+        sub_lattices[i] = Sublattice(atom_positions[np.where(sorted_labels ==
+                    num)], image=image.data, color=rgb[0][num])
 
-    atom_lattice = Atom_Lattice(image = image.data, name = 'quant',
-                                sublattice_list = list(sub_lattices.values()))
+    atom_lattice = Atom_Lattice(image=image.data, name='quant',
+                                sublattice_list=list(sub_lattices.values()))
 
     if plot:
         plot_fitted_hist(int_array, model, rgb, sort_indices)
