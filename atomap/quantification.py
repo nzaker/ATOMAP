@@ -3,6 +3,9 @@ import scipy
 import matplotlib.pyplot as plt
 import sklearn.mixture as mixture
 
+from atomap.sublattice import Sublattice
+from atomap.atom_lattice import Atom_Lattice
+
 def centered_distance_matrix(centre, det_image):
     """Makes a matrix the same size as det_image centre around a particular
     point.
@@ -429,3 +432,58 @@ def plot_fitted_hist(intensities,model,rgb,sort_indices,bins=50):
     plt.xlabel('$x$')
     plt.ylabel('$p(x)$')
     fig.show()
+    
+def statistical_quant(image,sublattice,num_atoms,plot=True):
+    """Use the statistical quantification technique to estimate the number of
+    atoms within each atomic column in an ADF-STEM image.
+    
+    Reference: Van Aert et al. Phys Rev B 87, (2013).
+    
+    Parameters
+    ----------
+    image : Hyperspy Signal object
+    sublattice : Sublattice object
+    num_atoms : int
+        Number of atoms in longest atomic column as determined using the
+        plot_statistical_quant_criteria() function.
+    plot : bool, default True
+    
+        Returns
+    -------
+    sub_lattices : dict
+        Dictionary of Sublattice objects. The keys are integers in order of
+        column intensity.
+    """
+    #Get array of intensities of Gaussians of each atom
+    intensities = [2*np.pi*atom.amplitude_gaussian*atom.sigma_x*atom.sigma_y for atom in sublattice.atom_list]
+    int_array = np.asarray(intensities)
+    int_array = int_array.reshape(-1,1)
+    
+    model = mixture.GaussianMixture(num_atoms,covariance_type='tied').fit(int_array)
+    
+    sort_indices = model.means_.argsort(axis=0)
+    
+    labels = model.predict(int_array)
+    
+    dic = {}
+    for i in range(num_atoms):
+        dic[int(sort_indices[i])] = i
+
+    sorted_labels = np.copy(labels)
+    for k, v in dic.items(): sorted_labels[labels==k] = v
+    
+    from matplotlib import cm
+    x = np.linspace(0.0, 1.0, num_atoms)
+    rgb = cm.get_cmap('viridis')(x)[np.newaxis, :, :3].tolist()
+    sub_lattices = {}
+    atom_positions = np.column_stack(sublattice.atom_positions)
+    for i, num in enumerate(sort_indices.ravel()):
+        sub_lattices[i] = Sublattice(atom_positions[np.where(sorted_labels==num)], image=image.data, color=rgb[0][num])
+        
+    atom_lattice = Atom_Lattice(image=image.data, name='quant', sublattice_list=list(sub_lattices.values()))
+    
+    if plot==True:
+        plot_fitted_hist(int_array,model,rgb,sort_indices)
+        atom_lattice.plot()
+        
+    return(sub_lattices)
