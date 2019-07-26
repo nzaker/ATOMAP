@@ -1,7 +1,7 @@
 import numpy as np
 import scipy
 import matplotlib.pyplot as plt
-
+import sklearn.mixture as mixture
 
 def centered_distance_matrix(centre, det_image):
     """Makes a matrix the same size as det_image centre around a particular
@@ -358,3 +358,43 @@ def detector_normalisation(
         (detector_intensity - vacuum_intensity)
 
     return image._deepcopy_with_new_data(normalised_image, copy_variance=True)
+
+def plot_statistical_quant_criteria(sublattice,max_atom_nums):
+    """Plot the criteria of the Gaussian Mixture Model fitting in order to
+    determine the number of different atomimc column intensities. It will try
+    fitting between 1 and tot_atom_nums number of Gaussians.
+    
+    Parameters
+    ----------
+    sublattice : Sublattice object
+    max_atom_nums : int
+        Maximum number of Gaussians to fit, i.e. max number of atoms in one
+        column.
+    """
+    
+    #Get array of intensities of Gaussians of each atom
+    intensities = [2*np.pi*atom.amplitude_gaussian*atom.sigma_x*atom.sigma_y 
+                   for atom in sublattice.atom_list]
+    int_array = np.asarray(intensities)
+    int_array = int_array.reshape(-1,1)
+    
+    #Fit Gaussian Mixture models with components from 1 to tot_atom_nums
+    N = np.arange(1, max_atom_nums)
+    models = [None for i in range(len(N))]
+
+    for i in range(len(N)):
+        models[i] = mixture.GaussianMixture(N[i],covariance_type=
+              'tied').fit(int_array)
+
+    # compute the AIC and the BIC
+    AIC = [m.aic(int_array) for m in models]
+    BIC = [m.bic(int_array) for m in models]
+    
+    # plot 2: AIC and BIC
+    fig = plt.figure()
+    plt.plot(N, AIC, '-k', label='AIC')
+    plt.plot(N, BIC, '--k', label='BIC')
+    plt.xlabel('Number of components')
+    plt.ylabel('Information criterion')
+    plt.legend(loc=2)
+    fig.show()
