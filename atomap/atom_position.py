@@ -323,7 +323,7 @@ class Atom_Position:
         See get_atom_column_amplitude_max_intensity() for further
         uses.
 
-        The maximum intensity is found within the the distance to
+        The maximum intensity is found within the distance to
         the nearest neighbor times percent_to_nn.
 
         Parameters
