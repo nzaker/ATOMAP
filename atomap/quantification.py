@@ -1,4 +1,4 @@
-import numpy as np
+﻿import numpy as np
 import scipy
 import matplotlib.pyplot as plt
 import sklearn.mixture as mixture
@@ -493,8 +493,9 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
     from matplotlib import cm
     x = np.linspace(0.0, 1.0, num_atoms)
     rgb = cm.get_cmap('viridis')(x)[np.newaxis, :, :3].tolist()
+
     sub_lattices = {}
-    atom_positions = np.column_stack(sublattice.atom_positions)
+    atom_positions = sublattice.atom_positions
     for i, num in enumerate(sort_indices.ravel()):
         sub_lattices[i] = Sublattice(atom_positions[np.where(sorted_labels ==
                     num)], image=image.data, color=rgb[0][num])
