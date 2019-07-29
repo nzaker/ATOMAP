@@ -504,8 +504,8 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
 
     sub_lattices = {}
     atom_positions = sublattice.atom_positions
-    for i, num in enumerate(sort_indices.ravel()):
-        sub_lattices[i] = Sublattice(atom_positions[np.where(sorted_labels ==
+    for num in sort_indices.ravel():
+        sub_lattices[num] = Sublattice(atom_positions[np.where(sorted_labels ==
                     num)], image=image.data, color=rgb[0][num])
 
     atom_lattice = Atom_Lattice(image=image.data, name='quant',
