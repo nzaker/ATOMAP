@@ -3,7 +3,8 @@ import math
 import atomap.quantification as quant
 from atomap.example_data import get_detector_image_signal
 from atomap.dummy_data import get_simple_cubic_signal
-
+import atomap.atom_finding_refining as atom_finding
+from atomap.sublattice import Sublattice
 
 class TestDetectorNormalisation:
 
@@ -40,3 +41,32 @@ class TestDetectorNormalisation:
         flux1 = quant.centered_distance_matrix((63, 63), np.zeros((128, 128)))
         (profiler, flux_profile) = quant.find_flux_limits(100 - flux1, 25)
         assert len(flux_profile) == math.ceil((64**2 + 64**2)**0.5)
+
+
+class TestStatisticalQuant:
+
+    def setup_method(self):
+        self.tdata = tt.MakeTestData(200, 200)
+
+        for i in range(4):
+            x, y = np.mgrid[60*i:(i+1)*60:15, 10:200:15]
+            x, y = x.flatten(), y.flatten()
+            self.tdata.add_atom_list(x, y,sigma_x=2, sigma_y=2, amplitude=(i+1)*20, rotation=0.4)
+        self.tdata.add_image_noise(sigma=0.02)
+
+        atom_positions = atom_finding.get_atom_positions(self.tdata.signal, 8, threshold_rel=0.1)
+
+        sublattice = am.Sublattice(atom_positions, t3.signal.data)
+
+        sublattice.construct_zone_axes()
+
+        sublattice.refine_atom_positions_using_2d_gaussian(sublattice.image)
+
+    def test_statistical_method(self):
+        models = get_statistical_quant_criteria([self.sublattice], 10)
+        sub_lattices = statistical_quant(self.tdata.signal, self.sublattice, models[3], 4, plot=False)
+
+        assert len(sub_lattices[0].atom_list) == 39
+        assert len(sub_lattices[1].atom_list) == 52
+        assert len(sub_lattices[2].atom_list) == 52
+        assert len(sub_lattices[3].atom_list) == 13
