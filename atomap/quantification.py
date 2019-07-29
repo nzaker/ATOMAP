@@ -381,6 +381,10 @@ def get_statistical_quant_criteria(sublattices, max_atom_nums):
     -------
     models : list
         List of GaussianMixture models.
+
+    Example
+    -------
+    models = am.quant.get_statistical_quant_criteria([sublattice], 10)
     """
 
     # Get array of intensities of Gaussians of each atom
@@ -468,6 +472,10 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
     sub_lattices : dict
         Dictionary of Sublattice objects. The keys are integers in order of
         column intensity.
+
+    Example
+    -------
+    sub_lattices = am.quant.statistical_quant(s, sublattice, models[4], 5)
     """
     # Get array of intensities of Gaussians of each atom
     intensities = [2*np.pi*atom.amplitude_gaussian*atom.sigma_x*atom.sigma_y
