@@ -5,6 +5,7 @@ from atomap.example_data import get_detector_image_signal
 from atomap.dummy_data import get_simple_cubic_signal
 import atomap.atom_finding_refining as atom_finding
 from atomap.sublattice import Sublattice
+import atomap.testing_tools as tt
 
 class TestDetectorNormalisation:
 
