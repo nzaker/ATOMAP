@@ -7,6 +7,7 @@ import atomap.atom_finding_refining as atom_finding
 from atomap.sublattice import Sublattice
 import atomap.testing_tools as tt
 
+
 class TestDetectorNormalisation:
 
     def test_centered_distance_matrix(self):
@@ -52,7 +53,7 @@ class TestStatisticalQuant:
         for i in range(4):
             x, y = np.mgrid[60*i:(i+1)*60:15, 10:200:15]
             x, y = x.flatten(), y.flatten()
-            self.tdata.add_atom_list(x, y,sigma_x=2, sigma_y=2,
+            self.tdata.add_atom_list(x, y, sigma_x=2, sigma_y=2,
                                      amplitude=(i+1)*20, rotation=0.4)
         self.tdata.add_image_noise(sigma=0.02)
 
