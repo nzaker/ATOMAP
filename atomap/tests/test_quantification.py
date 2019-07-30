@@ -60,11 +60,11 @@ class TestStatisticalQuant:
         atom_positions = atom_finding.get_atom_positions(self.tdata.signal, 8,
                                                          threshold_rel=0.1)
 
-        sublattice = Sublattice(atom_positions, self.tdata.signal.data)
+        self.sublattice = Sublattice(atom_positions, self.tdata.signal.data)
 
-        sublattice.construct_zone_axes()
+        self.sublattice.construct_zone_axes()
 
-        sublattice.refine_atom_positions_using_2d_gaussian(sublattice.image)
+        self.sublattice.refine_atom_positions_using_2d_gaussian(self.sublattice.image)
 
     def test_statistical_method(self):
         models = quant.get_statistical_quant_criteria([self.sublattice], 10)
