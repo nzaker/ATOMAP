@@ -1,3 +1,4 @@
 [flake8]
 exclude =
     atomap/api.py
+    atomap/external/gaussian2d.py
