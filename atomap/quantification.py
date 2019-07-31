@@ -399,8 +399,6 @@ def get_statistical_quant_criteria(sublattices, max_atom_nums):
     >>> sublattice = am.Sublattice(atom_positions, tdata.signal.data)
     >>> sublattice.construct_zone_axes()
     >>> sublattice.refine_atom_positions_using_2d_gaussian(sublattice.image)
-    >>> sub_lattices = am.quant.statistical_quant(tdata.signal, sublattice,
-    ...                                           models[4], 5)
     >>> models = am.quant.get_statistical_quant_criteria([sublattice], 10)
     """
 
@@ -507,8 +505,6 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
     >>> sublattice = am.Sublattice(atom_positions, tdata.signal.data)
     >>> sublattice.construct_zone_axes()
     >>> sublattice.refine_atom_positions_using_2d_gaussian(sublattice.image)
-    >>> sub_lattices = am.quant.statistical_quant(tdata.signal, sublattice,
-    ...                                           models[4], 5)
     >>> models = am.quant.get_statistical_quant_criteria([sublattice], 10)
     >>> sub_lattices = statistical_quant(self.tdata.signal, self.sublattice,
     ...                                  models[3], 4, plot=False)
