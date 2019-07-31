@@ -64,7 +64,8 @@ class TestStatisticalQuant:
 
         self.sublattice.construct_zone_axes()
 
-        self.sublattice.refine_atom_positions_using_2d_gaussian(self.sublattice.image)
+        self.sublattice.refine_atom_positions_using_2d_gaussian(
+                self.sublattice.image)
 
     def test_statistical_method(self):
         models = quant.get_statistical_quant_criteria([self.sublattice], 10)

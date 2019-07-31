@@ -389,9 +389,9 @@ def get_statistical_quant_criteria(sublattices, max_atom_nums):
     >>> import atomap.testing_tools as tt
     >>> tdata = tt.MakeTestData(200, 200)
     >>> for i in range(4):
-    >>>     x, y = np.mgrid[60*i:(i+1)*60:15, 10:200:15]
-    >>>     x, y = x.flatten(), y.flatten()
-    >>>     tdata.add_atom_list(x, y,sigma_x=2, sigma_y=2,
+    ...     x, y = np.mgrid[60*i:(i+1)*60:15, 10:200:15]
+    ...     x, y = x.flatten(), y.flatten()
+    ...     tdata.add_atom_list(x, y,sigma_x=2, sigma_y=2,
                                      amplitude=(i+1)*20, rotation=0.4)
     >>> tdata.add_image_noise(sigma=0.02)
     >>> atom_positions = am.get_atom_positions(tdata.signal, 8,
@@ -399,7 +399,8 @@ def get_statistical_quant_criteria(sublattices, max_atom_nums):
     >>> sublattice = am.Sublattice(atom_positions, tdata.signal.data)
     >>> sublattice.construct_zone_axes()
     >>> sublattice.refine_atom_positions_using_2d_gaussian(sublattice.image)
-    >>> sub_lattices = am.quant.statistical_quant(tdata.signal, sublattice, models[4], 5)
+    >>> sub_lattices = am.quant.statistical_quant(tdata.signal, sublattice,
+                                                  models[4], 5)
     >>> models = am.quant.get_statistical_quant_criteria([sublattice], 10)
     """
 
@@ -496,9 +497,9 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
     >>> import atomap.testing_tools as tt
     >>> tdata = tt.MakeTestData(200, 200)
     >>> for i in range(4):
-    >>>     x, y = np.mgrid[60*i:(i+1)*60:15, 10:200:15]
-    >>>     x, y = x.flatten(), y.flatten()
-    >>>     tdata.add_atom_list(x, y,sigma_x=2, sigma_y=2,
+    ...     x, y = np.mgrid[60*i:(i+1)*60:15, 10:200:15]
+    ...     x, y = x.flatten(), y.flatten()
+    ...     tdata.add_atom_list(x, y,sigma_x=2, sigma_y=2,
                                      amplitude=(i+1)*20, rotation=0.4)
     >>> tdata.add_image_noise(sigma=0.02)
     >>> atom_positions = am.get_atom_positions(tdata.signal, 8,
@@ -506,7 +507,8 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
     >>> sublattice = am.Sublattice(atom_positions, tdata.signal.data)
     >>> sublattice.construct_zone_axes()
     >>> sublattice.refine_atom_positions_using_2d_gaussian(sublattice.image)
-    >>> sub_lattices = am.quant.statistical_quant(tdata.signal, sublattice, models[4], 5)
+    >>> sub_lattices = am.quant.statistical_quant(tdata.signal, sublattice,
+                                                  models[4], 5)
     >>> models = am.quant.get_statistical_quant_criteria([sublattice], 10)
     >>> sub_lattices = statistical_quant(self.tdata.signal, self.sublattice,
                                          models[3], 4, plot=False)
