@@ -506,7 +506,7 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
     >>> sublattice.construct_zone_axes()
     >>> sublattice.refine_atom_positions_using_2d_gaussian(sublattice.image)
     >>> models = am.quant.get_statistical_quant_criteria([sublattice], 10)
-    >>> sub_lattices = statistical_quant(tdata.signal, self.sublattice,
+    >>> sub_lattices = statistical_quant(tdata.signal, sublattice,
     ...                                  models[3], 4, plot=False)
     """
     # Get array of intensities of Gaussians of each atom
