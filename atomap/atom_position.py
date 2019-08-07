@@ -318,11 +318,34 @@ class Atom_Position:
             self,
             image_data,
             percent_to_nn=0.40):
-        """Find the maximum intensity of the atom.
-
-        The maximum is found within the the distance to the nearest
-        neighbor times percent_to_nn.
         """
+        Find the maximum intensity of the atom.
+        See get_atom_column_amplitude_max_intensity() for further
+        uses.
+
+        The maximum intensity is found within the distance to
+        the nearest neighbor times percent_to_nn.
+
+        Parameters
+        ----------
+        image_data : NumPy 2D array
+        percent_to_nn : float, default 0.4
+            Determines the boundary of the area surrounding each atomic
+            column, as fraction of the distance to the nearest neighbour.
+
+        Returns
+        -------
+        Maximum pixel intensity for an atom position.
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.find_nearest_neighbors()
+        >>> atom0 = sublattice.atom_list[0]
+        >>> atom0_max_int = atom0.calculate_max_intensity(sublattice.image)
+        """
+
         closest_neighbor = self.get_closest_neighbor()
 
         slice_size = closest_neighbor * percent_to_nn * 2
