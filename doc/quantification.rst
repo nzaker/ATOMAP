@@ -61,7 +61,7 @@ The code below shows this process operating on an ADF image named "data", which 
 
 .. code-block:: python
 
-    >>> import atomap.api as am
+    >>> data = am.dummy_data.get_two_sublattice_signal()
     >>> atom_positions = am.get_atom_positions(data)
     >>> sublattice = am.Sublattice(atom_positions, image=data.data)
     >>> sublattice.refine_atom_positions_using_2d_gaussian()
@@ -78,7 +78,7 @@ To obtain plots of AIC and BIC for your image, you use the :py:func:`~atomap.qua
 
 .. code-block:: python
 
-    >>> models = am.quant.get_statistical_quant_criteria([sublattice], 10)
+    >>> models = am.quant.get_statistical_quant_criteria([sublattice], 20)
 
 .. figure:: images/quant/criteria_plot.png
     :scale: 80 %
