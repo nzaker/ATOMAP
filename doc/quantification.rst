@@ -57,11 +57,11 @@ Statistical Method
 ==================
 
 In order to perform the "statistical method" you must first have a sublattice defined and you must also have used the Gaussian refinement.
-The code below shows this process operating on an ADF image named "data", which should be a 2D Hyperspy signal object.
+The code below shows this process operating on an ADF image from the adf__quantification_notebook in the atomap demos.
 
 .. code-block:: python
 
-    >>> data = am.dummy_data.get_two_sublattice_signal()
+    >>> data = hs.load(nanoparticle_datafile)
     >>> atom_positions = am.get_atom_positions(data)
     >>> sublattice = am.Sublattice(atom_positions, image=data.data)
     >>> sublattice.refine_atom_positions_using_2d_gaussian()
