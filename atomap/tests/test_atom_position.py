@@ -66,13 +66,13 @@ class TestAtomPositionObjectTools:
         atom_position4 = Atom_Position(2, 2)
 
         angle90 = self.atom_position.get_angle_between_atoms(
-                atom_position0, atom_position1)
+            atom_position0, atom_position1)
         angle180 = self.atom_position.get_angle_between_atoms(
-                atom_position0, atom_position2)
+            atom_position0, atom_position2)
         angle0 = self.atom_position.get_angle_between_atoms(
-                atom_position1, atom_position3)
+            atom_position1, atom_position3)
         angle45 = self.atom_position.get_angle_between_atoms(
-                atom_position1, atom_position4)
+            atom_position1, atom_position4)
 
         assert approx(angle90) == pi/2
         assert approx(angle180) == pi
@@ -82,7 +82,7 @@ class TestAtomPositionObjectTools:
     def test_as_gaussian(self):
         x, y, sx, sy, A, r = 10., 5., 2., 3.5, 9.9, 1.5
         atom_position = Atom_Position(
-                x=x, y=y, sigma_x=sx, sigma_y=sy, amplitude=A, rotation=r)
+            x=x, y=y, sigma_x=sx, sigma_y=sy, amplitude=A, rotation=r)
         g = atom_position.as_gaussian()
         assert g.centre_x.value == x
         assert g.centre_y.value == y
@@ -114,7 +114,7 @@ class TestAtomPositionRefine:
         atom = sublattice.atom_list[0]
         image_data = test_data.signal.data
         atom.refine_position_using_center_of_mass(
-                image_data, mask_radius=5)
+            image_data, mask_radius=5)
         assert atom.pixel_x == approx(x)
         assert atom.pixel_y == approx(y)
 
@@ -168,7 +168,7 @@ class TestAtomPositionRefinePositionFlag:
 
     def test_many_atoms(self):
         sublattice = dd.get_simple_cubic_sublattice(
-                image_noise=True)
+            image_noise=True)
         atom = sublattice.atom_list[0]
         atom.refine_position = False
         x_pos_orig = np.array(sublattice.x_position)
@@ -193,7 +193,7 @@ class TestAtomPositionGetAtomSlice:
         x, y, sx, sy, sigma_quantile = 25, 30, 2, 4, quantile
         atom_position = Atom_Position(x=x, y=y, sigma_x=sx, sigma_y=sy)
         slice_y, slice_x = atom_position._get_atom_slice(
-                100, 100, sigma_quantile=sigma_quantile)
+            100, 100, sigma_quantile=sigma_quantile)
         smax = max(sx, sy)
         assert slice_x.start == x - smax * sigma_quantile
         assert slice_x.stop == x + smax * sigma_quantile
@@ -204,7 +204,7 @@ class TestAtomPositionGetAtomSlice:
         x, y, sigma, sigma_quantile = 5, 50, 3, 3
         atom_position = Atom_Position(x, y, sigma_x=sigma, sigma_y=sigma)
         slice_y, slice_x = atom_position._get_atom_slice(
-                100, 100, sigma_quantile=sigma_quantile)
+            100, 100, sigma_quantile=sigma_quantile)
         assert slice_x.start == 0
         assert slice_x.stop == x + sigma * sigma_quantile
         assert slice_y.start == y - sigma * sigma_quantile
@@ -214,7 +214,7 @@ class TestAtomPositionGetAtomSlice:
         x, y, sigma, sigma_quantile = 50, 0, 3, 3
         atom_position = Atom_Position(x, y, sigma_x=sigma, sigma_y=sigma)
         slice_y, slice_x = atom_position._get_atom_slice(
-                100, 100, sigma_quantile=sigma_quantile)
+            100, 100, sigma_quantile=sigma_quantile)
         assert slice_x.start == x - sigma * sigma_quantile
         assert slice_x.stop == x + sigma * sigma_quantile
         assert slice_y.start == 0
@@ -225,7 +225,7 @@ class TestAtomPositionGetAtomSlice:
         x, y, sigma, sigma_quantile = 95, 50, 3, 3
         atom_position = Atom_Position(x, y, sigma_x=sigma, sigma_y=sigma)
         slice_y, slice_x = atom_position._get_atom_slice(
-                im_x, 100, sigma_quantile=sigma_quantile)
+            im_x, 100, sigma_quantile=sigma_quantile)
         assert slice_x.start == x - sigma * sigma_quantile
         assert slice_x.stop == im_x
         assert slice_y.start == y - sigma * sigma_quantile
@@ -236,8 +236,28 @@ class TestAtomPositionGetAtomSlice:
         x, y, sigma, sigma_quantile = 50, 95, 3, 3
         atom_position = Atom_Position(x, y, sigma_x=sigma, sigma_y=sigma)
         slice_y, slice_x = atom_position._get_atom_slice(
-                100, im_y, sigma_quantile=sigma_quantile)
+            100, im_y, sigma_quantile=sigma_quantile)
         assert slice_x.start == x - sigma * sigma_quantile
         assert slice_x.stop == x + sigma * sigma_quantile
         assert slice_y.start == y - sigma * sigma_quantile
         assert slice_y.stop == im_y
+
+
+class TestCalculateAtomPositionIntensity:
+
+    def test_calculate_max_intensity(self):
+        test_data = tt.MakeTestData(110, 110)
+        x, y = np.mgrid[5:105:5j, 5:105:5j]
+        x, y = x.flatten(), y.flatten()
+        A = [1] * len(x)
+        test_data.add_atom_list(x=x, y=y, amplitude=A)
+        sublattice = test_data.sublattice
+        sublattice.find_nearest_neighbors()
+        sublattice.image /= sublattice.image.max()
+
+        max_intensities = []
+        for atom in sublattice.atom_list:
+            max_intensities.append(
+                atom.calculate_max_intensity(sublattice.image))
+
+        assert approx(max_intensities) == A
