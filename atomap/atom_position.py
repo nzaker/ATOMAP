@@ -85,6 +85,7 @@ class Atom_Position:
         self.amplitude_gaussian = amplitude
         self._gaussian_fitted = False
         self.amplitude_max_intensity = 1.0
+        self.amplitude_min_intensity = 0.0
         self.intensity_mask = 0.
         self.refine_position = True
 
@@ -356,6 +357,49 @@ class Atom_Position:
         self.amplitude_max_intensity = data_slice_max
 
         return(data_slice_max)
+
+    def calculate_min_intensity(
+            self,
+            image_data,
+            percent_to_nn=0.40):
+        """
+        Find the minimum intensity of the atom.
+        See get_atom_column_amplitude_min_intensity() for further
+        uses.
+
+        The min intensity is found within the distance to
+        the nearest neighbor times percent_to_nn.
+
+        Parameters
+        ----------
+        image_data : NumPy 2D array
+        percent_to_nn : float, default 0.4
+            Determines the boundary of the area surrounding each atomic
+            column, as fraction of the distance to the nearest neighbour.
+
+        Returns
+        -------
+        Minimum pixel intensity for an atom position.
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.find_nearest_neighbors()
+        >>> atom0 = sublattice.atom_list[0]
+        >>> atom0_min_int = atom0.calculate_min_intensity(sublattice.image)
+        """
+
+        closest_neighbor = self.get_closest_neighbor()
+
+        slice_size = closest_neighbor * percent_to_nn * 2
+        data_slice, _, _ = self._get_image_slice_around_atom(
+            image_data, slice_size)
+
+        data_slice_min = data_slice.min()
+        self.amplitude_min_intensity = data_slice_min
+
+        return(data_slice_min)
 
     def refine_position_using_2d_gaussian(
             self,

@@ -261,3 +261,21 @@ class TestCalculateAtomPositionIntensity:
                 atom.calculate_max_intensity(sublattice.image))
 
         assert approx(max_intensities) == A
+
+    def test_calculate_min_intensity(self):
+        test_data = tt.MakeTestData(110, 110)
+        x, y = np.mgrid[5:105:5j, 5:105:5j]
+        x, y = x.flatten(), y.flatten()
+        A = [1] * len(x)
+        A_min = [0] * len(x)
+        test_data.add_atom_list(x=x, y=y, amplitude=A)
+        sublattice = test_data.sublattice
+        sublattice.find_nearest_neighbors()
+        sublattice.image /= sublattice.image.max()
+
+        min_intensities = []
+        for atom in sublattice.atom_list:
+            min_intensities.append(
+                atom.calculate_min_intensity(sublattice.image))
+
+        assert approx(min_intensities) == A_min
