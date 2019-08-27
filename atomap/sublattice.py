@@ -544,7 +544,7 @@ class Sublattice():
         """
         data_scale = self.pixel_size
         if add_zero_value_sublattice is not None:
-            self._add_zero_position_to_data_list_from_atom_list(
+            x_list, y_list, z_list = at._add_zero_position_to_data_list(
                 x_list, y_list, z_list,
                 add_zero_value_sublattice.x_position,
                 add_zero_value_sublattice.y_position)
@@ -1553,29 +1553,6 @@ class Sublattice():
 
         return signal
 
-    def _add_zero_position_to_data_list_from_atom_list(
-            self,
-            x_list,
-            y_list,
-            z_list,
-            zero_position_x_list,
-            zero_position_y_list):
-        """
-        Add zero value properties to position and property list.
-        Useful to visualizing oxygen tilt pattern.
-
-        Parameters
-        ----------
-        x_list : list of numbers
-        y_list : list of numbers
-        z_list : list of numbers
-        zero_position_x_list : list of numbers
-        zero_position_y_list : list of numbers
-        """
-        np.append(x_list, zero_position_x_list)
-        np.append(y_list, zero_position_y_list)
-        np.append(z_list, np.zeros_like(zero_position_x_list))
-
     def get_ellipticity_vector(
             self,
             image=None,
@@ -2044,7 +2021,7 @@ class Sublattice():
         for zone_index, zone_vector in zone_vector_index_list:
             data_list = self.get_atom_distance_difference_from_zone_vector(
                     zone_vector)
-            if len(data_list[2]) is not 0:
+            if len(data_list[2]) != 0:
                 signal = self.get_property_map(
                     data_list[0],
                     data_list[1],

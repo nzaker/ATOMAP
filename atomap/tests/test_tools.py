@@ -92,6 +92,20 @@ class TestFingerprinter:
         assert len(bool_list) == clusters
 
 
+class TestAddZeroPositionToDataList:
+
+    def test_simple(self):
+        x_array, y_array = np.arange(10), np.arange(10, 20)
+        z_array = np.arange(30, 40)
+        x_array_extra, y_array_extra = np.arange(5), np.arange(5)
+        x_new, y_new, z_new = to._add_zero_position_to_data_list(
+                x_array, y_array, z_array, x_array_extra, y_array_extra)
+        assert len(x_array) + len(x_array_extra) == len(x_new)
+        assert len(y_array) + len(y_array_extra) == len(y_new)
+        assert len(z_array) + len(x_array_extra) == len(z_new)
+        assert len(x_new) == len(y_new) == len(z_new)
+
+
 class TestRemoveAtomsFromImageUsing2dGaussian:
 
     def setup_method(self):

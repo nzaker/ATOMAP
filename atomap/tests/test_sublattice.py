@@ -258,7 +258,10 @@ class TestSublatticeGetSignal:
         plane = self.sublattice.atom_plane_list[3]
         self.sublattice.get_ellipticity_line_profile(plane)
 
-    def test_distance_difference(self):
+    def test_get_atom_distance_difference_map(self):
+        self.sublattice.get_atom_distance_difference_map()
+
+    def test_get_atom_distance_difference_map_single_zone_vector(self):
         zone_vector = self.sublattice.zones_axis_average_distances[0]
         self.sublattice.get_atom_distance_difference_map([zone_vector])
 
@@ -295,9 +298,6 @@ class TestSublatticeGetSignal:
         plane = sublattice.atom_planes_by_zone_vector[zone_vector][0]
         sublattice.get_atom_distance_difference_line_profile(
                     zone_vector, plane)
-
-    def test_get_atom_distance_difference_map(self):
-        self.sublattice.get_atom_distance_difference_map()
 
     def test_get_atom_distance_map(self):
         self.sublattice.get_atom_distance_map()
@@ -1066,6 +1066,19 @@ class TestGetPropertyMap:
         assert s.axes_manager[0].scale == 0.5
         assert s.axes_manager[1].scale == 0.5
         assert s.data[10:50, 10:50].mean() == 1
+
+    def test_add_zero_value_sublattice(self):
+        sublattice = self.sublattice
+        sublattice.construct_zone_axes()
+        z_list = self.z_list
+        sub0 = Sublattice(np.array([[18, 15]]), image=sublattice.image)
+        s0 = sublattice.get_property_map(
+                    sublattice.x_position, sublattice.y_position,
+                    z_list)
+        s1 = sublattice.get_property_map(
+                    sublattice.x_position, sublattice.y_position,
+                    z_list, add_zero_value_sublattice=sub0)
+        assert not (s0.data == s1.data).all()
 
     def test_all_parameters(self):
         sublattice = self.sublattice

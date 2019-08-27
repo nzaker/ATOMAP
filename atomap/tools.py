@@ -861,6 +861,41 @@ def array2signal2d(numpy_array, scale=1.0, rotate_flip=False):
     return signal
 
 
+def _add_zero_position_to_data_list(
+        x_list, y_list, z_list,
+        zero_position_x_list, zero_position_y_list):
+    """Add zero value properties to position and property list.
+
+    Useful to visualizing oxygen tilt pattern.
+
+    Parameters
+    ----------
+    x_list : list of numbers
+    y_list : list of numbers
+    z_list : list of numbers
+    zero_position_x_list : list of numbers
+    zero_position_y_list : list of numbers
+
+    Return
+    ------
+    x_array_new, y_array_new, z_array_new : NumPy arrays
+
+    Example
+    -------
+    >>> import atomap.tools as to
+    >>> x_list, y_list = np.arange(10), np.arange(10, 20)
+    >>> z_list = np.arange(20, 30)
+    >>> zero_position_x_list, zero_position_y_list = [15, 10], [10, 15]
+    >>> x_new, y_new, z_new = to._add_zero_position_to_data_list(
+    ...     x_list, y_list, z_list, zero_position_x_list, zero_position_y_list)
+
+    """
+    x_array_new = np.append(x_list, zero_position_x_list)
+    y_array_new = np.append(y_list, zero_position_y_list)
+    z_array_new = np.append(z_list, np.zeros_like(zero_position_x_list))
+    return x_array_new, y_array_new, z_array_new
+
+
 def _get_n_nearest_neighbors(position_list, nearest_neighbors, leafsize=100):
     """
     Parameters
@@ -1166,7 +1201,7 @@ def fliplr_points_and_signal(signal, x_array, y_array):
     """
 
     s_out = signal.deepcopy()
-    s_out.map(np.fliplr, show_progressbar=False)
+    s_out.map(np.fliplr, parallel=False, show_progressbar=False)
     x_array, y_array = fliplr_points_around_signal_centre(
         s_out, x_array, y_array)
     return s_out, x_array, y_array
@@ -1239,7 +1274,7 @@ def rotate_points_and_signal(signal, x_array, y_array, rotation):
     """
     s_out = signal.deepcopy()
     s_out.map(ndimage.rotate, angle=rotation,
-              reshape=False, show_progressbar=False)
+              reshape=False, parallel=False, show_progressbar=False)
     x_array, y_array = rotate_points_around_signal_centre(
         s_out, x_array, y_array, rotation)
     return s_out, x_array, y_array
