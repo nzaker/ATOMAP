@@ -30,7 +30,7 @@ setup(
             'scipy',
             'numpy>=1.13',
             'h5py',
-            'matplotlib>=2.0',
+            'matplotlib>=3.1.0',
             'tqdm',
             'scikit-learn',
             'scikit-image>=0.13',
