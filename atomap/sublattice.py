@@ -1709,9 +1709,9 @@ class Sublattice():
         >>> intensity_list = sublattice.atom_amplitude_max_intensity
 
         """
+        self._check_if_nearest_neighbor_list()
         if image is None:
             image = self.original_image
-
         percent_distance = percent_to_nn
         for atom in self.atom_list:
             atom.calculate_max_intensity(
@@ -1748,6 +1748,7 @@ class Sublattice():
         >>> intensity_list = sublattice.atom_amplitude_min_intensity
 
         """
+        self._check_if_nearest_neighbor_list()
         if image is None:
             image = self.original_image
 
