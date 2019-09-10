@@ -207,6 +207,14 @@ class Sublattice():
         return amplitude
 
     @property
+    def atom_amplitude_min_intensity(self):
+        amplitude = []
+        for atom in self.atom_list:
+            amplitude.append(atom.amplitude_min_intensity)
+        amplitude = np.array(amplitude)
+        return amplitude
+
+    @property
     def rotation(self):
         rotation = []
         for atom in self.atom_list:
@@ -1678,12 +1686,52 @@ class Sublattice():
         >>> intensity_list = sublattice.atom_amplitude_max_intensity
 
         """
+        self._check_if_nearest_neighbor_list()
+        if image is None:
+            image = self.original_image
+        percent_distance = percent_to_nn
+        for atom in self.atom_list:
+            atom.calculate_max_intensity(
+                    image,
+                    percent_to_nn=percent_distance)
+
+    def get_atom_column_amplitude_min_intensity(
+            self,
+            image=None,
+            percent_to_nn=0.40):
+        """Finds the minimum intensity for each atomic column.
+
+        Finds the minimum image intensity of each atomic column inside
+        an area covering the atomic column.
+
+        Results are stored in each Atom_Position object as
+        amplitude_min_intensity, which can most easily be accessed in
+        through the sublattice object (see the examples below).
+
+        Parameters
+        ----------
+        image : NumPy 2D array, default None
+            Uses original_image by default.
+        percent_to_nn : float, default 0.4
+            Determines the boundary of the area surrounding each atomic
+            column, as fraction of the distance to the nearest neighbour.
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.find_nearest_neighbors()
+        >>> sublattice.get_atom_column_amplitude_min_intensity()
+        >>> intensity_list = sublattice.atom_amplitude_min_intensity
+
+        """
+        self._check_if_nearest_neighbor_list()
         if image is None:
             image = self.original_image
 
         percent_distance = percent_to_nn
         for atom in self.atom_list:
-            atom.calculate_max_intensity(
+            atom.calculate_min_intensity(
                     image,
                     percent_to_nn=percent_distance)
 

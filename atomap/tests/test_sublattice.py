@@ -1,7 +1,8 @@
 import pytest
 from pytest import approx
 import numpy as np
-from numpy.testing import assert_allclose, assert_array_equal
+from numpy.testing import (
+        assert_allclose, assert_array_equal, assert_array_less)
 from hyperspy.signals import Signal2D
 import atomap.atom_finding_refining as afr
 from atomap.sublattice import Sublattice
@@ -1238,3 +1239,37 @@ class TestGetPolarizationFromSecondSublattice:
                 assert temp_vector == (-2, -1)
             else:
                 assert temp_vector == (0, 0)
+
+
+class TestAmplitudeMinIntensity:
+
+    def setup_method(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.find_nearest_neighbors()
+        self.sublattice = sublattice
+
+    def test_property(self):
+        sublattice = self.sublattice
+        sublattice.image[:] = 0
+        sublattice.get_atom_column_amplitude_min_intensity()
+        assert_allclose(sublattice.atom_amplitude_min_intensity, 0)
+        sublattice.image[:] = 3
+        sublattice.get_atom_column_amplitude_min_intensity()
+        assert_allclose(sublattice.atom_amplitude_min_intensity, 3)
+
+    def test_method_image(self):
+        sublattice = self.sublattice
+        sublattice.image[:] = 0
+        sublattice.get_atom_column_amplitude_min_intensity()
+        assert_allclose(sublattice.atom_amplitude_min_intensity, 0)
+        image = np.ones((300, 300)) * -10
+        sublattice.get_atom_column_amplitude_min_intensity(image=image)
+        assert_allclose(sublattice.atom_amplitude_min_intensity, -10)
+
+    def test_percent_to_nn(self):
+        sublattice = self.sublattice
+        sublattice.get_atom_column_amplitude_min_intensity(percent_to_nn=0.1)
+        min_intensity0 = sublattice.atom_amplitude_min_intensity
+        sublattice.get_atom_column_amplitude_min_intensity(percent_to_nn=0.5)
+        min_intensity1 = sublattice.atom_amplitude_min_intensity
+        assert_array_less(min_intensity1, min_intensity0)
