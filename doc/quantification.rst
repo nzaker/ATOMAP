@@ -61,9 +61,11 @@ The code below shows this process operating on an ADF image from the adf__quanti
 
 .. code-block:: python
 
-    >>> data = hs.load(nanoparticle_datafile)
-    >>> atom_positions = am.get_atom_positions(data)
-    >>> sublattice = am.Sublattice(atom_positions, image=data.data)
+    >>> import atomap.api as am
+    >>> data = am.dummy_data.get_atom_counting_data()
+    >>> atom_positions = am.get_atom_positions(tdata, 8, threshold_rel=0.1)
+    >>> sublattice = am.Sublattice(atom_positions, tdata.data)
+    >>> sublattice.construct_zone_axes()
     >>> sublattice.refine_atom_positions_using_2d_gaussian()
 
 
