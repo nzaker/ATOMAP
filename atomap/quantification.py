@@ -426,7 +426,7 @@ def get_statistical_quant_criteria(sublattices, max_atom_nums):
     return(models)
 
 
-def plot_fitted_hist(intensities, model, rgb, sort_indices, bins=50):
+def _plot_fitted_hist(intensities, model, rgb, sort_indices, bins=50):
     """Plot the atomic column intensity histogram with the best Gaussian
     mixture model superimposed.
 
@@ -440,6 +440,7 @@ def plot_fitted_hist(intensities, model, rgb, sort_indices, bins=50):
         List of discrete values from a Matplotlib colormap.
     sort_indices : list
     bins : int
+    
     """
     x = np.linspace(0, intensities.max()*1.2, 1000)
     x = x.reshape(-1, 1)
@@ -529,7 +530,7 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
                                 sublattice_list=list(sub_lattices.values()))
 
     if plot:
-        plot_fitted_hist(int_array, model, rgb, sort_indices)
+        _plot_fitted_hist(int_array, model, rgb, sort_indices)
         atom_lattice.plot()
 
     return(sub_lattices)
