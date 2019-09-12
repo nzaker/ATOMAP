@@ -56,7 +56,7 @@ If the flux_exponent is unknown then it is possible to create an interactive flu
 Statistical Method
 ==================
 
-In order to perform the "statistical method" you must first have a sublattice defined and you must also have used the Gaussian refinement.
+In order to perform the "statistical method" you must first have a ``Sublattice`` defined and you must also have used the Gaussian refinement.
 The code below shows this process operating on an ADF image from the adf__quantification_notebook in the atomap demos.
 
 .. code-block:: python
@@ -85,7 +85,7 @@ To obtain plots of AIC and BIC for your image, you use the :py:func:`~atomap.qua
 .. figure:: images/quant/criteria_plot.png
     :scale: 80 %
 
-The :py:func:`~atomap.quantification.get_statistical_quant_criteria` function takes a list of sublattices as an argument so that you can obtain a models for an individual image or a collection of images.
+The :py:func:`~atomap.quantification.get_statistical_quant_criteria` function takes a list of sublattices as an argument so that you can obtain a model for an individual image or a collection of images.
 For multiple images make sure that they were all acquired with the same beam current and detector settings.
 
 
@@ -99,7 +99,7 @@ Once you have determined the number of Gaussians in your Gaussian mixture model,
     >>> model = models[12] # 13th model
     >>> statistical_quant(sublattice.image, sublattice, model, 13)
 
-The function returns a dictionary of sublattices, in which each sublattice corresponds to atomic columns of different atomic number.
+The function returns an ``Atom_Lattice`` object, in which each ``Sublattice`` corresponds to atomic columns of different atomic number.
 If plotting is selected (as it is by default) this plots the histogram of column intensities with the Gaussian mixture model overlayed.
 It also displays the image of the particle with sublattices coloured differently to indicate number of atoms in each column.
 

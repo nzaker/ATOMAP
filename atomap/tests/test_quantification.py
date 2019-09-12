@@ -99,11 +99,11 @@ class TestStatisticalQuant:
 
     def test_statistical_method(self):
         models = quant.get_statistical_quant_criteria([self.sublattice], 10)
-        sub_lattices = quant.statistical_quant(self.tdata.signal,
+        atom_lattice = quant.statistical_quant(self.tdata.signal,
                                                self.sublattice, models[3], 4,
                                                plot=False)
 
-        assert len(sub_lattices[0].atom_list) == 39
-        assert len(sub_lattices[1].atom_list) == 52
-        assert len(sub_lattices[2].atom_list) == 52
-        assert len(sub_lattices[3].atom_list) == 13
+        assert len(atom_lattice.sublattice_list[0].atom_list) == 39
+        assert len(atom_lattice.sublattice_list[1].atom_list) == 52
+        assert len(atom_lattice.sublattice_list[2].atom_list) == 52
+        assert len(atom_lattice.sublattice_list[3].atom_list) == 13

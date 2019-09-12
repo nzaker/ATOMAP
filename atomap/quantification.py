@@ -477,9 +477,8 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
 
     Returns
     -------
-    sub_lattices : dict
-        Dictionary of Sublattice objects. The keys are integers in order of
-        column intensity.
+    atom_lattice : Atomap Atom_Lattice
+        Each sublattice contains columns of the same number of atoms.
 
     Example
     -------
@@ -533,4 +532,4 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
         _plot_fitted_hist(int_array, model, rgb, sort_indices)
         atom_lattice.plot()
 
-    return(sub_lattices)
+    return(atom_lattice)
