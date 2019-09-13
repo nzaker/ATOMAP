@@ -80,7 +80,7 @@ To obtain plots of AIC and BIC for your image, you use the :py:func:`~atomap.qua
 
 .. code-block:: python
 
-    >>> models = am.quant.get_statistical_quant_criteria([sublattice], 20)
+    >>> models = am.quant.get_statistical_quant_criteria([sublattice], 10)
 
 .. figure:: images/quant/criteria_plot.png
     :scale: 80 %
@@ -96,12 +96,15 @@ Once you have determined the number of Gaussians in your Gaussian mixture model,
 
 .. code-block:: python
 
-    >>> model = models[12] # 13th model
-    >>> statistical_quant(sublattice.image, sublattice, model, 13)
+    >>> model = models[3] # 4th model
+    >>> am.quant.statistical_quant(sublattice.image, sublattice, model, 4)
 
 The function returns an ``Atom_Lattice`` object, in which each ``Sublattice`` corresponds to atomic columns of different atomic number.
 If plotting is selected (as it is by default) this plots the histogram of column intensities with the Gaussian mixture model overlayed.
 It also displays the image of the particle with sublattices coloured differently to indicate number of atoms in each column.
 
-.. figure:: images/quant/quant_output.png
-    :scale: 80 %
+.. figure:: images/quant/quant_output1a.png
+    :scale: 50 %
+
+.. figure:: images/quant/quant_output1a.png
+    :scale: 50 %

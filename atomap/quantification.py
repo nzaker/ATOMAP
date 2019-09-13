@@ -529,7 +529,7 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
                                 sublattice_list=list(sub_lattices.values()))
 
     if plot:
-        _plot_fitted_hist(int_array, model, rgb, sort_indices)
         atom_lattice.plot()
+        _plot_fitted_hist(int_array, model, rgb, sort_indices)
 
     return(atom_lattice)
