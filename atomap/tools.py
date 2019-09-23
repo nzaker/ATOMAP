@@ -6,6 +6,7 @@ from scipy import interpolate
 from scipy import ndimage
 from scipy.spatial import cKDTree
 import matplotlib.pyplot as plt
+from matplotlib.path import Path
 import hyperspy.api as hs
 from hyperspy.signals import Signal1D, Signal2D
 from skimage.morphology import watershed
@@ -1338,6 +1339,43 @@ def _get_signal_centre(signal):
     a0_middle = (sa[0].high_value + sa[0].low_value) * 0.5
     a1_middle = (sa[1].high_value + sa[1].low_value) * 0.5
     return(a0_middle, a1_middle)
+
+
+def _get_atom_selection_from_verts(atom_positions, verts):
+    """Get a subset of atom positions within region spanned to verticies.
+
+    Parameters
+    ----------
+    atom_positions : list or NumPy array
+        In the form [[x0, y0]. [x1, y1], ...]
+    verts : list of tuples
+        List of positions, spanning an enclosed region.
+        [(x0, y0), (x1, y1), ...]. Need to have at least 3 positions.
+
+    Returns
+    -------
+    atom_positions_selected : NumPy array
+
+    Examples
+    --------
+    >>> from numpy.random import randint
+    >>> from atomap.tools import _get_atom_selection_from_verts
+    >>> atom_positions = randint(0, 200, size=(200, 2))
+    >>> verts = [(200, 400), (400, 600), (100, 100)]
+    >>> atom_positions_selected = _get_atom_selection_from_verts(
+    ...        atom_positions=atom_positions, verts=verts)
+
+    """
+
+    if len(verts) < 3:
+        raise ValueError(
+            "verts needs to have at least 3 positions, not {0}".format(
+                len(verts)))
+    atom_positions = np.array(atom_positions)
+    path = Path(verts)
+    bool_array = path.contains_points(atom_positions)
+    atom_positions_selected = atom_positions[bool_array]
+    return atom_positions_selected
 
 
 def _draw_cursor(ax, x, y, xd=10, yd=-30):

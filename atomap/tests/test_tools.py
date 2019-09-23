@@ -346,3 +346,49 @@ class TestIntegrate:
         assert (i_points0 == i_points1).all()
         assert (i_record0.data == i_record1.data).all()
         assert (p_record0 == p_record1).all()
+
+
+class TestGetAtomSelectionFromVerts:
+
+    def test_simple(self):
+        pos = [[10, 10], [15, 15]]
+        verts = [[0, 0], [0, 20], [20, 20], [20, 0]]
+        pos_selected = to._get_atom_selection_from_verts(pos, verts)
+        assert len(pos_selected) == 2
+        assert (pos_selected == [[10, 10], [15, 15]]).all()
+
+    def test_numpy_input(self):
+        pos = np.array([[10, 10], [15, 15]])
+        verts = [[0, 0], [0, 20], [20, 20], [20, 0]]
+        pos_selected = to._get_atom_selection_from_verts(pos, verts)
+        assert len(pos_selected) == 2
+        assert (pos_selected == [[10, 10], [15, 15]]).all()
+
+    def test_inside_outside(self):
+        pos = [[10, 10], [25, 10]]
+        verts = [[0, 0], [0, 20], [20, 20], [20, 0]]
+        pos_selected = to._get_atom_selection_from_verts(pos, verts)
+        assert len(pos_selected) == 1
+        assert (pos_selected == [10, 10]).all()
+
+    def test_all_outside(self):
+        pos = [[10, 25], [25, 10]]
+        verts = [[0, 0], [0, 20], [20, 20], [20, 0]]
+        pos_selected = to._get_atom_selection_from_verts(pos, verts)
+        assert len(pos_selected) == 0
+
+    def test_too_few_verts(self):
+        pos = [[10, 25], [25, 10]]
+        verts = [[0, 0], [0, 20]]
+        with pytest.raises(ValueError):
+            to._get_atom_selection_from_verts(pos, verts)
+
+    def test_many_positions(self):
+        pos = np.random.randint(10, 30, size=(1000, 2))
+        verts = [[15, 15], [15, 25], [25, 25], [25, 15]]
+        pos_selected = to._get_atom_selection_from_verts(pos, verts)
+        pos_x, pos_y = pos_selected[:, 0], pos_selected[:, 1]
+        assert len(pos_x[pos_x < 15]) == 0
+        assert len(pos_x[pos_x > 25]) == 0
+        assert len(pos_y[pos_y < 15]) == 0
+        assert len(pos_y[pos_y > 25]) == 0
