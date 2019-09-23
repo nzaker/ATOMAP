@@ -126,6 +126,27 @@ class TestToggleAtomRefinePosition:
         assert atom1.pixel_y != (y_pos[1] + delta_pos)
 
 
+class TestSelectAtomsWithGui:
+
+    def test_select_one_atom(self):
+        image = np.random.random((200, 200))
+        atom_positions = [[10, 20], [50, 50]]
+        atom_positions_selected = ipf.select_atoms_with_gui(
+                image, atom_positions)
+        fig = plt.figure(1)
+        x0, y0 = fig.axes[0].transData.transform((5, 5))
+        fig.canvas.button_press_event(x0, y0, 1)
+        x1, y1 = fig.axes[0].transData.transform((25, 5))
+        fig.canvas.button_press_event(x1, y1, 1)
+        x2, y2 = fig.axes[0].transData.transform((25, 25))
+        fig.canvas.button_press_event(x2, y2, 1)
+        x3, y3 = fig.axes[0].transData.transform((5, 25))
+        fig.canvas.button_press_event(x3, y3, 1)
+        fig.canvas.button_press_event(x0, y0, 1)
+        assert len(atom_positions_selected) == 1
+        assert atom_positions_selected[0] == [10, 20]
+
+
 class TestDrawCursor:
 
     def test_simple(self):

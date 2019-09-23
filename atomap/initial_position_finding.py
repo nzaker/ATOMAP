@@ -8,6 +8,7 @@ from atomap.tools import _get_n_nearest_neighbors, Fingerprinter
 from atomap.atom_finding_refining import _make_circular_mask, do_pca_on_signal
 from atomap.sublattice import Sublattice
 from atomap.atom_lattice import Dumbbell_Lattice
+import atomap.gui_classes as gc
 from operator import itemgetter
 
 
@@ -264,3 +265,34 @@ def add_atoms_with_gui(image, atom_positions=None, distance_threshold=4):
             image, atom_positions, distance_threshold=distance_threshold)
     atom_positions_new = atom_adder_remover.atom_positions
     return atom_positions_new
+
+
+def select_atoms_with_gui(image, atom_positions):
+    """Get a subset of a list of atom positions.
+
+    Will open a matplotlib figure, where a polygon is drawn interactively.
+
+    Parameters
+    ----------
+    image : array-like
+        Signal or NumPy array
+    atom_positions : list of lists, or NumPy array
+        In the form [[x0, y0], [x1, y1], ...]
+
+    Returns
+    -------
+    atom_positions_selected : list of lists
+
+    Examples
+    --------
+    >>> s = am.dummy_data.get_simple_cubic_signal()
+    >>> atom_positions = am.get_atom_positions(s, separation=9)
+    >>> atom_positions_selected = am.select_atoms_with_gui(
+    ...        s, atom_positions)
+    >>> sublattice = am.Sublattice(atom_positions_selected, s)
+
+    """
+    global atom_selector
+    atom_selector = gc.GetAtomSelection(image, atom_positions)
+    atom_positions_selected = atom_selector.atom_positions_selected
+    return atom_positions_selected
