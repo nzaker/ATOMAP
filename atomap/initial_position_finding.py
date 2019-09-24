@@ -8,6 +8,7 @@ from atomap.tools import _get_n_nearest_neighbors, Fingerprinter
 from atomap.atom_finding_refining import _make_circular_mask, do_pca_on_signal
 from atomap.sublattice import Sublattice
 from atomap.atom_lattice import Dumbbell_Lattice
+import atomap.tools as to
 import atomap.gui_classes as gc
 from operator import itemgetter
 
@@ -267,7 +268,7 @@ def add_atoms_with_gui(image, atom_positions=None, distance_threshold=4):
     return atom_positions_new
 
 
-def select_atoms_with_gui(image, atom_positions):
+def select_atoms_with_gui(image, atom_positions, verts=None):
     """Get a subset of a list of atom positions.
 
     Will open a matplotlib figure, where a polygon is drawn interactively.
@@ -278,6 +279,9 @@ def select_atoms_with_gui(image, atom_positions):
         Signal or NumPy array
     atom_positions : list of lists, or NumPy array
         In the form [[x0, y0], [x1, y1], ...]
+    verts : list of tuples
+        List of positions, spanning an enclosed region.
+        [(x0, y0), (x1, y1), ...]. Need to have at least 3 positions.
 
     Returns
     -------
@@ -291,8 +295,19 @@ def select_atoms_with_gui(image, atom_positions):
     ...        s, atom_positions)
     >>> sublattice = am.Sublattice(atom_positions_selected, s)
 
+    Using the function non-interactively
+
+    >>> verts = [(60, 235), (252, 236), (147, 58)]
+    >>> atom_positions_selected = am.select_atoms_with_gui(
+    ...        s, atom_positions, verts=verts)
+    >>> sublattice = am.Sublattice(atom_positions_selected, s)
+
     """
-    global atom_selector
-    atom_selector = gc.GetAtomSelection(image, atom_positions)
-    atom_positions_selected = atom_selector.atom_positions_selected
+    if verts is None:
+        global atom_selector
+        atom_selector = gc.GetAtomSelection(image, atom_positions)
+        atom_positions_selected = atom_selector.atom_positions_selected
+    else:
+        atom_positions_selected = to._get_atom_selection_from_verts(
+                atom_positions, verts)
     return atom_positions_selected

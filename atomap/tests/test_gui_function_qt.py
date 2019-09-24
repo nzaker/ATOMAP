@@ -146,6 +146,22 @@ class TestSelectAtomsWithGui:
         assert len(atom_positions_selected) == 1
         assert atom_positions_selected[0] == [10, 20]
 
+    def test_non_interactive(self):
+        image = np.random.random((200, 200))
+        atom_positions = [[10, 20], [50, 50]]
+        verts = [(5, 5), (5, 30), (20, 30), (20, 5)]
+        atom_positions_selected = ipf.select_atoms_with_gui(
+                image, atom_positions, verts=verts)
+        assert len(atom_positions_selected) == 1
+        assert (atom_positions_selected[0] == [10, 20]).all()
+
+        verts = [(5, 5), (5, 60), (60, 60), (60, 5)]
+        atom_positions_selected = ipf.select_atoms_with_gui(
+                image, atom_positions, verts=verts)
+        assert len(atom_positions_selected) == 2
+        assert (atom_positions_selected[0] == [10, 20]).all()
+        assert (atom_positions_selected[1] == [50, 50]).all()
+
 
 class TestDrawCursor:
 
