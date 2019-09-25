@@ -6,6 +6,7 @@ import atomap.initial_position_finding as ipf
 import atomap.tools as at
 from atomap.sublattice import Sublattice
 import atomap.testing_tools as tt
+import atomap.gui_classes as agc
 
 
 class TestAddAtomAdderRemoving:
@@ -131,20 +132,25 @@ class TestSelectAtomsWithGui:
     def test_select_one_atom(self):
         image = np.random.random((200, 200))
         atom_positions = [[10, 20], [50, 50]]
-        atom_positions_selected = ipf.select_atoms_with_gui(
-                image, atom_positions)
-        fig = plt.figure(1)
-        x0, y0 = fig.axes[0].transData.transform((5, 5))
-        fig.canvas.button_press_event(x0, y0, 1)
-        x1, y1 = fig.axes[0].transData.transform((25, 5))
-        fig.canvas.button_press_event(x1, y1, 1)
-        x2, y2 = fig.axes[0].transData.transform((25, 25))
-        fig.canvas.button_press_event(x2, y2, 1)
-        x3, y3 = fig.axes[0].transData.transform((5, 25))
-        fig.canvas.button_press_event(x3, y3, 1)
-        fig.canvas.button_press_event(x0, y0, 1)
+        atom_selector = agc.GetAtomSelection(image, atom_positions)
+        fig = atom_selector.fig
+        poly = atom_selector.poly
+        position_list = [[5, 5], [5, 25], [25, 25], [25, 5], [5, 5]]
+        tt._do_several_move_press_release_event(fig, poly, position_list)
+        atom_positions_selected = atom_selector.atom_positions_selected
         assert len(atom_positions_selected) == 1
         assert atom_positions_selected[0] == [10, 20]
+
+    def test_select_no_atom(self):
+        image = np.random.random((200, 200))
+        atom_positions = [[10, 20], [50, 50]]
+        atom_selector = agc.GetAtomSelection(image, atom_positions)
+        fig = atom_selector.fig
+        poly = atom_selector.poly
+        position_list = [[5, 5], [5, 8], [8, 8], [8, 5], [5, 5]]
+        tt._do_several_move_press_release_event(fig, poly, position_list)
+        atom_positions_selected = atom_selector.atom_positions_selected
+        assert len(atom_positions_selected) == 0
 
     def test_non_interactive(self):
         image = np.random.random((200, 200))

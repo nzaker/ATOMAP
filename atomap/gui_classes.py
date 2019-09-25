@@ -96,7 +96,7 @@ class GetAtomSelection:
         Attributes
         ----------
         atom_positions_selected : NumPy array
-        
+
         """
         self.image = image
         self.atom_positions = np.array(atom_positions)
