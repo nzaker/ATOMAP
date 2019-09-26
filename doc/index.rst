@@ -68,6 +68,7 @@ Contents on this webpage
    start_atomap
    finding_atom_lattices
    analysing_atom_lattices
+   several_phases
    gui_functions
    automation
    nanoparticle_example

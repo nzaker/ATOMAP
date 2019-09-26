@@ -4,6 +4,49 @@
 GUI functionality
 =================
 
+.. _atom_selector_gui:
+
+Selecting atoms with GUI
+========================
+
+Many datasets contain different atomic structures, which should be processed separately in different sublattices.
+One way of separating them is using :py:func:`~atomap.initial_position_finding.select_atoms_with_gui`.
+
+
+.. code-block:: python
+
+   >>> %matplotlib nbagg # doctest: +SKIP
+   >>> s = am.dummy_data.get_precipitate_signal()
+   >>> atom_positions = am.get_atom_positions(s, 8)
+   >>> atom_positions_selected = am.select_atoms_with_gui(s, atom_positions)
+
+.. image:: images/atomselectorgui/atom_selector_gui.gif
+    :scale: 50 %
+    :align: center
+
+
+The selection can be inverted by using the ``invert_selection=True``:
+
+.. code-block:: python
+
+   >>> atom_positions_selected = am.select_atoms_with_gui(s, atom_positions, invert_selection=True)
+
+.. image:: images/atomselectorgui/atom_selector_invert_selection_gui.gif
+    :scale: 50 %
+    :align: center
+
+
+The function can also be used non-interactively via the ``verts`` parameter, which is useful when writing processing scripts:
+
+.. code-block:: python
+
+   >>> verts = [[250, 100], [100, 250], [250, 400], [400, 250], [250, 100], [-10, 80]]
+   >>> atom_positions_selected = am.select_atoms_with_gui(s, atom_positions, verts=verts)
+
+
+For an example of how to use this function to analyse a precipitate/matrix system, see :ref:`several_phases`.
+
+
 .. _atom_adder_gui:
 
 Adding atoms using GUI

@@ -121,6 +121,7 @@ The function also allows for PCA, relative threshold, background subtraction and
 
 ``atom_positions`` is a list of x and y coordinates of initial atom positions.
 If there are any missing or extra atoms :py:func:`~atomap.initial_position_finding.add_atoms_with_gui` can be used, see :ref:`atom_adder_gui` for more info.
+If there are several phases within the image, these can be separated using :py:func:`~atomap.initial_position_finding.select_atoms_with_gui`, see :ref:`several_phases` for more info.
 This list will be used to initialize a :py:class:`~atomap.sublattice.Sublattice` object, which will contain all the information about the atoms.
 In our simple example, all atoms belong to the same sublattice, so only one ``Sublattice`` object is needed.
 (In the more advanced example below, images containing more than one sublattice will be analysed).
