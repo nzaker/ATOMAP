@@ -110,8 +110,10 @@ class GetAtomSelection:
                 "Use the left mouse button to make the polygon\nClick the"
                 " first position to finish the polygon.")
         self.cax = self.ax.imshow(self.image)
-        self.ax.plot(self.atom_positions[:, 0], self.atom_positions[:, 1],
-                     'o', color='red')
+        self.line_non_selected = self.ax.plot(
+                self.atom_positions[:, 0], self.atom_positions[:, 1],
+                'o', color='red')[0]
+        self.line_selected = None
         markerprops = dict(color='blue')
         lineprops = dict(color='blue')
         self.poly = PolygonSelector(self.ax, self.onselect,
@@ -123,10 +125,20 @@ class GetAtomSelection:
         atom_positions_selected = to._get_atom_selection_from_verts(
                 self.atom_positions, verts,
                 invert_selection=self.invert_selection)
+        atom_positions_not_selected = to._get_atom_selection_from_verts(
+                self.atom_positions, verts,
+                invert_selection=not self.invert_selection)
         if len(atom_positions_selected) != 0:
-            self.ax.plot(atom_positions_selected[:, 0],
-                         atom_positions_selected[:, 1],
-                         'o', color='green')
+            if self.line_selected is None:
+                self.line_selected = self.ax.plot(
+                        atom_positions_selected[:, 0],
+                        atom_positions_selected[:, 1], 'o', color='green')[0]
+            else:
+                self.line_selected.set_data(atom_positions_not_selected[:, 0],
+                                            atom_positions_not_selected[:, 1])
+            self.line_selected.set_data(atom_positions_selected[:, 0],
+                                        atom_positions_selected[:, 1])
+
         for atom_positions in atom_positions_selected:
             self.atom_positions_selected.append(atom_positions.tolist())
         self.fig.canvas.draw()
