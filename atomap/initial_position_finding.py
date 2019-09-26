@@ -268,7 +268,8 @@ def add_atoms_with_gui(image, atom_positions=None, distance_threshold=4):
     return atom_positions_new
 
 
-def select_atoms_with_gui(image, atom_positions, verts=None):
+def select_atoms_with_gui(image, atom_positions, verts=None,
+                          invert_selection=False):
     """Get a subset of a list of atom positions.
 
     Will open a matplotlib figure, where a polygon is drawn interactively.
@@ -282,6 +283,9 @@ def select_atoms_with_gui(image, atom_positions, verts=None):
     verts : list of tuples
         List of positions, spanning an enclosed region.
         [(x0, y0), (x1, y1), ...]. Need to have at least 3 positions.
+    invert_selection : bool, optional
+        Get the atom positions outside the region, instead of the
+        ones inside it. Default False.
 
     Returns
     -------
@@ -305,9 +309,10 @@ def select_atoms_with_gui(image, atom_positions, verts=None):
     """
     if verts is None:
         global atom_selector
-        atom_selector = gc.GetAtomSelection(image, atom_positions)
+        atom_selector = gc.GetAtomSelection(image, atom_positions,
+                                            invert_selection=invert_selection)
         atom_positions_selected = atom_selector.atom_positions_selected
     else:
         atom_positions_selected = to._get_atom_selection_from_verts(
-                atom_positions, verts)
+                atom_positions, verts, invert_selection=invert_selection)
     return atom_positions_selected

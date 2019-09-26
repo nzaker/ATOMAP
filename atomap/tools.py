@@ -1341,7 +1341,8 @@ def _get_signal_centre(signal):
     return(a0_middle, a1_middle)
 
 
-def _get_atom_selection_from_verts(atom_positions, verts):
+def _get_atom_selection_from_verts(atom_positions, verts,
+                                   invert_selection=False):
     """Get a subset of atom positions within region spanned to verticies.
 
     Parameters
@@ -1351,6 +1352,9 @@ def _get_atom_selection_from_verts(atom_positions, verts):
     verts : list of tuples
         List of positions, spanning an enclosed region.
         [(x0, y0), (x1, y1), ...]. Need to have at least 3 positions.
+    invert_selection : bool, optional
+        Get the atom positions outside the region, instead of the
+        ones inside it. Default False.
 
     Returns
     -------
@@ -1365,6 +1369,12 @@ def _get_atom_selection_from_verts(atom_positions, verts):
     >>> atom_positions_selected = _get_atom_selection_from_verts(
     ...        atom_positions=atom_positions, verts=verts)
 
+    Get atom positions inside the region
+
+    >>> atom_positions_selected = _get_atom_selection_from_verts(
+    ...        atom_positions=atom_positions, verts=verts,
+    ...        invert_selection=True)
+
     """
 
     if len(verts) < 3:
@@ -1374,6 +1384,8 @@ def _get_atom_selection_from_verts(atom_positions, verts):
     atom_positions = np.array(atom_positions)
     path = Path(verts)
     bool_array = path.contains_points(atom_positions)
+    if invert_selection:
+        bool_array = np.invert(bool_array)
     atom_positions_selected = atom_positions[bool_array]
     return atom_positions_selected
 

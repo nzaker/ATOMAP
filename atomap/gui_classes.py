@@ -81,7 +81,7 @@ class AtomToggleRefine:
 
 class GetAtomSelection:
 
-    def __init__(self, image, atom_positions):
+    def __init__(self, image, atom_positions, invert_selection=False):
         """Get a subset of atom positions using interactive tool.
 
         Access the selected atom positions in the
@@ -92,6 +92,9 @@ class GetAtomSelection:
         image : 2D HyperSpy signal or 2D NumPy array
         atom_positions : list of lists, NumPy array
             In the form [[x0, y0]. [x1, y1], ...]
+        invert_selection : bool, optional
+            Get the atom positions outside the region, instead of the
+            ones inside it. Default False
 
         Attributes
         ----------
@@ -100,6 +103,7 @@ class GetAtomSelection:
         """
         self.image = image
         self.atom_positions = np.array(atom_positions)
+        self.invert_selection = invert_selection
         self.atom_positions_selected = []
         self.fig, self.ax = plt.subplots()
         self.ax.set_title(
@@ -117,7 +121,8 @@ class GetAtomSelection:
 
     def onselect(self, verts):
         atom_positions_selected = to._get_atom_selection_from_verts(
-                self.atom_positions, verts)
+                self.atom_positions, verts,
+                invert_selection=self.invert_selection)
         if len(atom_positions_selected) != 0:
             self.ax.plot(atom_positions_selected[:, 0],
                          atom_positions_selected[:, 1],

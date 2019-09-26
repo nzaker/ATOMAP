@@ -141,6 +141,19 @@ class TestSelectAtomsWithGui:
         assert len(atom_positions_selected) == 1
         assert atom_positions_selected[0] == [10, 20]
 
+    def test_select_one_atom_invert_selection(self):
+        image = np.random.random((200, 200))
+        atom_positions = [[10, 20], [50, 50]]
+        atom_selector = agc.GetAtomSelection(
+                image, atom_positions, invert_selection=True)
+        fig = atom_selector.fig
+        poly = atom_selector.poly
+        position_list = [[5, 5], [5, 25], [25, 25], [25, 5], [5, 5]]
+        tt._do_several_move_press_release_event(fig, poly, position_list)
+        atom_positions_selected = atom_selector.atom_positions_selected
+        assert len(atom_positions_selected) == 1
+        assert atom_positions_selected[0] == [50, 50]
+
     def test_select_no_atom(self):
         image = np.random.random((200, 200))
         atom_positions = [[10, 20], [50, 50]]
@@ -167,6 +180,15 @@ class TestSelectAtomsWithGui:
         assert len(atom_positions_selected) == 2
         assert (atom_positions_selected[0] == [10, 20]).all()
         assert (atom_positions_selected[1] == [50, 50]).all()
+
+    def test_non_interactive_invert_selection(self):
+        image = np.random.random((200, 200))
+        atom_positions = [[10, 20], [50, 50]]
+        verts = [(5, 5), (5, 30), (20, 30), (20, 5)]
+        atom_positions_selected = ipf.select_atoms_with_gui(
+                image, atom_positions, verts=verts, invert_selection=True)
+        assert len(atom_positions_selected) == 1
+        assert (atom_positions_selected[0] == [50, 50]).all()
 
 
 class TestDrawCursor:
