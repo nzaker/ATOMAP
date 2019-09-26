@@ -208,6 +208,49 @@ class TestRotatePointsAndSignal:
         np.testing.assert_allclose(self.y, y_rot)
 
 
+class TestRotatePointsAroundPosition:
+
+    def test_degrees_centre_0(self):
+        xc, yc = 0, 0
+        x, y = [5, ], [0, ]
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, 90)
+        assert len(x_rot)
+        assert len(y_rot)
+        assert approx(x_rot[0]) == 0
+        assert approx(y_rot[0]) == -5
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, -90)
+        assert approx(x_rot[0]) == 0
+        assert approx(y_rot[0]) == 5
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, 180)
+        assert approx(x_rot[0]) == -5
+        assert approx(y_rot[0]) == 0
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, -180)
+        assert approx(x_rot[0]) == -5
+        assert approx(y_rot[0]) == 0
+
+    def test_degrees_centre_10(self):
+        xc, yc = 10, 10
+        x, y = [5, ], [0, ]
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, 90)
+        assert approx(x_rot[0]) == 0
+        assert approx(y_rot[0]) == 15
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, -90)
+        assert approx(x_rot[0]) == 20
+        assert approx(y_rot[0]) == 5
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, 180)
+        assert approx(x_rot[0]) == 15
+        assert approx(y_rot[0]) == 20
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, -180)
+        assert approx(x_rot[0]) == 15
+        assert approx(y_rot[0]) == 20
+
+    def test_many_positions(self):
+        x, y = np.arange(100, 300), np.arange(400, 600)
+        x_rot, y_rot = to._rotate_points_around_position(5, 5, x, y, 90)
+        assert len(x) == len(x_rot)
+        assert len(y) == len(y_rot)
+
+
 class TestFliplrPointsAroundSignalCentre:
 
     def setup_method(self):

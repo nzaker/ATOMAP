@@ -1250,6 +1250,7 @@ def rotate_points_and_signal(signal, x_array, y_array, rotation):
     signal : HyperSpy 2D signal
     x_array, y_array : array-like
     rotation : scalar
+        In degrees
 
     Returns
     -------
@@ -1289,6 +1290,7 @@ def rotate_points_around_signal_centre(signal, x_array, y_array, rotation):
     signal : HyperSpy 2D signal
     x_array, y_array : array-like
     rotation : scalar
+        In degrees
 
     Returns
     -------
@@ -1304,10 +1306,39 @@ def rotate_points_around_signal_centre(signal, x_array, y_array, rotation):
     >>> x_rot, y_rot = to.rotate_points_around_signal_centre(s, x, y, 30)
 
     """
+    centre_x, centre_y = _get_signal_centre(signal)
+    x_array, y_array = _rotate_points_around_position(
+            centre_x, centre_y, x_array, y_array, rotation)
+    return(x_array, y_array)
+
+
+def _rotate_points_around_position(
+        centre_x, centre_y, x_array, y_array, rotation):
+    """Rotate positions around a centre point.
+
+    Parameters
+    ----------
+    centre_x, centre_y : scalars
+    x_array, y_array : array-like
+    rotation : scale
+        In degrees
+
+    Returns
+    -------
+    x_array_rot, y_array_rot : NumPy array
+
+    Examples
+    -------
+    >>> import atomap.tools as to
+    >>> cx, cy, rot = 0, 0, 90
+    >>> x_array, y_array = [5, ], [5, ]
+    >>> x_rot, y_rot = to._rotate_points_around_position(
+    ...     cx, cy, x_array, y_array, rot)
+
+    """
     x_array, y_array = np.array(x_array), np.array(y_array)
-    middle_x, middle_y = _get_signal_centre(signal)
-    x_array -= middle_x
-    y_array -= middle_y
+    x_array -= centre_x
+    y_array -= centre_y
 
     rad_rot = -np.radians(rotation)
     rotation_matrix = np.array([
@@ -1318,9 +1349,9 @@ def rotate_points_around_signal_centre(signal, x_array, y_array, rotation):
     x_array = xy_matrix[:, 0]
     y_array = xy_matrix[:, 1]
 
-    x_array += middle_x
-    y_array += middle_y
-    return(x_array, y_array)
+    x_array += centre_x
+    y_array += centre_y
+    return x_array, y_array
 
 
 def _get_signal_centre(signal):
