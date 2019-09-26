@@ -105,10 +105,12 @@ class GetAtomSelection:
         self.atom_positions = np.array(atom_positions)
         self.invert_selection = invert_selection
         self.atom_positions_selected = []
-        self.fig, self.ax = plt.subplots()
+        self.fig, self.ax = plt.subplots(figsize=(6, 6))
         self.ax.set_title(
-                "Use the left mouse button to make the polygon\nClick the"
-                " first position to finish the polygon.")
+                "Use the left mouse button to make the polygon.\n"
+                "Click the first position to finish the polygon.\n"
+                "Press ESC to reset the polygon, and hold SHIFT to\n"
+                "move the polygon.")
         self.cax = self.ax.imshow(self.image)
         self.line_non_selected = self.ax.plot(
                 self.atom_positions[:, 0], self.atom_positions[:, 1],
