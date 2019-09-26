@@ -138,6 +138,11 @@ class TestDummyDataEELSMap:
         assert hasattr(s, 'plot')
         assert not (s_no_noise.data == s.data).all()
 
+    def test_get_precipitate_signal(self):
+        s = dd.get_precipitate_signal()
+        assert len(s.axes_manager.shape) == 2
+        assert hasattr(s, 'plot')
+
 
 class TestGetSimpleCubicWithVacanciesSublattice:
 

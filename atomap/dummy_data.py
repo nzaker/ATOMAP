@@ -4,6 +4,7 @@ from hyperspy import components1d
 from hyperspy.signals import EELSSpectrum
 from atomap.testing_tools import MakeTestData
 from atomap.atom_lattice import Atom_Lattice
+import atomap.tools as to
 
 
 def _make_hexagonal_two_sublattice_testdata(image_noise=False):
@@ -823,3 +824,41 @@ def get_single_atom_sublattice():
     test_data.add_atom(25, 20, 2, 2)
     sublattice = test_data.sublattice
     return sublattice
+
+
+def get_precipitate_signal():
+    """Get a signal emulating a preciptate embedded in a matrix.
+
+    Returns
+    -------
+    signal_percipitate : HyperSpy Signal2D
+
+    Examples
+    --------
+    >>> s = am.dummy_data.get_precipitate_signal()
+    >>> s.plot()
+
+    """
+    verts = [[250, 100], [100, 250], [250, 400], [400, 250]]
+
+    test_data = MakeTestData(500, 500)
+
+    x0, y0 = np.mgrid[0:505:20, 0:505:20]
+    x0, y0 = x0.flatten(), y0.flatten()
+    positions0 = np.stack((x0, y0)).T
+    positions0_selected = to._get_atom_selection_from_verts(
+            positions0, verts, invert_selection=True)
+    x0, y0 = positions0_selected.T
+    test_data.add_atom_list(x0, y0, sigma_x=3, sigma_y=3)
+
+    x1, y1 = np.mgrid[2.5:505:15, 2.5:505:15]
+    x1, y1 = x1.flatten(), y1.flatten()
+    x1, y1 = to._rotate_points_around_position(250, 250, x1, y1, 45)
+    positions1 = np.stack((x1, y1)).T
+    positions1_selected = to._get_atom_selection_from_verts(
+            positions1, verts, invert_selection=False)
+    x1, y1 = positions1_selected.T
+    test_data.add_atom_list(x1, y1, sigma_x=3, sigma_y=3, amplitude=2)
+
+    s = test_data.signal
+    return s
