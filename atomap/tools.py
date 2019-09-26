@@ -1100,8 +1100,9 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto',
     currentFeature = np.zeros_like(image.T, dtype=float)
     point_record = np.zeros(image.shape[0:2][::-1], dtype=int)
     integrated_intensity = np.zeros_like(sum(sum(currentFeature.T)))
-    integrated_intensity = np.dstack(
-        integrated_intensity for i in range(len(points_x)))
+    integrated_intensity = np.array(
+            [integrated_intensity for i in range(len(points_x))])
+    integrated_intensity = np.dstack(integrated_intensity)
     integrated_intensity = np.squeeze(integrated_intensity.T)
     points = np.array((points_y, points_x))
     # Setting max_radius to the width of the image, if none is set.
