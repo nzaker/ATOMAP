@@ -306,6 +306,13 @@ def select_atoms_with_gui(image, atom_positions, verts=None,
     ...        s, atom_positions, verts=verts)
     >>> sublattice = am.Sublattice(atom_positions_selected, s)
 
+    Getting the atom positions outside the selected regions, instead of
+    outside it
+
+    >>> atom_positions_selected = am.select_atoms_with_gui(
+    ...        s, atom_positions, verts=verts, invert_selection=True)
+    >>> sublattice = am.Sublattice(atom_positions_selected, s)
+
     """
     if verts is None:
         global atom_selector
