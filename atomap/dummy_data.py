@@ -461,12 +461,90 @@ def get_simple_heterostructure_signal(image_noise=True):
 
 
 def get_dumbbell_signal():
+    """Get a simple dumbbell signal.
+
+    Returns
+    -------
+    s_dumbbell : HyperSpy Signal2D
+
+    Example
+    -------
+    >>> s = am.dummy_data.get_dumbbell_signal()
+    >>> s.plot()
+
+    """
     test_data = MakeTestData(200, 200)
     x0, y0 = np.mgrid[10:200:20, 10:200:20]
     x1, y1 = np.mgrid[10:200:20, 16:200:20]
     x, y = np.vstack((x0, x1)).flatten(), np.vstack((y0, y1)).flatten()
     test_data.add_atom_list(x, y, sigma_x=1, sigma_y=1, amplitude=50)
     return test_data.signal
+
+
+def get_dumbbell_heterostructure_signal():
+    """Get a dumbbell heterostructure signal.
+
+    Returns
+    -------
+    s_dumbbell : HyperSpy Signal2D
+
+    Example
+    -------
+    >>> s = am.dummy_data.get_dumbbell_heterostructure_signal()
+    >>> s.plot()
+
+    """
+    test_data = MakeTestData(500, 500)
+    x0, y0 = np.mgrid[10:500:24., 10:250:30.]
+    x1, y1 = np.mgrid[10:500:24., 18:250:30.]
+    x2, y2 = np.mgrid[22:500:24., 25:250:30.]
+    x3, y3 = np.mgrid[22:500:24., 33:250:30.]
+
+    x0, y0 = x0.flatten(), y0.flatten()
+    x1, y1 = x1.flatten(), y1.flatten()
+    x2, y2 = x2.flatten(), y2.flatten()
+    x3, y3 = x3.flatten(), y3.flatten()
+
+    x0 += np.random.random(size=x0.shape) * 0.5
+    y0 += np.random.random(size=y0.shape) * 0.5
+    x1 += np.random.random(size=x1.shape) * 0.5
+    y1 += np.random.random(size=y1.shape) * 0.5
+    x2 += np.random.random(size=x2.shape) * 0.5
+    y2 += np.random.random(size=y2.shape) * 0.5
+    x3 += np.random.random(size=x3.shape) * 0.5
+    y3 += np.random.random(size=y3.shape) * 0.5
+
+    test_data.add_atom_list(x0, y0, sigma_x=3, sigma_y=3, amplitude=40)
+    test_data.add_atom_list(x1, y1, sigma_x=3, sigma_y=3, amplitude=50)
+    test_data.add_atom_list(x2, y2, sigma_x=3, sigma_y=3, amplitude=40)
+    test_data.add_atom_list(x3, y3, sigma_x=3, sigma_y=3, amplitude=50)
+
+    x4, y4 = np.mgrid[10:500:24., 250:500:32.]
+    x5, y5 = np.mgrid[10:500:24., 259:500:32.]
+    x6, y6 = np.mgrid[22:500:24., 266:500:32.]
+    x7, y7 = np.mgrid[22:500:24., 275:500:32.]
+
+    x4, y4 = x4.flatten(), y4.flatten()
+    x5, y5 = x5.flatten(), y5.flatten()
+    x6, y6 = x6.flatten(), y6.flatten()
+    x7, y7 = x7.flatten(), y7.flatten()
+
+    x4 += np.random.random(size=x4.shape) * 0.5
+    y4 += np.random.random(size=y4.shape) * 0.5
+    x5 += np.random.random(size=x5.shape) * 0.5
+    y5 += np.random.random(size=y5.shape) * 0.5
+    x6 += np.random.random(size=x6.shape) * 0.5
+    y6 += np.random.random(size=y6.shape) * 0.5
+    x7 += np.random.random(size=x7.shape) * 0.5
+    y7 += np.random.random(size=y7.shape) * 0.5
+
+    test_data.add_atom_list(x4, y4, sigma_x=3, sigma_y=3, amplitude=70)
+    test_data.add_atom_list(x5, y5, sigma_x=3, sigma_y=3, amplitude=60)
+    test_data.add_atom_list(x6, y6, sigma_x=3, sigma_y=3, amplitude=70)
+    test_data.add_atom_list(x7, y7, sigma_x=3, sigma_y=3, amplitude=60)
+
+    signal = test_data.signal
+    return signal
 
 
 def _add_fantasite_sublattice_A(test_data):

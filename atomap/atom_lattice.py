@@ -1,8 +1,7 @@
 from tqdm import trange
 import numpy as np
 from hyperspy.signals import Signal2D
-from atomap.atom_finding_refining import\
-        construct_zone_axes_from_sublattice, fit_atom_positions_gaussian
+import atomap.atom_finding_refining as afr
 from atomap.plotting import _make_atom_position_marker_list
 import atomap.tools as at
 
@@ -95,7 +94,7 @@ class Atom_Lattice():
         if sublattice_list is None:
             sublattice_list = self.sublattice_list
         for sublattice in sublattice_list:
-            construct_zone_axes_from_sublattice(sublattice)
+            afr.construct_zone_axes_from_sublattice(sublattice)
 
     def integrate_column_intensity(
             self, method='Voronoi', max_radius='Auto', data_to_integrate=None):
@@ -235,12 +234,27 @@ class Atom_Lattice():
 
 class Dumbbell_Lattice(Atom_Lattice):
 
-    def refine_position_gaussian(self, image=None, show_progressbar=True):
-        """
+    def refine_position_gaussian(self, image=None, show_progressbar=True,
+                                 percent_to_nn=0.40, mask_radius=None):
+        """Fit several atoms at the same time.
+
+        For datasets where the atoms are too close together to do the fitting
+        individually.
+
         Parameters
         ----------
         image : NumPy 2D array, optional
         show_progressbar : bool, default True
+        percent_to_nn : scalar
+            Default 0.4
+        mask_radius : float, optional
+            Radius of the mask around each atom. If this is not set,
+            the radius will be the distance to the nearest atom in the
+            same sublattice times the `percent_to_nn` value.
+            Note: if `mask_radius` is not specified, the Atom_Position objects
+            must have a populated nearest_neighbor_list. This is normally done
+            through the sublattice class, but can also be done manually.
+
         """
         if image is None:
             image = self.image0
@@ -250,6 +264,6 @@ class Dumbbell_Lattice(Atom_Lattice):
             atom_list = []
             for sublattice in self.sublattice_list:
                 atom_list.append(sublattice.atom_list[i_atom])
-            fit_atom_positions_gaussian(
-                    atom_list,
-                    image)
+            afr.fit_atom_positions_gaussian(
+                    atom_list, image, percent_to_nn=percent_to_nn,
+                    mask_radius=mask_radius)

@@ -935,8 +935,7 @@ def fit_atom_positions_gaussian(
         percent_to_nn=0.40,
         mask_radius=None,
         centre_free=True):
-    """
-    Fit a list of Atom_Positions to an image using 2D Gaussians.
+    """Fit a list of Atom_Positions to an image using 2D Gaussians.
 
     The results of the fitting will be saved in the Atom_Position objects
     themselves, and the old positions will be added to
