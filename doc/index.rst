@@ -71,7 +71,7 @@ Contents on this webpage
    several_phases
    gui_functions
    automation
-   nanoparticle_example
+   examples
    absolute_integrator
    make_testdata
    making_nice_figures
