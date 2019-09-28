@@ -29,6 +29,8 @@ class Atom_Lattice():
             y positions for all sublattices.
 
         """
+        if not isinstance(name, str):
+            raise ValueError("name must be string, not {0}".format(type([])))
         if sublattice_list is None:
             self.sublattice_list = []
         else:

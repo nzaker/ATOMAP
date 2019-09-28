@@ -31,6 +31,18 @@ class TestCreateAtomLatticeObject:
         atom_lattice.sublattice_list.append(self.sublattice)
         atom_lattice.get_sublattice_atom_list_on_image()
 
+    def test_atom_lattice_wrong_input(self):
+        with pytest.raises(ValueError):
+            am.Atom_Lattice(self.sublattice.image, [self.sublattice, ])
+
+    def test_atom_lattice_all_parameters(self):
+        name = 'test_atom_lattice'
+        atom_lattice = am.Atom_Lattice(self.sublattice.image, name=name,
+                                       sublattice_list=[self.sublattice, ])
+        assert atom_lattice.name == name
+        assert (atom_lattice.image == self.sublattice.image).all()
+        assert atom_lattice.sublattice_list == [self.sublattice, ]
+
 
 class TestXYPosition:
 
