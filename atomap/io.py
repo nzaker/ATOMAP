@@ -1,7 +1,7 @@
 """Module containing functions to save and load Atom_Lattice objects."""
 import h5py
 import os
-from atomap.atom_lattice import Atom_Lattice
+import atomap.atom_lattice as al
 from atomap.sublattice import Sublattice
 from atomap.atom_finding_refining import construct_zone_axes_from_sublattice
 import numpy as np
@@ -25,7 +25,18 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
 
     """
     h5f = h5py.File(filename, 'r')
-    atom_lattice = Atom_Lattice()
+
+    if 'atom_lattice_type' in h5f.attrs.keys():
+        atom_lattice_type = h5f.attrs['atom_lattice_type']
+        if 'Atom_Lattice' in atom_lattice_type:
+            atom_lattice = al.Atom_Lattice()
+        elif 'Dumbbell_Lattice' in atom_lattice_type:
+            atom_lattice = al.Dumbbell_Lattice()
+        else:
+            atom_lattice = al.Atom_Lattice()
+    else:
+        atom_lattice = al.Atom_Lattice()
+
     sublattice_list = []
     sublattice_index_list = []
     for group_name in h5f:
@@ -222,5 +233,6 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename, overwrite=False):
             compression='gzip')
     h5f.attrs['name'] = atom_lattice.name
     h5f.attrs['pixel_separation'] = atom_lattice._pixel_separation
+    h5f.attrs['atom_lattice_type'] = atom_lattice.__class__.__qualname__
 
     h5f.close()
