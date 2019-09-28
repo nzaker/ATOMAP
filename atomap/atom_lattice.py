@@ -13,6 +13,7 @@ class Atom_Lattice():
             image=None,
             name="",
             sublattice_list=None,
+            original_image=None,
             ):
         """
         Parameters
@@ -41,6 +42,7 @@ class Atom_Lattice():
         else:
             self.image0 = image
             self.image = image
+        self.original_image = original_image
         self.name = name
         self._pixel_separation = 10
         self._original_filename = ''
@@ -140,7 +142,12 @@ class Atom_Lattice():
             add_numbers=False,
             markersize=20):
         if image is None:
-            image = self.image0
+            if self.original_image is None:
+                image = self.image
+                if self.image is None:
+                    image = self.image0
+            else:
+                image = self.original_image
         marker_list = []
         scale = self.sublattice_list[0].pixel_size
         for sublattice in self.sublattice_list:
@@ -193,9 +200,10 @@ class Atom_Lattice():
         """
         Plot all atom positions for all sub lattices on the image data.
 
-        The Atom_Lattice.image0 is used as the image. For the sublattices,
-        sublattice._plot_color is used as marker color. This color is set
-        when the sublattice is initialized, but it can also be changed.
+        The Atom_Lattice.original_image is used as the image. For the
+        sublattices, sublattice._plot_color is used as marker color.
+        This color is set when the sublattice is initialized, but it can
+        also be changed.
 
         Parameters
         ----------
@@ -310,8 +318,12 @@ class Dumbbell_Lattice(Atom_Lattice):
             through the sublattice class, but can also be done manually.
 
         """
-        if image is None:
-            image = self.image0
+        if self.original_image is None:
+            image = self.image
+            if self.image is None:
+                image = self.image0
+        else:
+            image = self.original_image
         n_tot = len(self.sublattice_list[0].atom_list)
         for i_atom in trange(
                 n_tot, desc="Gaussian fitting", disable=not show_progressbar):
