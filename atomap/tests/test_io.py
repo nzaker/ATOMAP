@@ -142,7 +142,7 @@ class TestDumbbellLatticeType:
         peaks = np.arange(20).reshape(10, 2)
         sublattice = Sublattice(atom_position_list=peaks, image=image_data)
         dumbbell_lattice = al.Dumbbell_Lattice(
-                image=image_data, sublattice_list=[sublattice, ])
+                image=image_data, sublattice_list=[sublattice, sublattice])
 
         save_path = pjoin(self.tmpdir.name, "test_dumbbell_lattice_save.hdf5")
         dumbbell_lattice.save(filename=save_path, overwrite=True)

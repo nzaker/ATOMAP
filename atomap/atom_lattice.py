@@ -236,6 +236,20 @@ class Atom_Lattice():
 
 class Dumbbell_Lattice(Atom_Lattice):
 
+    def __init__(self, sublattice_list=None, *args, **kwargs):
+        if sublattice_list is not None:
+            if len(sublattice_list) != 2:
+                raise ValueError(
+                        "sublattice_list must contain two sublattices,"
+                        " not {0}".format(len(sublattice_list)))
+            n_atoms0 = len(sublattice_list[0].atom_list)
+            n_atoms1 = len(sublattice_list[1].atom_list)
+            if n_atoms0 != n_atoms1:
+                raise ValueError(
+                        "Both sublattices must have the same number of atoms")
+
+        super().__init__(sublattice_list=sublattice_list, *args, **kwargs)
+
     def refine_position_gaussian(self, image=None, show_progressbar=True,
                                  percent_to_nn=0.40, mask_radius=None):
         """Fit several atoms at the same time.

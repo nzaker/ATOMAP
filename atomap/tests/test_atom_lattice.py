@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 import atomap.api as am
+import atomap.atom_lattice as al
 from atomap.testing_tools import MakeTestData
 import atomap.initial_position_finding as ipf
 import atomap.testing_tools as tt
@@ -71,6 +72,40 @@ class TestAtomLatticeIntegrate:
         assert len(results[0]) == len(atom_lattice.x_position)
         assert atom_lattice.image.shape == results[1].data.shape
         assert atom_lattice.image.shape == results[2].shape
+
+
+class TestDumbbellLatticeInit:
+
+    def test_empty(self):
+        dumbbell_lattice = al.Dumbbell_Lattice()
+        hasattr(dumbbell_lattice, 'plot')
+
+    def test_two_sublattices(self):
+        sublattice = am.Sublattice(np.zeros((10, 2)), np.zeros((10, 10)))
+        sublattice_list = [sublattice, sublattice]
+        dumbbell_lattice = al.Dumbbell_Lattice(
+                image=np.zeros((10, 10)), sublattice_list=sublattice_list)
+        hasattr(dumbbell_lattice, 'plot')
+
+    def test_wrong_number_of_sublattices(self):
+        sublattice = am.Sublattice(np.zeros((10, 2)), np.zeros((10, 10)))
+        sublattice_list = [sublattice, ]
+        with pytest.raises(ValueError):
+            al.Dumbbell_Lattice(image=np.zeros((10, 10)),
+                                sublattice_list=sublattice_list)
+
+        sublattice_list = [sublattice, sublattice, sublattice]
+        with pytest.raises(ValueError):
+            al.Dumbbell_Lattice(image=np.zeros((10, 10)),
+                                sublattice_list=sublattice_list)
+
+    def test_wrong_number_of_atoms(self):
+        sublattice0 = am.Sublattice(np.zeros((10, 2)), np.zeros((10, 10)))
+        sublattice1 = am.Sublattice(np.zeros((11, 2)), np.zeros((10, 10)))
+        sublattice_list = [sublattice0, sublattice1]
+        with pytest.raises(ValueError):
+            al.Dumbbell_Lattice(image=np.zeros((10, 10)),
+                                sublattice_list=sublattice_list)
 
 
 class TestDumbbellLattice:
