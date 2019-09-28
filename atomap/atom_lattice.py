@@ -250,6 +250,44 @@ class Dumbbell_Lattice(Atom_Lattice):
 
         super().__init__(sublattice_list=sublattice_list, *args, **kwargs)
 
+    @property
+    def dumbbell_x(self):
+        sub0 = self.sublattice_list[0]
+        sub1 = self.sublattice_list[1]
+        x_array = np.mean((sub0.x_position, sub1.x_position), axis=0)
+        return(x_array)
+
+    @property
+    def dumbbell_y(self):
+        sub0 = self.sublattice_list[0]
+        sub1 = self.sublattice_list[1]
+        y_array = np.mean((sub0.y_position, sub1.y_position), axis=0)
+        return(y_array)
+
+    @property
+    def dumbbell_distance(self):
+        sub0 = self.sublattice_list[0]
+        sub1 = self.sublattice_list[1]
+        distance_list = []
+        for i_atom in range(len(sub0.atom_list)):
+            atom0 = sub0.atom_list[i_atom]
+            atom1 = sub1.atom_list[i_atom]
+            distance = atom0.get_pixel_distance_from_another_atom(atom1)
+            distance_list.append(distance)
+        return np.array(distance_list)
+
+    @property
+    def dumbbell_angle(self):
+        sub0 = self.sublattice_list[0]
+        sub1 = self.sublattice_list[1]
+        angle_list = []
+        for i_atom in range(len(sub0.atom_list)):
+            atom0 = sub0.atom_list[i_atom]
+            atom1 = sub1.atom_list[i_atom]
+            angle = atom0.get_angle_between_atoms(atom1)
+            angle_list.append(angle)
+        return np.array(angle_list)
+
     def refine_position_gaussian(self, image=None, show_progressbar=True,
                                  percent_to_nn=0.40, mask_radius=None):
         """Fit several atoms at the same time.

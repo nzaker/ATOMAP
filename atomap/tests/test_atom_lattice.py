@@ -74,6 +74,41 @@ class TestAtomLatticeIntegrate:
         assert atom_lattice.image.shape == results[2].shape
 
 
+class TestAtomLatticePlot:
+
+    def setup_method(self):
+        test_data = tt.MakeTestData(50, 50)
+        test_data.add_atom_list(np.arange(5, 45, 5), np.arange(5, 45, 5))
+        self.atom_lattice = test_data.atom_lattice
+
+    def test_plot(self):
+        self.atom_lattice.plot()
+        self.atom_lattice.plot(markersize=10, cmap='viridis')
+        self.atom_lattice.plot(image=np.ones_like(self.atom_lattice.image0))
+
+
+class TestAtomLatticeSignalProperty:
+
+    def test_simple(self):
+        atom_lattice = am.Atom_Lattice(np.ones((100, 100)))
+        signal = atom_lattice.signal
+        assert_array_equal(atom_lattice.image, signal.data)
+
+    def test_no_image(self):
+        atom_lattice = am.Atom_Lattice()
+        with pytest.raises(ValueError):
+            atom_lattice.signal
+
+    def test_scaling(self):
+        sublattice = am.Sublattice(
+                [[10, 10], ], np.ones((20, 20)), pixel_size=0.2)
+        atom_lattice = am.Atom_Lattice(
+                np.ones((100, 100)), sublattice_list=[sublattice])
+        signal = atom_lattice.signal
+        assert signal.axes_manager.signal_axes[0].scale == 0.2
+        assert signal.axes_manager.signal_axes[1].scale == 0.2
+
+
 class TestDumbbellLatticeInit:
 
     def test_empty(self):
@@ -108,6 +143,45 @@ class TestDumbbellLatticeInit:
                                 sublattice_list=sublattice_list)
 
 
+class TestDumbbellLatticeProperties:
+
+    def test_dumbbell_x_y(self):
+        positions0 = [[10, 3], [11, 5]]
+        positions1 = [[9, 2], [10, 4]]
+        sublattice0 = am.Sublattice(positions0, np.zeros((10, 10)))
+        sublattice1 = am.Sublattice(positions1, np.zeros((10, 10)))
+        sublattice_list = [sublattice0, sublattice1]
+        dumbbell_lattice = al.Dumbbell_Lattice(
+                image=np.zeros((10, 10)), sublattice_list=sublattice_list)
+        dumbbell_x = dumbbell_lattice.dumbbell_x
+        assert (dumbbell_x == [9.5, 10.5]).all()
+        dumbbell_y = dumbbell_lattice.dumbbell_y
+        assert (dumbbell_y == [2.5, 4.5]).all()
+
+    def test_dumbbell_distance(self):
+        positions0 = [[10, 2], [12, 4], [14, 5], [20, 30]]
+        positions1 = [[9, 2], [10, 4], [11, 5], [20, 10]]
+        sublattice0 = am.Sublattice(positions0, np.zeros((10, 10)))
+        sublattice1 = am.Sublattice(positions1, np.zeros((10, 10)))
+        sublattice_list = [sublattice0, sublattice1]
+        dumbbell_lattice = al.Dumbbell_Lattice(
+                image=np.zeros((10, 10)), sublattice_list=sublattice_list)
+        dumbbell_distance = dumbbell_lattice.dumbbell_distance
+        assert (dumbbell_distance == [1., 2., 3., 20.]).all()
+
+    def test_dumbbell_angle(self):
+        positions0 = [[10, 2], [9, 2], [5, 2]]
+        positions1 = [[9, 2], [10, 2], [5, 3]]
+        sublattice0 = am.Sublattice(positions0, np.zeros((10, 10)))
+        sublattice1 = am.Sublattice(positions1, np.zeros((10, 10)))
+        sublattice_list = [sublattice0, sublattice1]
+        dumbbell_lattice = al.Dumbbell_Lattice(
+                image=np.zeros((10, 10)), sublattice_list=sublattice_list)
+        dumbbell_angle = dumbbell_lattice.dumbbell_angle
+        print(dumbbell_angle)
+        assert (dumbbell_angle == [np.pi, 0., np.pi/2]).all()
+
+
 class TestDumbbellLattice:
 
     def setup_method(self):
@@ -126,38 +200,3 @@ class TestDumbbellLattice:
         atom_lattice = ipf.make_atom_lattice_dumbbell_structure(
                 signal, dumbbell_positions, vector)
         atom_lattice.refine_position_gaussian()
-
-
-class TestAtomLatticePlot:
-
-    def setup_method(self):
-        test_data = tt.MakeTestData(50, 50)
-        test_data.add_atom_list(np.arange(5, 45, 5), np.arange(5, 45, 5))
-        self.atom_lattice = test_data.atom_lattice
-
-    def test_plot(self):
-        self.atom_lattice.plot()
-        self.atom_lattice.plot(markersize=10, cmap='viridis')
-        self.atom_lattice.plot(image=np.ones_like(self.atom_lattice.image0))
-
-
-class TestAtomLatticeSignalProperty:
-
-    def test_simple(self):
-        atom_lattice = am.Atom_Lattice(np.ones((100, 100)))
-        signal = atom_lattice.signal
-        assert_array_equal(atom_lattice.image, signal.data)
-
-    def test_no_image(self):
-        atom_lattice = am.Atom_Lattice()
-        with pytest.raises(ValueError):
-            atom_lattice.signal
-
-    def test_scaling(self):
-        sublattice = am.Sublattice(
-                [[10, 10], ], np.ones((20, 20)), pixel_size=0.2)
-        atom_lattice = am.Atom_Lattice(
-                np.ones((100, 100)), sublattice_list=[sublattice])
-        signal = atom_lattice.signal
-        assert signal.axes_manager.signal_axes[0].scale == 0.2
-        assert signal.axes_manager.signal_axes[1].scale == 0.2
