@@ -14,20 +14,25 @@ class Atom_Lattice():
             name="",
             sublattice_list=None,
             original_image=None,
+            image_extra=None,
             ):
         """
         Parameters
         ----------
         image : 2D NumPy array, optional
         sublattice_list : list of sublattice object, optional
+        original_image : 2D NumPy array, optional
+        image_extra : 2D NumPy array, optional
 
         Attributes
         ----------
-        image: 2D NumPy array
+        image : 2D NumPy array
+        original_image : 2D NumPy array
         x_position : list of floats
             x positions for all sublattices.
         y_position : list of floats
             y positions for all sublattices.
+        image_extra : 2D NumPy array, optional
 
         """
         if not isinstance(name, str):
@@ -36,13 +41,8 @@ class Atom_Lattice():
             self.sublattice_list = []
         else:
             self.sublattice_list = sublattice_list
-        if image is None:
-            self.image0 = None
-            self.image = None
-        else:
-            self.image0 = image
-            self.image = image
-        self.original_image = original_image
+        at._image_init(self, image=image, original_image=original_image)
+        self.image_extra = image_extra
         self.name = name
         self._pixel_separation = 10
         self._original_filename = ''
@@ -144,8 +144,6 @@ class Atom_Lattice():
         if image is None:
             if self.original_image is None:
                 image = self.image
-                if self.image is None:
-                    image = self.image0
             else:
                 image = self.original_image
         marker_list = []
@@ -320,8 +318,6 @@ class Dumbbell_Lattice(Atom_Lattice):
         """
         if self.original_image is None:
             image = self.image
-            if self.image is None:
-                image = self.image0
         else:
             image = self.original_image
         n_tot = len(self.sublattice_list[0].atom_list)

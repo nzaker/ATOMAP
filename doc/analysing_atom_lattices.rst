@@ -72,7 +72,7 @@ The atom lattice can be loaded:
     <Atom_Lattice, fantasite (sublattice(s): 2)>
     >>> atom_lattice.sublattice_list # doctest: +SKIP
     [<Sublattice, A (atoms:497,planes:6)>, <Sublattice, B (atoms:465,planes:6)>] # doctest: +SKIP
-    >>> image = atom_lattice.image0
+    >>> image = atom_lattice.image
 
 :py:class:`atomap.atom_lattice.Atom_Lattice` is an object containing the sublattices, and other types of information.
 The fantasite atom lattice contains two sublattices (red and blue dots in the image above).
@@ -239,7 +239,7 @@ The corresponding distance difference will be the distance difference for atoms 
     >>> zone = sublattice_B.zones_axis_average_distances[0]
     >>> s_dd = sublattice_B.get_atom_distance_difference_map([zone])
     >>> s_dd.plot(cmap='viridis')
-    >>> sublattice_B.plot_planes(image=atom_lattice.image0)
+    >>> sublattice_B.plot_planes(image=atom_lattice.image)
 
 .. image:: images/plotting_tutorial/Angle_map_z1.png
     :scale: 50 %

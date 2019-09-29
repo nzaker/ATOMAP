@@ -110,11 +110,18 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
 
             sublattice_list.append(sublattice)
 
+        if group_name == 'image_data':
+            atom_lattice.image = h5f[group_name][:]
         if group_name == 'image_data0':
-            atom_lattice.image0 = h5f[group_name][:]
-            atom_lattice.image = atom_lattice.image0
+            atom_lattice.image = h5f[group_name][:]
+
+        if group_name == 'image_extra_data':
+            atom_lattice.image_extra = h5f[group_name][:]
         if group_name == 'image_data1':
-            atom_lattice.image1 = h5f[group_name][:]
+            atom_lattice.image_extra = h5f[group_name][:]
+
+        if group_name == 'original_image_data':
+            atom_lattice.original_image = h5f[group_name][:]
 
     sorted_sublattice_list = []
     if not sublattice_index_list:  # Support for older hdf5 files
@@ -220,15 +227,22 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename, overwrite=False):
         h5f[subgroup_name].attrs[
                 'zone_axis_names_byte'] = zone_axis_names_byte
 
-    h5f.create_dataset(
-        "image_data0",
-        data=atom_lattice.image0,
-        chunks=True,
-        compression='gzip')
-    if hasattr(atom_lattice, 'image1'):
+    if atom_lattice.image is not None:
         h5f.create_dataset(
-            "image_data1",
-            data=atom_lattice.image1,
+            "image_data",
+            data=atom_lattice.image,
+            chunks=True,
+            compression='gzip')
+    if atom_lattice.image_extra is not None:
+        h5f.create_dataset(
+            "image_extra_data",
+            data=atom_lattice.image_extra,
+            chunks=True,
+            compression='gzip')
+    if atom_lattice.original_image is not None:
+        h5f.create_dataset(
+            "original_image_data",
+            data=atom_lattice.original_image,
             chunks=True,
             compression='gzip')
     h5f.attrs['name'] = atom_lattice.name

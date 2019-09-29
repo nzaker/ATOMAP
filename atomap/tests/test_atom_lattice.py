@@ -28,7 +28,7 @@ class TestCreateAtomLatticeObject:
 
     def test_get_sublattice_atom_list_on_image(self):
         atom_lattice = am.Atom_Lattice()
-        atom_lattice.image0 = self.sublattice.image
+        atom_lattice.image = self.sublattice.image
         atom_lattice.sublattice_list.append(self.sublattice)
         atom_lattice.get_sublattice_atom_list_on_image()
 
@@ -84,7 +84,7 @@ class TestAtomLatticePlot:
     def test_plot(self):
         self.atom_lattice.plot()
         self.atom_lattice.plot(markersize=10, cmap='viridis')
-        self.atom_lattice.plot(image=np.ones_like(self.atom_lattice.image0))
+        self.atom_lattice.plot(image=np.ones_like(self.atom_lattice.image))
 
 
 class TestAtomLatticeSignalProperty:

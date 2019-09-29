@@ -1419,3 +1419,39 @@ def _get_atom_selection_from_verts(atom_positions, verts,
         bool_array = np.invert(bool_array)
     atom_positions_selected = atom_positions[bool_array]
     return atom_positions_selected
+
+
+def _image_init(lattice_object, image, original_image=None):
+    if image is not None:
+        if not hasattr(image, '__array__'):
+            raise ValueError(
+                    "image needs to be a NumPy compatible array" +
+                    ", not " + str(type(image)))
+        image_out = np.array(image)
+        if image_out.dtype == 'float16':
+            raise ValueError(
+                    "image has the dtype float16, which is not supported. "
+                    "Convert it to something else, for example using "
+                    "image.astype('float64')")
+        if not len(image_out.shape) == 2:
+            raise ValueError(
+                    "image needs to be 2 dimensions, not " +
+                    str(len(image_out.shape)))
+    else:
+        image_out = None
+
+    if original_image is not None:
+        if not hasattr(original_image, '__array__'):
+            raise ValueError(
+                    "original_image needs to be a NumPy compatible array" +
+                    ", not " + str(type(original_image)))
+        original_image_out = np.array(original_image)
+        if not len(original_image_out.shape) == 2:
+            raise ValueError(
+                    "original_image needs to be 2 dimensions, not " +
+                    str(len(original_image_out.shape)))
+    else:
+        original_image_out = image_out
+
+    lattice_object.image = image_out
+    lattice_object.original_image = original_image_out
