@@ -519,14 +519,18 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
     rgb = cm.get_cmap('viridis')(x)[np.newaxis, :, :3].tolist()
 
     sub_lattices = {}
+    sublattice_list = []
     atom_positions = sublattice.atom_positions
     for num in sort_indices.ravel():
         sub_lattices[num] = Sublattice(
                 atom_positions[np.where(sorted_labels == num)],
                 image=image.data, color=rgb[0][num])
+    
+    for i in range(num_atoms):
+        sublattice_list.append(sub_lattices[i])
 
     atom_lattice = Atom_Lattice(image=image.data, name='quant',
-                                sublattice_list=list(sub_lattices.values()))
+                                sublattice_list=sublattice_list)
 
     if plot:
         atom_lattice.plot()
