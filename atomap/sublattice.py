@@ -2044,7 +2044,7 @@ class Sublattice():
         for zone_index, zone_vector in zone_vector_index_list:
             data_list = self.get_atom_distance_difference_from_zone_vector(
                     zone_vector)
-            if len(data_list[2]) is not 0:
+            if len(data_list[2]) != 0:
                 signal = self.get_property_map(
                     data_list[0],
                     data_list[1],
