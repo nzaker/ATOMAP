@@ -136,10 +136,10 @@ def _remove_duplicate_vectors(vector_list, distance_tolerance):
     vector_list = _sort_vectors_by_length(vector_list)
     remove_index_list = []
     for zi0, zv0 in enumerate(vector_list):
-            for zi1, zv1 in enumerate(vector_list[zi0+1:]):
-                distance = math.hypot(zv1[0]-zv0[0], zv1[1]-zv0[1])
-                if distance < distance_tolerance:
-                    remove_index_list.append(zi0+zi1+1)
+        for zi1, zv1 in enumerate(vector_list[zi0+1:]):
+            distance = math.hypot(zv1[0]-zv0[0], zv1[1]-zv0[1])
+            if distance < distance_tolerance:
+                remove_index_list.append(zi0+zi1+1)
     new_vector_list = []
     for index, vector in enumerate(vector_list):
         if index not in remove_index_list:

@@ -386,14 +386,14 @@ def get_statistical_quant_criteria(sublattices, max_atom_nums):
     -------
     >>> import numpy as np
     >>> import atomap.api as am
-    >>> tdata = am.dummy_data.get_atom_counting_data()
-    >>> atom_positions = am.get_atom_positions(tdata, 8, threshold_rel=0.1)
-    >>> sublattice = am.Sublattice(atom_positions, tdata.data)
+    >>> s = am.dummy_data.get_atom_counting_signal()
+    >>> atom_positions = am.get_atom_positions(s, 8, threshold_rel=0.1)
+    >>> sublattice = am.Sublattice(atom_positions, s)
     >>> sublattice.construct_zone_axes()
     >>> sublattice.refine_atom_positions_using_2d_gaussian(sublattice.image)
     >>> models = am.quant.get_statistical_quant_criteria([sublattice], 10)
-    """
 
+    """
     # Get array of intensities of Gaussians of each atom
     intensities = []
     for sublattice in sublattices:
@@ -440,7 +440,7 @@ def _plot_fitted_hist(intensities, model, rgb, sort_indices, bins=50):
         List of discrete values from a Matplotlib colormap.
     sort_indices : list
     bins : int
-    
+
     """
     x = np.linspace(0, intensities.max()*1.2, 1000)
     x = x.reshape(-1, 1)
@@ -467,7 +467,7 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
 
     Parameters
     ----------
-    image : Hyperspy Signal object
+    image : Hyperspy Signal object or array-like
     sublattice : Sublattice object
     model : GaussianMixture model object
     num_atoms : int
@@ -484,14 +484,14 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
     -------
     >>> import numpy as np
     >>> import atomap.api as am
-    >>> tdata = am.dummy_data.get_atom_counting_data()
-    >>> atom_positions = am.get_atom_positions(tdata, 8, threshold_rel=0.1)
-    >>> sublattice = am.Sublattice(atom_positions, tdata.data)
+    >>> s = am.dummy_data.get_atom_counting_signal()
+    >>> atom_positions = am.get_atom_positions(s, 8, threshold_rel=0.1)
+    >>> sublattice = am.Sublattice(atom_positions, s)
     >>> sublattice.construct_zone_axes()
-    >>> sublattice.refine_atom_positions_using_2d_gaussian(sublattice.image)
+    >>> sublattice.refine_atom_positions_using_2d_gaussian()
     >>> models = am.quant.get_statistical_quant_criteria([sublattice], 10)
-    >>> sub_lattices = am.quant.statistical_quant(tdata, sublattice,
-    ...                                  models[3], 4, plot=False)
+    >>> sub_lattices = am.quant.statistical_quant(s, sublattice,
+    ...                                           models[3], 4, plot=False)
     """
     # Get array of intensities of Gaussians of each atom
     intensities = [2*np.pi*atom.amplitude_gaussian*atom.sigma_x*atom.sigma_y
@@ -524,12 +524,12 @@ def statistical_quant(image, sublattice, model, num_atoms, plot=True):
     for num in sort_indices.ravel():
         sub_lattices[num] = Sublattice(
                 atom_positions[np.where(sorted_labels == num)],
-                image=image.data, color=rgb[0][num])
-    
+                image=np.array(image.data), color=rgb[0][num])
+
     for i in range(num_atoms):
         sublattice_list.append(sub_lattices[i])
 
-    atom_lattice = Atom_Lattice(image=image.data, name='quant',
+    atom_lattice = Atom_Lattice(image=np.array(image.data), name='quant',
                                 sublattice_list=sublattice_list)
 
     if plot:

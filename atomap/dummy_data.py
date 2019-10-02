@@ -824,26 +824,26 @@ def get_single_atom_sublattice():
     sublattice = test_data.sublattice
     return sublattice
 
-def get_atom_counting_data():
+
+def get_atom_counting_signal():
     """Get an artificial image of 4 different atomic column intensities.
-    
+
     Returns
     -------
-    tdata : HyperSpy 2D signal
-    
+    s_atom_counting : HyperSpy 2D signal
+
     Examples
     --------
     >>> import atomap.api as am
-    >>> s = am.dummy_data.get_atom_counting_data()
+    >>> s = am.dummy_data.get_atom_counting_signal()
     >>> s.plot()
 
     """
-    
-    tdata = MakeTestData(200, 200)
+    testdata = MakeTestData(200, 200)
     for i in range(4):
         x, y = np.mgrid[60*i:(i+1)*60:15, 10:200:15]
         x, y = x.flatten(), y.flatten()
-        tdata.add_atom_list(x, y,sigma_x=2, sigma_y=2,
-                            amplitude=(i+1)*20, rotation=0.4)
-    tdata.add_image_noise(sigma=0.02)
-    return tdata.signal
+        testdata.add_atom_list(x, y, sigma_x=2, sigma_y=2,
+                               amplitude=(i+1)*20, rotation=0.4)
+    testdata.add_image_noise(sigma=0.02)
+    return testdata.signal

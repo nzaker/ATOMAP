@@ -11,8 +11,10 @@ When normalising for the detector response an accurate estimate of the percentag
 
 Atomap also contains an implementation of the "Statistical" method of ADF atomic-resolution quantification.
 In this method, the intensity of a Gaussian fit to each atomic column is plotted as a histogram.
-A Gaussian mixture modelo is then fit to this distribution, with each Gaussian corresponding to a different number of atoms in the columns.
+A Gaussian mixture model is then fit to this distribution, with each Gaussian corresponding to a different number of atoms in the columns.
 
+
+.. _absolute_integrator:
 
 Absolute Integrator
 ===================
@@ -41,9 +43,7 @@ Flux Weighting Analysis
 -----------------------
 
 In order to have a flux exponent to include in the detector normalisation (above), a flux analysis must be carried out.
-The detector flux weighting method is based on the following paper:
-
-(1) G.T. Martinez et al. Ultramicroscopy 2015, 159, 46-58.
+The detector flux weighting method is based on the paper `G.T. Martinez et al. Ultramicroscopy 2015, 159 <https://doi.org/10.1016/j.ultramic.2015.07.010>`_.
 
 .. code-block:: python
 
@@ -53,18 +53,21 @@ The detector flux weighting method is based on the following paper:
 If the flux_exponent is unknown then it is possible to create an interactive flux plot described in detail in the example notebook: https://gitlab.com/atomap/atomap_demos/blob/release/adf_quantification_notebook/adf_quantification.ipynb
 
 
+.. _statistical_method:
+
 Statistical Method
 ==================
 
+For more information about the method itself, see `S. Van Aert et al, Phys. Rev. B 87 (2013) <https://doi.org/10.1103/PhysRevB.87.064107>`_.
+
 In order to perform the "statistical method" you must first have a ``Sublattice`` defined and you must also have used the Gaussian refinement.
-The code below shows this process operating on an ADF image from the adf__quantification_notebook in the atomap demos.
 
 .. code-block:: python
 
     >>> import atomap.api as am
-    >>> data = am.dummy_data.get_atom_counting_data()
-    >>> atom_positions = am.get_atom_positions(tdata, 8, threshold_rel=0.1)
-    >>> sublattice = am.Sublattice(atom_positions, tdata.data)
+    >>> s = am.dummy_data.get_atom_counting_signal()
+    >>> atom_positions = am.get_atom_positions(s, 8, threshold_rel=0.1)
+    >>> sublattice = am.Sublattice(atom_positions, s)
     >>> sublattice.construct_zone_axes()
     >>> sublattice.refine_atom_positions_using_2d_gaussian()
 
@@ -97,7 +100,7 @@ Once you have determined the number of Gaussians in your Gaussian mixture model,
 .. code-block:: python
 
     >>> model = models[3] # 4th model
-    >>> am.quant.statistical_quant(sublattice.image, sublattice, model, 4)
+    >>> atom_lattice = am.quant.statistical_quant(sublattice.image, sublattice, model, 4)
 
 The function returns an ``Atom_Lattice`` object, in which each ``Sublattice`` corresponds to atomic columns of different atomic number.
 If plotting is selected (as it is by default) this plots the histogram of column intensities with the Gaussian mixture model overlayed.
@@ -106,5 +109,5 @@ It also displays the image of the particle with sublattices coloured differently
 .. figure:: images/quant/quant_output1a.png
     :scale: 50 %
 
-.. figure:: images/quant/quant_output1a.png
+.. figure:: images/quant/quant_output1b.png
     :scale: 50 %
