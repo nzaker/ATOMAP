@@ -64,6 +64,10 @@ class TestDummyData:
         sublattice = dd.get_single_atom_sublattice()
         sublattice.plot()
 
+    def test_get_atom_counting_signal(self):
+        signal = dd.get_atom_counting_signal()
+        signal.plot()
+
 
 class TestDummyDataFantasite:
 

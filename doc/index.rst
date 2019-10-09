@@ -72,7 +72,8 @@ Contents on this webpage
    gui_functions
    automation
    examples
-   absolute_integrator
+   quantification
+   nanoparticle_example
    make_testdata
    making_nice_figures
    various_tools

@@ -41,6 +41,7 @@ pages_development_branch:
     - xvfb-run -a python3 images/make_several_phases_figures.py
     - xvfb-run -a python3 images/make_atom_selector_figures.py
     - xvfb-run -a python3 images/make_examples_figures.py
+    - xvfb-run -a python3 images/make_quant_images.py
     - make html
     - cd ..
     - mv doc/_build/html pages_development
@@ -76,6 +77,7 @@ pages:
     - xvfb-run -a python3 images/make_several_phases_figures.py
     - xvfb-run -a python3 images/make_atom_selector_figures.py
     - xvfb-run -a python3 images/make_examples_figures.py
+    - xvfb-run -a python3 images/make_quant_images.py
     - make html
     - cd ..
     - mv doc/_build/html public
