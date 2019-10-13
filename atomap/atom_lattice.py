@@ -355,11 +355,17 @@ class Dumbbell_Lattice(Atom_Lattice):
             must have a populated nearest_neighbor_list. This is normally done
             through the sublattice class, but can also be done manually.
 
+        Examples
+        --------
+        >>> dl = am.dummy_data.get_dumbbell_heterostructure_dumbbell_lattice()
+        >>> dl.refine_position_gaussian(show_progressbar=False)
+
         """
-        if self.original_image is None:
-            image = self.image
-        else:
-            image = self.original_image
+        if image is None:
+            if self.original_image is None:
+                image = self.image
+            else:
+                image = self.original_image
         n_tot = len(self.sublattice_list[0].atom_list)
         for i_atom in trange(
                 n_tot, desc="Gaussian fitting", disable=not show_progressbar):
