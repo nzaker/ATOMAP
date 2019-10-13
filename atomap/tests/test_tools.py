@@ -131,6 +131,64 @@ class TestRemoveAtomsFromImageUsing2dGaussian:
                                                       sublattice)
 
 
+class TestFindAverageDistanceBetweenAtoms:
+
+    def test_simple(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(10) * i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        input_data_list = np.stack((position_list, property_list), axis=1)
+
+        output = to.find_average_distance_between_atoms(input_data_list)
+        first_peak, monolayer_sep, mean_separation = output
+
+        assert first_peak == 9.
+        assert len(monolayer_sep) == 11
+        assert (monolayer_sep.flatten() == 9.).all()
+        assert mean_separation == 9.
+
+    def test_crop(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(10) * i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        input_data_list = np.stack((position_list, property_list), axis=1)
+
+        output = to.find_average_distance_between_atoms(
+                input_data_list, crop_start=10, crop_end=10)
+        first_peak, monolayer_sep, mean_separation = output
+
+        assert first_peak == 9.
+        assert len(monolayer_sep) == 9
+        assert (monolayer_sep.flatten() == 9.).all()
+        assert mean_separation == 9.
+
+    def test_with_random(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.random.random(size=1000) + i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        input_data_list = np.stack((position_list, property_list), axis=1)
+
+        output = to.find_average_distance_between_atoms(input_data_list)
+        first_peak, monolayer_sep, mean_separation = output
+
+        assert approx(first_peak, abs=0.1) == 8.
+        assert len(monolayer_sep) == 11
+        assert monolayer_sep == approx(8, abs=0.1)
+        assert mean_separation == approx(8, abs=0.1)
+
+
 @pytest.mark.parametrize(
     "x,y,sx,sy,ox,oy", [
         (20, 20, 1, 1, 0, 0), (50, 20, 1, 1, 0, 0),
