@@ -28,7 +28,7 @@ def plot_monolayer_map():
 
 
 def plot_atom_plane_monolayer_map():
-    image = atom_lattice.image0
+    image = atom_lattice.image
     s = sublattice_B.get_all_atom_planes_by_zone_vector(image=image)
     s.plot()
     s.axes_manager.indices = (1,)
@@ -55,7 +55,7 @@ def plot_atom_dd():
 
 
 def plot_dd_plane():
-    image = atom_lattice.image0
+    image = atom_lattice.image
     s = sublattice_B.get_all_atom_planes_by_zone_vector(image=image)
     s.plot()
     s.axes_manager.indices = (0,)
