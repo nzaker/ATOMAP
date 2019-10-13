@@ -203,6 +203,79 @@ class TestDumbbellLatticeGetDumbbellIntensityDifference:
         assert (intensity_difference == 0.).all()
 
 
+class TestPlotDumbbellDistances:
+
+    def setup_method(self):
+        self.dl = dd.get_dumbbell_heterostructure_dumbbell_lattice()
+
+    def test_simple(self):
+        fig = self.dl.plot_dumbbell_distances()
+        hasattr(fig, 'show')
+
+    def test_image(self):
+        image = np.random.random((500, 500))
+        fig = self.dl.plot_dumbbell_distances(image=image)
+        hasattr(fig, 'show')
+
+    def test_cmap(self):
+        fig = self.dl.plot_dumbbell_distances(cmap='inferno')
+        hasattr(fig, 'show')
+
+    def test_vmin_vmax(self):
+        fig = self.dl.plot_dumbbell_distances(vmin=-10, vmax=-2)
+        hasattr(fig, 'show')
+
+
+class TestPlotDumbbellAngles:
+
+    def setup_method(self):
+        self.dl = dd.get_dumbbell_heterostructure_dumbbell_lattice()
+
+    def test_simple(self):
+        fig = self.dl.plot_dumbbell_angles()
+        hasattr(fig, 'show')
+
+    def test_image(self):
+        image = np.random.random((500, 500))
+        fig = self.dl.plot_dumbbell_angles(image=image)
+        hasattr(fig, 'show')
+
+    def test_cmap(self):
+        fig = self.dl.plot_dumbbell_angles(cmap='inferno')
+        hasattr(fig, 'show')
+
+    def test_vmin_vmax(self):
+        fig = self.dl.plot_dumbbell_angles(vmin=-10, vmax=-2)
+        hasattr(fig, 'show')
+
+
+class TestPlotDumbbellIntensityDifferences:
+
+    def setup_method(self):
+        self.dl = dd.get_dumbbell_heterostructure_dumbbell_lattice()
+
+    def test_simple(self):
+        fig = self.dl.plot_dumbbell_intensity_differences()
+        hasattr(fig, 'show')
+
+    def test_image(self):
+        image = np.random.random((500, 500))
+        fig = self.dl.plot_dumbbell_intensity_differences(image=image)
+        hasattr(fig, 'show')
+
+    def test_cmap(self):
+        fig = self.dl.plot_dumbbell_intensity_differences(cmap='inferno')
+        hasattr(fig, 'show')
+
+    def test_vmin_vmax(self):
+        fig = self.dl.plot_dumbbell_intensity_differences(vmin=-10, vmax=-2)
+        hasattr(fig, 'show')
+
+    def test_radius(self):
+        fig = self.dl.plot_dumbbell_intensity_differences(radius=10)
+        hasattr(fig, 'show')
+
+
 class TestDumbbellLattice:
 
     def setup_method(self):

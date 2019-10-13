@@ -2,7 +2,7 @@ from tqdm import trange
 import numpy as np
 from hyperspy.signals import Signal2D
 import atomap.atom_finding_refining as afr
-from atomap.plotting import _make_atom_position_marker_list
+import atomap.plotting as pl
 import atomap.tools as at
 
 
@@ -149,7 +149,7 @@ class Atom_Lattice():
         marker_list = []
         scale = self.sublattice_list[0].pixel_size
         for sublattice in self.sublattice_list:
-            marker_list.extend(_make_atom_position_marker_list(
+            marker_list.extend(pl._make_atom_position_marker_list(
                     sublattice.atom_list,
                     scale=scale,
                     color=sublattice._plot_color,
@@ -375,3 +375,108 @@ class Dumbbell_Lattice(Atom_Lattice):
             afr.fit_atom_positions_gaussian(
                     atom_list, image, percent_to_nn=percent_to_nn,
                     mask_radius=mask_radius)
+
+    def plot_dumbbell_distances(self, image=None, cmap=None,
+                                vmin=None, vmax=None):
+        """Plot the dumbbell distances as points on an image.
+
+        Parameters
+        ----------
+        image : NumPy 2D array, optional
+        cmap : string
+            Matplotlib colormap name, default 'viridis'
+        vmin, vmax : scalars
+            Min and max values for the scatter points
+
+        Returns
+        -------
+        fig : matplotlib figure
+
+        Examples
+        --------
+        >>> dl = am.dummy_data.get_dumbbell_heterostructure_dumbbell_lattice()
+        >>> fig = dl.plot_dumbbell_distances()
+
+        """
+        if image is None:
+            if self.original_image is None:
+                image = self.image
+            else:
+                image = self.original_image
+        x, y = self.dumbbell_x, self.dumbbell_y
+        z = self.dumbbell_distance
+        fig = pl._make_figure_scatter_point_on_image(
+                image, x, y, z, cmap=cmap, vmin=vmin, vmax=vmax)
+        return fig
+
+    def plot_dumbbell_angles(self, image=None, cmap=None,
+                             vmin=None, vmax=None):
+        """Plot the dumbbell angles as points on an image.
+
+        Parameters
+        ----------
+        image : NumPy 2D array, optional
+        cmap : string
+            Matplotlib colormap name, default 'viridis'
+        vmin, vmax : scalars
+            Min and max values for the scatter points
+
+        Returns
+        -------
+        fig : matplotlib figure
+
+        Examples
+        --------
+        >>> dl = am.dummy_data.get_dumbbell_heterostructure_dumbbell_lattice()
+        >>> fig = dl.plot_dumbbell_angles()
+
+        """
+        if image is None:
+            if self.original_image is None:
+                image = self.image
+            else:
+                image = self.original_image
+        x, y = self.dumbbell_x, self.dumbbell_y
+        z = self.dumbbell_angle
+        fig = pl._make_figure_scatter_point_on_image(
+                image, x, y, z, cmap=cmap, vmin=vmin, vmax=vmax)
+        return fig
+
+    def plot_dumbbell_intensity_difference(
+            self, radius=4, image=None, cmap=None, vmin=None, vmax=None):
+        """Plot the dumbbell intensity difference as points on an image.
+
+        Parameters
+        ----------
+        radius : int
+            Default 4
+        image : NumPy 2D array, optional
+        cmap : string
+            Matplotlib colormap name, default 'viridis'
+        vmin, vmax : scalars
+            Min and max values for the scatter points
+
+        Returns
+        -------
+        fig : matplotlib figure
+
+        Examples
+        --------
+        >>> dl = am.dummy_data.get_dumbbell_heterostructure_dumbbell_lattice()
+        >>> fig = dl.plot_dumbbell_intensity_difference()
+
+        See also
+        --------
+        get_dumbbell_intensity_difference : for getting the data itself
+
+        """
+        if image is None:
+            if self.original_image is None:
+                image = self.image
+            else:
+                image = self.original_image
+        x, y = self.dumbbell_x, self.dumbbell_y
+        z = self.get_dumbbell_intensity_difference(radius=radius, image=image)
+        fig = pl._make_figure_scatter_point_on_image(
+                image, x, y, z, cmap=cmap, vmin=vmin, vmax=vmax)
+        return fig
