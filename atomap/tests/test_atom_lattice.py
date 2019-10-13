@@ -182,6 +182,27 @@ class TestDumbbellLatticeProperties:
         assert (dumbbell_angle == [np.pi, 0., np.pi/2]).all()
 
 
+class TestDumbbellLatticeGetDumbbellIntensityDifference:
+
+    def test_simple(self):
+        dl = am.dummy_data.get_dumbbell_heterostructure_dumbbell_lattice()
+        intensity_difference = dl.get_dumbbell_intensity_difference()
+        sub0 = dl.sublattice_list[0]
+        assert len(sub0.atom_list) == len(intensity_difference)
+
+    def test_radius(self):
+        dl = am.dummy_data.get_dumbbell_heterostructure_dumbbell_lattice()
+        intensity_diff0 = dl.get_dumbbell_intensity_difference(radius=4)
+        intensity_diff1 = dl.get_dumbbell_intensity_difference(radius=10)
+        assert (intensity_diff0 != intensity_diff1).all()
+
+    def test_image(self):
+        dl = am.dummy_data.get_dumbbell_heterostructure_dumbbell_lattice()
+        intensity_difference = dl.get_dumbbell_intensity_difference(
+                image=np.zeros((500, 500)))
+        assert (intensity_difference == 0.).all()
+
+
 class TestDumbbellLattice:
 
     def setup_method(self):

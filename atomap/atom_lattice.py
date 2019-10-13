@@ -294,6 +294,46 @@ class Dumbbell_Lattice(Atom_Lattice):
             angle_list.append(angle)
         return np.array(angle_list)
 
+    def get_dumbbell_intensity_difference(self, radius=4, image=None):
+        """Get the difference of intensity between the atoms in the dumbbells.
+
+        The intensity of the atom is calculated by getting a the mean intensity
+        of a disk around the position of each atom, given by the radius
+        parameter.
+
+        Parameters
+        ----------
+        radius : int
+            Default 4
+        image : array-like, optional
+
+        Returns
+        -------
+        intensity_difference_list : NumPy array
+
+        Examples
+        --------
+        >>> dl = am.dummy_data.get_dumbbell_heterostructure_dumbbell_lattice()
+        >>> intensity_difference = dl.get_dumbbell_intensity_difference()
+
+        """
+        if image is None:
+            if self.original_image is None:
+                image = self.image
+            else:
+                image = self.original_image
+        sub0 = self.sublattice_list[0]
+        sub1 = self.sublattice_list[1]
+        intensity_difference_list = []
+        for i_atom in range(len(sub0.atom_list)):
+            atom0 = sub0.atom_list[i_atom]
+            atom1 = sub1.atom_list[i_atom]
+            atom0.find_atom_intensity_inside_mask(image, radius)
+            atom1.find_atom_intensity_inside_mask(image, radius)
+            intensity_difference = atom0.intensity_mask - atom1.intensity_mask
+            intensity_difference_list.append(intensity_difference)
+        return np.array(intensity_difference_list)
+
     def refine_position_gaussian(self, image=None, show_progressbar=True,
                                  percent_to_nn=0.40, mask_radius=None):
         """Fit several atoms at the same time.
