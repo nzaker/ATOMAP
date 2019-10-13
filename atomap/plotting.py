@@ -10,9 +10,7 @@ from hyperspy.drawing._markers.line_segment import LineSegment
 from hyperspy.drawing._markers.point import Point
 from hyperspy.drawing._markers.text import Text
 
-from atomap.tools import\
-        _get_clim_from_data,\
-        project_position_property_sum_planes
+import atomap.tools as to
 
 
 def plot_vector_field(x_pos_list, y_pos_list, x_rot_list, y_rot_list,
@@ -64,7 +62,7 @@ def plot_zone_vector_and_atom_distance_map(
     distance_ax = fig.add_subplot(gs[45:90, :])
     colorbar_ax = fig.add_subplot(gs[90:, :])
 
-    image_clim = _get_clim_from_data(image_data, sigma=2)
+    image_clim = to._get_clim_from_data(image_data, sigma=2)
     image_cax = image_ax.imshow(image_data)
     image_cax.set_clim(image_clim[0], image_clim[1])
     if atom_planes:
@@ -152,7 +150,7 @@ def plot_complex_image_map_line_profile_using_interface_plane(
     image_y_lim = (0, image_data.shape[0]*data_scale)
     image_x_lim = (0, image_data.shape[1]*data_scale)
 
-    image_clim = _get_clim_from_data(image_data, sigma=2)
+    image_clim = to._get_clim_from_data(image_data, sigma=2)
     image_cax = image_ax.imshow(
             image_data,
             origin='lower',
@@ -361,7 +359,7 @@ def plot_image_map_line_profile_using_interface_plane(
     image_y_lim = (0, image_data.shape[0]*data_scale)
     image_x_lim = (0, image_data.shape[1]*data_scale)
 
-    image_clim = _get_clim_from_data(image_data, sigma=2)
+    image_clim = to._get_clim_from_data(image_data, sigma=2)
     image_cax = image_ax.imshow(
             image_data,
             origin='lower',
@@ -644,10 +642,10 @@ def _make_line_profile_subplot_from_three_parameter_data(
         scale_y=1.0,
         invert_line_profiles=False):
 
-    line_profile_data = project_position_property_sum_planes(
-        data_list,
-        interface_plane,
-        rebin_data=True)
+    projected_positions = to.project_position_property(
+            data_list, interface_plane)
+    layer_list = to.sort_projected_positions_into_layers(projected_positions)
+    line_profile_data = to.combine_projected_positions_layers(layer_list)
 
     line_profile_data = np.array(line_profile_data)
 

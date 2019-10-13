@@ -177,10 +177,12 @@ def get_atom_planes_square(
         z_pos_list.append(0)
 
     data_list = np.array(
-        [x_pos_list, y_pos_list, z_pos_list]).swapaxes(0, 1)
-    atom_layer_list = project_position_property_sum_planes(
-        data_list, interface_atom_plane, rebin_data=True)
+            [x_pos_list, y_pos_list, z_pos_list]).swapaxes(0, 1)
 
+    projected_positions = project_position_property(
+            data_list, interface_atom_plane)
+    layer_list = sort_projected_positions_into_layers(projected_positions)
+    atom_layer_list = combine_projected_positions_layers(layer_list)
     atom_layer_list = np.array(atom_layer_list)[:, 0]
     x_pos_list = []
     z_pos_list = []
@@ -204,7 +206,7 @@ def find_average_distance_between_atoms(
     """Return the distance between monolayers.
 
     Returns the maximal separation between two adjacent points in
-    input_data_list[:,0], as a good approximation for monolayer separation.
+    input_data_list[:, 0], as a good approximation for monolayer separation.
 
     Parameters
     ----------
@@ -227,6 +229,19 @@ def find_average_distance_between_atoms(
     mean_separation : float
         The mean monolayer separation
 
+    Example
+    -------
+    >>> import atomap.tools as to
+    >>> position_list = []
+    >>> for i in range(0, 100, 9):
+    ...     positions = np.ones(10) * i
+    ...     position_list.extend(positions)
+    >>> position_list = np.array(position_list)
+    >>> property_list = np.ones(len(position_list))
+    >>> input_data_list = np.stack((position_list, property_list), axis=1)
+    >>> output = to.find_average_distance_between_atoms(input_data_list)
+    >>> first_peak, monolayer_sep, mean_separation = output
+
     """
     data_list = input_data_list[:, 0]
     data_list.sort()
@@ -246,11 +261,10 @@ def find_average_distance_between_atoms(
     return(first_peak, monolayer_sep, mean_separation)
 
 
-def combine_clustered_positions_into_layers(
-        data_list, layer_distance, combine_layers=True):
+def sort_positions_into_layers(data_list, layer_distance, combine_layers=True):
     """Combine clustered positions into groups.
 
-    Atoms with a similar distance for a line belong to the same plane parallel
+    Atoms with a similar distance from a line belong to the same plane parallel
     to this line. Atoms in data_list are grouped based on which plane they
     belong to. If there is only one atom in a layer, it will be disregarded as
     it gives a high uncertainty.
@@ -270,10 +284,11 @@ def combine_clustered_positions_into_layers(
 
     Returns
     -------
-    A list, layer_list. If combine_layers is True, a list of the average
-    position and property of the points in the layer. If False, a nested
-    list where each element in layer_list contains a list the atoms (position
-    and property) in the layer.
+    layer_list : list
+        If combine_layers is True, a list of the average
+        position and property of the points in the layer. If False, a nested
+        list where each element in layer_list contains a list the atoms
+        (position and property) in the layer.
 
     """
     layer_list = []
@@ -285,25 +300,39 @@ def combine_clustered_positions_into_layers(
             i += 1
         else:
             if not (len(one_layer_list) == 1):
-                if combine_layers is True:
-                    one_layer_list = np.array(
-                        one_layer_list).mean(0).tolist()
                 layer_list.append(one_layer_list)
             i += 1
             one_layer_list = [atom_pos.tolist()]
-    if combine_layers is True:
-        if not (len(one_layer_list) == 1):
-            one_layer_list = np.array(one_layer_list).mean(0).tolist()
-            layer_list.append(one_layer_list)
+    if not (len(one_layer_list) == 1):
+        layer_list.append(one_layer_list)
     return(layer_list)
 
 
-def combine_clusters_using_average_distance(data_list, margin=0.5):
-    first_peak, monolayer_sep, mean_separation = \
-        find_average_distance_between_atoms(data_list)
-    layer_list = combine_clustered_positions_into_layers(
-        data_list, first_peak * margin)
+def sort_projected_positions_into_layers(projected_positions, margin=0.5):
+    first_peak, monolayer_sep, mean_sep = find_average_distance_between_atoms(
+            projected_positions)
+    layer_list = sort_positions_into_layers(
+        projected_positions, first_peak * margin)
     return(layer_list)
+
+
+def combine_projected_positions_layers(layer_list):
+    """
+    rebin_data : bool, optional
+        If True, will attempt to combine the data points
+        which belong to the same atomic plane.
+        The points which belong to the same plane will be
+        averaged into a single value for each atomic plane.
+        This will give the property value as a function distance
+        to the interface_plane.
+    """
+
+    combined_layer_list = []
+    for layer in layer_list:
+        temp_layer = np.array(layer)
+        combined_layer = temp_layer.mean(axis=0).tolist()
+        combined_layer_list.append(combined_layer)
+    return combined_layer_list
 
 
 def dotproduct(v1, v2):
@@ -712,16 +741,11 @@ def _get_clim_from_data(
     return(clim)
 
 
-def project_position_property_sum_planes(
-        input_data_list,
-        interface_plane,
-        rebin_data=True):
-    """
-    Project 2D positions onto a 1D plane.
+def project_position_property(input_data_list, interface_plane):
+    """Project 2D positions onto a 1D plane.
+
     The 2D positions are found as function of distance
-    to the interface_plane. If rebin_data is True,
-    the function will attempt to sum the positions belonging
-    to the same plane.
+    to the interface_plane.
     In this case, one will get the positions as a function of
     atomic plane from the interface_plane.
 
@@ -739,13 +763,6 @@ def project_position_property_sum_planes(
         y-positions using input_data_list[:,1].
         Property value using input_data_list[:,2].
     interface_plane : Atomap atom_plane object
-    rebin_data : bool, optional
-        If True, will attempt to combine the data points
-        which belong to the same atomic plane.
-        The points which belong to the same plane will be
-        averaged into a single value for each atomic plane.
-        This will give the property value as a function distance
-        to the interface_plane.
 
     Returns
     -------
@@ -762,12 +779,13 @@ def project_position_property_sum_planes(
     >>> x, y = sublattice.x_position, sublattice.y_position
     >>> z = sublattice.ellipticity
     >>> input_data_list = np.array([x, y, z]).swapaxes(0, 1)
-    >>> from atomap.tools import project_position_property_sum_planes
+    >>> from atomap.tools import project_position_property
     >>> plane = sublattice.atom_plane_list[10]
-    >>> data = project_position_property_sum_planes(input_data_list, plane)
+    >>> data = project_position_property(input_data_list, plane)
     >>> positions = data[:,0]
     >>> property_values = data[:,1]
     >>> cax = plt.plot(positions, property_values)
+
     """
     x_pos_list = input_data_list[:, 0]
     y_pos_list = input_data_list[:, 1]
@@ -779,9 +797,6 @@ def project_position_property_sum_planes(
     data_list = np.stack((dist, z_pos_list)).T
     data_list = data_list[data_list[:, 0].argsort()]
 
-    if rebin_data:
-        data_list = combine_clusters_using_average_distance(data_list)
-    data_list = np.array(data_list)
     return(data_list)
 
 

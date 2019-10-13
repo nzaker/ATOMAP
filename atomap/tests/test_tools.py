@@ -189,6 +189,65 @@ class TestFindAverageDistanceBetweenAtoms:
         assert mean_separation == approx(8, abs=0.1)
 
 
+class TestSortPositionsIntoLayers:
+
+    def test_simple(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(10) * i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        data_list = np.stack((position_list, property_list), axis=1)
+        layer_list = to.sort_positions_into_layers(data_list, 4.5)
+        assert len(layer_list) == 12
+        for layer, i in zip(layer_list, range(0, 100, 9)):
+            assert len(layer) == 10
+            assert np.array(layer)[:, 0] == approx(i)
+            assert np.array(layer)[:, 1] == approx(1.0)
+
+
+class TestSortProjectedPositionsIntoLayers:
+
+    def test_simple(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(10) * i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        data_list = np.stack((position_list, property_list), axis=1)
+        layer_list = to.sort_projected_positions_into_layers(
+                data_list)
+        assert len(layer_list) == 12
+        for layer, i in zip(layer_list, range(0, 100, 9)):
+            assert len(layer) == 10
+            assert np.array(layer)[:, 0] == approx(i)
+            assert np.array(layer)[:, 1] == approx(1.0)
+
+
+class TestCombineProjectedPositionsLayers:
+
+    def test_simple(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(10) * i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        data_list = np.stack((position_list, property_list), axis=1)
+        layer_list = to.sort_projected_positions_into_layers(
+                data_list)
+        combined_layer_list = to.combine_projected_positions_layers(layer_list)
+        assert len(layer_list) == 12
+        for layer, i in zip(combined_layer_list, range(0, 100, 9)):
+            assert layer[0] == i
+            assert layer[1] == 1.0
+
+
 @pytest.mark.parametrize(
     "x,y,sx,sy,ox,oy", [
         (20, 20, 1, 1, 0, 0), (50, 20, 1, 1, 0, 0),

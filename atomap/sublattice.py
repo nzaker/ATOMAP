@@ -419,10 +419,11 @@ class Sublattice():
                     "same shape")
         data_list = np.array([x, y, z])
         data_list = np.swapaxes(data_list, 0, 1)
-        line_profile_data = at.project_position_property_sum_planes(
-                data_list,
-                interface_plane,
-                rebin_data=True)
+        projected_positions = at.project_position_property(
+                data_list, interface_plane)
+        layer_list = at.sort_projected_positions_into_layers(
+                projected_positions)
+        line_profile_data = at.combine_projected_positions_layers(layer_list)
         line_profile_data = np.array(line_profile_data)
         position = line_profile_data[:, 0]*scale_xy
         data = line_profile_data[:, 1]*scale_z
