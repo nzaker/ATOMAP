@@ -3,7 +3,7 @@ import hyperspy.api as hs
 from hyperspy import components1d
 from hyperspy.signals import EELSSpectrum
 from atomap.testing_tools import MakeTestData
-from atomap.atom_lattice import Atom_Lattice
+import atomap.atom_lattice as al
 import atomap.tools as to
 
 
@@ -258,7 +258,7 @@ def get_polarization_film_atom_lattice(image_noise=False):
     sublattice0.original_image = image
     sublattice1.original_image = image
     sublattice1._plot_color = 'b'
-    atom_lattice = Atom_Lattice(
+    atom_lattice = al.Atom_Lattice(
             image=image, name='Perovskite film',
             sublattice_list=[sublattice0, sublattice1])
     return atom_lattice
@@ -438,7 +438,7 @@ def get_simple_atom_lattice_two_sublattices(image_noise=False):
     sublattice_2 = test_data_2.sublattice
     sublattice_2._plot_color = 'b'
     image = test_data_3.signal.data
-    atom_lattice = Atom_Lattice(
+    atom_lattice = al.Atom_Lattice(
             image=image, name='Simple Atom Lattice',
             sublattice_list=[sublattice_1, sublattice_2])
     return(atom_lattice)
@@ -547,6 +547,95 @@ def get_dumbbell_heterostructure_signal():
     return signal
 
 
+def get_dumbbell_heterostructure_dumbbell_lattice():
+    """Get a dumbbell heterostructure dumbbell lattice.
+
+    Returns
+    -------
+    dumbbell_lattice : Atomap Dumbbell_Lattice
+
+    Example
+    -------
+    >>> dl = am.dummy_data.get_dumbbell_heterostructure_dumbbell_lattice()
+    >>> dl.plot()
+
+    """
+    test_data = MakeTestData(500, 500)
+    x0, y0 = np.mgrid[10:500:24., 10:250:30.]
+    x1, y1 = np.mgrid[10:500:24., 18:250:30.]
+    x2, y2 = np.mgrid[22:500:24., 25:250:30.]
+    x3, y3 = np.mgrid[22:500:24., 33:250:30.]
+
+    x0, y0 = x0.flatten(), y0.flatten()
+    x1, y1 = x1.flatten(), y1.flatten()
+    x2, y2 = x2.flatten(), y2.flatten()
+    x3, y3 = x3.flatten(), y3.flatten()
+
+    x0 += np.random.random(size=x0.shape) * 0.5
+    y0 += np.random.random(size=y0.shape) * 0.5
+    x1 += np.random.random(size=x1.shape) * 0.5
+    y1 += np.random.random(size=y1.shape) * 0.5
+    x2 += np.random.random(size=x2.shape) * 0.5
+    y2 += np.random.random(size=y2.shape) * 0.5
+    x3 += np.random.random(size=x3.shape) * 0.5
+    y3 += np.random.random(size=y3.shape) * 0.5
+
+    test_data.add_atom_list(x0, y0, sigma_x=3, sigma_y=3, amplitude=40)
+    test_data.add_atom_list(x1, y1, sigma_x=3, sigma_y=3, amplitude=50)
+    test_data.add_atom_list(x2, y2, sigma_x=3, sigma_y=3, amplitude=40)
+    test_data.add_atom_list(x3, y3, sigma_x=3, sigma_y=3, amplitude=50)
+
+    x4, y4 = np.mgrid[10:500:24., 250:500:32.]
+    x5, y5 = np.mgrid[10:500:24., 259:500:32.]
+    x6, y6 = np.mgrid[22:500:24., 266:500:32.]
+    x7, y7 = np.mgrid[22:500:24., 275:500:32.]
+
+    x4, y4 = x4.flatten(), y4.flatten()
+    x5, y5 = x5.flatten(), y5.flatten()
+    x6, y6 = x6.flatten(), y6.flatten()
+    x7, y7 = x7.flatten(), y7.flatten()
+
+    x4 += np.random.random(size=x4.shape) * 0.5
+    y4 += np.random.random(size=y4.shape) * 0.5
+    x5 += np.random.random(size=x5.shape) * 0.5
+    y5 += np.random.random(size=y5.shape) * 0.5
+    x6 += np.random.random(size=x6.shape) * 0.5
+    y6 += np.random.random(size=y6.shape) * 0.5
+    x7 += np.random.random(size=x7.shape) * 0.5
+    y7 += np.random.random(size=y7.shape) * 0.5
+
+    test_data.add_atom_list(x4, y4, sigma_x=3, sigma_y=3, amplitude=70)
+    test_data.add_atom_list(x5, y5, sigma_x=3, sigma_y=3, amplitude=60)
+    test_data.add_atom_list(x6, y6, sigma_x=3, sigma_y=3, amplitude=70)
+    test_data.add_atom_list(x7, y7, sigma_x=3, sigma_y=3, amplitude=60)
+
+    test_data0 = MakeTestData(500, 500)
+    test_data0.add_atom_list(x0, y0, sigma_x=3, sigma_y=3, amplitude=40)
+    test_data0.add_atom_list(x2, y2, sigma_x=3, sigma_y=3, amplitude=40)
+    test_data0.add_atom_list(x4, y4, sigma_x=3, sigma_y=3, amplitude=70)
+    test_data0.add_atom_list(x6, y6, sigma_x=3, sigma_y=3, amplitude=70)
+    sublattice0 = test_data0.sublattice
+    sublattice0._plot_color = 'blue'
+    sublattice0.image = test_data.signal.data
+    sublattice0.original_image = test_data.signal.data
+
+    test_data1 = MakeTestData(500, 500)
+    test_data1.add_atom_list(x1, y1, sigma_x=3, sigma_y=3, amplitude=50)
+    test_data1.add_atom_list(x3, y3, sigma_x=3, sigma_y=3, amplitude=50)
+    test_data1.add_atom_list(x5, y5, sigma_x=3, sigma_y=3, amplitude=60)
+    test_data1.add_atom_list(x7, y7, sigma_x=3, sigma_y=3, amplitude=60)
+    sublattice1 = test_data1.sublattice
+    sublattice1.image = test_data.signal.data
+    sublattice1.original_image = test_data.signal.data
+    sublattice0.find_nearest_neighbors()
+    sublattice1.find_nearest_neighbors()
+
+    dumbbell_lattice = al.Dumbbell_Lattice(
+            image=test_data.signal.data,
+            sublattice_list=[sublattice0, sublattice1])
+    return dumbbell_lattice
+
+
 def _add_fantasite_sublattice_A(test_data):
     xA0, yA0 = np.mgrid[10:495:15, 10:495:30]
     xA0, yA0 = xA0.flatten(), yA0.flatten()
@@ -612,7 +701,7 @@ def _get_fantasite_atom_lattice():
     sublattice_2 = test_data2.sublattice
     sublattice_1._plot_color = 'b'
     image = test_data3.signal.data
-    atom_lattice = Atom_Lattice(
+    atom_lattice = al.Atom_Lattice(
             image=image, name='Fantasite Atom Lattice',
             sublattice_list=[sublattice_1, sublattice_2])
     return(atom_lattice)

@@ -44,6 +44,10 @@ class TestDummyData:
         s = dd.get_dumbbell_heterostructure_signal()
         s.plot()
 
+    def test_get_dumbbell_heterostructure_dumbbell_lattice(self):
+        dl = dd.get_dumbbell_heterostructure_dumbbell_lattice()
+        dl.plot()
+
     def test_get_perovskite110_ABF_signal(self):
         s0 = dd.get_perovskite110_ABF_signal()
         s0.plot()

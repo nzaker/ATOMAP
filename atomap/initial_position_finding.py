@@ -163,6 +163,7 @@ def make_atom_lattice_dumbbell_structure(
     sublattice1.find_nearest_neighbors()
     atom_lattice = Dumbbell_Lattice(
             image=sublattice0.image,
+            original_image=s.data,
             name="Dumbbell structure",
             sublattice_list=[sublattice0, sublattice1])
     return(atom_lattice)

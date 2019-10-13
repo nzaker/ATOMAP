@@ -1,7 +1,7 @@
 """Module containing functions to save and load Atom_Lattice objects."""
 import h5py
 import os
-from atomap.atom_lattice import Atom_Lattice
+import atomap.atom_lattice as al
 from atomap.sublattice import Sublattice
 from atomap.atom_finding_refining import construct_zone_axes_from_sublattice
 import numpy as np
@@ -25,7 +25,18 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
 
     """
     h5f = h5py.File(filename, 'r')
-    atom_lattice = Atom_Lattice()
+
+    if 'atom_lattice_type' in h5f.attrs.keys():
+        atom_lattice_type = h5f.attrs['atom_lattice_type']
+        if 'Atom_Lattice' in atom_lattice_type:
+            atom_lattice = al.Atom_Lattice()
+        elif 'Dumbbell_Lattice' in atom_lattice_type:
+            atom_lattice = al.Dumbbell_Lattice()
+        else:
+            atom_lattice = al.Atom_Lattice()
+    else:
+        atom_lattice = al.Atom_Lattice()
+
     sublattice_list = []
     sublattice_index_list = []
     for group_name in h5f:
@@ -99,11 +110,18 @@ def load_atom_lattice_from_hdf5(filename, construct_zone_axes=True):
 
             sublattice_list.append(sublattice)
 
+        if group_name == 'image_data':
+            atom_lattice.image = h5f[group_name][:]
         if group_name == 'image_data0':
-            atom_lattice.image0 = h5f[group_name][:]
-            atom_lattice.image = atom_lattice.image0
+            atom_lattice.image = h5f[group_name][:]
+
+        if group_name == 'image_extra_data':
+            atom_lattice.image_extra = h5f[group_name][:]
         if group_name == 'image_data1':
-            atom_lattice.image1 = h5f[group_name][:]
+            atom_lattice.image_extra = h5f[group_name][:]
+
+        if group_name == 'original_image_data':
+            atom_lattice.original_image = h5f[group_name][:]
 
     sorted_sublattice_list = []
     if not sublattice_index_list:  # Support for older hdf5 files
@@ -209,18 +227,26 @@ def save_atom_lattice_to_hdf5(atom_lattice, filename, overwrite=False):
         h5f[subgroup_name].attrs[
                 'zone_axis_names_byte'] = zone_axis_names_byte
 
-    h5f.create_dataset(
-        "image_data0",
-        data=atom_lattice.image0,
-        chunks=True,
-        compression='gzip')
-    if hasattr(atom_lattice, 'image1'):
+    if atom_lattice.image is not None:
         h5f.create_dataset(
-            "image_data1",
-            data=atom_lattice.image1,
+            "image_data",
+            data=atom_lattice.image,
+            chunks=True,
+            compression='gzip')
+    if atom_lattice.image_extra is not None:
+        h5f.create_dataset(
+            "image_extra_data",
+            data=atom_lattice.image_extra,
+            chunks=True,
+            compression='gzip')
+    if atom_lattice.original_image is not None:
+        h5f.create_dataset(
+            "original_image_data",
+            data=atom_lattice.original_image,
             chunks=True,
             compression='gzip')
     h5f.attrs['name'] = atom_lattice.name
     h5f.attrs['pixel_separation'] = atom_lattice._pixel_separation
+    h5f.attrs['atom_lattice_type'] = atom_lattice.__class__.__qualname__
 
     h5f.close()

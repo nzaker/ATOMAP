@@ -6,7 +6,6 @@ Examples
 
 .. _dumbbell_example:
 
-
 Dumbbell example
 ================
 
