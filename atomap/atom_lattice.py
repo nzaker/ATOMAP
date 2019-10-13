@@ -376,8 +376,8 @@ class Dumbbell_Lattice(Atom_Lattice):
                     atom_list, image, percent_to_nn=percent_to_nn,
                     mask_radius=mask_radius)
 
-    def plot_dumbbell_distances(self, image=None, cmap=None,
-                                vmin=None, vmax=None):
+    def plot_dumbbell_distance(self, image=None, cmap=None,
+                               vmin=None, vmax=None):
         """Plot the dumbbell distances as points on an image.
 
         Parameters
@@ -395,7 +395,7 @@ class Dumbbell_Lattice(Atom_Lattice):
         Examples
         --------
         >>> dl = am.dummy_data.get_dumbbell_heterostructure_dumbbell_lattice()
-        >>> fig = dl.plot_dumbbell_distances()
+        >>> fig = dl.plot_dumbbell_distance()
 
         """
         if image is None:
@@ -409,8 +409,8 @@ class Dumbbell_Lattice(Atom_Lattice):
                 image, x, y, z, cmap=cmap, vmin=vmin, vmax=vmax)
         return fig
 
-    def plot_dumbbell_angles(self, image=None, cmap=None,
-                             vmin=None, vmax=None):
+    def plot_dumbbell_angle(self, image=None, cmap=None,
+                            vmin=None, vmax=None):
         """Plot the dumbbell angles as points on an image.
 
         Parameters
@@ -428,7 +428,7 @@ class Dumbbell_Lattice(Atom_Lattice):
         Examples
         --------
         >>> dl = am.dummy_data.get_dumbbell_heterostructure_dumbbell_lattice()
-        >>> fig = dl.plot_dumbbell_angles()
+        >>> fig = dl.plot_dumbbell_angle()
 
         """
         if image is None:
