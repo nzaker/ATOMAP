@@ -149,3 +149,32 @@ There are also some specific for the ``Dumbbell_Lattice`` object:
 #. ``dumbbell_y``, the y-position of the dumbbell, which is defined as the mean y-position of the two atoms in the dumbbell
 #. ``dumbbell_distance``, distance between the atoms in each dumbbell
 #. ``dumbbell_angle``, angle between the atoms in each dumbbell, in relation to the horizontal axis
+#. ``get_dumbbell_intensity_difference``, intensity difference between the two atoms in the dumbbell
+
+These can be visualized using various plot functions.
+For ``dumbbell_distance``:
+
+.. code-block:: python
+
+   >>> fig = dumbbell_lattice.plot_dumbbell_distance()
+
+.. image:: images/makedumbbelllattice/dumbbell_distance.png
+    :scale: 50 %
+
+For ``dumbbell_angle``:
+
+.. code-block:: python
+
+   >>> fig = dumbbell_lattice.plot_dumbbell_angle()
+
+.. image:: images/makedumbbelllattice/dumbbell_angle.png
+    :scale: 50 %
+
+For the dumbbell intensity difference:
+
+.. code-block:: python
+
+   >>> fig = dumbbell_lattice.plot_dumbbell_intensity_difference()
+
+.. image:: images/makedumbbelllattice/dumbbell_intensity_difference.png
+    :scale: 50 %

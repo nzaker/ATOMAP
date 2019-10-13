@@ -30,6 +30,7 @@ s_peaks._plot.signal_plot.figure.savefig(os.path.join(my_path, 'feature_separati
 #####
 dumbbell_positions = am.get_atom_positions(s, separation=8)
 dumbbell_lattice = ipf.make_atom_lattice_dumbbell_structure(s, dumbbell_positions, dumbbell_vector)
+dumbbell_lattice.refine_position_gaussian()
 s_ap = dumbbell_lattice.get_sublattice_atom_list_on_image()
 s_ap.plot()
 s_ap._plot.signal_plot.figure.savefig(os.path.join(my_path, 'dumbbell_lattice_initial.png'))
@@ -52,3 +53,15 @@ s_out_of_plane_map._plot.signal_plot.figure.savefig(os.path.join(my_path, 'subla
 s_out_of_plane_line_profile = sublattice0.get_monolayer_distance_line_profile(out_of_plane_direction, atom_plane=interface_plane)
 s_out_of_plane_line_profile.plot()
 s_out_of_plane_line_profile._plot.signal_plot.figure.savefig(os.path.join(my_path, 'sublattice0_out_of_plane_line_profile.png'))
+
+#####
+fig = dumbbell_lattice.plot_dumbbell_distance()
+fig.savefig(os.path.join(my_path, 'dumbbell_distance.png'))
+
+#####
+fig = dumbbell_lattice.plot_dumbbell_angle()
+fig.savefig(os.path.join(my_path, 'dumbbell_angle.png'))
+
+#####
+fig = dumbbell_lattice.plot_dumbbell_intensity_difference()
+fig.savefig(os.path.join(my_path, 'dumbbell_intensity_difference.png'))
