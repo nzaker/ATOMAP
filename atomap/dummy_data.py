@@ -627,6 +627,8 @@ def get_dumbbell_heterostructure_dumbbell_lattice():
     sublattice1 = test_data1.sublattice
     sublattice1.image = test_data.signal.data
     sublattice1.original_image = test_data.signal.data
+    sublattice0.find_nearest_neighbors()
+    sublattice1.find_nearest_neighbors()
 
     dumbbell_lattice = al.Dumbbell_Lattice(
             image=test_data.signal.data,
