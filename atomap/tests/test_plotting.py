@@ -68,3 +68,27 @@ class TestPlotVectorField:
         x_list, y_list = np.arange(100), np.arange(100, 200)
         xr_list, yr_list = np.arange(200, 300), np.arange(300, 400)
         pl.plot_vector_field(x_list, y_list, xr_list, yr_list, save=True)
+
+
+class TestMakeFigureScatterPointOnImage:
+
+    def test_simple(self):
+        image = np.random.random((100, 100))
+        x, y = np.arange(50), np.arange(50)
+        z = np.random.randint(1, 9, size=50)
+        fig = pl._make_figure_scatter_point_on_image(image, x, y, z)
+        fig.show()
+
+    def test_cmap(self):
+        image = np.random.random((100, 100))
+        x, y = np.arange(50), np.arange(50)
+        z = np.random.randint(1, 9, size=50)
+        pl._make_figure_scatter_point_on_image(
+                image, x, y, z, cmap='inferno')
+
+    def test_vmin_vmax(self):
+        image = np.random.random((100, 100))
+        x, y = np.arange(50), np.arange(50)
+        z = np.random.randint(1, 9, size=50)
+        pl._make_figure_scatter_point_on_image(
+                image, x, y, z, vmin=-10, vmax=-2)

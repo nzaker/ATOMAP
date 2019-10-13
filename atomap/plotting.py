@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -435,6 +436,49 @@ def plot_image_map_line_profile_using_interface_plane(
             cax=colorbar_ax,
             orientation='horizontal')
     fig.savefig(figname)
+
+
+def _make_figure_scatter_point_on_image(
+        image, x, y, z, cmap=None, vmin=None, vmax=None):
+    """Make a figure with values overlayed as points on an image.
+
+    Parameters
+    ----------
+    image : array-like
+    x, y, z : list
+        Need to have the same shape.
+    cmap : string
+        Matplotlib colormap name, default 'viridis'
+    vmin, vmax : scalars
+        Min and max values for the scatter points
+
+    Returns
+    -------
+    fig : matplotlib figure
+
+    Example
+    -------
+    >>> import atomap.plotting as apl
+    >>> image = np.random.random((100, 100))
+    >>> x, y = np.arange(50), np.arange(50)
+    >>> z = np.random.randint(1, 9, size=50)
+    >>> fig = apl._make_figure_scatter_point_on_image(image, x, y, z)
+
+    """
+    if cmap is None:
+        cmap = 'viridis'
+    if vmin is None:
+        vmin = z.min()
+    if vmax is None:
+        vmax = z.max()
+    fig, ax = plt.subplots(figsize=(7, 6))
+    ax.imshow(image)
+    ax.scatter(x, y, c=z, cmap=cmap, vmin=vmin, vmax=vmax)
+    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    sm = mpl.cm.ScalarMappable(norm=norm, cmap=cmap)
+    fig.colorbar(sm, ax=ax)
+    fig.tight_layout()
+    return fig
 
 
 def _make_subplot_line_profile(
