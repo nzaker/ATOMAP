@@ -246,6 +246,25 @@ class TestCombineProjectedPositionsLayers:
         for layer, i in zip(combined_layer_list, range(0, 100, 9)):
             assert layer[0] == i
             assert layer[1] == 1.0
+            assert layer[2] == 0.0
+
+    def test_std(self):
+        n = 10
+        position_list = []
+        property_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(n) * i
+            position_list.extend(positions)
+            property_list.extend(np.ones(int(n/2)))
+            property_list.extend(np.ones(int(n/2))*2)
+
+        data_list = np.stack((position_list, property_list), axis=1)
+        layer_list = to.sort_projected_positions_into_layers(data_list)
+        combined_layer_list = to.combine_projected_positions_layers(layer_list)
+        for layer, i in zip(combined_layer_list, range(0, 100, 9)):
+            assert layer[0] == i
+            assert layer[1] == 1.5
+            assert layer[2] == 0.5
 
 
 @pytest.mark.parametrize(

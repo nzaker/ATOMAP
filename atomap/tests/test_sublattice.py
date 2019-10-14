@@ -925,6 +925,13 @@ class TestGetPropertyLineProfile:
         assert_allclose(s.isig[0.:].data.all(), 1, rtol=1e-07)
         assert len(s.metadata['Markers'].keys()) == 9
 
+        lpd = s.metadata.line_profile_data
+        x_list, y_list, std_list = lpd.x_list, lpd.y_list, lpd.std_list
+        assert len(x_list) == 9
+        assert len(y_list) == 9
+        assert len(std_list) == 9
+        assert std_list == approx(0.)
+
     def test_vertical_interface_vertical_projection_plane(self):
         sublattice = self.sublatticeV
         property_list = self.property_list

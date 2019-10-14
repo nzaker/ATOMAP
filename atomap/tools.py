@@ -317,20 +317,26 @@ def sort_projected_positions_into_layers(projected_positions, margin=0.5):
 
 
 def combine_projected_positions_layers(layer_list):
-    """
-    rebin_data : bool, optional
-        If True, will attempt to combine the data points
-        which belong to the same atomic plane.
-        The points which belong to the same plane will be
-        averaged into a single value for each atomic plane.
-        This will give the property value as a function distance
-        to the interface_plane.
-    """
+    """Get the mean position of a projected property, and its position.
 
+    Will also include the standard deviation in of the positions in the
+    layers.
+
+    Parameters
+    ----------
+    layer_list : list of lists
+
+    Returns
+    -------
+    combined_layer_list : list of lists
+        In the form [[position, property, standard deviation], ...].
+
+    """
     combined_layer_list = []
     for layer in layer_list:
         temp_layer = np.array(layer)
         combined_layer = temp_layer.mean(axis=0).tolist()
+        combined_layer.append(temp_layer[:, 1].std())
         combined_layer_list.append(combined_layer)
     return combined_layer_list
 

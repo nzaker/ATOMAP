@@ -367,6 +367,27 @@ On the x-axis, negative values are to the left of the interface and positive val
 It then sorts the atoms after distance from interface.
 The atoms with the same distance from the interface belong to the same plane, parallel to the interface, and the value for a property (such as ellipticity) for these atoms are averaged.
 
+The raw data can be accessed in the signal's metadata:
+
+.. code-block:: python
+
+    >>> position = s_elli_line.metadata.line_profile_data.x_list
+    >>> ellipticity = s_elli_line.metadata.line_profile_data.y_list
+    >>> standard_deviation = s_elli_line.metadata.line_profile_data.std_list
+
+And plotted using matplotlib, with the standard deviation shown in red.
+
+.. code-block:: python
+
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> _ = ax.errorbar(position, ellipticity, yerr=standard_deviation, ecolor='red')
+    >>> fig.show()
+
+.. image:: images/plotting_tutorial/line_profile_errorbar.png
+    :scale: 50 %
+    :align: center
+
 There are also functions to make such line profiles for monolayer separation (:py:meth:`~atomap.sublattice.Sublattice.get_monolayer_distance_line_profile`), and "distance difference" (:py:meth:`~atomap.sublattice.Sublattice.get_atom_distance_difference_line_profile`).
 These two properties are "directional", which means that the zone axis for the distance measurement must be given in addition to the "interface" plane.
 

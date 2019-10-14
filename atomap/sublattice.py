@@ -427,7 +427,8 @@ class Sublattice():
         line_profile_data = np.array(line_profile_data)
         position = line_profile_data[:, 0]*scale_xy
         data = line_profile_data[:, 1]*scale_z
-        return(np.array([position, data]))
+        std = line_profile_data[:, 2]*scale_z
+        return(np.array([position, data, std]))
 
     def _get_regular_grid_from_unregular_property(
             self,
@@ -556,7 +557,11 @@ class Sublattice():
         non-linear axes.
 
         The raw non-interpolated line profile data is stored in the
-        output signal metadata: signal.metadata.line_profile_data.
+        output signal metadata: signal.metadata.line_profile_data,
+        including the standard deviation of the values from each layer.
+        The standard deviation is calculated from the variance in property
+        values in each layer. So if each property in a layer has exactly
+        the same value, the standard deviation will be 0.
 
         Parameters
         ----------
@@ -600,6 +605,7 @@ class Sublattice():
 
         >>> x_list = s.metadata.line_profile_data.x_list
         >>> y_list = s.metadata.line_profile_data.y_list
+        >>> std_list = s.metadata.line_profile_data.std_list
 
         """
         xA, yA, zA = np.array(x_list), np.array(y_list), np.array(z_list)
@@ -637,9 +643,11 @@ class Sublattice():
         else:
             x_profile_list = line_profile_data_list[0]
         y_profile_list = line_profile_data_list[1]
+        std_profile_list = line_profile_data_list[2]
         signal.metadata.add_node('line_profile_data')
         signal.metadata.line_profile_data.x_list = x_profile_list
         signal.metadata.line_profile_data.y_list = y_profile_list
+        signal.metadata.line_profile_data.std_list = std_profile_list
         if add_markers:
             marker_list = []
             for x, y in zip(x_profile_list, y_profile_list):
@@ -1764,6 +1772,11 @@ class Sublattice():
         This gives the ellipticity as a function of the distance from a
         given atom plane (interface).
 
+        The raw data can be accessed in
+        s.metadata.line_profile_data, both the position (x_list),
+        ellipticity (y_list), and the standard deviation of the ellipticity
+        for each layer (std_list).
+
         Parameters
         ----------
         atom_plane : Atomap AtomPlane object
@@ -1789,6 +1802,12 @@ class Sublattice():
         >>> zone = sublattice.zones_axis_average_distances[1]
         >>> plane = sublattice.atom_planes_by_zone_vector[zone][4]
         >>> s_elli_line = sublattice.get_ellipticity_line_profile(plane)
+
+        Getting the raw line profile data
+
+        >>> position = s_elli_line.metadata.line_profile_data.x_list
+        >>> ellipticity = s_elli_line.metadata.line_profile_data.y_list
+        >>> std = s_elli_line.metadata.line_profile_data.std_list
 
         """
         signal = self._get_property_line_profile(
@@ -1865,6 +1884,11 @@ class Sublattice():
         monolayer distance, check
         sublattice.get_monolayer_distance_list_from_zone_vector()
 
+        The raw data can be accessed in
+        s.metadata.line_profile_data, both the position (x_list),
+        distance (y_list), and the standard deviation of the distance
+        for each layer (std_list).
+
         Parameters
         ----------
 
@@ -1889,14 +1913,20 @@ class Sublattice():
         Example
         -------
         >>> from numpy.random import random
-        >>> import atomap.api as am
         >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> for atom in sublattice.atom_list:
         ...     atom.sigma_x, atom.sigma_y = 0.5*random()+1, 0.5*random()+1
         >>> sublattice.construct_zone_axes()
         >>> zone = sublattice.zones_axis_average_distances[0]
         >>> plane = sublattice.atom_planes_by_zone_vector[zone][0]
-        >>> s = sublattice.get_monolayer_distance_line_profile(zone,plane)
+        >>> s = sublattice.get_monolayer_distance_line_profile(zone, plane)
+
+        Getting the raw line profile data
+
+        >>> position = s.metadata.line_profile_data.x_list
+        >>> distance = s.metadata.line_profile_data.y_list
+        >>> std = s.metadata.line_profile_data.std_list
+
         """
         self._check_if_zone_axis_list()
         data_list = self.get_monolayer_distance_list_from_zone_vector(
