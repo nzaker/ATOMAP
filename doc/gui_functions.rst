@@ -16,6 +16,7 @@ One way of separating them is using :py:func:`~atomap.initial_position_finding.s
 .. code-block:: python
 
    >>> %matplotlib nbagg # doctest: +SKIP
+   >>> import atomap.api as am
    >>> s = am.dummy_data.get_precipitate_signal()
    >>> atom_positions = am.get_atom_positions(s, 8)
    >>> atom_positions_selected = am.select_atoms_with_gui(s, atom_positions)
