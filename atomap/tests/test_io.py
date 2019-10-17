@@ -1,8 +1,8 @@
-import os
+from os.path import join as pjoin
 import tempfile
 import pytest
 import numpy as np
-from atomap.atom_lattice import Atom_Lattice
+import atomap.atom_lattice as al
 from atomap.sublattice import Sublattice
 from atomap.io import load_atom_lattice_from_hdf5
 
@@ -20,17 +20,19 @@ class TestAtomLatticeInputOutput:
         sublattice1 = Sublattice(
                 atom_position_list=peaks1,
                 image=image_data)
-        self.atom_lattice = Atom_Lattice()
+        self.atom_lattice = al.Atom_Lattice()
         self.atom_lattice.sublattice_list.extend([sublattice0, sublattice1])
         self.atom_lattice.image0 = image_data
+        self.tmpdir = tempfile.TemporaryDirectory()
+
+    def teardown_method(self):
+        self.tmpdir.cleanup()
 
     def test_save_load_atom_lattice_simple(self):
-        tmpdir = tempfile.TemporaryDirectory()
-        save_path = os.path.join(tmpdir.name, "test_atomic_lattice_save.hdf5")
+        save_path = pjoin(self.tmpdir.name, "test_atomic_lattice_save.hdf5")
         self.atom_lattice.save(
                 filename=save_path, overwrite=True)
         load_atom_lattice_from_hdf5(save_path, construct_zone_axes=False)
-        tmpdir.cleanup()
 
     def test_save_load_atom_lattice_check_metadata_values(self):
         sublattice0 = self.atom_lattice.sublattice_list[0]
@@ -42,8 +44,7 @@ class TestAtomLatticeInputOutput:
         assert len(sublattice0.atom_list) == 10
         assert len(sublattice1.atom_list) == 13
 
-        tmpdir = tempfile.TemporaryDirectory()
-        save_path = os.path.join(tmpdir.name, "test_atomic_lattice_save.hdf5")
+        save_path = pjoin(self.tmpdir.name, "test_atomic_lattice_save.hdf5")
 
         self.atom_lattice.save(
                 filename=save_path, overwrite=True)
@@ -58,8 +59,6 @@ class TestAtomLatticeInputOutput:
         assert sl1.name == "test 1"
         assert sl0._plot_color == "blue"
         assert sl1._plot_color == "green"
-
-        tmpdir.cleanup()
 
     def test_save_load_atom_lattice_atom_values(self):
         image_data = np.arange(10000).reshape(100, 100)
@@ -88,12 +87,11 @@ class TestAtomLatticeInputOutput:
             atom.sigma_y = atom1_sigma_y[i]
             atom.rotation = atom1_rot[i]
 
-        atom_lattice = Atom_Lattice()
+        atom_lattice = al.Atom_Lattice()
         atom_lattice.sublattice_list.extend([sublattice0, sublattice1])
         atom_lattice.image0 = image_data
 
-        tmpdir = tempfile.TemporaryDirectory()
-        save_path = os.path.join(tmpdir.name, "atomic_lattice.hdf5")
+        save_path = pjoin(self.tmpdir.name, "atomic_lattice.hdf5")
 
         atom_lattice.save(filename=save_path, overwrite=True)
         atom_lattice_load = load_atom_lattice_from_hdf5(
@@ -113,11 +111,45 @@ class TestAtomLatticeInputOutput:
         assert (sl1.rotation == atom1_rot).all()
 
     def test_save_atom_lattice_already_exist(self):
-        tmpdir = tempfile.TemporaryDirectory()
-        save_path = os.path.join(tmpdir.name, "test_atomic_lattice_io.hdf5")
+        save_path = pjoin(self.tmpdir.name, "test_atomic_lattice_io.hdf5")
         self.atom_lattice.save(
                 filename=save_path, overwrite=True)
         with pytest.raises(FileExistsError):
             self.atom_lattice.save(
                     filename=save_path)
-        tmpdir.cleanup()
+
+    def test_save_load_atom_lattice_type(self):
+        save_path = pjoin(self.tmpdir.name, "test_atomic_lattice_save.hdf5")
+        self.atom_lattice.save(
+                filename=save_path, overwrite=True)
+        atom_lattice_load = load_atom_lattice_from_hdf5(
+                save_path, construct_zone_axes=False)
+        al0_qualname = self.atom_lattice.__class__.__qualname__
+        al1_qualname = atom_lattice_load.__class__.__qualname__
+        assert al0_qualname == al1_qualname
+
+
+class TestDumbbellLatticeType:
+
+    def setup_method(self):
+        self.tmpdir = tempfile.TemporaryDirectory()
+
+    def teardown_method(self):
+        self.tmpdir.cleanup()
+
+    def test_load_simple(self):
+        image_data = np.arange(10000).reshape(100, 100)
+        peaks = np.arange(20).reshape(10, 2)
+        sublattice = Sublattice(atom_position_list=peaks, image=image_data)
+        dumbbell_lattice = al.Dumbbell_Lattice(
+                image=image_data, sublattice_list=[sublattice, sublattice])
+
+        save_path = pjoin(self.tmpdir.name, "test_dumbbell_lattice_save.hdf5")
+        dumbbell_lattice.save(filename=save_path, overwrite=True)
+        dumbbell_lattice_load = load_atom_lattice_from_hdf5(
+                save_path, construct_zone_axes=False)
+
+        dl0_qualname = dumbbell_lattice.__class__.__qualname__
+        dl1_qualname = dumbbell_lattice_load.__class__.__qualname__
+        assert dl0_qualname == 'Dumbbell_Lattice'
+        assert dl0_qualname == dl1_qualname

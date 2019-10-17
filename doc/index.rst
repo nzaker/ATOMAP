@@ -15,15 +15,6 @@ This release includes:
 Another optimization for the :ref:`integrate` functionality is in the pipeline, with a `merge request <https://gitlab.com/atomap/atomap/merge_requests/48>`_ from Thomas Aarholt.
 
 
-*2018-11-26: Atomap 0.1.3 released!*
-
-Major features in this release includes:
-
-* A GUI function for adding and removing atoms, which makes it easier to set up the initial atom positions. See :ref:`atom_adder_gui` for more information.
-* A GUI function for toggling if atom positions should be refined or not, see :ref:`toggle_atom_refine`.
-* Better handling of hexagonal structures, by adding a adding a ``vector_fraction`` parameter to ``find_missing_atoms_from_zone_vector``, thanks to Eoghan O'Connell for the suggestion!
-* The addition of ``mask_radius`` to the refine functions, which makes it easier to work with non-perodic atom positions, for example :ref:`single_atom_sublattice`.
-
 
 About Atomap
 ------------
@@ -68,10 +59,13 @@ Contents on this webpage
    start_atomap
    finding_atom_lattices
    analysing_atom_lattices
+   dumbbell_lattice
+   several_phases
    gui_functions
    automation
+   examples
+   quantification
    nanoparticle_example
-   absolute_integrator
    make_testdata
    making_nice_figures
    various_tools
@@ -84,6 +78,16 @@ Contents on this webpage
 
 Old news
 --------
+
+*2018-11-26: Atomap 0.1.3 released!*
+
+Major features in this release includes:
+
+* A GUI function for adding and removing atoms, which makes it easier to set up the initial atom positions. See :ref:`atom_adder_gui` for more information.
+* A GUI function for toggling if atom positions should be refined or not, see :ref:`toggle_atom_refine`.
+* Better handling of hexagonal structures, by adding a adding a ``vector_fraction`` parameter to ``find_missing_atoms_from_zone_vector``, thanks to Eoghan O'Connell for the suggestion!
+* The addition of ``mask_radius`` to the refine functions, which makes it easier to work with non-perodic atom positions, for example :ref:`single_atom_sublattice`.
+
 
 *2018-06-13: Atomap 0.1.2 released!*
 

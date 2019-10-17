@@ -332,3 +332,38 @@ def get_fit_miss_array(match_list):
         fit_miss.append([x, y, d])
     fit_miss = np.array(fit_miss)
     return fit_miss
+
+
+class _DummyEvent:
+    def __init__(self):
+        self.key = None
+
+
+def _do_move_press_release_event(fig, poly, x, y):
+    ax = fig.axes[0]
+    xd, yd = fig.axes[0].transData.transform((x, y))
+    move_event = _DummyEvent()
+    move_event.x, move_event.y = xd, yd
+    move_event.xdata, move_event.ydata = x, y
+    move_event.inaxes = ax
+    poly.onmove(move_event)
+
+    press_event = _DummyEvent()
+    press_event.x, press_event.y = xd, yd
+    press_event.xdata, press_event.ydata = x, y
+    press_event.inaxes = ax
+    press_event.button = 1
+    poly.press(press_event)
+
+    release_event = _DummyEvent()
+    release_event.x, release_event.y = xd, yd
+    release_event.xdata, release_event.ydata = x, y
+    release_event.inaxes = ax
+    release_event.button = 1
+
+    poly.release(release_event)
+
+
+def _do_several_move_press_release_event(fig, poly, position_list):
+    for x, y in position_list:
+        _do_move_press_release_event(fig, poly, x, y)

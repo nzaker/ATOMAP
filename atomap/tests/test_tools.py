@@ -92,6 +92,20 @@ class TestFingerprinter:
         assert len(bool_list) == clusters
 
 
+class TestAddZeroPositionToDataList:
+
+    def test_simple(self):
+        x_array, y_array = np.arange(10), np.arange(10, 20)
+        z_array = np.arange(30, 40)
+        x_array_extra, y_array_extra = np.arange(5), np.arange(5)
+        x_new, y_new, z_new = to._add_zero_position_to_data_list(
+                x_array, y_array, z_array, x_array_extra, y_array_extra)
+        assert len(x_array) + len(x_array_extra) == len(x_new)
+        assert len(y_array) + len(y_array_extra) == len(y_new)
+        assert len(z_array) + len(x_array_extra) == len(z_new)
+        assert len(x_new) == len(y_new) == len(z_new)
+
+
 class TestRemoveAtomsFromImageUsing2dGaussian:
 
     def setup_method(self):
@@ -115,6 +129,142 @@ class TestRemoveAtomsFromImageUsing2dGaussian:
         with pytest.raises(ValueError):
             remove_atoms_from_image_using_2d_gaussian(sublattice.image,
                                                       sublattice)
+
+
+class TestFindAverageDistanceBetweenAtoms:
+
+    def test_simple(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(10) * i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        input_data_list = np.stack((position_list, property_list), axis=1)
+
+        output = to.find_average_distance_between_atoms(input_data_list)
+        first_peak, monolayer_sep, mean_separation = output
+
+        assert first_peak == 9.
+        assert len(monolayer_sep) == 11
+        assert (monolayer_sep.flatten() == 9.).all()
+        assert mean_separation == 9.
+
+    def test_crop(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(10) * i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        input_data_list = np.stack((position_list, property_list), axis=1)
+
+        output = to.find_average_distance_between_atoms(
+                input_data_list, crop_start=10, crop_end=10)
+        first_peak, monolayer_sep, mean_separation = output
+
+        assert first_peak == 9.
+        assert len(monolayer_sep) == 9
+        assert (monolayer_sep.flatten() == 9.).all()
+        assert mean_separation == 9.
+
+    def test_with_random(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.random.random(size=1000) + i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        input_data_list = np.stack((position_list, property_list), axis=1)
+
+        output = to.find_average_distance_between_atoms(input_data_list)
+        first_peak, monolayer_sep, mean_separation = output
+
+        assert approx(first_peak, abs=0.1) == 8.
+        assert len(monolayer_sep) == 11
+        assert monolayer_sep == approx(8, abs=0.1)
+        assert mean_separation == approx(8, abs=0.1)
+
+
+class TestSortPositionsIntoLayers:
+
+    def test_simple(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(10) * i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        data_list = np.stack((position_list, property_list), axis=1)
+        layer_list = to.sort_positions_into_layers(data_list, 4.5)
+        assert len(layer_list) == 12
+        for layer, i in zip(layer_list, range(0, 100, 9)):
+            assert len(layer) == 10
+            assert np.array(layer)[:, 0] == approx(i)
+            assert np.array(layer)[:, 1] == approx(1.0)
+
+
+class TestSortProjectedPositionsIntoLayers:
+
+    def test_simple(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(10) * i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        data_list = np.stack((position_list, property_list), axis=1)
+        layer_list = to.sort_projected_positions_into_layers(
+                data_list)
+        assert len(layer_list) == 12
+        for layer, i in zip(layer_list, range(0, 100, 9)):
+            assert len(layer) == 10
+            assert np.array(layer)[:, 0] == approx(i)
+            assert np.array(layer)[:, 1] == approx(1.0)
+
+
+class TestCombineProjectedPositionsLayers:
+
+    def test_simple(self):
+        position_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(10) * i
+            position_list.extend(positions)
+
+        position_list = np.array(position_list)
+        property_list = np.ones(len(position_list))
+        data_list = np.stack((position_list, property_list), axis=1)
+        layer_list = to.sort_projected_positions_into_layers(
+                data_list)
+        combined_layer_list = to.combine_projected_positions_layers(layer_list)
+        assert len(layer_list) == 12
+        for layer, i in zip(combined_layer_list, range(0, 100, 9)):
+            assert layer[0] == i
+            assert layer[1] == 1.0
+            assert layer[2] == 0.0
+
+    def test_std(self):
+        n = 10
+        position_list = []
+        property_list = []
+        for i in range(0, 100, 9):
+            positions = np.ones(n) * i
+            position_list.extend(positions)
+            property_list.extend(np.ones(int(n/2)))
+            property_list.extend(np.ones(int(n/2))*2)
+
+        data_list = np.stack((position_list, property_list), axis=1)
+        layer_list = to.sort_projected_positions_into_layers(data_list)
+        combined_layer_list = to.combine_projected_positions_layers(layer_list)
+        for layer, i in zip(combined_layer_list, range(0, 100, 9)):
+            assert layer[0] == i
+            assert layer[1] == 1.5
+            assert layer[2] == 0.5
 
 
 @pytest.mark.parametrize(
@@ -192,6 +342,49 @@ class TestRotatePointsAndSignal:
             s_rot, x_rot, y_rot, 180)
         np.testing.assert_allclose(self.x, x_rot)
         np.testing.assert_allclose(self.y, y_rot)
+
+
+class TestRotatePointsAroundPosition:
+
+    def test_degrees_centre_0(self):
+        xc, yc = 0, 0
+        x, y = [5, ], [0, ]
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, 90)
+        assert len(x_rot)
+        assert len(y_rot)
+        assert approx(x_rot[0]) == 0
+        assert approx(y_rot[0]) == -5
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, -90)
+        assert approx(x_rot[0]) == 0
+        assert approx(y_rot[0]) == 5
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, 180)
+        assert approx(x_rot[0]) == -5
+        assert approx(y_rot[0]) == 0
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, -180)
+        assert approx(x_rot[0]) == -5
+        assert approx(y_rot[0]) == 0
+
+    def test_degrees_centre_10(self):
+        xc, yc = 10, 10
+        x, y = [5, ], [0, ]
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, 90)
+        assert approx(x_rot[0]) == 0
+        assert approx(y_rot[0]) == 15
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, -90)
+        assert approx(x_rot[0]) == 20
+        assert approx(y_rot[0]) == 5
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, 180)
+        assert approx(x_rot[0]) == 15
+        assert approx(y_rot[0]) == 20
+        x_rot, y_rot = to._rotate_points_around_position(xc, yc, x, y, -180)
+        assert approx(x_rot[0]) == 15
+        assert approx(y_rot[0]) == 20
+
+    def test_many_positions(self):
+        x, y = np.arange(100, 300), np.arange(400, 600)
+        x_rot, y_rot = to._rotate_points_around_position(5, 5, x, y, 90)
+        assert len(x) == len(x_rot)
+        assert len(y) == len(y_rot)
 
 
 class TestFliplrPointsAroundSignalCentre:
@@ -332,3 +525,49 @@ class TestIntegrate:
         assert (i_points0 == i_points1).all()
         assert (i_record0.data == i_record1.data).all()
         assert (p_record0 == p_record1).all()
+
+
+class TestGetAtomSelectionFromVerts:
+
+    def test_simple(self):
+        pos = [[10, 10], [15, 15]]
+        verts = [[0, 0], [0, 20], [20, 20], [20, 0]]
+        pos_selected = to._get_atom_selection_from_verts(pos, verts)
+        assert len(pos_selected) == 2
+        assert (pos_selected == [[10, 10], [15, 15]]).all()
+
+    def test_numpy_input(self):
+        pos = np.array([[10, 10], [15, 15]])
+        verts = [[0, 0], [0, 20], [20, 20], [20, 0]]
+        pos_selected = to._get_atom_selection_from_verts(pos, verts)
+        assert len(pos_selected) == 2
+        assert (pos_selected == [[10, 10], [15, 15]]).all()
+
+    def test_inside_outside(self):
+        pos = [[10, 10], [25, 10]]
+        verts = [[0, 0], [0, 20], [20, 20], [20, 0]]
+        pos_selected = to._get_atom_selection_from_verts(pos, verts)
+        assert len(pos_selected) == 1
+        assert (pos_selected == [10, 10]).all()
+
+    def test_all_outside(self):
+        pos = [[10, 25], [25, 10]]
+        verts = [[0, 0], [0, 20], [20, 20], [20, 0]]
+        pos_selected = to._get_atom_selection_from_verts(pos, verts)
+        assert len(pos_selected) == 0
+
+    def test_too_few_verts(self):
+        pos = [[10, 25], [25, 10]]
+        verts = [[0, 0], [0, 20]]
+        with pytest.raises(ValueError):
+            to._get_atom_selection_from_verts(pos, verts)
+
+    def test_many_positions(self):
+        pos = np.random.randint(10, 30, size=(1000, 2))
+        verts = [[15, 15], [15, 25], [25, 25], [25, 15]]
+        pos_selected = to._get_atom_selection_from_verts(pos, verts)
+        pos_x, pos_y = pos_selected[:, 0], pos_selected[:, 1]
+        assert len(pos_x[pos_x < 15]) == 0
+        assert len(pos_x[pos_x > 25]) == 0
+        assert len(pos_y[pos_y < 15]) == 0
+        assert len(pos_y[pos_y > 25]) == 0

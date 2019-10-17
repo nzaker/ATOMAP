@@ -40,6 +40,14 @@ class TestDummyData:
         s = dd.get_dumbbell_signal()
         s.plot()
 
+    def test_get_dumbbell_heterostructure_signal(self):
+        s = dd.get_dumbbell_heterostructure_signal()
+        s.plot()
+
+    def test_get_dumbbell_heterostructure_dumbbell_lattice(self):
+        dl = dd.get_dumbbell_heterostructure_dumbbell_lattice()
+        dl.plot()
+
     def test_get_perovskite110_ABF_signal(self):
         s0 = dd.get_perovskite110_ABF_signal()
         s0.plot()
@@ -59,6 +67,10 @@ class TestDummyData:
     def test_single_atom_sublattice(self):
         sublattice = dd.get_single_atom_sublattice()
         sublattice.plot()
+
+    def test_get_atom_counting_signal(self):
+        signal = dd.get_atom_counting_signal()
+        signal.plot()
 
 
 class TestDummyDataFantasite:
@@ -137,6 +149,11 @@ class TestDummyDataEELSMap:
         assert len(s.axes_manager.shape) == 3
         assert hasattr(s, 'plot')
         assert not (s_no_noise.data == s.data).all()
+
+    def test_get_precipitate_signal(self):
+        s = dd.get_precipitate_signal()
+        assert len(s.axes_manager.shape) == 2
+        assert hasattr(s, 'plot')
 
 
 class TestGetSimpleCubicWithVacanciesSublattice:

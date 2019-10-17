@@ -1,11 +1,10 @@
 from pytest import approx
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
 import atomap.initial_position_finding as ipf
-import atomap.tools as at
 from atomap.sublattice import Sublattice
 import atomap.testing_tools as tt
+import atomap.gui_classes as agc
 
 
 class TestAddAtomAdderRemoving:
@@ -126,72 +125,65 @@ class TestToggleAtomRefinePosition:
         assert atom1.pixel_y != (y_pos[1] + delta_pos)
 
 
-class TestDrawCursor:
+class TestSelectAtomsWithGui:
 
-    def test_simple(self):
-        fig0, ax0 = plt.subplots()
-        ax0.imshow(np.arange(100).reshape(10, 10))
-        fig0.canvas.draw()
-        fig1, ax1 = plt.subplots()
-        ax1.imshow(np.arange(100).reshape(10, 10))
-        fig1.canvas.draw()
-        assert fig0.canvas.tostring_rgb() == fig1.canvas.tostring_rgb()
+    def test_select_one_atom(self):
+        image = np.random.random((200, 200))
+        atom_positions = [[10, 20], [50, 50]]
+        atom_selector = agc.GetAtomSelection(image, atom_positions)
+        fig = atom_selector.fig
+        poly = atom_selector.poly
+        position_list = [[5, 5], [5, 25], [25, 25], [25, 5], [5, 5]]
+        tt._do_several_move_press_release_event(fig, poly, position_list)
+        atom_positions_selected = atom_selector.atom_positions_selected
+        assert len(atom_positions_selected) == 1
+        assert atom_positions_selected[0] == [10, 20]
 
-        fig2, ax2 = plt.subplots()
-        ax2.imshow(np.arange(100).reshape(10, 10))
-        at._draw_cursor(ax2, 5, 8)
-        fig2.canvas.draw()
-        assert fig0.canvas.tostring_rgb() != fig2.canvas.tostring_rgb()
+    def test_select_one_atom_invert_selection(self):
+        image = np.random.random((200, 200))
+        atom_positions = [[10, 20], [50, 50]]
+        atom_selector = agc.GetAtomSelection(
+                image, atom_positions, invert_selection=True)
+        fig = atom_selector.fig
+        poly = atom_selector.poly
+        position_list = [[5, 5], [5, 25], [25, 25], [25, 5], [5, 5]]
+        tt._do_several_move_press_release_event(fig, poly, position_list)
+        atom_positions_selected = atom_selector.atom_positions_selected
+        assert len(atom_positions_selected) == 1
+        assert atom_positions_selected[0] == [50, 50]
 
-    def test_draw_outside(self):
-        fig0, ax0 = plt.subplots()
-        ax0.imshow(np.arange(100).reshape(10, 10))
-        fig0.canvas.draw()
-        fig1, ax1 = plt.subplots()
-        ax1.imshow(np.arange(100).reshape(10, 10))
-        at._draw_cursor(ax1, -1, 8)
-        fig1.canvas.draw()
-        assert fig0.canvas.tostring_rgb() != fig1.canvas.tostring_rgb()
+    def test_select_no_atom(self):
+        image = np.random.random((200, 200))
+        atom_positions = [[10, 20], [50, 50]]
+        atom_selector = agc.GetAtomSelection(image, atom_positions)
+        fig = atom_selector.fig
+        poly = atom_selector.poly
+        position_list = [[5, 5], [5, 8], [8, 8], [8, 5], [5, 5]]
+        tt._do_several_move_press_release_event(fig, poly, position_list)
+        atom_positions_selected = atom_selector.atom_positions_selected
+        assert len(atom_positions_selected) == 0
 
+    def test_non_interactive(self):
+        image = np.random.random((200, 200))
+        atom_positions = [[10, 20], [50, 50]]
+        verts = [(5, 5), (5, 30), (20, 30), (20, 5)]
+        atom_positions_selected = ipf.select_atoms_with_gui(
+                image, atom_positions, verts=verts)
+        assert len(atom_positions_selected) == 1
+        assert (atom_positions_selected[0] == [10, 20]).all()
 
-class TestUpdateFrame:
+        verts = [(5, 5), (5, 60), (60, 60), (60, 5)]
+        atom_positions_selected = ipf.select_atoms_with_gui(
+                image, atom_positions, verts=verts)
+        assert len(atom_positions_selected) == 2
+        assert (atom_positions_selected[0] == [10, 20]).all()
+        assert (atom_positions_selected[1] == [50, 50]).all()
 
-    def test_simple(self):
-        fig, ax = plt.subplots()
-        ax.imshow(np.arange(100).reshape(10, 10))
-        at._draw_cursor(ax, 5, 8)
-        frames = [[5, 9, False], [2, 2, True]]
-        fargs = [fig, ]
-        FuncAnimation(fig, at._update_frame, frames=frames,
-                      fargs=fargs, interval=200, repeat=False)
-        plt.close(fig)
-
-
-class TestGenerateFramesPositionList:
-
-    def test_simple(self):
-        position_list = [[10, 10], [30, 20]]
-        frames = at._generate_frames_position_list(position_list, num=10)
-        assert len(frames) == 12
-        assert frames[0][0:2] == position_list[0]
-        assert frames[-1][0:2] == position_list[-1]
-        assert frames[0][-1] is True
-        assert frames[-1][-1] is True
-        for frame in frames[1:-1]:
-            assert frame[-1] is False
-
-    def test_num(self):
-        position_list = [[10, 10], [30, 20]]
-        frames = at._generate_frames_position_list(position_list, num=16)
-        assert len(frames) == 18
-        assert frames[0][0:2] == position_list[0]
-        assert frames[-1][0:2] == position_list[-1]
-        assert frames[0][-1] is True
-        assert frames[-1][-1] is True
-        for frame in frames[1:-1]:
-            assert frame[-1] is False
-
-    def test_longer(self):
-        position_list = [[10, 10], [30, 20], [50, 30], [20, 54], [13, 89]]
-        frames = at._generate_frames_position_list(position_list, num=10)
-        assert len(frames) == 45
+    def test_non_interactive_invert_selection(self):
+        image = np.random.random((200, 200))
+        atom_positions = [[10, 20], [50, 50]]
+        verts = [(5, 5), (5, 30), (20, 30), (20, 5)]
+        atom_positions_selected = ipf.select_atoms_with_gui(
+                image, atom_positions, verts=verts, invert_selection=True)
+        assert len(atom_positions_selected) == 1
+        assert (atom_positions_selected[0] == [50, 50]).all()

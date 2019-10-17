@@ -4,7 +4,7 @@ from atomap.main import make_atom_lattice_from_image
 from atomap import process_parameters
 from atomap.io import load_atom_lattice_from_hdf5
 from atomap.initial_position_finding import (
-        add_atoms_with_gui, )
+        add_atoms_with_gui, select_atoms_with_gui)
 
 
 from atomap.sublattice import Sublattice

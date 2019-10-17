@@ -4,7 +4,7 @@ matplotlib.use('Qt5Agg') # noqa
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import atomap.api as am
-import atomap.tools as at
+import atomap.animation_plotting_tools as apt
 
 my_path = os.path.join(os.path.dirname(__file__), 'togglerefineposition')
 if not os.path.exists(my_path):
@@ -26,12 +26,12 @@ position_list = [
         [50, 30],
         [64, -20],
         ]
-frames = at._generate_frames_position_list(position_list, num=10)
+frames = apt._generate_frames_position_list(position_list, num=10)
 
 fig.dpi = 100
 fargs = [fig, ]
-at._draw_cursor(ax, frames[0][0], frames[0][1])
-anim = FuncAnimation(fig, at._update_frame, frames=frames, fargs=fargs,
+apt._draw_cursor(ax, frames[0][0], frames[0][1])
+anim = FuncAnimation(fig, apt._update_frame, frames=frames, fargs=fargs,
                      interval=200, repeat=False)
 anim.save(os.path.join(
     my_path, "toggle_refine_position.gif"), writer='imagemagick')

@@ -72,7 +72,7 @@ The atom lattice can be loaded:
     <Atom_Lattice, fantasite (sublattice(s): 2)>
     >>> atom_lattice.sublattice_list # doctest: +SKIP
     [<Sublattice, A (atoms:497,planes:6)>, <Sublattice, B (atoms:465,planes:6)>] # doctest: +SKIP
-    >>> image = atom_lattice.image0
+    >>> image = atom_lattice.image
 
 :py:class:`atomap.atom_lattice.Atom_Lattice` is an object containing the sublattices, and other types of information.
 The fantasite atom lattice contains two sublattices (red and blue dots in the image above).
@@ -239,7 +239,7 @@ The corresponding distance difference will be the distance difference for atoms 
     >>> zone = sublattice_B.zones_axis_average_distances[0]
     >>> s_dd = sublattice_B.get_atom_distance_difference_map([zone])
     >>> s_dd.plot(cmap='viridis')
-    >>> sublattice_B.plot_planes(image=atom_lattice.image0)
+    >>> sublattice_B.plot_planes(image=atom_lattice.image)
 
 .. image:: images/plotting_tutorial/Angle_map_z1.png
     :scale: 50 %
@@ -366,6 +366,27 @@ On the x-axis, negative values are to the left of the interface and positive val
 :py:meth:`~atomap.sublattice.Sublattice.get_ellipticity_line_profile` calls :py:meth:`~atomap.sublattice.Sublattice._get_property_line_profile`,  which takes in 3 lists: x and y coordinates for the atoms, and a list of value for a property (in this case ellipticity).
 It then sorts the atoms after distance from interface.
 The atoms with the same distance from the interface belong to the same plane, parallel to the interface, and the value for a property (such as ellipticity) for these atoms are averaged.
+
+The raw data can be accessed in the signal's metadata:
+
+.. code-block:: python
+
+    >>> position = s_elli_line.metadata.line_profile_data.x_list
+    >>> ellipticity = s_elli_line.metadata.line_profile_data.y_list
+    >>> standard_deviation = s_elli_line.metadata.line_profile_data.std_list
+
+And plotted using matplotlib, with the standard deviation shown in red.
+
+.. code-block:: python
+
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots()
+    >>> _ = ax.errorbar(position, ellipticity, yerr=standard_deviation, ecolor='red')
+    >>> fig.show()
+
+.. image:: images/plotting_tutorial/line_profile_errorbar.png
+    :scale: 50 %
+    :align: center
 
 There are also functions to make such line profiles for monolayer separation (:py:meth:`~atomap.sublattice.Sublattice.get_monolayer_distance_line_profile`), and "distance difference" (:py:meth:`~atomap.sublattice.Sublattice.get_atom_distance_difference_line_profile`).
 These two properties are "directional", which means that the zone axis for the distance measurement must be given in addition to the "interface" plane.

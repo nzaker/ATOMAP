@@ -1,6 +1,8 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.widgets import PolygonSelector
+import atomap.tools as to
 
 
 class AtomToggleRefine:
@@ -73,5 +75,73 @@ class AtomToggleRefine:
         color_list = self._refine_position_list_to_color_list(
                 refine_list)
         self.path.set_color(color_list)
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
+
+
+class GetAtomSelection:
+
+    def __init__(self, image, atom_positions, invert_selection=False):
+        """Get a subset of atom positions using interactive tool.
+
+        Access the selected atom positions in the
+        atom_positions_selected attribute.
+
+        Parameters
+        ----------
+        image : 2D HyperSpy signal or 2D NumPy array
+        atom_positions : list of lists, NumPy array
+            In the form [[x0, y0]. [x1, y1], ...]
+        invert_selection : bool, optional
+            Get the atom positions outside the region, instead of the
+            ones inside it. Default False
+
+        Attributes
+        ----------
+        atom_positions_selected : NumPy array
+
+        """
+        self.image = image
+        self.atom_positions = np.array(atom_positions)
+        self.invert_selection = invert_selection
+        self.atom_positions_selected = []
+        self.fig, self.ax = plt.subplots(figsize=(6, 6))
+        self.ax.set_title(
+                "Use the left mouse button to make the polygon.\n"
+                "Click the first position to finish the polygon.\n"
+                "Press ESC to reset the polygon, and hold SHIFT to\n"
+                "move the polygon.")
+        self.cax = self.ax.imshow(self.image)
+        self.line_non_selected = self.ax.plot(
+                self.atom_positions[:, 0], self.atom_positions[:, 1],
+                'o', color='red')[0]
+        self.line_selected = None
+        markerprops = dict(color='blue')
+        lineprops = dict(color='blue')
+        self.poly = PolygonSelector(self.ax, self.onselect,
+                                    markerprops=markerprops,
+                                    lineprops=lineprops)
+        self.fig.tight_layout()
+
+    def onselect(self, verts):
+        atom_positions_selected = to._get_atom_selection_from_verts(
+                self.atom_positions, verts,
+                invert_selection=self.invert_selection)
+        atom_positions_not_selected = to._get_atom_selection_from_verts(
+                self.atom_positions, verts,
+                invert_selection=not self.invert_selection)
+        if len(atom_positions_selected) != 0:
+            if self.line_selected is None:
+                self.line_selected = self.ax.plot(
+                        atom_positions_selected[:, 0],
+                        atom_positions_selected[:, 1], 'o', color='green')[0]
+            else:
+                self.line_selected.set_data(atom_positions_not_selected[:, 0],
+                                            atom_positions_not_selected[:, 1])
+            self.line_selected.set_data(atom_positions_selected[:, 0],
+                                        atom_positions_selected[:, 1])
+
+        for atom_positions in atom_positions_selected:
+            self.atom_positions_selected.append(atom_positions.tolist())
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()

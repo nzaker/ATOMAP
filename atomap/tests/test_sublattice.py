@@ -1,7 +1,8 @@
 import pytest
 from pytest import approx
 import numpy as np
-from numpy.testing import assert_allclose, assert_array_equal
+from numpy.testing import (
+        assert_allclose, assert_array_equal, assert_array_less)
 from hyperspy.signals import Signal2D
 import atomap.atom_finding_refining as afr
 from atomap.sublattice import Sublattice
@@ -258,7 +259,10 @@ class TestSublatticeGetSignal:
         plane = self.sublattice.atom_plane_list[3]
         self.sublattice.get_ellipticity_line_profile(plane)
 
-    def test_distance_difference(self):
+    def test_get_atom_distance_difference_map(self):
+        self.sublattice.get_atom_distance_difference_map()
+
+    def test_get_atom_distance_difference_map_single_zone_vector(self):
         zone_vector = self.sublattice.zones_axis_average_distances[0]
         self.sublattice.get_atom_distance_difference_map([zone_vector])
 
@@ -295,9 +299,6 @@ class TestSublatticeGetSignal:
         plane = sublattice.atom_planes_by_zone_vector[zone_vector][0]
         sublattice.get_atom_distance_difference_line_profile(
                     zone_vector, plane)
-
-    def test_get_atom_distance_difference_map(self):
-        self.sublattice.get_atom_distance_difference_map()
 
     def test_get_atom_distance_map(self):
         self.sublattice.get_atom_distance_map()
@@ -924,6 +925,13 @@ class TestGetPropertyLineProfile:
         assert_allclose(s.isig[0.:].data.all(), 1, rtol=1e-07)
         assert len(s.metadata['Markers'].keys()) == 9
 
+        lpd = s.metadata.line_profile_data
+        x_list, y_list, std_list = lpd.x_list, lpd.y_list, lpd.std_list
+        assert len(x_list) == 9
+        assert len(y_list) == 9
+        assert len(std_list) == 9
+        assert std_list == approx(0.)
+
     def test_vertical_interface_vertical_projection_plane(self):
         sublattice = self.sublatticeV
         property_list = self.property_list
@@ -1066,6 +1074,19 @@ class TestGetPropertyMap:
         assert s.axes_manager[0].scale == 0.5
         assert s.axes_manager[1].scale == 0.5
         assert s.data[10:50, 10:50].mean() == 1
+
+    def test_add_zero_value_sublattice(self):
+        sublattice = self.sublattice
+        sublattice.construct_zone_axes()
+        z_list = self.z_list
+        sub0 = Sublattice(np.array([[18, 15]]), image=sublattice.image)
+        s0 = sublattice.get_property_map(
+                    sublattice.x_position, sublattice.y_position,
+                    z_list)
+        s1 = sublattice.get_property_map(
+                    sublattice.x_position, sublattice.y_position,
+                    z_list, add_zero_value_sublattice=sub0)
+        assert not (s0.data == s1.data).all()
 
     def test_all_parameters(self):
         sublattice = self.sublattice
@@ -1225,3 +1246,37 @@ class TestGetPolarizationFromSecondSublattice:
                 assert temp_vector == (-2, -1)
             else:
                 assert temp_vector == (0, 0)
+
+
+class TestAmplitudeMinIntensity:
+
+    def setup_method(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sublattice.find_nearest_neighbors()
+        self.sublattice = sublattice
+
+    def test_property(self):
+        sublattice = self.sublattice
+        sublattice.image[:] = 0
+        sublattice.get_atom_column_amplitude_min_intensity()
+        assert_allclose(sublattice.atom_amplitude_min_intensity, 0)
+        sublattice.image[:] = 3
+        sublattice.get_atom_column_amplitude_min_intensity()
+        assert_allclose(sublattice.atom_amplitude_min_intensity, 3)
+
+    def test_method_image(self):
+        sublattice = self.sublattice
+        sublattice.image[:] = 0
+        sublattice.get_atom_column_amplitude_min_intensity()
+        assert_allclose(sublattice.atom_amplitude_min_intensity, 0)
+        image = np.ones((300, 300)) * -10
+        sublattice.get_atom_column_amplitude_min_intensity(image=image)
+        assert_allclose(sublattice.atom_amplitude_min_intensity, -10)
+
+    def test_percent_to_nn(self):
+        sublattice = self.sublattice
+        sublattice.get_atom_column_amplitude_min_intensity(percent_to_nn=0.1)
+        min_intensity0 = sublattice.atom_amplitude_min_intensity
+        sublattice.get_atom_column_amplitude_min_intensity(percent_to_nn=0.5)
+        min_intensity1 = sublattice.atom_amplitude_min_intensity
+        assert_array_less(min_intensity1, min_intensity0)

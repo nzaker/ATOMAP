@@ -92,7 +92,7 @@ class Sublattice():
         >>> sublattice.get_atom_list_on_image(markersize=50).plot()
 
         """
-        self._image_init(image=image, original_image=original_image)
+        at._image_init(self, image=image, original_image=original_image)
         self.atom_list = []
         for atom_position in atom_position_list:
             atom = Atom_Position(atom_position[0], atom_position[1])
@@ -106,38 +106,6 @@ class Sublattice():
         self.pixel_size = pixel_size
         self._plot_color = color
         self._pixel_separation = 0.0
-
-    def _image_init(self, image, original_image=None):
-        if not hasattr(image, '__array__'):
-            raise ValueError(
-                    "image needs to be a NumPy compatible array" +
-                    ", not " + str(type(image)))
-        image_out = np.array(image)
-        if image_out.dtype == 'float16':
-            raise ValueError(
-                    "image has the dtype float16, which is not supported. "
-                    "Convert it to something else, for example using "
-                    "image.astype('float64')")
-        if not len(image_out.shape) == 2:
-            raise ValueError(
-                    "image needs to be 2 dimensions, not " +
-                    str(len(image_out.shape)))
-
-        if original_image is not None:
-            if not hasattr(original_image, '__array__'):
-                raise ValueError(
-                        "original_image needs to be a NumPy compatible array" +
-                        ", not " + str(type(original_image)))
-            original_image_out = np.array(original_image)
-            if not len(original_image_out.shape) == 2:
-                raise ValueError(
-                        "original_image needs to be 2 dimensions, not " +
-                        str(len(original_image_out.shape)))
-        else:
-            original_image_out = image_out
-
-        self.image = image_out
-        self.original_image = original_image_out
 
     def __repr__(self):
         return '<%s, %s (atoms:%s,planes:%s)>' % (
@@ -203,6 +171,14 @@ class Sublattice():
         amplitude = []
         for atom in self.atom_list:
             amplitude.append(atom.amplitude_max_intensity)
+        amplitude = np.array(amplitude)
+        return amplitude
+
+    @property
+    def atom_amplitude_min_intensity(self):
+        amplitude = []
+        for atom in self.atom_list:
+            amplitude.append(atom.amplitude_min_intensity)
         amplitude = np.array(amplitude)
         return amplitude
 
@@ -443,14 +419,16 @@ class Sublattice():
                     "same shape")
         data_list = np.array([x, y, z])
         data_list = np.swapaxes(data_list, 0, 1)
-        line_profile_data = at.project_position_property_sum_planes(
-                data_list,
-                interface_plane,
-                rebin_data=True)
+        projected_positions = at.project_position_property(
+                data_list, interface_plane)
+        layer_list = at.sort_projected_positions_into_layers(
+                projected_positions)
+        line_profile_data = at.combine_projected_positions_layers(layer_list)
         line_profile_data = np.array(line_profile_data)
         position = line_profile_data[:, 0]*scale_xy
         data = line_profile_data[:, 1]*scale_z
-        return(np.array([position, data]))
+        std = line_profile_data[:, 2]*scale_z
+        return(np.array([position, data, std]))
 
     def _get_regular_grid_from_unregular_property(
             self,
@@ -544,7 +522,7 @@ class Sublattice():
         """
         data_scale = self.pixel_size
         if add_zero_value_sublattice is not None:
-            self._add_zero_position_to_data_list_from_atom_list(
+            x_list, y_list, z_list = at._add_zero_position_to_data_list(
                 x_list, y_list, z_list,
                 add_zero_value_sublattice.x_position,
                 add_zero_value_sublattice.y_position)
@@ -579,7 +557,11 @@ class Sublattice():
         non-linear axes.
 
         The raw non-interpolated line profile data is stored in the
-        output signal metadata: signal.metadata.line_profile_data.
+        output signal metadata: signal.metadata.line_profile_data,
+        including the standard deviation of the values from each layer.
+        The standard deviation is calculated from the variance in property
+        values in each layer. So if each property in a layer has exactly
+        the same value, the standard deviation will be 0.
 
         Parameters
         ----------
@@ -623,6 +605,7 @@ class Sublattice():
 
         >>> x_list = s.metadata.line_profile_data.x_list
         >>> y_list = s.metadata.line_profile_data.y_list
+        >>> std_list = s.metadata.line_profile_data.std_list
 
         """
         xA, yA, zA = np.array(x_list), np.array(y_list), np.array(z_list)
@@ -660,9 +643,11 @@ class Sublattice():
         else:
             x_profile_list = line_profile_data_list[0]
         y_profile_list = line_profile_data_list[1]
+        std_profile_list = line_profile_data_list[2]
         signal.metadata.add_node('line_profile_data')
         signal.metadata.line_profile_data.x_list = x_profile_list
         signal.metadata.line_profile_data.y_list = y_profile_list
+        signal.metadata.line_profile_data.std_list = std_profile_list
         if add_markers:
             marker_list = []
             for x, y in zip(x_profile_list, y_profile_list):
@@ -1553,29 +1538,6 @@ class Sublattice():
 
         return signal
 
-    def _add_zero_position_to_data_list_from_atom_list(
-            self,
-            x_list,
-            y_list,
-            z_list,
-            zero_position_x_list,
-            zero_position_y_list):
-        """
-        Add zero value properties to position and property list.
-        Useful to visualizing oxygen tilt pattern.
-
-        Parameters
-        ----------
-        x_list : list of numbers
-        y_list : list of numbers
-        z_list : list of numbers
-        zero_position_x_list : list of numbers
-        zero_position_y_list : list of numbers
-        """
-        np.append(x_list, zero_position_x_list)
-        np.append(y_list, zero_position_y_list)
-        np.append(z_list, np.zeros_like(zero_position_x_list))
-
     def get_ellipticity_vector(
             self,
             image=None,
@@ -1701,12 +1663,52 @@ class Sublattice():
         >>> intensity_list = sublattice.atom_amplitude_max_intensity
 
         """
+        self._check_if_nearest_neighbor_list()
+        if image is None:
+            image = self.original_image
+        percent_distance = percent_to_nn
+        for atom in self.atom_list:
+            atom.calculate_max_intensity(
+                    image,
+                    percent_to_nn=percent_distance)
+
+    def get_atom_column_amplitude_min_intensity(
+            self,
+            image=None,
+            percent_to_nn=0.40):
+        """Finds the minimum intensity for each atomic column.
+
+        Finds the minimum image intensity of each atomic column inside
+        an area covering the atomic column.
+
+        Results are stored in each Atom_Position object as
+        amplitude_min_intensity, which can most easily be accessed in
+        through the sublattice object (see the examples below).
+
+        Parameters
+        ----------
+        image : NumPy 2D array, default None
+            Uses original_image by default.
+        percent_to_nn : float, default 0.4
+            Determines the boundary of the area surrounding each atomic
+            column, as fraction of the distance to the nearest neighbour.
+
+        Example
+        -------
+        >>> import atomap.api as am
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> sublattice.find_nearest_neighbors()
+        >>> sublattice.get_atom_column_amplitude_min_intensity()
+        >>> intensity_list = sublattice.atom_amplitude_min_intensity
+
+        """
+        self._check_if_nearest_neighbor_list()
         if image is None:
             image = self.original_image
 
         percent_distance = percent_to_nn
         for atom in self.atom_list:
-            atom.calculate_max_intensity(
+            atom.calculate_min_intensity(
                     image,
                     percent_to_nn=percent_distance)
 
@@ -1770,6 +1772,11 @@ class Sublattice():
         This gives the ellipticity as a function of the distance from a
         given atom plane (interface).
 
+        The raw data can be accessed in
+        s.metadata.line_profile_data, both the position (x_list),
+        ellipticity (y_list), and the standard deviation of the ellipticity
+        for each layer (std_list).
+
         Parameters
         ----------
         atom_plane : Atomap AtomPlane object
@@ -1795,6 +1802,12 @@ class Sublattice():
         >>> zone = sublattice.zones_axis_average_distances[1]
         >>> plane = sublattice.atom_planes_by_zone_vector[zone][4]
         >>> s_elli_line = sublattice.get_ellipticity_line_profile(plane)
+
+        Getting the raw line profile data
+
+        >>> position = s_elli_line.metadata.line_profile_data.x_list
+        >>> ellipticity = s_elli_line.metadata.line_profile_data.y_list
+        >>> std = s_elli_line.metadata.line_profile_data.std_list
 
         """
         signal = self._get_property_line_profile(
@@ -1871,6 +1884,11 @@ class Sublattice():
         monolayer distance, check
         sublattice.get_monolayer_distance_list_from_zone_vector()
 
+        The raw data can be accessed in
+        s.metadata.line_profile_data, both the position (x_list),
+        distance (y_list), and the standard deviation of the distance
+        for each layer (std_list).
+
         Parameters
         ----------
 
@@ -1895,14 +1913,20 @@ class Sublattice():
         Example
         -------
         >>> from numpy.random import random
-        >>> import atomap.api as am
         >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
         >>> for atom in sublattice.atom_list:
         ...     atom.sigma_x, atom.sigma_y = 0.5*random()+1, 0.5*random()+1
         >>> sublattice.construct_zone_axes()
         >>> zone = sublattice.zones_axis_average_distances[0]
         >>> plane = sublattice.atom_planes_by_zone_vector[zone][0]
-        >>> s = sublattice.get_monolayer_distance_line_profile(zone,plane)
+        >>> s = sublattice.get_monolayer_distance_line_profile(zone, plane)
+
+        Getting the raw line profile data
+
+        >>> position = s.metadata.line_profile_data.x_list
+        >>> distance = s.metadata.line_profile_data.y_list
+        >>> std = s.metadata.line_profile_data.std_list
+
         """
         self._check_if_zone_axis_list()
         data_list = self.get_monolayer_distance_list_from_zone_vector(
@@ -2044,7 +2068,7 @@ class Sublattice():
         for zone_index, zone_vector in zone_vector_index_list:
             data_list = self.get_atom_distance_difference_from_zone_vector(
                     zone_vector)
-            if len(data_list[2]) is not 0:
+            if len(data_list[2]) != 0:
                 signal = self.get_property_map(
                     data_list[0],
                     data_list[1],
@@ -2233,9 +2257,9 @@ class Sublattice():
         atom_plane_tolerance : scalar, default 0.5
             When constructing the atomic planes, the method will try to locate
             the atoms by "jumping" one zone vector, and seeing if there is an
-            atom with the pixel_separation times atom_plane_tolerance. So this
-            value should be increased the atomic planes are non-continuous and
-            "split".
+            atom within the pixel_separation times atom_plane_tolerance. So
+            this value should be increased if the atomic planes are
+            non-continuous and "split".
         zone_axis_para_list : parameter list or bool, default False
             A zone axes parameter list is used to name and index the zone
             axes. See atomap.process_parameters for more info. Useful for

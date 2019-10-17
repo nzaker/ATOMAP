@@ -6,6 +6,7 @@ from scipy import interpolate
 from scipy import ndimage
 from scipy.spatial import cKDTree
 import matplotlib.pyplot as plt
+from matplotlib.path import Path
 import hyperspy.api as hs
 from hyperspy.signals import Signal1D, Signal2D
 from skimage.morphology import watershed
@@ -176,10 +177,12 @@ def get_atom_planes_square(
         z_pos_list.append(0)
 
     data_list = np.array(
-        [x_pos_list, y_pos_list, z_pos_list]).swapaxes(0, 1)
-    atom_layer_list = project_position_property_sum_planes(
-        data_list, interface_atom_plane, rebin_data=True)
+            [x_pos_list, y_pos_list, z_pos_list]).swapaxes(0, 1)
 
+    projected_positions = project_position_property(
+            data_list, interface_atom_plane)
+    layer_list = sort_projected_positions_into_layers(projected_positions)
+    atom_layer_list = combine_projected_positions_layers(layer_list)
     atom_layer_list = np.array(atom_layer_list)[:, 0]
     x_pos_list = []
     z_pos_list = []
@@ -203,7 +206,7 @@ def find_average_distance_between_atoms(
     """Return the distance between monolayers.
 
     Returns the maximal separation between two adjacent points in
-    input_data_list[:,0], as a good approximation for monolayer separation.
+    input_data_list[:, 0], as a good approximation for monolayer separation.
 
     Parameters
     ----------
@@ -226,6 +229,19 @@ def find_average_distance_between_atoms(
     mean_separation : float
         The mean monolayer separation
 
+    Example
+    -------
+    >>> import atomap.tools as to
+    >>> position_list = []
+    >>> for i in range(0, 100, 9):
+    ...     positions = np.ones(10) * i
+    ...     position_list.extend(positions)
+    >>> position_list = np.array(position_list)
+    >>> property_list = np.ones(len(position_list))
+    >>> input_data_list = np.stack((position_list, property_list), axis=1)
+    >>> output = to.find_average_distance_between_atoms(input_data_list)
+    >>> first_peak, monolayer_sep, mean_separation = output
+
     """
     data_list = input_data_list[:, 0]
     data_list.sort()
@@ -245,11 +261,10 @@ def find_average_distance_between_atoms(
     return(first_peak, monolayer_sep, mean_separation)
 
 
-def combine_clustered_positions_into_layers(
-        data_list, layer_distance, combine_layers=True):
+def sort_positions_into_layers(data_list, layer_distance, combine_layers=True):
     """Combine clustered positions into groups.
 
-    Atoms with a similar distance for a line belong to the same plane parallel
+    Atoms with a similar distance from a line belong to the same plane parallel
     to this line. Atoms in data_list are grouped based on which plane they
     belong to. If there is only one atom in a layer, it will be disregarded as
     it gives a high uncertainty.
@@ -269,10 +284,11 @@ def combine_clustered_positions_into_layers(
 
     Returns
     -------
-    A list, layer_list. If combine_layers is True, a list of the average
-    position and property of the points in the layer. If False, a nested
-    list where each element in layer_list contains a list the atoms (position
-    and property) in the layer.
+    layer_list : list
+        If combine_layers is True, a list of the average
+        position and property of the points in the layer. If False, a nested
+        list where each element in layer_list contains a list the atoms
+        (position and property) in the layer.
 
     """
     layer_list = []
@@ -284,25 +300,45 @@ def combine_clustered_positions_into_layers(
             i += 1
         else:
             if not (len(one_layer_list) == 1):
-                if combine_layers is True:
-                    one_layer_list = np.array(
-                        one_layer_list).mean(0).tolist()
                 layer_list.append(one_layer_list)
             i += 1
             one_layer_list = [atom_pos.tolist()]
-    if combine_layers is True:
-        if not (len(one_layer_list) == 1):
-            one_layer_list = np.array(one_layer_list).mean(0).tolist()
-            layer_list.append(one_layer_list)
+    if not (len(one_layer_list) == 1):
+        layer_list.append(one_layer_list)
     return(layer_list)
 
 
-def combine_clusters_using_average_distance(data_list, margin=0.5):
-    first_peak, monolayer_sep, mean_separation = \
-        find_average_distance_between_atoms(data_list)
-    layer_list = combine_clustered_positions_into_layers(
-        data_list, first_peak * margin)
+def sort_projected_positions_into_layers(projected_positions, margin=0.5):
+    first_peak, monolayer_sep, mean_sep = find_average_distance_between_atoms(
+            projected_positions)
+    layer_list = sort_positions_into_layers(
+        projected_positions, first_peak * margin)
     return(layer_list)
+
+
+def combine_projected_positions_layers(layer_list):
+    """Get the mean position of a projected property, and its position.
+
+    Will also include the standard deviation in of the positions in the
+    layers.
+
+    Parameters
+    ----------
+    layer_list : list of lists
+
+    Returns
+    -------
+    combined_layer_list : list of lists
+        In the form [[position, property, standard deviation], ...].
+
+    """
+    combined_layer_list = []
+    for layer in layer_list:
+        temp_layer = np.array(layer)
+        combined_layer = temp_layer.mean(axis=0).tolist()
+        combined_layer.append(temp_layer[:, 1].std())
+        combined_layer_list.append(combined_layer)
+    return combined_layer_list
 
 
 def dotproduct(v1, v2):
@@ -711,16 +747,11 @@ def _get_clim_from_data(
     return(clim)
 
 
-def project_position_property_sum_planes(
-        input_data_list,
-        interface_plane,
-        rebin_data=True):
-    """
-    Project 2D positions onto a 1D plane.
+def project_position_property(input_data_list, interface_plane):
+    """Project 2D positions onto a 1D plane.
+
     The 2D positions are found as function of distance
-    to the interface_plane. If rebin_data is True,
-    the function will attempt to sum the positions belonging
-    to the same plane.
+    to the interface_plane.
     In this case, one will get the positions as a function of
     atomic plane from the interface_plane.
 
@@ -738,13 +769,6 @@ def project_position_property_sum_planes(
         y-positions using input_data_list[:,1].
         Property value using input_data_list[:,2].
     interface_plane : Atomap atom_plane object
-    rebin_data : bool, optional
-        If True, will attempt to combine the data points
-        which belong to the same atomic plane.
-        The points which belong to the same plane will be
-        averaged into a single value for each atomic plane.
-        This will give the property value as a function distance
-        to the interface_plane.
 
     Returns
     -------
@@ -761,12 +785,13 @@ def project_position_property_sum_planes(
     >>> x, y = sublattice.x_position, sublattice.y_position
     >>> z = sublattice.ellipticity
     >>> input_data_list = np.array([x, y, z]).swapaxes(0, 1)
-    >>> from atomap.tools import project_position_property_sum_planes
+    >>> from atomap.tools import project_position_property
     >>> plane = sublattice.atom_plane_list[10]
-    >>> data = project_position_property_sum_planes(input_data_list, plane)
+    >>> data = project_position_property(input_data_list, plane)
     >>> positions = data[:,0]
     >>> property_values = data[:,1]
     >>> cax = plt.plot(positions, property_values)
+
     """
     x_pos_list = input_data_list[:, 0]
     y_pos_list = input_data_list[:, 1]
@@ -778,9 +803,6 @@ def project_position_property_sum_planes(
     data_list = np.stack((dist, z_pos_list)).T
     data_list = data_list[data_list[:, 0].argsort()]
 
-    if rebin_data:
-        data_list = combine_clusters_using_average_distance(data_list)
-    data_list = np.array(data_list)
     return(data_list)
 
 
@@ -859,6 +881,41 @@ def array2signal2d(numpy_array, scale=1.0, rotate_flip=False):
     signal.axes_manager[-1].scale = scale
     signal.axes_manager[-2].scale = scale
     return signal
+
+
+def _add_zero_position_to_data_list(
+        x_list, y_list, z_list,
+        zero_position_x_list, zero_position_y_list):
+    """Add zero value properties to position and property list.
+
+    Useful to visualizing oxygen tilt pattern.
+
+    Parameters
+    ----------
+    x_list : list of numbers
+    y_list : list of numbers
+    z_list : list of numbers
+    zero_position_x_list : list of numbers
+    zero_position_y_list : list of numbers
+
+    Return
+    ------
+    x_array_new, y_array_new, z_array_new : NumPy arrays
+
+    Example
+    -------
+    >>> import atomap.tools as to
+    >>> x_list, y_list = np.arange(10), np.arange(10, 20)
+    >>> z_list = np.arange(20, 30)
+    >>> zero_position_x_list, zero_position_y_list = [15, 10], [10, 15]
+    >>> x_new, y_new, z_new = to._add_zero_position_to_data_list(
+    ...     x_list, y_list, z_list, zero_position_x_list, zero_position_y_list)
+
+    """
+    x_array_new = np.append(x_list, zero_position_x_list)
+    y_array_new = np.append(y_list, zero_position_y_list)
+    z_array_new = np.append(z_list, np.zeros_like(zero_position_x_list))
+    return x_array_new, y_array_new, z_array_new
 
 
 def _get_n_nearest_neighbors(position_list, nearest_neighbors, leafsize=100):
@@ -1064,8 +1121,9 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto',
     currentFeature = np.zeros_like(image.T, dtype=float)
     point_record = np.zeros(image.shape[0:2][::-1], dtype=int)
     integrated_intensity = np.zeros_like(sum(sum(currentFeature.T)))
-    integrated_intensity = np.dstack(
-        integrated_intensity for i in range(len(points_x)))
+    integrated_intensity = np.array(
+            [integrated_intensity for i in range(len(points_x))])
+    integrated_intensity = np.dstack(integrated_intensity)
     integrated_intensity = np.squeeze(integrated_intensity.T)
     points = np.array((points_y, points_x))
     # Setting max_radius to the width of the image, if none is set.
@@ -1166,7 +1224,7 @@ def fliplr_points_and_signal(signal, x_array, y_array):
     """
 
     s_out = signal.deepcopy()
-    s_out.map(np.fliplr, show_progressbar=False)
+    s_out.map(np.fliplr, parallel=False, show_progressbar=False)
     x_array, y_array = fliplr_points_around_signal_centre(
         s_out, x_array, y_array)
     return s_out, x_array, y_array
@@ -1214,6 +1272,7 @@ def rotate_points_and_signal(signal, x_array, y_array, rotation):
     signal : HyperSpy 2D signal
     x_array, y_array : array-like
     rotation : scalar
+        In degrees
 
     Returns
     -------
@@ -1239,7 +1298,7 @@ def rotate_points_and_signal(signal, x_array, y_array, rotation):
     """
     s_out = signal.deepcopy()
     s_out.map(ndimage.rotate, angle=rotation,
-              reshape=False, show_progressbar=False)
+              reshape=False, parallel=False, show_progressbar=False)
     x_array, y_array = rotate_points_around_signal_centre(
         s_out, x_array, y_array, rotation)
     return s_out, x_array, y_array
@@ -1253,6 +1312,7 @@ def rotate_points_around_signal_centre(signal, x_array, y_array, rotation):
     signal : HyperSpy 2D signal
     x_array, y_array : array-like
     rotation : scalar
+        In degrees
 
     Returns
     -------
@@ -1268,10 +1328,39 @@ def rotate_points_around_signal_centre(signal, x_array, y_array, rotation):
     >>> x_rot, y_rot = to.rotate_points_around_signal_centre(s, x, y, 30)
 
     """
+    centre_x, centre_y = _get_signal_centre(signal)
+    x_array, y_array = _rotate_points_around_position(
+            centre_x, centre_y, x_array, y_array, rotation)
+    return(x_array, y_array)
+
+
+def _rotate_points_around_position(
+        centre_x, centre_y, x_array, y_array, rotation):
+    """Rotate positions around a centre point.
+
+    Parameters
+    ----------
+    centre_x, centre_y : scalars
+    x_array, y_array : array-like
+    rotation : scale
+        In degrees
+
+    Returns
+    -------
+    x_array_rot, y_array_rot : NumPy array
+
+    Examples
+    -------
+    >>> import atomap.tools as to
+    >>> cx, cy, rot = 0, 0, 90
+    >>> x_array, y_array = [5, ], [5, ]
+    >>> x_rot, y_rot = to._rotate_points_around_position(
+    ...     cx, cy, x_array, y_array, rot)
+
+    """
     x_array, y_array = np.array(x_array), np.array(y_array)
-    middle_x, middle_y = _get_signal_centre(signal)
-    x_array -= middle_x
-    y_array -= middle_y
+    x_array -= centre_x
+    y_array -= centre_y
 
     rad_rot = -np.radians(rotation)
     rotation_matrix = np.array([
@@ -1282,9 +1371,9 @@ def rotate_points_around_signal_centre(signal, x_array, y_array, rotation):
     x_array = xy_matrix[:, 0]
     y_array = xy_matrix[:, 1]
 
-    x_array += middle_x
-    y_array += middle_y
-    return(x_array, y_array)
+    x_array += centre_x
+    y_array += centre_y
+    return x_array, y_array
 
 
 def _get_signal_centre(signal):
@@ -1305,95 +1394,85 @@ def _get_signal_centre(signal):
     return(a0_middle, a1_middle)
 
 
-def _draw_cursor(ax, x, y, xd=10, yd=-30):
-    """Draw an arrow resembling a mouse pointer.
-
-    Used for making figures in the documentation.
-    Uses the matplotlib ax.annotate to draw the arrow.
+def _get_atom_selection_from_verts(atom_positions, verts,
+                                   invert_selection=False):
+    """Get a subset of atom positions within region spanned to verticies.
 
     Parameters
     ----------
-    ax : matplotlib subplot
-    x, y : scalar
-        Coordinates for the point of the cursor. In data
-        coordinates for the ax. This point can be outside
-        the ax extent.
-    xd, yd : scalar, optional
-        Size of the cursor, in figure display coordinates.
-
-    Example
-    -------
-    >>> import matplotlib.pyplot as plt
-    >>> fig, ax = plt.subplots()
-    >>> cax = ax.imshow(np.random.random((100, 100)))
-    >>> from atomap.tools import _draw_cursor
-    >>> _draw_cursor(ax, 20, 50)
-
-    """
-    xd, yd = 10, -30
-    arrowprops = dict(
-            width=2.9, headwidth=10.3, headlength=15.06,
-            edgecolor='white', facecolor='black')
-    ax.annotate('', xy=(x, y), xytext=(xd, yd),
-                xycoords='data', textcoords='offset pixels',
-                arrowprops=arrowprops, annotation_clip=False)
-
-
-def _update_frame(pos, fig):
-    """Update an image frame in a matplotlib FuncAnimation function.
-
-    Will simulate a mouse button press, and update a matplotlib
-    annotation.
-
-    Parameters
-    ----------
-    pos : tuple
-        (x, y, press_mouse_button). If press_button is True, a mouse click
-        will be done at (x, y), and the cursor will be moved there. If False,
-        the cursor will just be moved.
-    fig : matplotlib figure object
-
-    """
-    ax = fig.axes[0]
-    if pos[2]:
-        x, y = ax.transData.transform((pos[0], pos[1]))
-        fig.canvas.button_press_event(x, y, 1)
-    text = ax.texts[0]
-    text.xy = (pos[0], pos[1])
-    fig.canvas.draw()
-    fig.canvas.flush_events()
-
-
-def _generate_frames_position_list(position_list, num=10):
-    """
-    Parameters
-    ----------
-    position_list : list
-        Needs to have at least two positions, [[x0, y0], [x1, y1]]
-    num : scalar
-        Number of points between each position. Default 10.
+    atom_positions : list or NumPy array
+        In the form [[x0, y0]. [x1, y1], ...]
+    verts : list of tuples
+        List of positions, spanning an enclosed region.
+        [(x0, y0), (x1, y1), ...]. Need to have at least 3 positions.
+    invert_selection : bool, optional
+        Get the atom positions outside the region, instead of the
+        ones inside it. Default False.
 
     Returns
     -------
-    frames : list
-        Length of num * (len(position_list) - 1) + position_list
+    atom_positions_selected : NumPy array
 
-    Example
-    -------
-    >>> from atomap.tools import _generate_frames_position_list
-    >>> pos_list = [[10, 20], [65, 10], [31, 71]]
-    >>> frames = _generate_frames_position_list(pos_list, num=20)
+    Examples
+    --------
+    >>> from numpy.random import randint
+    >>> from atomap.tools import _get_atom_selection_from_verts
+    >>> atom_positions = randint(0, 200, size=(200, 2))
+    >>> verts = [(200, 400), (400, 600), (100, 100)]
+    >>> atom_positions_selected = _get_atom_selection_from_verts(
+    ...        atom_positions=atom_positions, verts=verts)
+
+    Get atom positions inside the region
+
+    >>> atom_positions_selected = _get_atom_selection_from_verts(
+    ...        atom_positions=atom_positions, verts=verts,
+    ...        invert_selection=True)
 
     """
-    frames = []
-    for i in range(len(position_list) - 1):
-        x0, y0 = position_list[i]
-        x1, y1 = position_list[i + 1]
-        x_list = np.linspace(x0, x1, num=num, endpoint=False)
-        y_list = np.linspace(y0, y1, num=num, endpoint=False)
-        frames.append([x0, y0, True])
-        for x, y in zip(x_list, y_list):
-            frames.append([x, y, False])
-    x2, y2 = position_list[-1]
-    frames.append([x2, y2, True])
-    return frames
+    if len(verts) < 3:
+        raise ValueError(
+            "verts needs to have at least 3 positions, not {0}".format(
+                len(verts)))
+    atom_positions = np.array(atom_positions)
+    path = Path(verts)
+    bool_array = path.contains_points(atom_positions)
+    if invert_selection:
+        bool_array = np.invert(bool_array)
+    atom_positions_selected = atom_positions[bool_array]
+    return atom_positions_selected
+
+
+def _image_init(lattice_object, image, original_image=None):
+    if image is not None:
+        if not hasattr(image, '__array__'):
+            raise ValueError(
+                    "image needs to be a NumPy compatible array" +
+                    ", not " + str(type(image)))
+        image_out = np.array(image)
+        if image_out.dtype == 'float16':
+            raise ValueError(
+                    "image has the dtype float16, which is not supported. "
+                    "Convert it to something else, for example using "
+                    "image.astype('float64')")
+        if not len(image_out.shape) == 2:
+            raise ValueError(
+                    "image needs to be 2 dimensions, not " +
+                    str(len(image_out.shape)))
+    else:
+        image_out = None
+
+    if original_image is not None:
+        if not hasattr(original_image, '__array__'):
+            raise ValueError(
+                    "original_image needs to be a NumPy compatible array" +
+                    ", not " + str(type(original_image)))
+        original_image_out = np.array(original_image)
+        if not len(original_image_out.shape) == 2:
+            raise ValueError(
+                    "original_image needs to be 2 dimensions, not " +
+                    str(len(original_image_out.shape)))
+    else:
+        original_image_out = image_out
+
+    lattice_object.image = image_out
+    lattice_object.original_image = original_image_out

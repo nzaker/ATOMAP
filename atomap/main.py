@@ -116,9 +116,9 @@ def make_atom_lattice_from_image(
 
     atom_lattice = Atom_Lattice(name=name)
     atom_lattice._original_filename = image0_filename
-    atom_lattice.image0 = image0_data
+    atom_lattice.image = image0_data
     if s_image1 is not None:
-        atom_lattice.image1 = image1_data
+        atom_lattice.image_extra = image1_data
     atom_lattice._pixel_separation = pixel_separation
 
     for sublattice_index in range(process_parameter.number_of_sublattices):

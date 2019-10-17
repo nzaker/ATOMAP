@@ -13,6 +13,12 @@ Atom lattice
     :members:
     :undoc-members:
 
+Dumbbell lattice
+============
+.. autoclass:: atomap.atom_lattice.Dumbbell_Lattice
+    :members:
+    :undoc-members:
+
 Sublattice
 ===========
 .. autoclass:: atomap.sublattice.Sublattice

@@ -29,7 +29,7 @@ s_dd.save(os.path.join(my_path, 'distance_difference_map.hdf5'),
           overwrite=True)
 
 # Saving the synthetic ADF-image.
-im = atom_lattice.image0
+im = atom_lattice.image
 s_adf = Signal2D(im)
 s_adf.save(os.path.join(my_path, 'ADF_image.hdf5'), overwrite=True)
 

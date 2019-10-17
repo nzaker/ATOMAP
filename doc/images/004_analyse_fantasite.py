@@ -28,7 +28,7 @@ def plot_monolayer_map():
 
 
 def plot_atom_plane_monolayer_map():
-    image = atom_lattice.image0
+    image = atom_lattice.image
     s = sublattice_B.get_all_atom_planes_by_zone_vector(image=image)
     s.plot()
     s.axes_manager.indices = (1,)
@@ -55,7 +55,7 @@ def plot_atom_dd():
 
 
 def plot_dd_plane():
-    image = atom_lattice.image0
+    image = atom_lattice.image
     s = sublattice_B.get_all_atom_planes_by_zone_vector(image=image)
     s.plot()
     s.axes_manager.indices = (0,)
@@ -117,6 +117,18 @@ def elli_line():
              os.path.join(my_path, 'line_ellip.png'), overwrite=True)
 
 
+def elli_line_errorbar():
+    zone = sublattice_A.zones_axis_average_distances[1]
+    plane = sublattice_A.atom_planes_by_zone_vector[zone][23]
+    s_elli_line = sublattice_A.get_ellipticity_line_profile(plane)
+    x = s_elli_line.metadata.line_profile_data.x_list
+    y = s_elli_line.metadata.line_profile_data.y_list
+    std = s_elli_line.metadata.line_profile_data.std_list
+    fig, ax = plt.subplots()
+    ax.errorbar(x, y, yerr=std, ecolor='red')
+    fig.savefig(os.path.join(my_path, 'line_profile_errorbar.png'))
+
+
 def plot_line_plane():
     s = sublattice_A.get_all_atom_planes_by_zone_vector()
     s.plot()
@@ -159,6 +171,7 @@ plot_watershed_integration(atom_lattice)
 plot_angle_figs()
 plot_al_zoom()
 elli_line()
+elli_line_errorbar()
 plot_line_plane()
 monolayer_line()
 dd_line()
