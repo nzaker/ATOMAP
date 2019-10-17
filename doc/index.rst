@@ -4,17 +4,12 @@ Welcome to Atomap's documentation!
 News
 ----
 
-**2019-03-05: Atomap 0.1.4 released!**
+**2019-10-17: Atomap 0.2.0 released!**
 
-This release includes:
-
-* Functions to find shifts within unit cells, often seen in materials with polarization. This can for example be used to find shifts in B-cations in relation to the A-cations in a perovskite structure: :ref:`finding_polarization`.
-* Big optimization in refining the atom positions using centre of mass, which makes it much easier to work with images containing a large number of atoms. For smaller images the improvement is around 5-10 times, while for larger ones it is 1000 times faster. Thanks to `Thomas Aarholt <https://gitlab.com/thomasaarholt>`_ for `implementing this <https://gitlab.com/atomap/atomap/merge_requests/47>`_!
-* Similar optimizations to :py:meth:`~atomap.sublattice.Sublattice.get_model_image`, which is primarily used to generate test data via the :ref:`dummy_data_module` module. This means generating test data like :py:func:`~atomap.dummy_data.get_fantasite` is 60 times faster, with even bigger improvements to larger test data. Thanks to Annick De Backer at EMAT for tips on how to improve this!
-
-Another optimization for the :ref:`integrate` functionality is in the pipeline, with a `merge request <https://gitlab.com/atomap/atomap/merge_requests/48>`_ from Thomas Aarholt.
-
-
+* Greatly improved :ref:`documentation <dumbbell_lattice>`, `notebook <https://gitlab.com/atomap/atomap_demos/blob/release/dumbbell_example_notebook/dumbbell_example.ipynb>`_ and several new functions for analysing images with dumbbell features, like Si or GaAs.
+* New GUI tool for :ref:`selection a subset of atom positions <atom_selector_gui>`, making it easier to work on images with :ref:`several phases <several_phases>`.
+* :ref:`Statistical quantification <statistical_method>` using Gaussian mixture model. Thanks to `Tom Slater <https://gitlab.com/TomSlater>`_ for implementing this!
+* Functions in the ``Atom_Position`` class: :py:meth:`~atomap.atom_position.Atom_Position.calculate_max_intensity` and :py:meth:`~atomap.atom_position.Atom_Position.calculate_min_intensity`. Thanks to `Eoghan O'Connell <https://gitlab.com/PinkShnack>`_ for implementing this!
 
 About Atomap
 ------------
@@ -78,6 +73,17 @@ Contents on this webpage
 
 Old news
 --------
+
+*2019-03-05: Atomap 0.1.4 released!*
+
+This release includes:
+
+* Functions to find shifts within unit cells, often seen in materials with polarization. This can for example be used to find shifts in B-cations in relation to the A-cations in a perovskite structure: :ref:`finding_polarization`.
+* Big optimization in refining the atom positions using centre of mass, which makes it much easier to work with images containing a large number of atoms. For smaller images the improvement is around 5-10 times, while for larger ones it is 1000 times faster. Thanks to `Thomas Aarholt <https://gitlab.com/thomasaarholt>`_ for `implementing this <https://gitlab.com/atomap/atomap/merge_requests/47>`_!
+* Similar optimizations to :py:meth:`~atomap.sublattice.Sublattice.get_model_image`, which is primarily used to generate test data via the :ref:`dummy_data_module` module. This means generating test data like :py:func:`~atomap.dummy_data.get_fantasite` is 60 times faster, with even bigger improvements to larger test data. Thanks to Annick De Backer at EMAT for tips on how to improve this!
+
+Another optimization for the :ref:`integrate` functionality is in the pipeline, with a `merge request <https://gitlab.com/atomap/atomap/merge_requests/48>`_ from Thomas Aarholt.
+
 
 *2018-11-26: Atomap 0.1.3 released!*
 
