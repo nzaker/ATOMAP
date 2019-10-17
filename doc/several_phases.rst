@@ -14,6 +14,10 @@ For example precipitates in an Aluminium matrix.
    >>> s = am.dummy_data.get_precipitate_signal()
    >>> s.plot()
 
+.. image:: images/severalphases/precipitate_signal.png
+    :scale: 50 %
+    :align: center
+
 
 Due to the different structures, we want to process the precipitate (in the centre) and the matrix separately.
 The easiest way of doing this is using the :py:func:`~atomap.initial_position_finding.select_atoms_with_gui` function.
