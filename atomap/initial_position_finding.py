@@ -10,6 +10,7 @@ from atomap.atom_lattice import Dumbbell_Lattice
 import atomap.tools as to
 import atomap.gui_classes as gc
 from operator import itemgetter
+from matplotlib.colors import LogNorm
 
 
 def find_dumbbell_vector(atom_positions):
@@ -171,12 +172,18 @@ def make_atom_lattice_dumbbell_structure(
 
 class AtomAdderRemover:
 
-    def __init__(self, image, atom_positions=None, distance_threshold=4):
+    def __init__(self, image, atom_positions=None, distance_threshold=4,
+                 norm='linear'):
         self.image = image
         self.distance_threshold = distance_threshold
         self.fig, self.ax = plt.subplots()
         self.ax.set_title("Use the left mouse button to add or remove atoms")
-        self.cax = self.ax.imshow(self.image)
+        if norm == 'linear':
+            self.cax = self.ax.imshow(self.image)
+        elif norm == 'log':
+            self.cax = self.ax.imshow(self.image,
+                                      norm=LogNorm(vmin=np.min(image),
+                                                   vmax=np.max(image)))
         if atom_positions is None:
             self.atom_positions = []
         else:
@@ -232,7 +239,8 @@ class AtomAdderRemover:
         self.fig.canvas.flush_events()
 
 
-def add_atoms_with_gui(image, atom_positions=None, distance_threshold=4):
+def add_atoms_with_gui(image, atom_positions=None, distance_threshold=4,
+                       norm='linear'):
     """Add or remove atoms from a list of atom positions.
 
     Will open a matplotlib figure, where atoms can be added or
@@ -262,7 +270,8 @@ def add_atoms_with_gui(image, atom_positions=None, distance_threshold=4):
     """
     global atom_adder_remover
     atom_adder_remover = AtomAdderRemover(
-            image, atom_positions, distance_threshold=distance_threshold)
+            image, atom_positions, distance_threshold=distance_threshold,
+            norm=norm)
     atom_positions_new = atom_adder_remover.atom_positions
     return atom_positions_new
 
