@@ -181,9 +181,10 @@ class AtomAdderRemover:
         if norm == 'linear':
             self.cax = self.ax.imshow(self.image)
         elif norm == 'log':
-            self.cax = self.ax.imshow(self.image,
-                                      norm=LogNorm(vmin=np.min(image),
-                                                   vmax=np.max(image)))
+            value_min = np.min(self.image.__array__())
+            log_norm = LogNorm(
+                    1e-20, vmax=np.max(self.image.__array__()) - value_min)
+            self.cax = self.ax.imshow(self.image.__array__(), norm=log_norm)
         if atom_positions is None:
             self.atom_positions = []
         else:
@@ -254,6 +255,10 @@ def add_atoms_with_gui(image, atom_positions=None, distance_threshold=4,
         In the form [[x0, y0], [x1, y1], ...]
     distance_threshold : int
         Default 4
+    norm : string, optional
+        'linear' or 'log', default 'linear'. If set up log,
+        the intensity will be visualized as a log plot.
+        Useful to see low-intensity atoms.
 
     Returns
     -------
@@ -266,6 +271,11 @@ def add_atoms_with_gui(image, atom_positions=None, distance_threshold=4,
     >>> s = am.dummy_data.get_simple_cubic_signal()
     >>> atom_positions = am.get_atom_positions(s, separation=9)
     >>> atom_positions_new = am.add_atoms_with_gui(atom_positions, s)
+
+    Log norm
+
+    >>> atom_positions_new = am.add_atoms_with_gui(
+    ...     atom_positions, s, norm='log')
 
     """
     global atom_adder_remover

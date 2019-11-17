@@ -94,6 +94,13 @@ If the atoms in the dataset are too close together, ``distance_threshold`` is us
    >>> atom_positions = am.add_atoms_with_gui(s, distance_threshold=2)
 
 
+If some of the atoms have much lower intensity than the others, the image can be shown in a log plot with the parameter ``norm='log'``.
+
+.. code-block:: python
+
+   >>> atom_positions = am.add_atoms_with_gui(s, norm='log')
+
+
 .. _toggle_atom_refine:
 
 Toggle atom refine

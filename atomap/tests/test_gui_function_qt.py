@@ -1,6 +1,7 @@
 from pytest import approx
 import numpy as np
 import matplotlib.pyplot as plt
+from hyperspy.signals import Signal2D
 import atomap.initial_position_finding as ipf
 from atomap.sublattice import Sublattice
 import atomap.testing_tools as tt
@@ -67,6 +68,37 @@ class TestAddAtomAdderRemoving:
         fig1.canvas.button_press_event(x11, y11, 1)
         assert len(peaks1) == 2
         plt.close(fig1)
+
+    def test_linear_norm(self):
+        data = np.random.random((200, 200))
+        peaks = ipf.add_atoms_with_gui(data, norm='linear')
+        fig = plt.figure(1)
+        x, y = fig.axes[0].transData.transform((100, 100))
+        assert len(peaks) == 0
+        fig.canvas.button_press_event(x, y, 1)
+        assert len(peaks) == 1
+        fig.canvas.button_press_event(x, y, 1)
+        assert len(peaks) == 0
+
+    def test_log_norm(self):
+        data = np.random.random((200, 200))
+        peaks = ipf.add_atoms_with_gui(data, norm='log')
+        fig = plt.figure(1)
+        x, y = fig.axes[0].transData.transform((100, 100))
+        assert len(peaks) == 0
+        fig.canvas.button_press_event(x, y, 1)
+        assert len(peaks) == 1
+        fig.canvas.button_press_event(x, y, 1)
+        assert len(peaks) == 0
+
+    def test_log_norm_negative_image_values(self):
+        data = np.random.random((200, 200)) - 10
+        ipf.add_atoms_with_gui(data, norm='log')
+
+    def test_signal_input(self):
+        s = Signal2D(np.random.random((200, 200)))
+        ipf.add_atoms_with_gui(s, norm='log')
+        ipf.add_atoms_with_gui(s, norm='linear')
 
 
 class TestToggleAtomRefinePosition:
