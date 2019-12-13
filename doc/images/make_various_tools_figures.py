@@ -39,3 +39,10 @@ s = sublattice.get_atom_list_on_image()
 s.plot()
 filename = os.path.join(my_path, 'single_atom_sublattice.png')
 s._plot.signal_plot.figure.savefig(filename, overwrite=True)
+
+#####
+
+s = am.dummy_data.get_simple_cubic_signal()
+sublattice = am.dummy_data.get_simple_cubic_sublattice()
+pdf = sublattice.plot_pdf(s)
+plt.savefig(os.path.join(my_path, 'pdf.png'), overwrite=True)
