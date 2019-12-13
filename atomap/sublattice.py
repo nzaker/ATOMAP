@@ -2756,12 +2756,12 @@ class Sublattice():
         rel_range : float
             The range of the PDF as a fraction of the field of view of the
             image.
-    
+
         Returns
         -------
         pair_distances : list
             A list of all distances between pairs of atoms in the image.
-    
+
         Examples
         --------
         s = am.dummy_data.get_simple_cubic_signal()

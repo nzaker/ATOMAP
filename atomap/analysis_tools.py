@@ -178,7 +178,7 @@ def pair_distribution_function(
             if not np.array_equal(position1, position2):
                 pair_distance = ((position1[0] * x_scale-position2[0] *
                                   x_scale)**2+(position1[1] * y_scale -
-                                  position2[1] * y_scale)**2)**0.5
+                                               position2[1] * y_scale)**2)**0.5
                 pair_distances.append(pair_distance)
 
     if plot:
