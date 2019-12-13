@@ -185,11 +185,11 @@ def pair_distribution_function(
         plt.figure()
         intensities, bins, patches = plt.hist(
                 pair_distances, bins=n_bins, density=True, histtype='step',
-                range=(0, rel_range * min([x_size, y_size]) *
-                       min([x_scale, y_scale])/2))
+                range=(0, rel_range * min([x_size, y_size])))
         plt.clf()
+        intensity_sum=sum(intensities)
         for i, intensity in enumerate(intensities):
-            intensity = intensity/(1+2*i)
+            intensity = n_bins*intensity/intensity_sum
             area_correction = []
             for distance in distance_from_edge:
                 if min(distance) < bins[i+1]:
@@ -204,9 +204,10 @@ def pair_distribution_function(
             intensities[i] = intensity/mean
         plt.plot(bins[1:], intensities)
         if isinstance(units, str):
-            plt.xlabel('Distance (' + units + ')')
+            plt.xlabel('r (' + units + ')')
         else:
-            plt.xlabel('Distance (pixels)')
+            plt.xlabel('r (pixels)')
+        plt.ylabel('PDF g(r)')
         plt.show()
 
     return pair_distances
