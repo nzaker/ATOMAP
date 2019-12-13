@@ -2738,38 +2738,38 @@ class Sublattice():
         signal.metadata.add_node('vector_list')
         signal.metadata.vector_list = vector_list
         return signal
-    
-    def plot_pdf(self,image,n_bins=200,rel_range=0.5):
+
+    def plot_pdf(self, image, n_bins=200, rel_range=0.5):
         """
         Plots a two dimensional pair distribution function (PDF) from the atoms
         contained in the sublattice.
-        
+
         The intensity of peaks in the PDF is corrected to account for missing
-        information (i.e. the fact atoms are present outside of the field of 
+        information (i.e. the fact atoms are present outside of the field of
         view) and differences in area at different distances.
-        
+
         Parameters
         ----------
         image : 2D Hyperspy Signal object
         n_bins : int
             Number of bins to use for the PDF.
         rel_range : float
-            The range of the PDF as a fraction of the field of view of the 
+            The range of the PDF as a fraction of the field of view of the
             image.
-            
+    
         Returns
         -------
         pair_distances : list
             A list of all distances between pairs of atoms in the image.
-            
+    
         Examples
         --------
         s = am.dummy_data.get_simple_cubic_signal()
         sublattice = am.dummy_data.get_simple_cubic_sublattice()
         pdf = sublattice.pair_distribution_function(s)
-        
+
         """
-        
+
         pair_distances = an.pair_distribution_function(
-                image,self.atom_positions,True,n_bins,rel_range)
+                image, self.atom_positions, True, n_bins, rel_range)
         return pair_distances

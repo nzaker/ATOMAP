@@ -45,11 +45,12 @@ class TestGetVectorShiftList:
         for vector in vector_list:
             assert vector[2:] == (1., 1.)
 
+
 class TestPDF:
-    
+
     def test_simple(self):
         s = am.dummy_data.get_simple_cubic_signal()
         sublattice = am.dummy_data.get_simple_cubic_sublattice()
         self.pdf = sublattice.plot_pdf(s)
         assert len(self.pdf) == 159600
-        assert approx(self.pdf[0],0.01) == 14.74
+        assert approx(self.pdf[0], 0.01) == 14.74
