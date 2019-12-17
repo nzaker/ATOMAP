@@ -2759,14 +2759,15 @@ class Sublattice():
 
         Returns
         -------
-        pair_distances : list
-            A list of all distances between pairs of atoms in the image.
+        pdf : Hyperspy Signal 1D Object
+            The calculated PDF.
 
         Examples
         --------
         s = am.dummy_data.get_simple_cubic_signal()
         sublattice = am.dummy_data.get_simple_cubic_sublattice()
         pdf = sublattice.pair_distribution_function(s)
+        pdf.plot()
 
         """
 

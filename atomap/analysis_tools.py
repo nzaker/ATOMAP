@@ -152,14 +152,15 @@ def pair_distribution_function(
 
     Returns
     -------
-    pair_distances : list
-        A list of all distances between pairs of atoms in the image.
+    intensity_signal : Hyperspy Signal 1D Object
+        The calculated PDF.
 
     Examples
     --------
     >>> s = am.dummy_data.get_simple_cubic_signal()
     >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
     >>> pdf = pair_distribution_function(s,sublattice.atom_positions)
+    >>> pdf.plot()
 
     """
     pair_distances = []
