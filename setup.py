@@ -31,7 +31,6 @@ setup(
             'numpy>=1.13',
             'h5py',
             'matplotlib>=3.1.0',
-            'tqdm',
             'scikit-learn',
             'scikit-image>=0.13',
             'hyperspy>=1.5.2',

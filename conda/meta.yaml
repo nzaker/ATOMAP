@@ -16,7 +16,6 @@ requirements:
     - numpy
     - matplotlib
     - ipython
-    - tqdm
     - hyperspy
   run:
     - python
@@ -25,5 +24,4 @@ requirements:
     - numpy
     - matplotlib
     - ipython
-    - tqdm
     - hyperspy
