@@ -169,7 +169,7 @@ def pair_distribution_function(
     y_size = image.axes_manager[1].size
     x_scale = image.axes_manager[0].scale
     y_scale = image.axes_manager[1].scale
-    
+
     if isinstance(image.axes_manager[0].units, str):
         units = image.axes_manager[0].units
     else:
@@ -208,8 +208,8 @@ def pair_distribution_function(
             mean = 1
         intensities[i] = intensity/mean
 
-    axis_dict = {'name':'r', 'units':units, 'scale':bins[1],
-                 'size':len(intensities)}
+    axis_dict = {'name': 'r', 'units': units, 'scale': bins[1],
+                 'size': len(intensities)}
     intensity_signal = hs.signals.Signal1D(intensities, axes=[axis_dict])
 
     return intensity_signal

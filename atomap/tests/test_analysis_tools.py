@@ -59,5 +59,5 @@ class TestPDF:
         pdf2 = sublattice.pair_distribution_function(s, n_bins=250,
                                                      rel_range=0.4)
         assert pdf2.axes_manager[0].size == 250
-        assert pdf2.axes_manager[0].size == 0.48
+        assert pdf2.axes_manager[0].scale == 0.48
         assert approx(pdf2.data[30], 0.01) == 4.12
