@@ -170,11 +170,11 @@ def pair_distribution_function(
     y_scale = image.axes_manager[1].scale
     units = image.axes_manager[0].units
 
-    for position1 in atom_positions:
+    for i, position1 in enumerate(atom_positions):
         distance_from_edge.append(
                 [min([position1[0]*x_scale, (x_size-position1[0])*x_scale]),
                  min([position1[1]*y_scale, (y_size-position1[1])*y_scale])])
-        for position2 in atom_positions:
+        for position2 in atom_positions[i:]:
             if not np.array_equal(position1, position2):
                 pair_distance = ((position1[0] * x_scale-position2[0] *
                                   x_scale)**2+(position1[1] * y_scale -

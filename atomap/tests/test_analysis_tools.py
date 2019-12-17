@@ -52,5 +52,5 @@ class TestPDF:
         s = am.dummy_data.get_simple_cubic_signal()
         sublattice = am.dummy_data.get_simple_cubic_sublattice()
         pdf = sublattice.plot_pdf(s)
-        assert len(pdf) == 159600
+        assert len(pdf) == 159600 / 2
         assert approx(pdf[0], 0.01) == 14.74
