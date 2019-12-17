@@ -1,6 +1,6 @@
 import numpy as np
 import scipy as sp
-from tqdm import tqdm, trange
+from hyperspy.external.progressbar import progressbar
 import matplotlib.pyplot as plt
 from scipy.spatial import cKDTree
 import hyperspy.api as hs
@@ -943,7 +943,7 @@ class Sublattice():
         if image_data is None:
             image_data = self.original_image
         image_data = image_data.astype('float64')
-        for atom in tqdm(
+        for atom in progressbar(
                 self.atom_list, desc="Gaussian fitting",
                 disable=not show_progressbar):
             if atom.refine_position:
@@ -996,7 +996,7 @@ class Sublattice():
         if image_data is None:
             image_data = self.original_image
         image_data = image_data.astype('float64')
-        for atom in tqdm(
+        for atom in progressbar(
                 self.atom_list, desc="Center of mass",
                 disable=not show_progressbar):
             if atom.refine_position:
@@ -2131,7 +2131,7 @@ class Sublattice():
             A=1.0)
 
         im_y, im_x = model_image.shape
-        for atom in tqdm(self.atom_list, disable=not show_progressbar):
+        for atom in progressbar(self.atom_list, disable=not show_progressbar):
             x, y = atom.pixel_x, atom.pixel_y
             sx, sy = atom.sigma_x, atom.sigma_y
             atom_slice = atom._get_atom_slice(im_x, im_y,
@@ -2422,7 +2422,8 @@ class Sublattice():
             marker_list_y[index, 0:len(peaks)] = peaks[:, 1]
 
         marker_list = []
-        for i in trange(marker_list_x.shape[1], disable=not show_progressbar):
+        for i in progressbar(range(marker_list_x.shape[1]),
+                             disable=not show_progressbar):
             m = hs.markers.point(
                     x=marker_list_x[:, i], y=marker_list_y[:, i], color='red')
             marker_list.append(m)

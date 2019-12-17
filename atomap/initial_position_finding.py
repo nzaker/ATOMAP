@@ -1,6 +1,6 @@
 import copy
 import math
-from tqdm import tqdm
+from hyperspy.external.progressbar import progressbar
 import numpy as np
 import matplotlib.pyplot as plt
 from atomap.tools import _get_n_nearest_neighbors, Fingerprinter
@@ -94,7 +94,7 @@ def _get_dumbbell_arrays(
             next_pos_list0, next_pos_list1)
     total_num = len(next_pos_list0)
     dumbbell_list0, dumbbell_list1 = [], []
-    for x, y, next_pos0, next_pos1 in tqdm(
+    for x, y, next_pos0, next_pos1 in progressbar(
             iterator, total=total_num, desc="Finding dumbbells",
             disable=not show_progressbar):
         mask1 = _make_circular_mask(

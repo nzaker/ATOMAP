@@ -1,4 +1,4 @@
-from tqdm import trange
+from hyperspy.external.progressbar import progressbar
 import numpy as np
 from hyperspy.signals import Signal2D
 import atomap.atom_finding_refining as afr
@@ -367,8 +367,8 @@ class Dumbbell_Lattice(Atom_Lattice):
             else:
                 image = self.original_image
         n_tot = len(self.sublattice_list[0].atom_list)
-        for i_atom in trange(
-                n_tot, desc="Gaussian fitting", disable=not show_progressbar):
+        for i_atom in progressbar(range(n_tot), desc="Gaussian fitting",
+                                  disable=not show_progressbar):
             atom_list = []
             for sublattice in self.sublattice_list:
                 atom_list.append(sublattice.atom_list[i_atom])
