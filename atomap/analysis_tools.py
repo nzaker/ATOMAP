@@ -156,9 +156,9 @@ def pair_distribution_function(
 
     Examples
     --------
-    s = am.dummy_data.get_simple_cubic_signal()
-    sublattice = am.dummy_data.get_simple_cubic_sublattice()
-    pdf = pair_distribution_function(s,sublattice.atom_positions)
+    >>> s = am.dummy_data.get_simple_cubic_signal()
+    >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+    >>> pdf = pair_distribution_function(s,sublattice.atom_positions)
 
     """
     pair_distances = []
@@ -187,7 +187,7 @@ def pair_distribution_function(
                 pair_distances, bins=n_bins, density=True, histtype='step',
                 range=(0, rel_range * min([x_size, y_size])))
         plt.clf()
-        intensity_sum=sum(intensities)
+        intensity_sum = sum(intensities)
         for i, intensity in enumerate(intensities):
             intensity = n_bins*intensity/intensity_sum
             area_correction = []
