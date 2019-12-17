@@ -503,7 +503,8 @@ A PDF can be plotted from a Sublattice object with (:py:meth:`~atomap.sublattice
 
     >>> s = am.dummy_data.get_simple_cubic_signal()
     >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
-    >>> sublattice.plot_pdf(s)
+    >>> s_pdf = sublattice.pair_distribution_function(s)
+    >>> s_pdf.plot()
 
 .. image:: images/makevarioustools/pdf.png
     :scale: 50 %

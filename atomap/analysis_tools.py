@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import atomap.tools as to
+import hyperspy.api as hs
 
 
 def get_neighbor_middle_position(atom, za0, za1):
@@ -168,7 +169,11 @@ def pair_distribution_function(
     y_size = image.axes_manager[1].size
     x_scale = image.axes_manager[0].scale
     y_scale = image.axes_manager[1].scale
-    units = image.axes_manager[0].units
+    
+    if isinstance(image.axes_manager[0].units, str):
+        units = image.axes_manager[0].units
+    else:
+        units = 'pixels'
 
     for i, position1 in enumerate(atom_positions):
         distance_from_edge.append(
@@ -181,36 +186,33 @@ def pair_distribution_function(
                                                position2[1] * y_scale)**2)**0.5
                 pair_distances.append(pair_distance)
 
-    if plot:
-        plt.figure()
-        intensities, bins, patches = plt.hist(
-                pair_distances, bins=n_bins, density=True, histtype='step',
-                range=(0, rel_range * min([x_size, y_size])))
-        plt.clf()
-        intensity_sum = sum(intensities)
-        for i, intensity in enumerate(intensities):
-            intensity = n_bins*intensity/intensity_sum
-            area_correction = []
-            for distance in distance_from_edge:
-                if min(distance) < bins[i+1]:
-                    area_correction.append(
-                            1-_area_proportion(distance, bins[i+1]))
-                else:
-                    area_correction.append(1)
-            if len(area_correction) > 0:
-                mean = sum(area_correction)/len(area_correction)
+    plt.figure()
+    intensities, bins, patches = plt.hist(
+            pair_distances, bins=n_bins, histtype='step',
+            range=(0, rel_range * min([x_size, y_size])))
+    plt.clf()
+    intensity_sum = sum(intensities)
+    print(intensity_sum)
+    for i, intensity in enumerate(intensities):
+        intensity = 2*intensity/len(atom_positions)
+        area_correction = []
+        for distance in distance_from_edge:
+            if min(distance) < bins[i+1]:
+                area_correction.append(
+                        1-_area_proportion(distance, bins[i+1]))
             else:
-                mean = 1
-            intensities[i] = intensity/mean
-        plt.plot(bins[1:], intensities)
-        if isinstance(units, str):
-            plt.xlabel('r (' + units + ')')
+                area_correction.append(1)
+        if len(area_correction) > 0:
+            mean = sum(area_correction)/len(area_correction)
         else:
-            plt.xlabel('r (pixels)')
-        plt.ylabel('PDF g(r)')
-        plt.show()
+            mean = 1
+        intensities[i] = intensity/mean
 
-    return pair_distances
+    axis_dict = {'name':'r', 'units':units, 'scale':bins[1],
+                 'size':len(intensities)}
+    intensity_signal = hs.signals.Signal1D(intensities, axes=[axis_dict])
+
+    return intensity_signal
 
 
 def _area_proportion(distances, radius):
