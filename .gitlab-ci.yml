@@ -12,6 +12,7 @@ style_checks_flake8:
     - python3 -m flake8 atomap/
 
 pip_install_unittest_docstring_documentation_coverage:
+    coverage: '/TOTAL.*\s+(\d+%)$/'
     script:
     - *atomap_dependencies
     - apt-get install -qy xvfb python3-pytest python3-pytest-cov
