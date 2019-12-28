@@ -19,43 +19,14 @@ pip_install_unittest_docstring_documentation_coverage:
     - xvfb-run -a --server-args="-screen 0, 1024x768x24" python3 -m pytest --doctest-modules --cov=atomap atomap/
     - xvfb-run -a --server-args="-screen 0, 1024x768x24" python3 -m pytest --doctest-glob="*.rst" doc/
 
-pages_development_branch:
-    stage: deploy
-    script:
-    - *atomap_dependencies
-    - apt-get install -qy xvfb python3-sphinx python3-sphinx-rtd-theme build-essential
-    - apt-get install -qy --no-install-recommends texlive-latex-extra dvipng
-    - pip3 install .
-    - cd doc/
-    - xvfb-run -a python3 images/001_finding_atom_lattices_images_sc.py
-    - xvfb-run -a python3 images/002_finding_atom_lattices_images_2sub.py
-    - xvfb-run -a python3 images/003_make_fantasite.py
-    - xvfb-run -a python3 images/004_analyse_fantasite.py
-    - xvfb-run -a python3 images/automation_of_analysis_plotting.py
-    - xvfb-run -a python3 images/make_nice_figures_generate_data.py
-    - xvfb-run -a python3 images/make_nice_figures_plotting.py
-    - xvfb-run -a python3 images/make_test_data_figures.py
-    - xvfb-run -a python3 images/oxygen_tutorial.py
-    - xvfb-run -a python3 images/make_various_tools_figures.py
-    - xvfb-run -a python3 images/make_atom_adder_remover_figures.py
-    - xvfb-run -a python3 images/make_toggle_refine_position_figures.py
-    - xvfb-run -a python3 images/make_polarization_figure.py
-    - xvfb-run -a python3 images/make_several_phases_figures.py
-    - xvfb-run -a python3 images/make_atom_selector_figures.py
-    - xvfb-run -a python3 images/make_examples_figures.py
-    - xvfb-run -a python3 images/make_quant_images.py
-    - xvfb-run -a python3 images/make_dumbbell_lattice_figures.py
-    - make html
-    - cd ..
-    - mv doc/_build/html pages_development
-    artifacts:
-        paths:
-        - pages_development
-    only:
-    - master
-
 pages:
     stage: deploy
+    rules:
+        - if: '$CI_COMMIT_REF_NAME == "master"'
+          when: on_success
+        - if: '$CI_COMMIT_REF_NAME == "release"'
+          when: on_success
+        - when: never
     script:
     - *atomap_dependencies
     - apt-get install -qy xvfb python3-sphinx python3-sphinx-rtd-theme build-essential
@@ -82,9 +53,9 @@ pages:
     - xvfb-run -a python3 images/make_dumbbell_lattice_figures.py
     - make html
     - cd ..
-    - mv doc/_build/html public
+    - if [ "$CI_COMMIT_REF_NAME" == "master" ]; then PAGESPATH="public_development"; fi
+    - if [ "$CI_COMMIT_REF_NAME" == "release" ]; then PAGESPATH="public"; fi
+    - mv doc/_build/html ${PAGESPATH}
     artifacts:
         paths:
-        - public
-    only:
-    - release
+        - public*

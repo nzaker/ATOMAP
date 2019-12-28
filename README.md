@@ -1,8 +1,8 @@
 # Atomap
 
-## Webpage: http://atomap.org
+## Webpage: https://atomap.org
 
-Webpage (development version): https://gitlab.com/atomap/atomap/builds/artifacts/master/file/pages_development/index.html?job=pages_development_branch
+Webpage (development version): https://gitlab.com/atomap/atomap/builds/artifacts/master/file/public_development/index.html?job=pages
 
 Atomap is a Python library for analysing atomic resolution
 scanning transmission electron microscopy images.
