@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import copy
-from tqdm import tqdm, trange
+from hyperspy.external.progressbar import progressbar
 from scipy import interpolate
 from scipy import ndimage
 from scipy.spatial import cKDTree
@@ -120,7 +120,7 @@ def remove_atoms_from_image_using_2d_gaussian(
     model_image = np.zeros(image.shape)
     X, Y = np.meshgrid(np.arange(
         model_image.shape[1]), np.arange(model_image.shape[0]))
-    for atom in tqdm(
+    for atom in progressbar(
             sublattice.atom_list, desc='Subtracting atoms',
             disable=not show_progressbar):
         percent_distance = percent_to_nn
@@ -1164,8 +1164,8 @@ def integrate(s, points_x, points_y, method='Voronoi', max_radius='Auto',
         raise NotImplementedError(
                 "Oops! You have asked for an unimplemented method.")
     point_record -= 1
-    for point in trange(points[0].shape[0], desc='Integrating',
-                        disable=not show_progressbar):
+    for point in progressbar(range(points[0].shape[0]), desc='Integrating',
+                             disable=not show_progressbar):
         currentMask = (point_record == point)
         currentFeature = currentMask * image.T
         integrated_intensity[point] = sum(sum(currentFeature.T)).T
