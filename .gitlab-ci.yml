@@ -17,7 +17,6 @@ pip_install_unittest_docstring_documentation_coverage:
     - *atomap_dependencies
     - apt-get install -qy xvfb python3-pytest python3-pytest-cov
     - pip3 install .
-    - python3 -c "from hyperspy.api import preferences; preferences.General.nb_progressbar = False; preferences.save()"  # Set progressbar to console mode for testing docstrings
     - xvfb-run -a --server-args="-screen 0, 1024x768x24" python3 -m pytest --doctest-modules --cov=atomap atomap/
     - xvfb-run -a --server-args="-screen 0, 1024x768x24" python3 -m pytest --doctest-glob="*.rst" doc/
 
