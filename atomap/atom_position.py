@@ -234,27 +234,55 @@ class Atom_Position:
     def _get_image_slice_around_atom(
             self,
             image_data,
-            slice_size):
-        """
-        Return a square slice of the image data.
+            distance_to_edge):
+        """Return a square slice of the image data.
 
-        The atom is in the center of this slice.
+        The atom is in the center of this slice, with the size of the image
+        slice being (distance_to_edge * 2) + 1. +1 due to the position of the
+        atom itself.
+
+        If the atom is close to the edges of image_data, the size of the
+        image slice will be reduced.
 
         Parameters
         ----------
         image_data : Numpy 2D array
-        slice_size : int
-            Width and height of the square slice
+        distance_to_edge : scalar
+            The distance from the atom position to the borders of the image
+            slice.
 
         Returns
         -------
-        2D numpy array
+        image_slice, x0, y0 : 2D numpy array
+
+        Example
+        -------
+        >>> image_data = np.random.random((50, 50))
+        >>> from atomap.atom_position import Atom_Position
+        >>> atom = Atom_Position(10, 15)
+        >>> image_slice, x0, y0 = atom._get_image_slice_around_atom(
+        ...     image_data, 4)
+        >>> print(image_slice.shape) # shape returns in (y, x) order
+        (9, 9)
+
+        Atom close to the edge of the image_data
+
+        >>> image_data = np.random.random((50, 60))
+        >>> atom = Atom_Position(0, 15)
+        >>> image_slice, x0, y0 = atom._get_image_slice_around_atom(
+        ...     image_data, 7)
+        >>> print(image_slice.shape) # shape returns in (y, x) order
+        (15, 8)
 
         """
-        x0 = self.pixel_x - slice_size/2
-        x1 = self.pixel_x + slice_size/2
-        y0 = self.pixel_y - slice_size/2
-        y1 = self.pixel_y + slice_size/2
+        x = int(round(self.pixel_x))
+        y = int(round(self.pixel_y))
+        distance_to_edge = int(round(distance_to_edge))
+
+        x0 = x - distance_to_edge
+        x1 = x + distance_to_edge + 1
+        y0 = y - distance_to_edge
+        y1 = y + distance_to_edge + 1
 
         if x0 < 0.0:
             x0 = 0
@@ -264,9 +292,8 @@ class Atom_Position:
             x1 = image_data.shape[1]
         if y1 > image_data.shape[0]:
             y1 = image_data.shape[0]
-        x0, x1, y0, y1 = int(x0), int(x1), int(y0), int(y1)
-        data_slice = copy.deepcopy(image_data[y0:y1, x0:x1])
-        return data_slice, x0, y0
+        image_slice = copy.deepcopy(image_data[y0:y1, x0:x1])
+        return image_slice, x0, y0
 
     def _plot_gaussian2d_debug(
             self,
@@ -349,7 +376,7 @@ class Atom_Position:
 
         closest_neighbor = self.get_closest_neighbor()
 
-        slice_size = closest_neighbor * percent_to_nn * 2
+        slice_size = closest_neighbor * percent_to_nn
         data_slice, x0, y0 = self._get_image_slice_around_atom(
             image_data, slice_size)
 
@@ -392,7 +419,7 @@ class Atom_Position:
 
         closest_neighbor = self.get_closest_neighbor()
 
-        slice_size = closest_neighbor * percent_to_nn * 2
+        slice_size = closest_neighbor * percent_to_nn
         data_slice, _, _ = self._get_image_slice_around_atom(
             image_data, slice_size)
 

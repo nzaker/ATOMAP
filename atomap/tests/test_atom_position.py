@@ -279,3 +279,67 @@ class TestCalculateAtomPositionIntensity:
                 atom.calculate_min_intensity(sublattice.image))
 
         assert approx(min_intensities) == A_min
+
+
+class TestGetImageSliceAroundAtom:
+
+    def test_simple(self):
+        image_data = np.random.random((50, 50))
+        x, y, distance = 10, 15, 4
+        atom = Atom_Position(x, y)
+        distance = 4
+        image_slice, x0, y0 = atom._get_image_slice_around_atom(
+                image_data, distance)
+        assert image_slice.shape == (9, 9)
+        assert x0 == (x - distance)
+        assert y0 == (y - distance)
+
+    def test_close_to_edge_x0(self):
+        image_data = np.random.random((50, 50))
+        x, y, distance = 1, 15, 4
+        atom = Atom_Position(x, y)
+        image_slice, x0, y0 = atom._get_image_slice_around_atom(
+                image_data, distance)
+        assert image_slice.shape == (9, 6)
+        assert x0 == 0
+        assert y0 == (y - distance)
+
+    def test_close_to_edge_y0(self):
+        image_data = np.random.random((50, 50))
+        x, y, distance = 20, 1, 5
+        atom = Atom_Position(x, y)
+        image_slice, x0, y0 = atom._get_image_slice_around_atom(
+                image_data, distance)
+        assert image_slice.shape == (7, 11)
+        assert x0 == (x - distance)
+        assert y0 == 0
+
+    def test_close_to_edge_x1(self):
+        image_data = np.random.random((50, 50))
+        x, y, distance = 48, 15, 4
+        atom = Atom_Position(x, y)
+        image_slice, x0, y0 = atom._get_image_slice_around_atom(
+                image_data, distance)
+        assert image_slice.shape == (9, 6)
+        assert x0 == (x - distance)
+        assert y0 == (y - distance)
+
+    def test_close_to_edge_y1(self):
+        image_data = np.random.random((50, 50))
+        x, y, distance = 20, 49, 4
+        atom = Atom_Position(x, y)
+        image_slice, x0, y0 = atom._get_image_slice_around_atom(
+                image_data, distance)
+        assert image_slice.shape == (5, 9)
+        assert x0 == (x - distance)
+        assert y0 == (y - distance)
+
+    def test_close_to_edge_corner(self):
+        image_data = np.random.random((50, 60))
+        x, y, distance = 0, 0, 9
+        atom = Atom_Position(x, y)
+        image_slice, x0, y0 = atom._get_image_slice_around_atom(
+                image_data, distance)
+        assert image_slice.shape == (10, 10)
+        assert x0 == 0
+        assert y0 == 0
