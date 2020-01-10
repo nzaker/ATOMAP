@@ -4,9 +4,11 @@ The Atom_Position is the "base unit" in Atomap, since it contains
 the information about the individual atomic columns.
 """
 import copy
+import math
 import numpy as np
 import matplotlib.pyplot as plt
-import math
+from scipy.ndimage import center_of_mass
+import atomap.atom_finding_refining as afr
 from atomap.atom_finding_refining import _make_circular_mask, _crop_array
 from atomap.atom_finding_refining import zero_array_outside_circle
 from atomap.atom_finding_refining import calculate_center_of_mass
@@ -699,6 +701,57 @@ class Atom_Position:
             image_data.shape[0], image_data.shape[1], radius)
         data_mask = image_data*mask
         self.intensity_mask = np.mean(data_mask[np.nonzero(mask)])
+
+    def get_scanning_distortions(self, image_data, radius=6, edge_skip=2):
+        """Get the amount of scanning distortion in an atomic column.
+
+        Parameters
+        ----------
+        image_data : 2D NumPy array
+        radius : int
+            Default 6.
+        edge_skip : int
+            Default 2.
+
+        Returns
+        -------
+        standard_devitation : tuple
+            Both x and y direction.
+
+        """
+        atom_image = self._get_image_slice_around_atom(image_data, radius)[0]
+        atom_mask = afr._make_mask_circle_centre(atom_image, radius)
+        atom_image[atom_mask] = 0
+
+        line_x_com_list = []
+        for ix in range(edge_skip, atom_image.shape[1] - edge_skip):
+            line_mask_x = atom_mask[:, ix]
+            com_x_offset = line_mask_x[:round(len(line_mask_x)/2)].sum()
+            line_x = atom_image[:, ix][np.invert(line_mask_x)]
+            line_x_com = center_of_mass(line_x)[0] + com_x_offset
+            line_x_com_list.append(line_x_com)
+
+        line_x_com_range = range(len(line_x_com_list))
+        line_x_com_poly = np.polyfit(line_x_com_range, line_x_com_list, deg=1)
+        line_x_com_fit = np.poly1d(line_x_com_poly)(line_x_com_range)
+        line_x_variation = np.array(line_x_com_list) - np.array(line_x_com_fit)
+
+        line_y_com_list = []
+        for iy in range(edge_skip, atom_image.shape[0] - edge_skip):
+            line_mask_y = atom_mask[iy]
+            com_y_offset = line_mask_y[:round(len(line_mask_y)/2)].sum()
+            line_y = atom_image[iy][np.invert(line_mask_y)]
+            line_y_com = center_of_mass(line_y)[0] + com_y_offset
+            line_y_com_list.append(line_y_com)
+
+        line_y_com_range = range(len(line_y_com_list))
+        line_y_com_poly = np.polyfit(line_y_com_range, line_y_com_list, deg=1)
+        line_y_com_fit = np.poly1d(line_y_com_poly)(line_y_com_range)
+        line_y_variation = np.array(line_y_com_list) - np.array(line_y_com_fit)
+
+        line_x_std = np.std(line_x_variation)
+        line_y_std = np.std(line_y_variation)
+        return line_x_std, line_y_std
 
     def _get_atom_slice(self, im_x, im_y, sigma_quantile=5):
         """Get a 2D slice for slicing an image, based on the centre and sigma

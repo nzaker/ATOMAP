@@ -343,3 +343,59 @@ class TestGetImageSliceAroundAtom:
         assert image_slice.shape == (10, 10)
         assert x0 == 0
         assert y0 == 0
+
+    def test_value(self):
+        image_data = np.zeros((100, 100))
+        x, y, distance, value = 20, 49, 4, 10
+        image_data[y, x] = value
+        atom = Atom_Position(x, y)
+        image_slice, x0, y0 = atom._get_image_slice_around_atom(
+                image_data, distance)
+        assert image_slice[distance, distance] == value
+
+
+class TestGetScanningDistortions:
+
+    def test_flat_image(self):
+        image_data = np.ones((100, 100)) * 10
+        atom = Atom_Position(20, 10)
+        distortion_x, distortion_y = atom.get_scanning_distortions(
+                image_data, radius=6, edge_skip=2)
+        assert approx(distortion_x, 0)
+        assert approx(distortion_y, 0)
+
+    def test_values(self):
+        image_data = np.zeros((100, 100))
+        image_data[77, 20] = 10
+        image_data[76, 21] = 10
+        image_data[75, 20] = 10
+        image_data[74, 21] = 10
+        image_data[73, 20] = 10
+        atom = Atom_Position(20.5, 75)
+        distortion_x, distortion_y = atom.get_scanning_distortions(
+                image_data, radius=4, edge_skip=2)
+        assert approx(distortion_y, np.std((20, 21, 20, 21, 20)))
+
+    def test_elliptical_atom(self):
+        image = np.zeros((100, 100))
+        atom_position = Atom_Position(17, 75)
+        image[77, 15] = 10
+        image[76, 16] = 10
+        image[75, 17] = 10
+        image[74, 18] = 10
+        image[73, 19] = 10
+        scanning_distortions = atom_position.get_scanning_distortions(
+                image, radius=4, edge_skip=2)
+        assert scanning_distortions == (0.0, 0.0)
+
+    def test_radius(self):
+        image_data = np.zeros((100, 100))
+        image_data[77, 20] = 10
+        image_data[76, 21] = 10
+        image_data[75, 20] = 10
+        image_data[74, 21] = 10
+        image_data[73, 20] = 10
+        atom = Atom_Position(20.5, 75)
+        distortion_x, distortion_y = atom.get_scanning_distortions(
+                image_data, radius=4, edge_skip=2)
+        assert approx(distortion_y, np.std((20, 21, 20, 21, 20)))
