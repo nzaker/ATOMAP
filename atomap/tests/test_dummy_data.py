@@ -72,6 +72,10 @@ class TestDummyData:
         signal = dd.get_atom_counting_signal()
         signal.plot()
 
+    def test_get_scanning_distortion_sublattice(self):
+        sublattice = dd.get_scanning_distortion_sublattice()
+        sublattice.plot()
+
 
 class TestDummyDataFantasite:
 

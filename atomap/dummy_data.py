@@ -1057,3 +1057,24 @@ def get_atom_counting_signal():
                                amplitude=(i+1)*20, rotation=0.4)
     testdata.add_image_noise(sigma=0.02)
     return testdata.signal
+
+
+def get_scanning_distortion_sublattice():
+    """Get an artificial sublattice emulating scanning distortions.
+
+    Returns
+    -------
+    sublattice : Atomap Sublattice
+
+    Example
+    -------
+    >>> sublattice = get_scanning_distortion_sublattice()
+    >>> sublattice.plot()
+
+    """
+    test_data = MakeTestData(500, 500, add_row_scan_distortion=1)
+    x, y = np.mgrid[25:475:20j, 25:475:20j]
+    x, y = x.flatten(), y.flatten()
+    test_data.add_atom_list(x, y, sigma_x=4, sigma_y=4)
+    sublattice = test_data.sublattice
+    return sublattice
