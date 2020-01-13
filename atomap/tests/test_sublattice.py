@@ -1280,3 +1280,26 @@ class TestAmplitudeMinIntensity:
         sublattice.get_atom_column_amplitude_min_intensity(percent_to_nn=0.5)
         min_intensity1 = sublattice.atom_amplitude_min_intensity
         assert_array_less(min_intensity1, min_intensity0)
+
+
+class TestEstimateLocalScanningDistortion:
+
+    def test_simple(self):
+        sublattice = dd.get_simple_cubic_sublattice()
+        sx, sy, avgx, avgy = sublattice.estimate_local_scanning_distortion()
+        assert hasattr(sx, 'plot')
+        assert hasattr(sy, 'plot')
+
+    def test_radius(self):
+        sublattice = dd.get_scanning_distortion_sublattice()
+        output0 = sublattice.estimate_local_scanning_distortion(radius=6)
+        output1 = sublattice.estimate_local_scanning_distortion(radius=4)
+        assert output0[2] != output1[2]
+        assert output0[3] != output1[3]
+
+    def test_edge_skip(self):
+        sublattice = dd.get_scanning_distortion_sublattice()
+        output0 = sublattice.estimate_local_scanning_distortion(edge_skip=2)
+        output1 = sublattice.estimate_local_scanning_distortion(edge_skip=1)
+        assert output0[2] != output1[2]
+        assert output0[3] != output1[3]

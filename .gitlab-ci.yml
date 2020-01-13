@@ -39,6 +39,7 @@ pip_install_unittest_docstring_documentation_coverage:
 - xvfb-run -a python3 images/make_examples_figures.py
 - xvfb-run -a python3 images/make_quant_images.py
 - xvfb-run -a python3 images/make_dumbbell_lattice_figures.py
+- xvfb-run -a python3 images/make_quantifying_scanning_distortions_figures.py
 
 pages:
     stage: deploy

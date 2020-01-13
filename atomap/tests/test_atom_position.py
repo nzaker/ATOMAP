@@ -354,12 +354,12 @@ class TestGetImageSliceAroundAtom:
         assert image_slice[distance, distance] == value
 
 
-class TestGetScanningDistortions:
+class TestEstimateLocalScanningDistortion:
 
     def test_flat_image(self):
         image_data = np.ones((100, 100)) * 10
         atom = Atom_Position(20, 10)
-        distortion_x, distortion_y = atom.get_scanning_distortions(
+        distortion_x, distortion_y = atom.estimate_local_scanning_distortion(
                 image_data, radius=6, edge_skip=2)
         assert approx(distortion_x, 0)
         assert approx(distortion_y, 0)
@@ -372,30 +372,73 @@ class TestGetScanningDistortions:
         image_data[74, 21] = 10
         image_data[73, 20] = 10
         atom = Atom_Position(20.5, 75)
-        distortion_x, distortion_y = atom.get_scanning_distortions(
+        distortion_x, distortion_y = atom.estimate_local_scanning_distortion(
                 image_data, radius=4, edge_skip=2)
         assert approx(distortion_y, np.std((20, 21, 20, 21, 20)))
 
     def test_elliptical_atom(self):
         image = np.zeros((100, 100))
-        atom_position = Atom_Position(17, 75)
+        atom = Atom_Position(17, 75)
         image[77, 15] = 10
         image[76, 16] = 10
         image[75, 17] = 10
         image[74, 18] = 10
         image[73, 19] = 10
-        scanning_distortions = atom_position.get_scanning_distortions(
+        scanning_distortions = atom.estimate_local_scanning_distortion(
                 image, radius=4, edge_skip=2)
-        assert scanning_distortions == (0.0, 0.0)
+        assert approx(scanning_distortions) == (0.0, 0.0)
 
     def test_radius(self):
-        image_data = np.zeros((100, 100))
-        image_data[77, 20] = 10
-        image_data[76, 21] = 10
-        image_data[75, 20] = 10
-        image_data[74, 21] = 10
-        image_data[73, 20] = 10
-        atom = Atom_Position(20.5, 75)
-        distortion_x, distortion_y = atom.get_scanning_distortions(
-                image_data, radius=4, edge_skip=2)
-        assert approx(distortion_y, np.std((20, 21, 20, 21, 20)))
+        image = np.zeros((100, 100))
+        image[79, 17] = 100
+        image[77, 15] = 10
+        image[76, 16] = 10
+        image[75, 17] = 10
+        image[74, 18] = 10
+        image[73, 19] = 10
+        atom = Atom_Position(17, 75)
+        scanning_distortions = atom.estimate_local_scanning_distortion(
+                image, radius=2, edge_skip=0)
+        assert approx(scanning_distortions) == (0.0, 0.0)
+        scanning_distortions = atom.estimate_local_scanning_distortion(
+                image, radius=3, edge_skip=0)
+        assert approx(scanning_distortions) == (0.0, 0.0)
+        scanning_distortions = atom.estimate_local_scanning_distortion(
+                image, radius=4, edge_skip=0)
+        assert approx(scanning_distortions) != (0.0, 0.0)
+
+    def test_edge_skip_y(self):
+        image = np.zeros((100, 100))
+        image[79, 17] = 100
+        image[77, 15] = 10
+        image[76, 16] = 10
+        image[75, 17] = 10
+        image[74, 18] = 10
+        image[73, 19] = 10
+        atom = Atom_Position(17, 75)
+        scanning_distortions = atom.estimate_local_scanning_distortion(
+                image, radius=4, edge_skip=0)
+        assert approx(scanning_distortions[0]) != 0.0
+        assert approx(scanning_distortions[1]) != 0.0
+        scanning_distortions = atom.estimate_local_scanning_distortion(
+                image, radius=4, edge_skip=1)
+        assert approx(scanning_distortions[0]) != 0.0
+        assert approx(scanning_distortions[1]) == 0.0
+
+    def test_edge_skip_x(self):
+        image = np.zeros((100, 100))
+        image[75, 13] = 100
+        image[77, 15] = 10
+        image[76, 16] = 10
+        image[75, 17] = 10
+        image[74, 18] = 10
+        image[73, 19] = 10
+        atom = Atom_Position(17, 75)
+        scanning_distortions = atom.estimate_local_scanning_distortion(
+                image, radius=4, edge_skip=0)
+        assert approx(scanning_distortions[0]) != 0.0
+        assert approx(scanning_distortions[1]) != 0.0
+        scanning_distortions = atom.estimate_local_scanning_distortion(
+                image, radius=4, edge_skip=1)
+        assert approx(scanning_distortions[0]) == 0.0
+        assert approx(scanning_distortions[1]) != 0.0

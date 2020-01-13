@@ -2739,3 +2739,68 @@ class Sublattice():
         signal.metadata.add_node('vector_list')
         signal.metadata.vector_list = vector_list
         return signal
+
+    def estimate_local_scanning_distortion(
+            self, image=None, radius=6, edge_skip=2):
+        """Get the amount of local scanning distortion from atomic columns.
+
+        This is done by assuming the atomic columns has a symmetrical shape,
+        like Gaussian or Lorentzian. The distortion is calculated by getting
+        the image_data around the atom, given by the radius parameter.
+        This gives a square cropped version of the image_data, where the
+        region outside the radius is masked. For each line in the horizontal
+        direction, the center of mass is found. This gives a list of
+        horizontal positions as a function of the vertical lines.
+        To remove the effects like astigmatism and mistilt a linear fit is
+        fitted to this list of horizontal positions. This fit is then
+        subtracted from the horizontal position. The distortion for the
+        vertical lines is then calculated by getting the standard deviation
+        of this list of values.
+        Getting the horizontal distortions is calculated in a similar fashion,
+        but with a list of vertical positions as a function of the horizontal
+        lines.
+
+        Parameters
+        ----------
+        radius : int
+            Radius of the masked and cropped image. Default 6.
+        edge_skip : int
+            When the cropped image is masked with a circle,
+            the edges will consist of very few unmasked pixels.
+            The center of mass of these lines will be unreliable, so they're
+            by default skipped. edge_skip = 2 means the two lines closest to
+            the edge of the cropped image will be skipped. Default 2.
+
+        Returns
+        -------
+        s_distortion_x, s_distortion_y, distortion_x_mean, distortion_y_mean
+            Both horizontal and vertical directions. For standard raster scans,
+            horizontal will be the fast scan direction,
+            and y the slow scan direction. Typically the slow scan direction
+            has the largest amount of distortion.
+
+        Examples
+        --------
+
+        >>> sl = am.dummy_data.get_scanning_distortion_sublattice()
+        >>> s_x, s_y, avg_x, avg_y = sl.estimate_local_scanning_distortion()
+        >>> s_x.plot()
+        >>> s_y.plot()
+
+        """
+        if image is None:
+            image = self.image
+        x_list, y_list, dx_list, dy_list = [], [], [], []
+        for atom in self.atom_list:
+            distortions = atom.estimate_local_scanning_distortion(
+                    image_data=image, radius=radius, edge_skip=edge_skip)
+            x_list.append(atom.pixel_x)
+            y_list.append(atom.pixel_y)
+            dx_list.append(distortions[0])
+            dy_list.append(distortions[1])
+
+        s_distortion_x = self.get_property_map(x_list, y_list, dx_list)
+        s_distortion_y = self.get_property_map(x_list, y_list, dy_list)
+        dist_x_mean = np.mean(dx_list)
+        dist_y_mean = np.mean(dy_list)
+        return s_distortion_x, s_distortion_y, dist_x_mean, dist_y_mean

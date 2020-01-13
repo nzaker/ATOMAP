@@ -702,21 +702,52 @@ class Atom_Position:
         data_mask = image_data*mask
         self.intensity_mask = np.mean(data_mask[np.nonzero(mask)])
 
-    def get_scanning_distortions(self, image_data, radius=6, edge_skip=2):
-        """Get the amount of scanning distortion in an atomic column.
+    def estimate_local_scanning_distortion(
+            self, image_data, radius=6, edge_skip=2):
+        """Get the amount of local scanning distortion from an atomic column.
+
+        This is done by assuming the atomic column has a symmetrical shape,
+        like Gaussian or Lorentzian. The distortion is calculated by getting
+        the image_data around the atom, given by the radius parameter.
+        This gives a square cropped version of the image_data, where the
+        region outside the radius is masked. For each line in the horizontal
+        direction, the center of mass is found. This gives a list of
+        horizontal positions as a function of the vertical lines.
+        To remove the effects like astigmatism and mistilt a linear fit is
+        fitted to this list of horizontal positions. This fit is then
+        subtracted from the horizontal position. The distortion for the
+        vertical lines is then calculated by getting the standard deviation
+        of this list of values.
+        Getting the horizontal distortions is calculated in a similar fashion,
+        but with a list of vertical positions as a function of the horizontal
+        lines.
 
         Parameters
         ----------
         image_data : 2D NumPy array
         radius : int
-            Default 6.
+            Radius of the masked and cropped image. Default 6.
         edge_skip : int
-            Default 2.
+            When the cropped image is masked with a circle,
+            the edges will consist of very few unmasked pixels.
+            The center of mass of these lines will be unreliable, so they're
+            by default skipped. edge_skip = 2 means the two lines closest to
+            the edge of the cropped image will be skipped. Default 2.
 
         Returns
         -------
-        standard_devitation : tuple
-            Both x and y direction.
+        scanning_distortion : tuple
+            Both horizontal and vertical directions. For standard raster scans,
+            horizontal will be the fast scan direction,
+            and y the slow scan direction. Thus the returned values will be:
+            (fast scan, slow scan), where typically the slow scan direction has
+            the largest amount of distortion.
+
+        Examples
+        --------
+        >>> sl = am.dummy_data.get_scanning_distortion_sublattice()
+        >>> atom = sl.atom_list[50]
+        >>> distortion = atom.estimate_local_scanning_distortion(sl.image)
 
         """
         atom_image = self._get_image_slice_around_atom(image_data, radius)[0]
@@ -728,8 +759,9 @@ class Atom_Position:
             line_mask_x = atom_mask[:, ix]
             com_x_offset = line_mask_x[:round(len(line_mask_x)/2)].sum()
             line_x = atom_image[:, ix][np.invert(line_mask_x)]
-            line_x_com = center_of_mass(line_x)[0] + com_x_offset
-            line_x_com_list.append(line_x_com)
+            if np.any(line_x):
+                line_x_com = center_of_mass(line_x)[0] + com_x_offset
+                line_x_com_list.append(line_x_com)
 
         line_x_com_range = range(len(line_x_com_list))
         line_x_com_poly = np.polyfit(line_x_com_range, line_x_com_list, deg=1)
@@ -741,8 +773,9 @@ class Atom_Position:
             line_mask_y = atom_mask[iy]
             com_y_offset = line_mask_y[:round(len(line_mask_y)/2)].sum()
             line_y = atom_image[iy][np.invert(line_mask_y)]
-            line_y_com = center_of_mass(line_y)[0] + com_y_offset
-            line_y_com_list.append(line_y_com)
+            if np.any(line_y):
+                line_y_com = center_of_mass(line_y)[0] + com_y_offset
+                line_y_com_list.append(line_y_com)
 
         line_y_com_range = range(len(line_y_com_list))
         line_y_com_poly = np.polyfit(line_y_com_range, line_y_com_list, deg=1)
