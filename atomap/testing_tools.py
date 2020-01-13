@@ -11,10 +11,9 @@ class MakeTestData(object):
 
     def __init__(
             self, image_x, image_y, sublattice_generate_image=True,
-            sigma_quantile=5, show_progressbar=False):
-        """
-        Class for generating test datasets of atomic resolution
-        STEM images.
+            sigma_quantile=5, add_row_scan_distortion=None,
+            show_progressbar=False):
+        """Class for generating test datasets of atomic resolution STEM images.
 
         Parameters
         ----------
@@ -35,6 +34,10 @@ class MakeTestData(object):
             maximum sigma (max(sx, sy)) * sigma_quantile. Setting a high sigma
             will mean the Gaussians are calculated further out, but this leads
             to the image generating process being slower. Default 5.
+        add_row_scan_distortion : scalar
+            Shift horizontal rows to emulate scanning distortions.
+            By default this is off, set to a number to enabel.
+            The amount of distortion is proportional to the number given.
         show_progressbar : bool
             If True, will show a progressbar when generating the image data,
             which is normally the most time consuming part.
@@ -88,6 +91,14 @@ class MakeTestData(object):
         >>> atom_lattice = test_data.atom_lattice
         >>> atom_lattice.plot()
 
+        Adding scanning distortions
+
+        >>> test_data = MakeTestData(500, 500, add_row_scan_distortion=1)
+        >>> x, y = np.mgrid[25:475:20j, 25:475:20j]
+        >>> x, y = x.flatten(), y.flatten()
+        >>> test_data.add_atom_list(x, y, sigma_x=5, sigma_y=5)
+        >>> test_data.signal.plot()
+
         Generating a sublattice with 22500 atoms quickly, by not
         generating the image
 
@@ -105,6 +116,7 @@ class MakeTestData(object):
         self.__sublattice = Sublattice([], np.zeros((2, 2)))
         self.__sublattice.atom_list = []
         self._sigma_quantile = sigma_quantile
+        self._add_row_scan_distortion = add_row_scan_distortion
         self._show_progressbar = show_progressbar
 
     @property
@@ -115,6 +127,8 @@ class MakeTestData(object):
                 show_progressbar=self._show_progressbar)
         if self._image_noise is not False:
             signal.data += self._image_noise
+        if self._add_row_scan_distortion is not None:
+            self._shift_vertical_rows(signal)
         return signal
 
     @property
@@ -148,6 +162,13 @@ class MakeTestData(object):
         atom_lattice = Atom_Lattice(image=sublattice.image,
                                     sublattice_list=[sublattice])
         return atom_lattice
+
+    def _shift_vertical_rows(self, signal):
+        scale = self._add_row_scan_distortion
+        shift_list = np.random.standard_normal(self.data_extent[1]) * scale
+        shift_list = np.round(shift_list).astype(np.int)
+        for iy, shift in enumerate(shift_list):
+            signal.data[iy] = np.roll(signal.data[iy], shift)
 
     def add_atom(self, x, y, sigma_x=1, sigma_y=1, amplitude=1, rotation=0):
         """

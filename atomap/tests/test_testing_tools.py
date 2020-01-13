@@ -186,6 +186,17 @@ class TestMakeTestData:
         testdata1.add_atom_list(x, y)
         assert testdata0.signal.data.sum() > testdata1.signal.data.sum()
 
+    def test_add_row_scan_distortion(self):
+        x, y = np.mgrid[10:90:10, 10:90:10]
+        x, y = x.flatten(), y.flatten()
+        td = tt.MakeTestData(100, 100)
+        td.add_atom_list(x=x, y=y, sigma_x=2, sigma_y=2)
+        s0 = td.signal
+        td = tt.MakeTestData(100, 100, add_row_scan_distortion=1)
+        td.add_atom_list(x=x, y=y, sigma_x=2, sigma_y=2)
+        s1 = td.signal
+        assert not np.all(s0.data == s1.data)
+
 
 class TestMakeVectorTestGaussian(unittest.TestCase):
     def test_running(self):
