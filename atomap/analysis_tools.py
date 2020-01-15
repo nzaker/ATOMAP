@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import math
 import atomap.tools as to
 import hyperspy.api as hs
@@ -128,7 +129,7 @@ def get_vector_shift_list(sublattice, position_list):
 
 
 def pair_distribution_function(
-        image, atom_positions, n_bins=200, rel_range=0.5):
+        image, atom_positions, plot=True, n_bins=200, rel_range=0.5):
     """
     Returns a two dimensional pair distribution function (PDF) from an image of
     atomic columns.
@@ -142,6 +143,8 @@ def pair_distribution_function(
     image : 2D Hyperspy Signal object
     atom_positions : numpy array
         A numpy array of [x,y] atom positions.
+    plot : bool
+        If True will plot the PDF.
     n_bins : int
         Number of bins to use for the PDF.
     rel_range : float
@@ -154,10 +157,9 @@ def pair_distribution_function(
 
     Examples
     --------
-    >>> import atomap.analysis_tools as an
     >>> s = am.dummy_data.get_simple_cubic_signal()
     >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
-    >>> pdf = an.pair_distribution_function(s,sublattice.atom_positions)
+    >>> pdf = pair_distribution_function(s,sublattice.atom_positions)
     >>> pdf.plot()
 
     """
@@ -185,9 +187,13 @@ def pair_distribution_function(
                                                position2[1] * y_scale)**2)**0.5
                 pair_distances.append(pair_distance)
 
-    intensities, bins = np.histogram(pair_distances, bins=n_bins,
-                                     range=(0,
-                                            rel_range * min([x_size, y_size])))
+    plt.figure()
+    intensities, bins, patches = plt.hist(
+            pair_distances, bins=n_bins, histtype='step',
+            range=(0, rel_range * min([x_size, y_size])))
+    plt.clf()
+    intensity_sum = sum(intensities)
+    print(intensity_sum)
     for i, intensity in enumerate(intensities):
         intensity = 2*intensity/len(atom_positions)
         area_correction = []
