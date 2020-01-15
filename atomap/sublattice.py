@@ -2739,7 +2739,7 @@ class Sublattice():
         signal.metadata.vector_list = vector_list
         return signal
 
-    def pair_distribution_function(self, image, n_bins=200, rel_range=0.5):
+    def pair_distribution_function(self, image=None, n_bins=200, rel_range=0.5):
         """
         Plots a two dimensional pair distribution function (PDF) from the atoms
         contained in the sublattice.
@@ -2771,6 +2771,9 @@ class Sublattice():
 
         """
 
+        if image is None:
+            image = self.signal
+
         pdf = an.pair_distribution_function(
-                image, self.atom_positions, True, n_bins, rel_range)
+                image, self.atom_positions, n_bins, rel_range)
         return pdf
