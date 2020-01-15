@@ -188,6 +188,7 @@ def pair_distribution_function(
     intensities, bins = np.histogram(pair_distances, bins=n_bins,
                                      range=(0,
                                             rel_range * min([x_size, y_size])))
+    intensities = intensities.astype(float)
     for i, intensity in enumerate(intensities):
         intensity = 2*intensity/len(atom_positions)
         area_correction = []
