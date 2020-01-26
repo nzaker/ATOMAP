@@ -487,6 +487,7 @@ This can be visualized directly by using the ``plot`` method, and the data itsel
     :scale: 50 %
     :align: center
 
+
 .. _pair_distribution_function:
 
 Plotting a pair distribution function
@@ -497,15 +498,14 @@ This function can also be performed in two dimensions from an image of atoms.
 A PDF of a crystalline material is similar to a radially averaged diffraction pattern.
 They are particularly useful for looking for ordering in amorphous materials.
 
-A PDF can be plotted from a Sublattice object with (:py:meth:`~atomap.sublattice.Sublattice.plot_pdf`).
+A PDF can be calculated from a Sublattice object using :py:meth:`~atomap.sublattice.Sublattice.pair_distribution_function`:
 
 .. code-block:: python
 
-    >>> s = am.dummy_data.get_simple_cubic_signal()
     >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
-    >>> s_pdf = sublattice.pair_distribution_function(s)
+    >>> s_pdf = sublattice.pair_distribution_function()
     >>> s_pdf.plot()
 
-.. image:: images/makevarioustools/pdf.png
-    :scale: 50 %
+.. image:: images/makevarioustools/pair_distribution_function.png
+    :scale: 65 %
     :align: center

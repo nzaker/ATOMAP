@@ -2751,7 +2751,7 @@ class Sublattice():
 
         Parameters
         ----------
-        image : 2D Hyperspy Signal object
+        image : 2D HyperSpy Signal object
         n_bins : int
             Number of bins to use for the PDF.
         rel_range : float
@@ -2760,18 +2760,17 @@ class Sublattice():
 
         Returns
         -------
-        pdf : Hyperspy Signal 1D Object
+        s_pdf : HyperSpy Signal 1D Object
             The calculated PDF.
 
         Examples
         --------
-        s = am.dummy_data.get_simple_cubic_signal()
-        sublattice = am.dummy_data.get_simple_cubic_sublattice()
-        pdf = sublattice.pair_distribution_function(s)
-        pdf.plot()
+        >>> s = am.dummy_data.get_simple_cubic_signal()
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> s_pdf = sublattice.pair_distribution_function(s)
+        >>> s_pdf.plot()
 
         """
-
         if image is None:
             image = self.signal
 

@@ -139,9 +139,9 @@ def pair_distribution_function(
 
     Parameters
     ----------
-    image : 2D Hyperspy Signal object
-    atom_positions : numpy array
-        A numpy array of [x,y] atom positions.
+    image : 2D HyperSpy Signal object
+    atom_positions : NumPy array
+        A NumPy array of [x, y] atom positions.
     n_bins : int
         Number of bins to use for the PDF.
     rel_range : float
@@ -149,7 +149,7 @@ def pair_distribution_function(
 
     Returns
     -------
-    intensity_signal : Hyperspy Signal 1D Object
+    s_pdf : HyperSpy Signal 1D Object
         The calculated PDF.
 
     Examples
@@ -157,8 +157,8 @@ def pair_distribution_function(
     >>> import atomap.analysis_tools as an
     >>> s = am.dummy_data.get_simple_cubic_signal()
     >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
-    >>> pdf = an.pair_distribution_function(s,sublattice.atom_positions)
-    >>> pdf.plot()
+    >>> s_pdf = an.pair_distribution_function(s,sublattice.atom_positions)
+    >>> s_pdf.plot()
 
     """
     pair_distances = []
@@ -175,48 +175,51 @@ def pair_distribution_function(
         units = 'pixels'
 
     for i, position1 in enumerate(atom_positions):
-        distance_from_edge.append(
-                [min([position1[0]*x_scale, (x_size-position1[0])*x_scale]),
-                 min([position1[1]*y_scale, (y_size-position1[1])*y_scale])])
+        dist_edge_x = min(
+                [position1[0] * x_scale, (x_size - position1[0]) * x_scale])
+        dist_edge_y = min(
+                [position1[1] * y_scale, (y_size - position1[1]) * y_scale])
+        distance_from_edge.append([dist_edge_x, dist_edge_y])
         for position2 in atom_positions[i:]:
             if not np.array_equal(position1, position2):
-                pair_distance = ((position1[0] * x_scale-position2[0] *
-                                  x_scale)**2+(position1[1] * y_scale -
-                                               position2[1] * y_scale)**2)**0.5
+                dist_x = position1[0] * x_scale - position2[0] * x_scale
+                dist_y = position1[1] * y_scale - position2[1] * y_scale
+                pair_distance = math.hypot(dist_x, dist_y)
                 pair_distances.append(pair_distance)
 
-    intensities, bins = np.histogram(pair_distances, bins=n_bins,
-                                     range=(0,
-                                            rel_range * min([x_size, y_size])))
+    intensities, bins = np.histogram(
+            pair_distances, bins=n_bins,
+            range=(0, rel_range * min([x_size, y_size])))
+
     intensities = intensities.astype(float)
     for i, intensity in enumerate(intensities):
-        intensity = 2*intensity/len(atom_positions)
+        intensity = 2 * intensity / len(atom_positions)
         area_correction = []
         for distance in distance_from_edge:
-            if min(distance) < bins[i+1]:
+            if min(distance) < bins[i + 1]:
                 area_correction.append(
-                        1-_area_proportion(distance, bins[i+1]))
+                        1 - _area_proportion(distance, bins[i + 1]))
             else:
                 area_correction.append(1)
         if len(area_correction) > 0:
-            mean = sum(area_correction)/len(area_correction)
+            mean = sum(area_correction) / len(area_correction)
         else:
             mean = 1
-        intensities[i] = intensity/mean
+        intensities[i] = intensity / mean
 
     axis_dict = {'name': 'r', 'units': units, 'scale': bins[1],
                  'size': len(intensities)}
     intensity_signal = hs.signals.Signal1D(intensities, axes=[axis_dict])
-
+    intensity_signal.metadata.General.title = "Pair distribution function"
     return intensity_signal
 
 
 def _area_proportion(distances, radius):
-    distances = -(distances-radius)
+    distances = - (distances - radius)
     dist_norm = [(i > 0) * i for i in distances]
     if 0 in dist_norm:
-        proportion = math.acos(max(dist_norm)/radius)/math.pi
+        proportion = math.acos(max(dist_norm) / radius) / math.pi
     else:
-        proportion = 0.25 + (math.acos(dist_norm[0]/radius) +
-                             math.acos(dist_norm[1]/radius))/(2*math.pi)
+        proportion = 0.25 + (math.acos(dist_norm[0] / radius) +
+                             math.acos(dist_norm[1] / radius)) / (2 * math.pi)
     return proportion

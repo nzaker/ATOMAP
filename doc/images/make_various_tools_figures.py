@@ -41,9 +41,9 @@ filename = os.path.join(my_path, 'single_atom_sublattice.png')
 s._plot.signal_plot.figure.savefig(filename, overwrite=True)
 
 #####
-
 s = am.dummy_data.get_simple_cubic_signal()
 sublattice = am.dummy_data.get_simple_cubic_sublattice()
 s_pdf = sublattice.pair_distribution_function(s)
 s_pdf.plot()
-plt.savefig(os.path.join(my_path, 'pdf.png'), overwrite=True)
+filename_pdf = os.path.join(my_path, 'pair_distribution_function.png')
+s_pdf._plot.signal_plot.figure.savefig(filename_pdf, overwrite=True)
