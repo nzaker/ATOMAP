@@ -12,6 +12,7 @@ After finding and refining the atom lattices as shown in :ref:`finding_atom_latt
 3. :ref:`Angle between monolayers <getting_angle_atoms>`
 4. :ref:`Integration of atomic columns <integrate>`
 5. :ref:`Making line profiles <making_line_profiles>`
+6. :ref:`Plotting a pair distribution function <pair_distribution_function>
 
 In this tutorial we will use a dummy image containing two sublattices.
 Different structural distortions have been introduced in the image, and this tutorial will study these distortions.
@@ -484,4 +485,27 @@ This can be visualized directly by using the ``plot`` method, and the data itsel
 
 .. image:: images/makepolarization/polarization_signal_marker.png
     :scale: 50 %
+    :align: center
+
+
+.. _pair_distribution_function:
+
+Plotting a pair distribution function
+=====================================
+A method of analysis common in X-ray diffraction is the plotting of a pair distribution function (PDF).
+This function calculates the distance between every atom with every other atom in the sampled volume.
+This function can also be performed in two dimensions from an image of atoms.
+A PDF of a crystalline material is similar to a radially averaged diffraction pattern.
+They are particularly useful for looking for ordering in amorphous materials.
+
+A PDF can be calculated from a Sublattice object using :py:meth:`~atomap.sublattice.Sublattice.pair_distribution_function`:
+
+.. code-block:: python
+
+    >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+    >>> s_pdf = sublattice.pair_distribution_function()
+    >>> s_pdf.plot()
+
+.. image:: images/makevarioustools/pair_distribution_function.png
+    :scale: 65 %
     :align: center

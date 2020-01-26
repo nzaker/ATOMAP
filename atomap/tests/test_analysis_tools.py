@@ -44,3 +44,20 @@ class TestGetVectorShiftList:
         vector_list = an.get_vector_shift_list(sublattice, position_list)
         for vector in vector_list:
             assert vector[2:] == (1., 1.)
+
+
+class TestPDF:
+
+    def test_simple(self):
+        s = am.dummy_data.get_simple_cubic_signal()
+        sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        s_pdf = sublattice.pair_distribution_function(s)
+        assert s_pdf.axes_manager[0].size == 200
+        assert s_pdf.axes_manager[0].scale == 0.75
+        assert approx(s_pdf.data[19], 0.01) == 4.12
+
+        s_pdf2 = sublattice.pair_distribution_function(
+                s, n_bins=250, rel_range=0.4)
+        assert s_pdf2.axes_manager[0].size == 250
+        assert s_pdf2.axes_manager[0].scale == 0.48
+        assert approx(s_pdf2.data[30], 0.01) == 4.12

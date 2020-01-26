@@ -2804,3 +2804,42 @@ class Sublattice():
         dist_x_mean = np.mean(dx_list)
         dist_y_mean = np.mean(dy_list)
         return s_distortion_x, s_distortion_y, dist_x_mean, dist_y_mean
+
+    def pair_distribution_function(self, image=None, n_bins=200,
+                                   rel_range=0.5):
+        """
+        Plots a two dimensional pair distribution function (PDF) from the atoms
+        contained in the sublattice.
+
+        The intensity of peaks in the PDF is corrected to account for missing
+        information (i.e. the fact atoms are present outside of the field of
+        view) and differences in area at different distances.
+
+        Parameters
+        ----------
+        image : 2D HyperSpy Signal object
+        n_bins : int
+            Number of bins to use for the PDF.
+        rel_range : float
+            The range of the PDF as a fraction of the field of view of the
+            image.
+
+        Returns
+        -------
+        s_pdf : HyperSpy Signal 1D Object
+            The calculated PDF.
+
+        Examples
+        --------
+        >>> s = am.dummy_data.get_simple_cubic_signal()
+        >>> sublattice = am.dummy_data.get_simple_cubic_sublattice()
+        >>> s_pdf = sublattice.pair_distribution_function(s)
+        >>> s_pdf.plot()
+
+        """
+        if image is None:
+            image = self.signal
+
+        pdf = an.pair_distribution_function(
+                image, self.atom_positions, n_bins, rel_range)
+        return pdf
