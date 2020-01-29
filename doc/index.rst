@@ -4,12 +4,12 @@ Welcome to Atomap's documentation!
 News
 ----
 
-**2019-10-17: Atomap 0.2.0 released!**
+**2020-1-29: Atomap 0.2.1 released!**
 
-* Greatly improved :ref:`documentation <dumbbell_lattice>`, `notebook <https://gitlab.com/atomap/atomap_demos/blob/release/dumbbell_example_notebook/dumbbell_example.ipynb>`_ and several new functions for analysing images with dumbbell features, like Si or GaAs.
-* New GUI tool for :ref:`selection a subset of atom positions <atom_selector_gui>`, making it easier to work on images with :ref:`several phases <several_phases>`.
-* :ref:`Statistical quantification <statistical_method>` using Gaussian mixture model. Thanks to `Tom Slater <https://gitlab.com/TomSlater>`_ for implementing this!
-* Functions in the ``Atom_Position`` class: :py:meth:`~atomap.atom_position.Atom_Position.calculate_max_intensity` and :py:meth:`~atomap.atom_position.Atom_Position.calculate_min_intensity`. Thanks to `Eoghan O'Connell <https://gitlab.com/PinkShnack>`_ for implementing this!
+* New method for getting a pair distribution function, see the :ref:`documentation <pair_distribution_function>` for more info. Thanks to `Tom Slater <https://gitlab.com/TomSlater>`_ for implementing this!
+* Add a method for getting the local, often high frequency, scanning distortions utilizing the shape of the atomic columns: :ref:`Quantify scan distortions <quantify_scan_distortions>`.
+* Improved the progressbar when using Atomap in Jupyter Notebooks. Thanks to `Alexander Skorikov <https://gitlab.com/askorikov>`_!
+
 
 About Atomap
 ------------
@@ -74,6 +74,14 @@ Contents on this webpage
 
 Old news
 --------
+
+*2019-10-17: Atomap 0.2.0 released!*
+
+* Greatly improved :ref:`documentation <dumbbell_lattice>`, `notebook <https://gitlab.com/atomap/atomap_demos/blob/release/dumbbell_example_notebook/dumbbell_example.ipynb>`_ and several new functions for analysing images with dumbbell features, like Si or GaAs.
+* New GUI tool for :ref:`selection a subset of atom positions <atom_selector_gui>`, making it easier to work on images with :ref:`several phases <several_phases>`.
+* :ref:`Statistical quantification <statistical_method>` using Gaussian mixture model. Thanks to `Tom Slater <https://gitlab.com/TomSlater>`_ for implementing this!
+* Functions in the ``Atom_Position`` class: :py:meth:`~atomap.atom_position.Atom_Position.calculate_max_intensity` and :py:meth:`~atomap.atom_position.Atom_Position.calculate_min_intensity`. Thanks to `Eoghan O'Connell <https://gitlab.com/PinkShnack>`_ for implementing this!
+
 
 *2019-03-05: Atomap 0.1.4 released!*
 
