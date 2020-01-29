@@ -61,6 +61,7 @@ Contents on this webpage
    examples
    quantification
    nanoparticle_example
+   quantify_scan_distortions
    make_testdata
    making_nice_figures
    various_tools
