@@ -12,7 +12,7 @@ After finding and refining the atom lattices as shown in :ref:`finding_atom_latt
 3. :ref:`Angle between monolayers <getting_angle_atoms>`
 4. :ref:`Integration of atomic columns <integrate>`
 5. :ref:`Making line profiles <making_line_profiles>`
-6. :ref:`Plotting a pair distribution function <pair_distribution_function>
+6. :ref:`Plotting a pair distribution function <pair_distribution_function>`
 
 In this tutorial we will use a dummy image containing two sublattices.
 Different structural distortions have been introduced in the image, and this tutorial will study these distortions.
