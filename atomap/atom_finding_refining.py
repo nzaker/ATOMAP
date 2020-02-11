@@ -537,7 +537,7 @@ def calculate_center_of_mass(arr):
 
     Returns
     -------
-    cx, cy: tuple of floats
+    cy, cx: tuple of floats
 
     Examples
     --------
