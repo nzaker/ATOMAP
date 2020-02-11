@@ -537,7 +537,7 @@ def calculate_center_of_mass(arr):
 
     Returns
     -------
-    cx, cy: tuple of floats
+    cy, cx: tuple of floats
 
     Examples
     --------
@@ -557,13 +557,13 @@ def calculate_center_of_mass(arr):
     # arr -= arr.min()
     arr = arr / np.sum(arr)
 
-    dx = np.sum(arr, 1)
-    dy = np.sum(arr, 0)
+    dy = np.sum(arr, 1)
+    dx = np.sum(arr, 0)
 
     (Y, X) = arr.shape
     cx = np.sum(dx * np.arange(X))
     cy = np.sum(dy * np.arange(Y))
-    return cx, cy
+    return cy, cx
 
 
 def _pad_array(arr, padding=1):

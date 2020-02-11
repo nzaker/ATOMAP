@@ -243,6 +243,22 @@ class TestCenterOfMass:
         rand = np.random.random((5, 5))
         center_of_mass(rand) == afr.calculate_center_of_mass(rand)
 
+    def test_non_square0(self):
+        image = np.zeros((40, 20))
+        y, x = 38, 11
+        image[y, x] = 10.
+        cy, cx = afr.calculate_center_of_mass(image)
+        assert cy == float(y)
+        assert cx == float(x)
+
+    def test_non_square1(self):
+        image = np.zeros((40, 80))
+        y, x = 38, 11
+        image[y, x] = 10.
+        cy, cx = afr.calculate_center_of_mass(image)
+        assert cy == float(y)
+        assert cx == float(x)
+
     def test_center_of_mass_dummy_data(self):
         sub = dd.get_distorted_cubic_sublattice()
         sub.find_nearest_neighbors()
